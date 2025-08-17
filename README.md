@@ -1,4 +1,4 @@
-# Laravel Fitness App
+# Laravel Workouts App
 
 ## Start app
 
@@ -11,3 +11,7 @@ php artisan serve
 ```
 ./vendor/bin/pint
 ```
+
+## Database structure
+
+[link](https://dbdiagram.io/d/workouts-68a1ae421d75ee360ae77ad8)
