@@ -21,6 +21,6 @@ class Program extends Model
 
     public function workoutTemplates()
     {
-        return $this->belongsToMany(WorkoutTemplate::class, 'program_workout_template')->withPivot('weekday');
+        return $this->belongsToMany(WorkoutTemplate::class)->withPivot('weekday');
     }
 }
