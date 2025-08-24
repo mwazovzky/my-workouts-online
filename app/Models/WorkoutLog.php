@@ -13,6 +13,8 @@ class WorkoutLog extends Model
         'user_id',
         'workout_template_id',
         'date',
+        'status',
+        'completed_at',
     ];
 
     public function user()

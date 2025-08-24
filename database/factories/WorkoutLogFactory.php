@@ -14,9 +14,9 @@ class WorkoutLogFactory extends Factory
     public function definition()
     {
         return [
-            'user_id' => User::factory(),
             'workout_template_id' => WorkoutTemplate::factory(),
-            'date' => $this->faker->date(),
+            'user_id' => User::factory(),
+            'status' => 'in_progress',
         ];
     }
 }

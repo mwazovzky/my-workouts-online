@@ -5,30 +5,23 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProgramResource;
 use App\Models\Program;
-use Illuminate\Http\JsonResponse;
+use App\QueryBuilders\ProgramQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProgramController extends Controller
 {
-    public function index(Request $request): JsonResource
+    public function index(Request $request, ProgramQueryBuilder $query): JsonResource
     {
         $user = $request->user();
-
-        $programs = Program::whereHas('users', function ($query) use ($user) {
-            $query->where('users.id', $user->id);
-        })->get();
+        $programs = $query->for($user)->get();
 
         return ProgramResource::collection($programs);
     }
 
-    public function show(int $id): JsonResource|JsonResponse
+    public function show(Program $program): JsonResource
     {
-        $program = Program::with('workoutTemplates')->find($id);
-
-        if (! $program) {
-            return response()->json(['message' => 'Program not found'], 404);
-        }
+        $program->load('workoutTemplates');
 
         return new ProgramResource($program);
     }

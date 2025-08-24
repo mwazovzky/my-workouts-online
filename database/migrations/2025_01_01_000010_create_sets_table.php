@@ -15,6 +15,7 @@ class CreateSetsTable extends Migration
             $table->integer('repetitions');
             $table->integer('weight')->nullable();
             $table->timestamps();
+            $table->unique(['activity_id', 'order']);
         });
     }
 

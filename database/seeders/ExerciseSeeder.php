@@ -16,7 +16,9 @@ class ExerciseSeeder extends Seeder
             ['name' => 'Squat', 'equipment' => 'Barbell', 'description' => 'Leg strength exercise using a barbell.', 'categories' => ['Legs']],
             ['name' => 'Deadlift', 'equipment' => 'Barbell', 'description' => 'Full body strength exercise using a barbell.', 'categories' => ['Back', 'Legs']],
             ['name' => 'Dumbbell Curl', 'equipment' => 'Dumbbell', 'description' => 'Biceps exercise using dumbbells.', 'categories' => ['Biceps']],
-            ['name' => 'Triceps Extension', 'equipment' => 'Dumbbell', 'description' => 'Triceps exercise using dumbbells.', 'categories' => ['Triceps']],
+            ['name' => 'Barbell Curl', 'equipment' => 'Barbell', 'description' => 'Biceps exercise using a barbell.', 'categories' => ['Biceps']],
+            ['name' => 'Triceps Extension with Dumbbell', 'equipment' => 'Dumbbell', 'description' => 'Triceps exercise using dumbbells.', 'categories' => ['Triceps']],
+            ['name' => 'Triceps Extension on High Pulley Machine', 'equipment' => 'High Pulley Machine', 'description' => 'Triceps exercise using high pulley machine.', 'categories' => ['Triceps']],
             ['name' => 'Lat Pulldown', 'equipment' => 'Lat Pulldown Machine', 'description' => 'Back exercise using lat pulldown machine.', 'categories' => ['Back']],
             ['name' => 'Leg Press', 'equipment' => 'Leg Press Machine', 'description' => 'Leg exercise using leg press machine.', 'categories' => ['Legs']],
             ['name' => 'Chest Press', 'equipment' => 'Chest Press Machine', 'description' => 'Chest exercise using chest press machine.', 'categories' => ['Chest']],
@@ -32,7 +34,8 @@ class ExerciseSeeder extends Seeder
             ['name' => 'Calf Raise', 'equipment' => 'Calf Raise Machine', 'description' => 'Calf exercise using calf raise machine.', 'categories' => ['Legs']],
             ['name' => 'Plank', 'equipment' => null, 'description' => 'Core stability exercise.', 'categories' => ['Abs']],
             ['name' => 'Crunches', 'equipment' => null, 'description' => 'Core exercise performed without equipment.', 'categories' => ['Abs']],
-            ['name' => 'Shoulder Press', 'equipment' => 'Dumbbell', 'description' => 'Shoulder strength exercise using dumbbells.', 'categories' => ['Shoulders']],
+            ['name' => 'Shoulder Press. Dumbbell', 'equipment' => 'Dumbbell', 'description' => 'Shoulder strength exercise using dumbbells.', 'categories' => ['Shoulders']],
+            ['name' => 'Shoulder Press. Machine', 'equipment' => 'Shoulder Press Machine', 'description' => 'Shoulder strength exercise using machine.', 'categories' => ['Shoulders']],
         ];
 
         foreach ($exercises as $item) {

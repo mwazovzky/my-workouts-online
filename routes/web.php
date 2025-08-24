@@ -26,6 +26,22 @@ Route::get('/programs/{id}', function ($id) {
     return Inertia::render('ProgramShow', ['id' => $id]);
 })->middleware(['auth', 'verified'])->name('programs.show');
 
+Route::get('/workout-templates/{id}', function ($id) {
+    return Inertia::render('WorkoutTemplateShow', ['id' => $id]);
+})->middleware(['auth', 'verified'])->name('workout.templates.show');
+
+Route::get('/workout-logs', function () {
+    return Inertia::render('WorkoutLogIndex');
+})->middleware(['auth', 'verified'])->name('workout.logs.index');
+
+Route::get('/workout-logs/{id}', function ($id) {
+    return Inertia::render('WorkoutLogShow', ['id' => $id]);
+})->middleware(['auth', 'verified'])->name('workout.logs.show');
+
+Route::get('/workout-logs/{id}/edit', function ($id) {
+    return Inertia::render('WorkoutLogEdit', ['id' => $id]);
+})->middleware(['auth', 'verified'])->name('workout.logs.edit');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

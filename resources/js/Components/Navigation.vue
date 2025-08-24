@@ -6,6 +6,9 @@
         <NavLink :href="route('programs.index')" :active="route().current('programs.index')">
             Programs
         </NavLink>
+        <NavLink :href="route('workout.logs.index')" :active="route().current('workout.logs.index')">
+            Workouts
+        </NavLink>
     </nav>
 </template>
 

@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +28,18 @@ class AppServiceProvider extends ServiceProvider
             'workout_template' => \App\Models\WorkoutTemplate::class,
             'workout_log' => \App\Models\WorkoutLog::class,
         ]);
+
+        // Share authenticated user info with Inertia pages
+        Inertia::share('auth.user', function () {
+            $user = auth()->user();
+            if (! $user) {
+                return null;
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name ?? null,
+            ];
+        });
     }
 }

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Link } from '@inertiajs/vue3';
 
 const program = ref(null);
 const loading = ref(true);
@@ -43,6 +44,9 @@ onMounted(loadProgram);
                 <div class="p-4 bg-white rounded shadow-sm">
                     <h3 class="font-semibold text-lg">{{ program.name }}</h3>
                     <p class="text-sm text-gray-600">{{ program.description }}</p>
+                    <p class="text-sm text-gray-600">
+                        Duration: {{ program.start_date }} - {{ program.end_date }}
+                    </p>
                 </div>
 
                 <div class="mt-6">
@@ -53,7 +57,14 @@ onMounted(loadProgram);
                             :key="workout.id"
                             class="p-4 bg-gray-100 rounded"
                         >
-                            <div class="font-semibold">{{ workout.name }}</div>
+                            <div class="font-semibold">
+                                <Link
+                                    :href="route('workout.templates.show', { id: workout.id })"
+                                    class="text-indigo-600 hover:underline"
+                                >
+                                    {{ workout.name }}
+                                </Link>
+                            </div>
                             <div class="text-sm text-gray-600">Scheduled: {{ workout.weekday }}</div>
                         </li>
                     </ul>

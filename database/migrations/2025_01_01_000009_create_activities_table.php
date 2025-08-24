@@ -14,6 +14,7 @@ class CreateActivitiesTable extends Migration
             $table->foreignId('exercise_id')->constrained()->onDelete('cascade');
             $table->integer('order');
             $table->timestamps();
+            $table->unique(['workout_type', 'workout_id', 'order']);
         });
     }
 

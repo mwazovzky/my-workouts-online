@@ -2,23 +2,21 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class WorkoutTemplateResource extends JsonResource
+class WorkoutLogResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  Request  $request
-     */
     public function toArray($request): array
     {
+
+        $workoutTemplate = $this->whenLoaded('workoutTemplate');
+
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'weekday' => $this->pivot->weekday ?? null,
+            'workout_template_name' => $workoutTemplate?->name,
+            'workout_template_description' => $workoutTemplate?->description,
+            'user_id' => $this->user_id,
+            'status' => $this->status,
             'activities' => ActivityResource::collection($this->whenLoaded('activities')),
             'activities_count' => $this->activities_count ?? 0,
             'created_at' => $this->created_at,
