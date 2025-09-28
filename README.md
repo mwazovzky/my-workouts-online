@@ -1,5 +1,7 @@
 # Laravel Workouts App
 
+![testing](https://github.com/mwazovzky/workouts/actions/workflows/testing.yml/badge.svg)
+
 ## Start app
 
 ```
