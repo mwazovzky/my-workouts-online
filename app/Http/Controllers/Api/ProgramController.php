@@ -8,21 +8,30 @@ use App\Models\Program;
 use App\QueryBuilders\ProgramQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response;
 
 class ProgramController extends Controller
 {
-    public function index(Request $request, ProgramQueryBuilder $query): JsonResource
+    public function index(ProgramQueryBuilder $query): JsonResource
     {
-        $user = $request->user();
-        $programs = $query->for($user)->get();
+        $programs = $query->with('users')->get();
 
         return ProgramResource::collection($programs);
     }
 
     public function show(Program $program): JsonResource
     {
-        $program->load('workoutTemplates');
+        $program->load(['users', 'workoutTemplates']);
 
         return new ProgramResource($program);
+    }
+
+    public function enroll(Request $request, Program $program): Response
+    {
+        $user = $request->user();
+
+        $program->users()->syncWithoutDetaching([$user->id]);
+
+        return response()->noContent();
     }
 }

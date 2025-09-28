@@ -15,6 +15,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::prefix('programs')->name('api.programs.')->group(function () {
         Route::get('/', [ProgramController::class, 'index'])->name('index');
         Route::get('/{program}', [ProgramController::class, 'show'])->name('show');
+        Route::post('/{program}/enroll', [ProgramController::class, 'enroll'])->name('enroll');
     });
 
     Route::prefix('workout-templates')->name('api.workout.templates.')->group(function () {
