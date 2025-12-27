@@ -1,5 +1,5 @@
 {
-    "$schema": "https://json.schemastore.org/package.json",
+     "name": "workouts",
     "private": true,
     "type": "module",
     "scripts": {

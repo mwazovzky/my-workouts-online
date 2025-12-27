@@ -35,13 +35,13 @@ function save() {
     <div class="space-y-2">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-sm font-semibold">{{ activity.exercise_name }}</div>
+                <div class="text-sm font-semibold dark:text-gray-100">{{ activity.exercise_name }}</div>
             </div>
 
             <div class="flex items-center gap-2">
-                <button v-if="editable" @click="addSet" class="text-sm text-indigo-600 hover:underline">Add Set</button>
-                <button v-if="editable" @click="save" class="px-2 py-1 bg-indigo-600 text-white text-sm rounded">Save</button>
-                <button v-if="editable" @click="removeActivity" class="text-sm text-red-600 hover:underline">Remove</button>
+                <button v-if="editable" @click="addSet" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">Add Set</button>
+                <button v-if="editable" @click="save" class="px-2 py-1 bg-indigo-600 dark:bg-indigo-500 text-white text-sm rounded">Save</button>
+                <button v-if="editable" @click="removeActivity" class="text-sm text-red-600 dark:text-red-400 hover:underline">Remove</button>
             </div>
         </div>
 

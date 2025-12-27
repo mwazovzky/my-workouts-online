@@ -79,29 +79,29 @@ async function startWorkout() {
 <template>
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Workout Template Details
             </h2>
         </template>
 
         <div>
-            <div v-if="loading" class="text-sm text-gray-500">Loading workout details…</div>
-            <div v-else-if="error" class="text-sm text-red-600">Error: {{ error }}</div>
+            <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">Loading workout details…</div>
+            <div v-else-if="error" class="text-sm text-red-600 dark:text-red-400">Error: {{ error }}</div>
             <div v-else>
-                <div class="p-4 bg-white rounded shadow-sm">
-                    <h3 class="font-semibold text-lg">{{ workout.name }}</h3>
-                    <p class="text-sm text-gray-600">{{ workout.description }}</p>
+                <div class="p-4 bg-white dark:bg-gray-800 rounded shadow-sm">
+                    <h3 class="font-semibold text-lg dark:text-gray-100">{{ workout.name }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ workout.description }}</p>
                 </div>
 
                 <div class="mt-6">
-                    <h4 class="font-semibold text-md">Activities</h4>
+                    <h4 class="font-semibold text-md dark:text-gray-200">Activities</h4>
                     <div class="mt-2">
                         <ActivitiesList :activities="workout.activities ?? []" :editable="false" />
                     </div>
                 </div>
 
                 <div class="mt-6">
-                    <Link @click.prevent="startWorkout" class="inline-block px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700">
+                    <Link @click.prevent="startWorkout" class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium rounded hover:bg-indigo-700 dark:hover:bg-indigo-600">
                         Start Workout
                     </Link>
                 </div>
