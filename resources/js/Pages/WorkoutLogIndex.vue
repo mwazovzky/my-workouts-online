@@ -5,19 +5,16 @@
         </template>
 
         <div class="p-4">
-            <div v-if="loading" class="text-sm text-gray-500">Loading…</div>
-            <div v-else-if="error" class="text-sm text-red-600">Error: {{ error }}</div>
-            <div v-else>
-                <div v-if="logs.length === 0" class="text-sm text-gray-600">No workouts yet.</div>
-                <ul class="space-y-2">
-                    <li v-for="log in logs" :key="log.id" class="p-3 bg-white rounded shadow-sm flex items-center justify-between">
+            <div v-if="logs.length === 0" class="text-sm text-gray-600">No workouts yet.</div>
+            <ul v-else class="space-y-2">
+                <li v-for="log in logs" :key="log.id" class="p-3 bg-white rounded shadow-sm flex items-center justify-between">
                         <div>
                             <div class="font-medium flex items-center gap-2">
                                 <!-- lock icon for completed logs -->
                                 <svg v-if="log.status === 'completed'" class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5 8V6a5 5 0 1110 0v2h1a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1h1zm2-2a3 3 0 116 0v2H7V6z" clip-rule="evenodd"/>
                                 </svg>
-                                <span>{{ log.workout_template_name ?? 'Workout' }}</span>
+                                <span>{{ log.workout_template?.name ?? 'Workout' }}</span>
                             </div>
                             <div class="text-sm text-gray-500">{{ log.date ?? log.created_at }} · {{ log.activities_count ?? 0 }} activities</div>
                         </div>
@@ -47,21 +44,24 @@
                             <span class="text-sm text-gray-600">{{ log.status }}</span>
                         </div>
                     </li>
-                </ul>
-            </div>
+            </ul>
         </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { navigateWithLoading } from '@/utils/navigation';
+const props = defineProps({
+    logs: {
+        type: Array,
+        default: () => [],
+    },
+});
 
-const logs = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const logs = ref([...props.logs]);
 
 const page = usePage();
 const currentUserId = () => page.props.auth?.user?.id ?? null;
@@ -74,22 +74,6 @@ const continuing = ref({});
 function csrfToken() {
     const el = document.querySelector('meta[name="csrf-token"]');
     return el ? el.getAttribute('content') : null;
-}
-
-async function load() {
-    loading.value = true;
-    error.value = null;
-    try {
-        const res = await fetch(route('api.workout.logs.index'), { credentials: 'same-origin' });
-        if (!res.ok) throw new Error(await res.text() || res.statusText);
-        const payload = await res.json();
-        const data = payload.data ?? payload;
-        logs.value = data;
-    } catch (e) {
-        error.value = e.message || 'Failed to load workouts';
-    } finally {
-        loading.value = false;
-    }
 }
 
 async function deleteWorkout(id) {
@@ -115,6 +99,4 @@ async function deleteWorkout(id) {
         alert('Failed to delete workout: ' + e.message);
     }
 }
-
-onMounted(load);
 </script>

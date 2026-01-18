@@ -5,105 +5,77 @@
         </template>
 
         <div class="p-4">
-            <div v-if="loading" class="text-sm text-gray-500">Loading…</div>
-            <div v-else-if="error" class="text-sm text-red-600">Error: {{ error }}</div>
-            <div v-else>
-                <div class="mb-4 p-4 bg-white rounded shadow-sm">
-                    <div class="font-semibold text-lg">Editing Workout Log #{{ workoutLogId }}</div>
-                    <div class="text-sm text-gray-600">Date: {{ workoutDate }} · Status: {{ workoutStatus }}</div>
-                </div>
+            <div class="mb-4 p-4 bg-white rounded shadow-sm">
+                <div class="font-semibold text-lg">Editing Workout Log #{{ workoutLogId }}</div>
+                <div class="text-sm text-gray-600">Date: {{ workoutDate }} · Status: {{ workoutStatus }}</div>
+            </div>
 
-                <!-- editing banner -->
-                <div v-if="isEditable" class="mb-4 p-3 bg-green-50 border-l-4 border-green-400 text-green-800 rounded" role="status" aria-live="polite">
-                    You are editing this workout. Changes will be saved to the server. Use "Finish Workout" when done.
-                </div>
+            <!-- editing banner -->
+            <div v-if="isEditable" class="mb-4 p-3 bg-green-50 border-l-4 border-green-400 text-green-800 rounded" role="status" aria-live="polite">
+                You are editing this workout. Changes will be saved to the server. Use "Finish Workout" when done.
+            </div>
 
-                <!-- not owner or not editable message -->
-                <div v-else class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded" role="status" aria-live="polite">
-                    This workout cannot be edited here. Only the owner can edit while the workout status is "in_progress".
-                </div>
+            <!-- not owner or not editable message -->
+            <div v-else class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded" role="status" aria-live="polite">
+                This workout cannot be edited here. Only the owner can edit while the workout status is "in_progress".
+            </div>
 
-                <div class="mb-4">
-                    <span class="px-4 py-2 inline-block text-sm text-gray-600">Workout opened</span>
+            <div class="mb-4">
+                <span class="px-4 py-2 inline-block text-sm text-gray-600">Workout opened</span>
 
-                    <!-- Only show Finish when the log is editable (in_progress and owner) -->
-                    <button v-if="isEditable" @click="finishWorkout" :disabled="isFinishing" class="ml-2 px-4 py-2 bg-green-600 text-white rounded flex items-center">
-                        <span v-if="!isFinishing">Finish Workout</span>
-                        <span v-else>Finishing…</span>
-                    </button>
-                </div>
+                <!-- Only show Finish when the log is editable (in_progress and owner) -->
+                <button v-if="isEditable" @click="finishWorkout" :disabled="isFinishing" class="ml-2 px-4 py-2 bg-green-600 text-white rounded flex items-center">
+                    <span v-if="!isFinishing">Finish Workout</span>
+                    <span v-else>Finishing…</span>
+                </button>
+            </div>
 
-                <div>
-                    <ActivitiesList
-                        :activities="activities"
-                        :editable="isEditable"
-                        @save-activity="onSaveActivity"
-                        @add-set="payload => onAddSet(payload)"
-                        @remove-set="payload => onRemoveSet(payload)"
-                        @update-activity="payload => onUpdateActivity(payload)"
-                    />
-                </div>
+            <div>
+                <ActivitiesList
+                    :activities="activities"
+                    :editable="isEditable"
+                    @save-activity="onSaveActivity"
+                    @add-set="payload => onAddSet(payload)"
+                    @remove-set="payload => onRemoveSet(payload)"
+                    @update-activity="payload => onUpdateActivity(payload)"
+                />
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 
-// route param id
-const routeParamId = route().params.id;
-const workoutLogId = ref(routeParamId ?? null);
+const props = defineProps({
+    workoutLog: {
+        type: Object,
+        required: true,
+    },
+});
 
-const loading = ref(true);
-const error = ref(null);
+const workoutLogId = ref(props.workoutLog.id ?? null);
+const activities = ref(
+    (props.workoutLog.activities ?? []).map(a => ({
+        id: a.id,
+        exercise_id: a.exercise_id ?? null,
+        exercise_name: a.exercise_name ?? '',
+        sets: (a.sets ?? []).map(s => ({ order: s.order, repetitions: s.repetitions, weight: s.weight })),
+    })),
+);
 
-const activities = ref([]); // will contain activity objects with sets
-const workoutStatus = ref(null);
-const workoutDate = ref(null);
-const workoutOwnerId = ref(null); // set from API
+const workoutStatus = ref(props.workoutLog.status ?? null);
+const workoutDate = ref(props.workoutLog.date ?? props.workoutLog.created_at ?? null);
+const workoutOwnerId = ref(props.workoutLog.user_id ?? null);
 
 // UI flags
 const isFinishing = ref(false);
 
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
-
-// load workout log data
-async function load() {
-    loading.value = true;
-    error.value = null;
-    try {
-        if (!workoutLogId.value) {
-            throw new Error('No workout log id provided in the route');
-        }
-
-        const res = await fetch(route('api.workout.logs.show', { id: workoutLogId.value }), { credentials: 'same-origin' });
-        if (!res.ok) throw new Error(await res.text() || res.statusText);
-        const payload = await res.json();
-        const data = payload.data ?? payload;
-
-        workoutStatus.value = data.status ?? null;
-        workoutDate.value = data.date ?? data.created_at ?? null;
-        workoutOwnerId.value = data.user_id ?? null;
-
-        activities.value = (data.activities ?? []).map(a => ({
-            id: a.id,
-            exercise_id: a.exercise_id ?? null,
-            exercise_name: a.exercise_name ?? '',
-            sets: (a.sets ?? []).map(s => ({ order: s.order, repetitions: s.repetitions, weight: s.weight })),
-        }));
-    } catch (e) {
-        error.value = e.message || 'Failed to load workout';
-    } finally {
-        loading.value = false;
-    }
-}
-
-onMounted(load);
 
 // helper to read CSRF token injected by Blade
 function csrfToken() {

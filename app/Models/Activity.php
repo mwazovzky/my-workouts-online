@@ -19,6 +19,10 @@ class Activity extends Model
         'order',
     ];
 
+    protected $appends = [
+        'exercise_name',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -41,5 +45,14 @@ class Activity extends Model
     public function sets(): HasMany
     {
         return $this->hasMany(Set::class);
+    }
+
+    public function getExerciseNameAttribute(): ?string
+    {
+        if (! $this->relationLoaded('exercise')) {
+            return null;
+        }
+
+        return $this->exercise?->name;
     }
 }

@@ -3,6 +3,8 @@
 namespace Tests\Feature\Pages;
 
 use App\Models\User;
+use App\Models\WorkoutLog;
+use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -17,6 +19,12 @@ class WorkoutLogPageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        WorkoutLog::factory()
+            ->create([
+                'user_id' => $user->id,
+                'workout_template_id' => WorkoutTemplate::factory(),
+            ]);
+
         $response = $this
             ->actingAs($user)
             ->get(route('workout.logs.index'));
@@ -25,6 +33,7 @@ class WorkoutLogPageTest extends TestCase
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogIndex')
+            ->has('logs')
         );
     }
 
@@ -34,15 +43,21 @@ class WorkoutLogPageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        $log = WorkoutLog::factory()
+            ->create([
+                'user_id' => $user->id,
+                'workout_template_id' => WorkoutTemplate::factory(),
+            ]);
+
         $response = $this
             ->actingAs($user)
-            ->get(route('workout.logs.show', ['id' => 1]));
+            ->get(route('workout.logs.show', ['id' => $log->id]));
 
         $response->assertOk();
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogShow')
-            ->where('id', 1)
+            ->has('workoutLog')
         );
     }
 
@@ -52,15 +67,21 @@ class WorkoutLogPageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        $log = WorkoutLog::factory()
+            ->create([
+                'user_id' => $user->id,
+                'workout_template_id' => WorkoutTemplate::factory(),
+            ]);
+
         $response = $this
             ->actingAs($user)
-            ->get(route('workout.logs.edit', ['id' => 1]));
+            ->get(route('workout.logs.edit', ['id' => $log->id]));
 
         $response->assertOk();
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogEdit')
-            ->where('id', 1)
+            ->has('workoutLog')
         );
     }
 }

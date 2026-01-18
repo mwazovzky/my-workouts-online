@@ -3,6 +3,7 @@
 namespace Tests\Feature\Pages;
 
 use App\Models\User;
+use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -17,15 +18,17 @@ class WorkoutTemplatePageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        $workoutTemplate = WorkoutTemplate::factory()->create();
+
         $response = $this
             ->actingAs($user)
-            ->get(route('workout.templates.show', ['id' => 1]));
+            ->get(route('workout.templates.show', ['id' => $workoutTemplate->id]));
 
         $response->assertOk();
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutTemplateShow')
-            ->where('id', 1)
+            ->has('workout')
         );
     }
 }

@@ -1,38 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import { Link } from '@inertiajs/vue3';
 
-const workout = ref(null);
-const loading = ref(true);
-const error = ref(null);
+const props = defineProps({
+    workout: {
+        type: Object,
+        required: true,
+    },
+});
+
 const starting = ref(false);
 const workoutLogId = ref(null);
-
-async function loadWorkout() {
-    loading.value = true;
-    error.value = null;
-
-    try {
-        const res = await fetch(`/api/workout-templates/${route().params.id}`, {
-            credentials: 'same-origin',
-        });
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(text || res.statusText);
-        }
-        const payload = await res.json();
-        // payload expected to be the workout resource (object)
-        workout.value = payload.data ?? payload; // support both shapes
-    } catch (e) {
-        error.value = e.message || 'Failed to load workout details';
-    } finally {
-        loading.value = false;
-    }
-}
-
-onMounted(loadWorkout);
+const error = ref(null);
 
 // helper to read CSRF token injected by Blade
 function csrfToken() {
@@ -85,26 +66,22 @@ async function startWorkout() {
         </template>
 
         <div>
-            <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">Loading workout details…</div>
-            <div v-else-if="error" class="text-sm text-red-600 dark:text-red-400">Error: {{ error }}</div>
-            <div v-else>
-                <div class="p-4 bg-white dark:bg-gray-800 rounded shadow-sm">
-                    <h3 class="font-semibold text-lg dark:text-gray-100">{{ workout.name }}</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ workout.description }}</p>
-                </div>
+            <div class="p-4 bg-white dark:bg-gray-800 rounded shadow-sm">
+                <h3 class="font-semibold text-lg dark:text-gray-100">{{ workout.name }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ workout.description }}</p>
+            </div>
 
-                <div class="mt-6">
-                    <h4 class="font-semibold text-md dark:text-gray-200">Activities</h4>
-                    <div class="mt-2">
-                        <ActivitiesList :activities="workout.activities ?? []" :editable="false" />
-                    </div>
+            <div class="mt-6">
+                <h4 class="font-semibold text-md dark:text-gray-200">Activities</h4>
+                <div class="mt-2">
+                    <ActivitiesList :activities="workout.activities ?? []" :editable="false" />
                 </div>
+            </div>
 
-                <div class="mt-6">
-                    <Link @click.prevent="startWorkout" class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium rounded hover:bg-indigo-700 dark:hover:bg-indigo-600">
-                        Start Workout
-                    </Link>
-                </div>
+            <div class="mt-6">
+                <Link @click.prevent="startWorkout" class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium rounded hover:bg-indigo-700 dark:hover:bg-indigo-600">
+                    Start Workout
+                </Link>
             </div>
         </div>
     </AuthenticatedLayout>

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Pages;
 
+use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -17,6 +18,8 @@ class ProgramPageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        $program = Program::factory()->create();
+
         $response = $this
             ->actingAs($user)
             ->get(route('programs.index'));
@@ -25,6 +28,7 @@ class ProgramPageTest extends TestCase
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('ProgramIndex')
+            ->has('programs')
         );
     }
 
@@ -34,15 +38,17 @@ class ProgramPageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        $program = Program::factory()->create();
+
         $response = $this
             ->actingAs($user)
-            ->get(route('programs.show', ['id' => 1]));
+            ->get(route('programs.show', ['id' => $program->id]));
 
         $response->assertOk();
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('ProgramShow')
-            ->where('id', 1)
+            ->has('program')
         );
     }
 }
