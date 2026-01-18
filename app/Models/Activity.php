@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Activity extends Model
 {
@@ -16,17 +19,17 @@ class Activity extends Model
         'order',
     ];
 
-    public function workout()
+    public function workout(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function exercise()
+    public function exercise(): BelongsTo
     {
         return $this->belongsTo(Exercise::class);
     }
 
-    public function sets()
+    public function sets(): HasMany
     {
         return $this->hasMany(Set::class);
     }
