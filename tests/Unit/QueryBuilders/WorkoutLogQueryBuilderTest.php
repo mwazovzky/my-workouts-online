@@ -23,7 +23,7 @@ class WorkoutLogQueryBuilderTest extends TestCase
             'workout_template_id' => $workoutTemplate->id,
         ]);
 
-        $query = new WorkoutLogQueryBuilder();
+        $query = new WorkoutLogQueryBuilder;
         $result = $query->for($user)->get();
 
         $this->assertCount(1, $result);
@@ -32,7 +32,7 @@ class WorkoutLogQueryBuilderTest extends TestCase
         $this->assertEquals(0, $result->first()->activities_count);
 
         // other user should see no logs
-        $resultOther = (new WorkoutLogQueryBuilder())->for($other)->get();
+        $resultOther = (new WorkoutLogQueryBuilder)->for($other)->get();
         $this->assertTrue($resultOther->isEmpty());
     }
 
@@ -42,7 +42,7 @@ class WorkoutLogQueryBuilderTest extends TestCase
         $older = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => now()->subDay()]);
         $newer = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => now()]);
 
-        $query = new WorkoutLogQueryBuilder();
+        $query = new WorkoutLogQueryBuilder;
         $workoutLogs = $query->for($user)->get();
 
         $this->assertEquals($newer->id, $workoutLogs->first()->id);

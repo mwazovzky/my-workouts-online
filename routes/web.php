@@ -1,46 +1,42 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\ProgramPageController;
+use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\WorkoutLogPageController;
+use App\Http\Controllers\WorkoutTemplatePageController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+Route::get('/', [WelcomeController::class, 'index']);
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-Route::get('/programs', function () {
-    return Inertia::render('ProgramIndex');
-})->middleware(['auth', 'verified'])->name('programs.index');
+Route::get('/programs', [ProgramPageController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('programs.index');
 
-Route::get('/programs/{id}', function ($id) {
-    return Inertia::render('ProgramShow', ['id' => $id]);
-})->middleware(['auth', 'verified'])->name('programs.show');
+Route::get('/programs/{id}', [ProgramPageController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('programs.show');
 
-Route::get('/workout-templates/{id}', function ($id) {
-    return Inertia::render('WorkoutTemplateShow', ['id' => $id]);
-})->middleware(['auth', 'verified'])->name('workout.templates.show');
+Route::get('/workout-templates/{id}', [WorkoutTemplatePageController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.templates.show');
 
-Route::get('/workout-logs', function () {
-    return Inertia::render('WorkoutLogIndex');
-})->middleware(['auth', 'verified'])->name('workout.logs.index');
+Route::get('/workout-logs', [WorkoutLogPageController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.index');
 
-Route::get('/workout-logs/{id}', function ($id) {
-    return Inertia::render('WorkoutLogShow', ['id' => $id]);
-})->middleware(['auth', 'verified'])->name('workout.logs.show');
+Route::get('/workout-logs/{id}', [WorkoutLogPageController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.show');
 
-Route::get('/workout-logs/{id}/edit', function ($id) {
-    return Inertia::render('WorkoutLogEdit', ['id' => $id]);
-})->middleware(['auth', 'verified'])->name('workout.logs.edit');
+Route::get('/workout-logs/{id}/edit', [WorkoutLogPageController::class, 'edit'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.edit');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

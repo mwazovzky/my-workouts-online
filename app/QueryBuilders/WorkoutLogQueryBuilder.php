@@ -2,8 +2,8 @@
 
 namespace App\QueryBuilders;
 
-use App\Models\WorkoutLog;
 use App\Models\User;
+use App\Models\WorkoutLog;
 use Illuminate\Database\Eloquent\Collection;
 
 class WorkoutLogQueryBuilder

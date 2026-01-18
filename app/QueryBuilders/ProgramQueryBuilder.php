@@ -29,7 +29,7 @@ class ProgramQueryBuilder
     public function for(User $user): self
     {
         $this->query
-            ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
+            ->whereHas('users', fn ($q) => $q->where('users.id', $user->id))
             ->with('workoutTemplates');
 
         return $this;
@@ -37,7 +37,7 @@ class ProgramQueryBuilder
 
     public function __call($name, $arguments): self
     {
-        if (!method_exists($this->query, $name)) {
+        if (! method_exists($this->query, $name)) {
             throw new BadMethodCallException("Method {$name} does not exist on the query builder.");
         }
 

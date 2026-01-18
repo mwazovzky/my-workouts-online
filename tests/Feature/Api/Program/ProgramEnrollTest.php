@@ -58,7 +58,7 @@ class ProgramEnrollTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson("/api/programs/999/enroll");
+        $response = $this->actingAs($user)->postJson('/api/programs/999/enroll');
 
         $response->assertStatus(404);
         $response->assertJson([
