@@ -17,4 +17,19 @@ class WorkoutLogStoreRequest extends FormRequest
             'workout_template_id' => ['required', 'integer', 'exists:workout_templates,id'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'workout_template_id.required' => 'A workout template is required to start a workout.',
+            'workout_template_id.exists' => 'The selected workout template could not be found.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'workout_template_id' => 'workout template',
+        ];
+    }
 }

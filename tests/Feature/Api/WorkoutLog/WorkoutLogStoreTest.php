@@ -90,4 +90,44 @@ class WorkoutLogStoreTest extends TestCase
             'weight' => 22,
         ]);
     }
+
+    public function test_requires_workout_template_id_with_custom_message(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson(route('api.workout.logs.store'), []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['workout_template_id']);
+
+        $errors = $response->json('errors');
+
+        $this->assertSame(
+            'A workout template is required to start a workout.',
+            $errors['workout_template_id'][0]
+        );
+    }
+
+    public function test_requires_existing_workout_template_id_with_custom_message(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson(route('api.workout.logs.store'), [
+                'workout_template_id' => 9999,
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['workout_template_id']);
+
+        $errors = $response->json('errors');
+
+        $this->assertSame(
+            'The selected workout template could not be found.',
+            $errors['workout_template_id'][0]
+        );
+    }
 }
