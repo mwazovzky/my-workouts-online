@@ -17,6 +17,16 @@ class Set extends Model
         'weight',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'activity_id' => 'integer',
+            'order' => 'integer',
+            'repetitions' => 'integer',
+            'weight' => 'integer',
+        ];
+    }
+
     public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class);

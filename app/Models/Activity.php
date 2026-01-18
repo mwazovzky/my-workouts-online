@@ -19,6 +19,15 @@ class Activity extends Model
         'order',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'workout_id' => 'integer',
+            'exercise_id' => 'integer',
+            'order' => 'integer',
+        ];
+    }
+
     public function workout(): MorphTo
     {
         return $this->morphTo();

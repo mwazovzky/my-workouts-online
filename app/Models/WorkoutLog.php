@@ -14,10 +14,16 @@ class WorkoutLog extends Model
     protected $fillable = [
         'user_id',
         'workout_template_id',
-        'date',
         'status',
-        'completed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+            'workout_template_id' => 'integer',
+        ];
+    }
 
     public function user(): BelongsTo
     {
