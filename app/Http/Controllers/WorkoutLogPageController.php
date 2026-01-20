@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\WorkoutLogStoreRequest;
 use App\Models\WorkoutLog;
-use App\QueryBuilders\WorkoutLogQueryBuilder;
 use App\Services\WorkoutLog\WorkoutLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,12 +12,15 @@ use Inertia\Response;
 
 class WorkoutLogPageController extends Controller
 {
-    public function index(Request $request, WorkoutLogQueryBuilder $query): Response
+    public function index(Request $request): Response
     {
         $user = $request->user();
 
-        $logs = $query
-            ->for($user)
+        $logs = WorkoutLog::query()
+            ->ownedBy($user)
+            ->withTemplate()
+            ->withActivitiesCount()
+            ->latestUpdated()
             ->get();
 
         return Inertia::render('WorkoutLogIndex', [

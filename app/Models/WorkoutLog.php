@@ -2,14 +2,22 @@
 
 namespace App\Models;
 
+use App\QueryBuilders\WorkoutLogBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Query\Builder;
 
 class WorkoutLog extends Model
 {
     use HasFactory;
+
+    public function newEloquentBuilder($query): WorkoutLogBuilder
+    {
+        /** @var Builder $query */
+        return new WorkoutLogBuilder($query);
+    }
 
     protected $fillable = [
         'user_id',

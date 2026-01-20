@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Program;
-use App\QueryBuilders\ProgramQueryBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,9 +10,9 @@ use Inertia\Response;
 
 class ProgramPageController extends Controller
 {
-    public function index(ProgramQueryBuilder $query): Response
+    public function index(): Response
     {
-        $programs = $query
+        $programs = Program::query()
             ->with('users')
             ->get();
 
