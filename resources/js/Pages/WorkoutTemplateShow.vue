@@ -1,8 +1,7 @@
 <script setup>
-import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
-import { Link } from '@inertiajs/vue3';
+import { Form } from '@inertiajs/vue3';
 
 const props = defineProps({
     workout: {
@@ -10,51 +9,6 @@ const props = defineProps({
         required: true,
     },
 });
-
-const starting = ref(false);
-const workoutLogId = ref(null);
-const error = ref(null);
-
-// helper to read CSRF token injected by Blade
-function csrfToken() {
-    const el = document.querySelector('meta[name="csrf-token"]');
-    return el ? el.getAttribute('content') : null;
-}
-
-async function startWorkout() {
-    if (starting.value || workoutLogId.value) return;
-    starting.value = true;
-    error.value = null;
-
-    try {
-        const token = csrfToken();
-
-        const res = await fetch(route('api.workout.logs.store'), {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'X-CSRF-TOKEN': token } : {}),
-            },
-            body: JSON.stringify({ workout_template_id: route().params.id }),
-        });
-        if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || res.statusText);
-        }
-        const payload = await res.json();
-        const data = payload.data ?? payload;
-        workoutLogId.value = data.id;
-
-        // redirect to workout logging page for the created WorkoutLog
-        const loggingHref = route('workout.logs.edit', { id: workoutLogId.value });
-        window.location.href = loggingHref;
-    } catch (e) {
-        error.value = e.message || 'Failed to start workout';
-    } finally {
-        starting.value = false;
-    }
-}
 </script>
 
 <template>
@@ -79,9 +33,32 @@ async function startWorkout() {
             </div>
 
             <div class="mt-6">
-                <Link @click.prevent="startWorkout" class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium rounded hover:bg-indigo-700 dark:hover:bg-indigo-600">
-                    Start Workout
-                </Link>
+                <Form
+                    :action="route('workout.logs.store')"
+                    method="post"
+                    preserve-scroll
+                    #default="{ errors, processing }"
+                >
+                    <input
+                        type="hidden"
+                        name="workout_template_id"
+                        :value="workout.id"
+                    />
+                    <button
+                        type="submit"
+                        class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium rounded hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-75"
+                        :disabled="processing"
+                    >
+                        <span v-if="!processing">Start Workout</span>
+                        <span v-else>Starting…</span>
+                    </button>
+                    <p
+                        v-if="errors.workout_template_id"
+                        class="mt-2 text-sm text-red-600 dark:text-red-400"
+                    >
+                        {{ errors.workout_template_id }}
+                    </p>
+                </Form>
             </div>
         </div>
     </AuthenticatedLayout>

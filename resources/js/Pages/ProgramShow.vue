@@ -1,47 +1,32 @@
 <script setup>
-import { computed, ref, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Link, usePage } from '@inertiajs/vue3';
-
-const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+import { Form, Link, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     program: {
         type: Object,
         required: true,
     },
+    workouts: {
+        type: Array,
+        default: null,
+    },
 });
 
-const { program } = toRefs(props);
+const { program, workouts } = toRefs(props);
 const page = usePage();
 
 const authUser = computed(() => page.props.auth?.user ?? null);
 
-const isEnrolled = ref(
-    authUser.value && Array.isArray(program.value.users)
-        ? program.value.users.some(user => user.id === authUser.value.id)
-        : false,
-);
-
-async function enroll() {
-    try {
-        const res = await fetch(`/api/programs/${route().params.id}/enroll`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken(),
-            },
-        });
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(text || res.statusText);
-        }
-        isEnrolled.value = true;
-        alert('Successfully enrolled in the program!');
-    } catch (e) {
-        alert('Failed to enroll: ' + (e.message || 'Unknown error'));
+const isEnrolled = computed(() => {
+    const user = authUser.value;
+    if (!user || !Array.isArray(program.value.users)) {
+        return false;
     }
-}
+
+    return program.value.users.some(existingUser => existingUser.id === user.id);
+});
 </script>
 
 <template>
@@ -63,36 +48,52 @@ async function enroll() {
 
             <div class="mt-4">
                 <h4 class="font-semibold text-md p-4">Workouts</h4>
-                <ul class="space-y-2 mt-2">
-                    <li
-                        v-for="workout in program.workout_templates"
-                        :key="workout.id"
-                        class="p-4 border rounded bg-white"
-                    >
-                        <div class="font-semibold">
-                            <Link
-                                :href="route('workout.templates.show', { id: workout.id })"
-                                class="text-indigo-600 hover:underline"
-                            >
-                                {{ workout.name }}
-                            </Link>
-                        </div>
-                        <div class="text-sm text-gray-600">
-                            Scheduled: {{ workout.pivot?.weekday ?? 'Not scheduled' }}
-                        </div>
-                    </li>
-                </ul>
+                <div v-if="workouts">
+                    <ul class="space-y-2 mt-2">
+                        <li
+                            v-for="workout in workouts"
+                            :key="workout.id"
+                            class="p-4 border rounded bg-white"
+                        >
+                            <div class="font-semibold">
+                                <Link
+                                    :href="route('workout.templates.show', { id: workout.id })"
+                                    class="text-indigo-600 hover:underline"
+                                >
+                                    {{ workout.name }}
+                                </Link>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                Scheduled: {{ workout.pivot?.weekday ?? 'Not scheduled' }}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div
+                    v-else
+                    class="mt-2 text-sm text-gray-500"
+                >
+                    Loading workouts...
+                </div>
             </div>
 
             <div class="m-6">
-                <button
+                <Form
                     v-if="!isEnrolled"
-                    @click="enroll"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded text-sm"
+                    :action="route('programs.enroll', { program: program.id })"
+                    method="post"
+                    preserve-scroll
                 >
-                    Enroll
-                </button>
-                <p v-else class="text-sm text-green-600">You are already enrolled in this program.</p>
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded text-sm"
+                    >
+                        Enroll
+                    </button>
+                </Form>
+                <p v-else class="text-sm text-green-600">
+                    You are already enrolled in this program.
+                </p>
             </div>
         </div>
     </AuthenticatedLayout>

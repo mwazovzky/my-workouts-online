@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Api\WorkoutLog;
+namespace Tests\Feature\WorkoutLog;
 
 use App\Models\User;
 use App\Models\WorkoutLog;
@@ -14,11 +14,14 @@ class WorkoutLogCompleteTest extends TestCase
     public function test_complete_workout_changes_status_to_completed(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workoutLog = WorkoutLog::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'in_progress',
+        ]);
 
-        $response = $this->actingAs($user)->postJson(route('api.workout.logs.complete', ['workout_log' => $workoutLog->id]));
+        $response = $this->actingAs($user)->post(route('workout.logs.complete', ['workoutLog' => $workoutLog->id]));
 
-        $response->assertOk();
+        $response->assertRedirect(route('workout.logs.edit', ['id' => $workoutLog->id]));
 
         $this->assertDatabaseHas('workout_logs', [
             'id' => $workoutLog->id,

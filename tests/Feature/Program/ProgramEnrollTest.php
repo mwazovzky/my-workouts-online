@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Api\Program;
+namespace Tests\Feature\Program;
 
 use App\Models\Program;
 use App\Models\User;
@@ -12,15 +12,15 @@ class ProgramEnrollTest extends TestCase
     use RefreshDatabase;
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function authenticated_user_can_enroll_in_a_program()
+    public function authenticated_user_can_enroll_in_a_program(): void
     {
         $user = User::factory()->create();
         $program = Program::factory()->create();
 
-        $response = $this->actingAs($user)->postJson("/api/programs/{$program->id}/enroll");
+        $response = $this->actingAs($user)->post(route('programs.enroll', ['program' => $program->id]));
 
-        $response->assertStatus(204);
-        $response->assertNoContent();
+        $response->assertRedirect(route('programs.show', ['id' => $program->id]));
+
         $this->assertDatabaseHas('program_user', [
             'user_id' => $user->id,
             'program_id' => $program->id,
@@ -28,41 +28,39 @@ class ProgramEnrollTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function user_cannot_enroll_in_a_program_twice()
+    public function user_cannot_enroll_in_a_program_twice(): void
     {
         $user = User::factory()->create();
         $program = Program::factory()->create();
+
         $user->programs()->attach($program);
 
-        $response = $this->actingAs($user)->postJson("/api/programs/{$program->id}/enroll");
+        $response = $this->actingAs($user)->post(route('programs.enroll', ['program' => $program->id]));
 
-        $response->assertStatus(204);
-        $response->assertNoContent();
+        $response->assertRedirect(route('programs.show', ['id' => $program->id]));
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function unauthenticated_user_cannot_enroll_in_a_program()
+    public function unauthenticated_user_cannot_enroll_in_a_program(): void
     {
         $program = Program::factory()->create();
 
-        $response = $this->postJson("/api/programs/{$program->id}/enroll");
+        $response = $this->post(route('programs.enroll', ['program' => $program->id]));
 
-        $response->assertStatus(401);
+        $response->assertRedirect(route('login'));
+
         $this->assertDatabaseMissing('program_user', [
             'program_id' => $program->id,
         ]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function cannot_enroll_in_a_nonexistent_program()
+    public function cannot_enroll_in_a_nonexistent_program(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/programs/999/enroll');
+        $response = $this->actingAs($user)->post(route('programs.enroll', ['program' => 999]));
 
-        $response->assertStatus(404);
-        $response->assertJson([
-            'message' => 'Record not found.',
-        ]);
+        $response->assertNotFound();
     }
 }

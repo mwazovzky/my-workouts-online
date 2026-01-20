@@ -20,25 +20,21 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <!-- Open goes to canonical show (read-only) -->
-                            <button
-                                :disabled="opening[log.id]"
-                                @click="() => navigateWithLoading('workout.logs.show', { id: log.id }, (opening[log.id] = true, opening))"
+                            <Link
+                                :href="route('workout.logs.show', { id: log.id })"
                                 class="px-3 py-1 bg-indigo-600 text-white rounded text-sm flex items-center gap-2"
                             >
-                                <span v-if="!opening[log.id]">Open</span>
-                                <span v-else>Opening…</span>
-                            </button>
+                                Open
+                            </Link>
 
                             <!-- Continue (edit) only for owner and when in_progress -->
-                            <button
+                            <Link
                                 v-if="log.user_id === currentUserId() && log.status === 'in_progress'"
-                                :disabled="continuing[log.id]"
-                                @click="() => navigateWithLoading('workout.logs.edit', { id: log.id }, (continuing[log.id] = true, continuing))"
+                                :href="route('workout.logs.edit', { id: log.id })"
                                 class="px-3 py-1 bg-indigo-500 text-white rounded text-sm flex items-center gap-2"
                             >
-                                <span v-if="!continuing[log.id]">Continue</span>
-                                <span v-else>Continuing…</span>
-                            </button>
+                                Continue
+                            </Link>
 
                             <button @click="deleteWorkout(log.id)" class="px-3 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
                             <span class="text-sm text-gray-600">{{ log.status }}</span>
@@ -51,9 +47,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { navigateWithLoading } from '@/utils/navigation';
 const props = defineProps({
     logs: {
         type: Array,
@@ -66,37 +61,16 @@ const logs = ref([...props.logs]);
 const page = usePage();
 const currentUserId = () => page.props.auth?.user?.id ?? null;
 
-// per-row navigation loading flags
-const opening = ref({});
-const continuing = ref({});
-
-// helper to read CSRF token injected by Blade
-function csrfToken() {
-    const el = document.querySelector('meta[name="csrf-token"]');
-    return el ? el.getAttribute('content') : null;
-}
-
 async function deleteWorkout(id) {
     if (!confirm('Delete this workout? This action cannot be undone.')) return;
-    try {
-        const token = csrfToken();
-        const res = await fetch(route('api.workout.logs.destroy', { id }), {
-            method: 'DELETE',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'X-CSRF-TOKEN': token } : {}),
-            },
-        });
-        if (res.status === 204) {
-            // remove locally
-            logs.value = logs.value.filter(l => l.id !== id);
-        } else {
-            const text = await res.text();
-            throw new Error(text || res.statusText);
-        }
-    } catch (e) {
-        alert('Failed to delete workout: ' + e.message);
-    }
+    router.delete(route('workout.logs.destroy', { workoutLog: id }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Inertia will reload the index; local logs will be refreshed from props.
+        },
+        onError: () => {
+            alert('Failed to delete workout');
+        },
+    });
 }
 </script>

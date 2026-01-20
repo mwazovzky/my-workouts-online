@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Api\Activitity;
+namespace Tests\Feature\Activity;
 
 use App\Models\Activity;
 use App\Models\Exercise;
@@ -47,51 +47,51 @@ class ActivityUpdateTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($user)->patchJson(
-            route('api.activities.update', ['activity' => $activity->id]),
+        $response = $this->actingAs($user)->patch(
+            route('activities.update', ['activity' => $activity->id]),
             $payload,
         );
 
-        $response->assertOk();
+        $response->assertRedirect();
 
         $this->assertDatabaseHas('activities', [
             'id' => $activity->id,
             'exercise_id' => $exercise->id,
         ]);
-        // existing sets are removed
+
         $this->assertDatabaseMissing('sets', [
             'activity_id' => $activity->id,
             'order' => 1,
             'repetitions' => 5,
             'weight' => 50,
         ]);
+
         $this->assertDatabaseMissing('sets', [
             'activity_id' => $activity->id,
             'order' => 2,
             'repetitions' => 5,
             'weight' => 50,
         ]);
-        // new sets are created
+
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 1,
             'repetitions' => 8,
             'weight' => 55,
         ]);
+
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 2,
             'repetitions' => 6,
             'weight' => 60,
         ]);
+
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 3,
             'repetitions' => 4,
             'weight' => 65,
         ]);
-        // response payload should include activity id and sets
-        $response->assertJsonFragment(['id' => $activity->id]);
-        $response->assertJsonStructure(['data' => ['id', 'sets']]);
     }
 }

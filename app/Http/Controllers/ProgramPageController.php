@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Program;
 use App\QueryBuilders\ProgramQueryBuilder;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,11 +25,21 @@ class ProgramPageController extends Controller
     public function show(int $id): Response
     {
         $program = Program::query()
-            ->with(['users', 'workoutTemplates'])
+            ->with('users')
             ->findOrFail($id);
 
         return Inertia::render('ProgramShow', [
             'program' => $program,
+            'workouts' => Inertia::defer(fn () => $program->workoutTemplates),
         ]);
+    }
+
+    public function enroll(Request $request, Program $program): RedirectResponse
+    {
+        $user = $request->user();
+
+        $program->users()->syncWithoutDetaching([$user->id]);
+
+        return redirect()->route('programs.show', ['id' => $program->id]);
     }
 }

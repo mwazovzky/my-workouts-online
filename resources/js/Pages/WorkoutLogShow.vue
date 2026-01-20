@@ -31,12 +31,19 @@
 
       <div>
         <ActivitiesList
+          v-if="activities.length"
           :activities="activities"
           :editable="false"
           @add-set="() => {}"
           @remove-set="() => {}"
           @update-activity="() => {}"
         />
+        <p
+          v-else
+          class="text-sm text-gray-500"
+        >
+          Loading activities...
+        </p>
       </div>
     </div>
   </AuthenticatedLayout>
@@ -44,7 +51,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 
@@ -53,13 +60,17 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  activities: {
+    type: Array,
+    default: null,
+  },
 });
 
 const workoutLogId = computed(() => props.workoutLog.id);
 const workoutStatus = computed(() => props.workoutLog.status ?? null);
 const workoutDate = computed(() => props.workoutLog.date ?? props.workoutLog.created_at ?? null);
 const workoutOwnerId = computed(() => props.workoutLog.user_id ?? null);
-const activities = computed(() => props.workoutLog.activities ?? []);
+const activities = computed(() => props.activities ?? []);
 
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
@@ -75,6 +86,10 @@ const canEdit = computed(() => {
 function goEdit() {
   if (!canEdit.value) return;
   editingNav.value = true;
-  window.location.href = route('workout.logs.edit', { id: workoutLogId.value });
+  router.visit(route('workout.logs.edit', { id: workoutLogId.value }), {
+    onFinish: () => {
+      editingNav.value = false;
+    },
+  });
 }
 </script>

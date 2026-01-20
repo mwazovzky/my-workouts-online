@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Api\Activitity;
+namespace Tests\Feature\Activity;
 
 use App\Models\Activity;
 use App\Models\User;
@@ -28,20 +28,25 @@ class ActivityUpdateValidationTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patchJson(route('api.activities.update', ['activity' => $activity->id]), $payload);
+            ->patch(route('activities.update', ['activity' => $activity->id]), $payload);
 
-        $response->assertStatus(422);
-
-        $response->assertJsonValidationErrors([
+        $response->assertSessionHasErrors([
             'sets.0.order',
             'sets.0.repetitions',
             'sets.0.weight',
         ]);
 
-        $json = $response->json('errors');
-
-        $this->assertSame('Order is required for each set', $json['sets.0.order'][0]);
-        $this->assertSame('Repetitions are required for each set', $json['sets.0.repetitions'][0]);
-        $this->assertSame('Weight is required for each set', $json['sets.0.weight'][0]);
+        $this->assertSame(
+            'Order is required for each set',
+            session('errors')->get('sets.0.order')[0],
+        );
+        $this->assertSame(
+            'Repetitions are required for each set',
+            session('errors')->get('sets.0.repetitions')[0],
+        );
+        $this->assertSame(
+            'Weight is required for each set',
+            session('errors')->get('sets.0.weight')[0],
+        );
     }
 }

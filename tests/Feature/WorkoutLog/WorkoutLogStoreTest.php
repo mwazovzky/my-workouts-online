@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Api\WorkoutLog;
+namespace Tests\Feature\WorkoutLog;
 
 use App\Models\Activity;
 use App\Models\Set;
@@ -27,8 +27,7 @@ class WorkoutLogStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $workoutTemplate = WorkoutTemplate::factory()
-            ->create();
+        $workoutTemplate = WorkoutTemplate::factory()->create();
 
         $activity = Activity::factory()
             ->for($workoutTemplate, 'workout')
@@ -43,26 +42,14 @@ class WorkoutLogStoreTest extends TestCase
             ))
             ->create();
 
-        $response = $this->actingAs($user)->postJson(route('api.workout.logs.store'), [
+        $response = $this->actingAs($user)->post(route('workout.logs.store'), [
             'workout_template_id' => $workoutTemplate->id,
         ]);
 
-        $response->assertStatus(201);
+        $response->assertRedirect();
+        $response->assertRedirect(route('workout.logs.edit', ['id' => WorkoutLog::latest('id')->first()->id]));
 
-        $response->assertJson([
-            'data' => [
-                // 'id' => $workoutLogId,
-                'workout_template_name' => $workoutTemplate->name,
-                'workout_template_description' => $workoutTemplate->description,
-                'user_id' => $user->id,
-                'status' => 'in_progress',
-                'activities_count' => 1,
-                'created_at' => now()->toJSON(),
-                'updated_at' => now()->toJSON(),
-            ],
-        ]);
-
-        $workout = WorkoutLog::find($response->json('data.id'));
+        $workout = WorkoutLog::latest('id')->first();
         $activity = $workout->activities->first();
 
         $this->assertDatabaseHas('workout_logs', [
@@ -95,18 +82,13 @@ class WorkoutLogStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->postJson(route('api.workout.logs.store'), []);
+        $response = $this->actingAs($user)->post(route('workout.logs.store'), []);
 
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['workout_template_id']);
-
-        $errors = $response->json('errors');
+        $response->assertSessionHasErrors(['workout_template_id']);
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            $errors['workout_template_id'][0]
+            session('errors')->get('workout_template_id')[0],
         );
     }
 
@@ -114,20 +96,15 @@ class WorkoutLogStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->postJson(route('api.workout.logs.store'), [
-                'workout_template_id' => 9999,
-            ]);
+        $response = $this->actingAs($user)->post(route('workout.logs.store'), [
+            'workout_template_id' => 9999,
+        ]);
 
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['workout_template_id']);
-
-        $errors = $response->json('errors');
+        $response->assertSessionHasErrors(['workout_template_id']);
 
         $this->assertSame(
             'The selected workout template could not be found.',
-            $errors['workout_template_id'][0]
+            session('errors')->get('workout_template_id')[0],
         );
     }
 }

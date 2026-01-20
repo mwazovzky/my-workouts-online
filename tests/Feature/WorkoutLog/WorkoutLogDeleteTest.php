@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Api\WorkoutLog;
+namespace Tests\Feature\WorkoutLog;
 
 use App\Models\User;
 use App\Models\WorkoutLog;
@@ -19,9 +19,10 @@ class WorkoutLogDeleteTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->actingAs($user)->deleteJson(route('api.workout.logs.destroy', ['workout_log' => $workoutLog->id]));
+        $response = $this->actingAs($user)->delete(route('workout.logs.destroy', ['workoutLog' => $workoutLog->id]));
 
-        $response->assertNoContent();
+        $response->assertRedirect(route('workout.logs.index'));
+
         $this->assertDatabaseMissing('workout_logs', ['id' => $workoutLog->id]);
     }
 
@@ -35,9 +36,10 @@ class WorkoutLogDeleteTest extends TestCase
             'workout_template_id' => WorkoutTemplate::factory(),
         ]);
 
-        $response = $this->actingAs($other)->deleteJson(route('api.workout.logs.destroy', ['workout_log' => $workoutLog->id]));
+        $response = $this->actingAs($other)->delete(route('workout.logs.destroy', ['workoutLog' => $workoutLog->id]));
 
         $response->assertStatus(403);
+
         $this->assertDatabaseHas('workout_logs', [
             'id' => $workoutLog->id,
         ]);

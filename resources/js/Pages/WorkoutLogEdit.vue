@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 
@@ -77,15 +77,13 @@ const isFinishing = ref(false);
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
 
-// helper to read CSRF token injected by Blade
-function csrfToken() {
-    const el = document.querySelector('meta[name="csrf-token"]');
-    return el ? el.getAttribute('content') : null;
-}
-
 // editable only when owner and status is in_progress
 const isEditable = computed(() => {
     return !!workoutLogId.value && workoutStatus.value === 'in_progress' && workoutOwnerId.value === currentUserId.value;
+});
+
+const activityForm = useForm({
+    sets: [],
 });
 
 // Save a single activity (upsert sets)
@@ -101,61 +99,36 @@ async function saveActivity(activityId) {
         return;
     }
 
-    const payload = {
-        workout_log_id: workoutLogId.value,
-        activity_id: activity.id ?? null,
-        exercise_id: activity.exercise_id ?? null,
-        sets: activity.sets.map(s => ({ order: s.order, repetitions: s.repetitions, weight: s.weight })),
-    };
+    activityForm.sets = activity.sets.map(s => ({ order: s.order, repetitions: s.repetitions, weight: s.weight }));
 
-    try {
-        const token = csrfToken();
-
-        const res = await fetch(route('api.activities.update', { activity: activity.id }), {
-            method: 'PATCH',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'X-CSRF-TOKEN': token } : {}),
-            },
-            body: JSON.stringify({ sets: payload.sets }),
-        });
-
-        if (!res.ok) throw new Error(await res.text() || res.statusText);
-        const body = await res.json();
-        const data = body.data ?? body;
-        activity.id = data.id;
-        activity.sets = data.sets ?? activity.sets;
-    } catch (e) {
-        alert('Failed to save activity: ' + e.message);
-    }
+    activityForm.patch(route('activities.update', { activity: activity.id }), {
+        preserveScroll: true,
+        onError: () => {
+            alert('Failed to save activity');
+        },
+    });
 }
 
-// Finish workout - include CSRF header; update status locally on success
-async function finishWorkout() {
+// Finish workout via Inertia; update status locally on success
+function finishWorkout() {
     if (!workoutLogId.value || isFinishing.value) {
         return;
     }
-    isFinishing.value = true;
-    try {
-        const token = csrfToken();
 
-        const res = await fetch(route('api.workout.logs.complete', { id: workoutLogId.value }), {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'X-CSRF-TOKEN': token } : {}),
-            },
-        });
-        if (!res.ok) throw new Error(await res.text() || res.statusText);
-        workoutStatus.value = 'completed';
-        alert('Workout finished');
-    } catch (e) {
-        alert('Failed to finish workout: ' + e.message);
-    } finally {
-        isFinishing.value = false;
-    }
+    isFinishing.value = true;
+
+    router.post(route('workout.logs.complete', { workoutLog: workoutLogId.value }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            workoutStatus.value = 'completed';
+        },
+        onError: () => {
+            alert('Failed to finish workout');
+        },
+        onFinish: () => {
+            isFinishing.value = false;
+        },
+    });
 }
 
 // handlers forwarded from components

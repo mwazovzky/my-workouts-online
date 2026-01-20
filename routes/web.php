@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramPageController;
@@ -22,6 +23,10 @@ Route::get('/programs/{id}', [ProgramPageController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('programs.show');
 
+Route::post('/programs/{program}/enroll', [ProgramPageController::class, 'enroll'])
+    ->middleware(['auth', 'verified'])
+    ->name('programs.enroll');
+
 Route::get('/workout-templates/{id}', [WorkoutTemplatePageController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('workout.templates.show');
@@ -37,6 +42,22 @@ Route::get('/workout-logs/{id}', [WorkoutLogPageController::class, 'show'])
 Route::get('/workout-logs/{id}/edit', [WorkoutLogPageController::class, 'edit'])
     ->middleware(['auth', 'verified'])
     ->name('workout.logs.edit');
+
+Route::post('/workout-logs', [WorkoutLogPageController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.store');
+
+Route::post('/workout-logs/{workoutLog}/complete', [WorkoutLogPageController::class, 'complete'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.complete');
+
+Route::delete('/workout-logs/{workoutLog}', [WorkoutLogPageController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.destroy');
+
+Route::patch('/activities/{activity}', [ActivityController::class, 'update'])
+    ->middleware(['auth', 'verified'])
+    ->name('activities.update');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
