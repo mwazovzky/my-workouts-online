@@ -19,7 +19,7 @@ class WorkoutLogPageTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        WorkoutLog::factory()
+        $log = WorkoutLog::factory()
             ->create([
                 'user_id' => $user->id,
                 'workout_template_id' => WorkoutTemplate::factory(),
@@ -34,6 +34,9 @@ class WorkoutLogPageTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogIndex')
             ->has('logs')
+            ->where('logs.0.id', $log->id)
+            ->has('logs.0.workout_template')
+            ->has('logs.0.activities_count')
         );
     }
 
@@ -58,6 +61,7 @@ class WorkoutLogPageTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogShow')
             ->has('workoutLog')
+            ->where('workoutLog.id', $log->id)
         );
     }
 
@@ -82,6 +86,8 @@ class WorkoutLogPageTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogEdit')
             ->has('workoutLog')
+            ->where('workoutLog.id', $log->id)
+            ->has('workoutLog.activities')
         );
     }
 }

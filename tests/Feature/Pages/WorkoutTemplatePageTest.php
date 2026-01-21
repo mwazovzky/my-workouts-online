@@ -29,6 +29,8 @@ class WorkoutTemplatePageTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutTemplateShow')
             ->has('workout')
+            ->where('workout.id', $workoutTemplate->id)
+            ->has('workout.activities')
         );
     }
 }

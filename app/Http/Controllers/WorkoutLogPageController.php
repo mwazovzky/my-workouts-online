@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\WorkoutLogStoreRequest;
+use App\Http\Resources\ActivityResource;
+use App\Http\Resources\WorkoutLogResource;
 use App\Models\WorkoutLog;
 use App\Services\WorkoutLog\WorkoutLogService;
 use Illuminate\Http\RedirectResponse;
@@ -24,7 +26,7 @@ class WorkoutLogPageController extends Controller
             ->get();
 
         return Inertia::render('WorkoutLogIndex', [
-            'logs' => $logs,
+            'logs' => WorkoutLogResource::collection($logs)->resolve(),
         ]);
     }
 
@@ -34,8 +36,8 @@ class WorkoutLogPageController extends Controller
             ->findOrFail($id);
 
         return Inertia::render('WorkoutLogShow', [
-            'workoutLog' => $workoutLog,
-            'activities' => Inertia::defer(fn () => $workoutLog->activities()->with(['sets', 'exercise'])->get()),
+            'workoutLog' => (new WorkoutLogResource($workoutLog))->resolve(),
+            'activities' => Inertia::defer(fn () => ActivityResource::collection($workoutLog->activities()->with(['sets', 'exercise'])->get())->resolve()),
         ]);
     }
 
@@ -46,7 +48,7 @@ class WorkoutLogPageController extends Controller
             ->findOrFail($id);
 
         return Inertia::render('WorkoutLogEdit', [
-            'workoutLog' => $workoutLog,
+            'workoutLog' => (new WorkoutLogResource($workoutLog))->resolve(),
         ]);
     }
 

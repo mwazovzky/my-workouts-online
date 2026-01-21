@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\WorkoutTemplateResource;
 use App\Models\WorkoutTemplate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +16,7 @@ class WorkoutTemplatePageController extends Controller
             ->findOrFail($id);
 
         return Inertia::render('WorkoutTemplateShow', [
-            'workout' => $workoutTemplate,
+            'workout' => (new WorkoutTemplateResource($workoutTemplate))->resolve(),
         ]);
     }
 }

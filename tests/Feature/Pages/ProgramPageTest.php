@@ -29,6 +29,8 @@ class ProgramPageTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('ProgramIndex')
             ->has('programs')
+            ->where('programs.0.id', $program->id)
+            ->has('programs.0.users')
         );
     }
 
@@ -49,6 +51,8 @@ class ProgramPageTest extends TestCase
         $response->assertInertia(fn (Assert $page) => $page
             ->component('ProgramShow')
             ->has('program')
+            ->where('program.id', $program->id)
+            ->has('program.users')
         );
     }
 }

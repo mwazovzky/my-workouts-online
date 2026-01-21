@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProgramResource;
+use App\Http\Resources\WorkoutTemplateResource;
 use App\Models\Program;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +19,7 @@ class ProgramPageController extends Controller
             ->get();
 
         return Inertia::render('ProgramIndex', [
-            'programs' => $programs,
+            'programs' => ProgramResource::collection($programs)->resolve(),
         ]);
     }
 
@@ -28,8 +30,8 @@ class ProgramPageController extends Controller
             ->findOrFail($id);
 
         return Inertia::render('ProgramShow', [
-            'program' => $program,
-            'workouts' => Inertia::defer(fn () => $program->workoutTemplates),
+            'program' => (new ProgramResource($program))->resolve(),
+            'workouts' => Inertia::defer(fn () => WorkoutTemplateResource::collection($program->workoutTemplates)->resolve()),
         ]);
     }
 

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -30,16 +32,13 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         // Share authenticated user info with Inertia pages
-        Inertia::share('auth.user', function () {
-            $user = auth()->user();
+        Inertia::share('auth.user', function (Request $request) {
+            $user = $request->user();
             if (! $user) {
                 return null;
             }
 
-            return [
-                'id' => $user->id,
-                'name' => $user->name ?? null,
-            ];
+            return (new UserResource($user))->resolve();
         });
     }
 }
