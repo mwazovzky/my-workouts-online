@@ -12,10 +12,12 @@ use Inertia\Response;
 
 class ProgramPageController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $user = $request->user();
+
         $programs = Program::query()
-            ->with('users')
+            ->withCount(['users' => fn ($query) => $query->where('users.id', $user->id)])
             ->get();
 
         return Inertia::render('ProgramIndex', [
@@ -23,10 +25,12 @@ class ProgramPageController extends Controller
         ]);
     }
 
-    public function show(int $id): Response
+    public function show(Request $request, int $id): Response
     {
+        $user = $request->user();
+
         $program = Program::query()
-            ->with('users')
+            ->withCount(['users' => fn ($query) => $query->where('users.id', $user->id)])
             ->findOrFail($id);
 
         return Inertia::render('ProgramShow', [

@@ -20,12 +20,7 @@ const page = usePage();
 const authUser = computed(() => page.props.auth?.user ?? null);
 
 const isEnrolled = computed(() => {
-    const user = authUser.value;
-    if (!user || !Array.isArray(program.value.users)) {
-        return false;
-    }
-
-    return program.value.users.some(existingUser => existingUser.id === user.id);
+    return program.value.is_enrolled ?? false;
 });
 </script>
 

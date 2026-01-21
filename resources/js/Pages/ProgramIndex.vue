@@ -68,13 +68,7 @@ const page = usePage();
 const filterEnrolled = ref(false);
 
 const isProgramEnrolled = program => {
-    const user = page.props.auth?.user;
-
-    if (!user || !Array.isArray(program.users)) {
-        return false;
-    }
-
-    return program.users.some(u => u.id === user.id);
+    return program.is_enrolled ?? false;
 };
 
 const filteredPrograms = computed(() => {
