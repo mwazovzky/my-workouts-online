@@ -30,9 +30,12 @@ class WorkoutLogPageController extends Controller
         ]);
     }
 
-    public function show(int $id): Response
+    public function show(Request $request, int $id): Response
     {
+        $user = $request->user();
+
         $workoutLog = WorkoutLog::query()
+            ->ownedBy($user)
             ->findOrFail($id);
 
         return Inertia::render('WorkoutLogShow', [
@@ -41,9 +44,12 @@ class WorkoutLogPageController extends Controller
         ]);
     }
 
-    public function edit(int $id): Response
+    public function edit(Request $request, int $id): Response
     {
+        $user = $request->user();
+
         $workoutLog = WorkoutLog::query()
+            ->ownedBy($user)
             ->with(['workoutTemplate', 'activities.sets', 'activities.exercise'])
             ->findOrFail($id);
 
@@ -64,17 +70,17 @@ class WorkoutLogPageController extends Controller
 
     public function complete(WorkoutLog $workoutLog): RedirectResponse
     {
+        $this->authorize('complete', $workoutLog);
+
         $workoutLog->status = 'completed';
         $workoutLog->save();
 
         return redirect()->route('workout.logs.edit', ['id' => $workoutLog->id]);
     }
 
-    public function destroy(Request $request, WorkoutLog $workoutLog): RedirectResponse
+    public function destroy(WorkoutLog $workoutLog): RedirectResponse
     {
-        if ($workoutLog->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorize('delete', $workoutLog);
 
         $workoutLog->delete();
 

@@ -4,6 +4,7 @@ namespace Tests\Feature\Activity;
 
 use App\Models\Activity;
 use App\Models\User;
+use App\Models\WorkoutLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,7 +15,13 @@ class ActivityUpdateValidationTest extends TestCase
     public function test_activity_update_uses_custom_validation_messages(): void
     {
         $user = User::factory()->create();
-        $activity = Activity::factory()->create();
+        $workoutLog = WorkoutLog::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $activity = Activity::factory()
+            ->for($workoutLog, 'workout')
+            ->create();
 
         $payload = [
             'sets' => [

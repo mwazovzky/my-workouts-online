@@ -14,6 +14,8 @@ class ActivityController extends Controller
      */
     public function update(ActivityUpdateRequest $request, Activity $activity, ActivityService $service): RedirectResponse
     {
+        $this->authorize('update', $activity);
+
         $data = $request->validated();
         $service->update($activity, $data);
 
