@@ -14,7 +14,7 @@ class ActivityServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_update_replaces_existing_sets(): void
+    public function test_update_diffs_sets_by_id_update_create_delete(): void
     {
         $user = User::factory()
             ->create();
@@ -26,34 +26,31 @@ class ActivityServiceTest extends TestCase
             ->for($workoutLog, 'workout')
             ->create();
 
-        Set::factory()
+        $set1 = Set::factory()
             ->for($activity, 'activity')
             ->create(['order' => 1, 'repetitions' => 5, 'weight' => 50]);
 
-        Set::factory()
+        $set2 = Set::factory()
             ->for($activity, 'activity')
             ->create(['order' => 2, 'repetitions' => 5, 'weight' => 50]);
 
         $service = new ActivityService;
 
         $newSets = [
-            ['order' => 1, 'repetitions' => 8, 'weight' => 55],
-            ['order' => 2, 'repetitions' => 6, 'weight' => 60],
+            ['id' => $set1->id, 'order' => 1, 'repetitions' => 8, 'weight' => 55],
             ['order' => 3, 'repetitions' => 4, 'weight' => 65],
         ];
 
         $updated = $service->update($activity, ['sets' => $newSets]);
 
-        $this->assertCount(3, $updated->sets);
+        $this->assertCount(2, $updated->sets);
 
         $this->assertDatabaseMissing('sets', [
-            'activity_id' => $activity->id,
-            'order' => 1,
-            'repetitions' => 5,
-            'weight' => 50,
+            'id' => $set2->id,
         ]);
 
         $this->assertDatabaseHas('sets', [
+            'id' => $set1->id,
             'activity_id' => $activity->id,
             'order' => 1,
             'repetitions' => 8,
@@ -62,12 +59,6 @@ class ActivityServiceTest extends TestCase
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 2,
-            'repetitions' => 6,
-            'weight' => 60,
-        ]);
-        $this->assertDatabaseHas('sets', [
-            'activity_id' => $activity->id,
-            'order' => 3,
             'repetitions' => 4,
             'weight' => 65,
         ]);

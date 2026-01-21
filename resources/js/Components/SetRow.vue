@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, toRefs, watch } from 'vue';
+import { reactive, watch } from 'vue';
 
 const props = defineProps({
     set: { type: Object, required: true },
@@ -9,6 +9,7 @@ const props = defineProps({
 const emits = defineEmits(['update', 'remove']);
 
 const local = reactive({
+    id: props.set.id ?? null,
     order: props.set.order,
     repetitions: props.set.repetitions ?? 0,
     weight: props.set.weight ?? 0,
@@ -17,12 +18,12 @@ const local = reactive({
 watch(
     () => [local.repetitions, local.weight],
     () => {
-        emits('update', { order: local.order, repetitions: Number(local.repetitions), weight: Number(local.weight) });
+        emits('update', { id: local.id, order: local.order, repetitions: Number(local.repetitions), weight: Number(local.weight) });
     }
 );
 
 function remove() {
-    emits('remove', local.order);
+    emits('remove', { id: local.id, order: local.order });
 }
 </script>
 

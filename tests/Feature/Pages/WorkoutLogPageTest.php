@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Pages;
 
+use App\Models\Activity;
+use App\Models\Set;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
@@ -77,6 +79,14 @@ class WorkoutLogPageTest extends TestCase
                 'workout_template_id' => WorkoutTemplate::factory(),
             ]);
 
+        $activity = Activity::factory()
+            ->for($log, 'workout')
+            ->create();
+
+        Set::factory()
+            ->for($activity, 'activity')
+            ->create(['order' => 1]);
+
         $response = $this
             ->actingAs($user)
             ->get(route('workout.logs.edit', ['id' => $log->id]));
@@ -88,6 +98,7 @@ class WorkoutLogPageTest extends TestCase
             ->has('workoutLog')
             ->where('workoutLog.id', $log->id)
             ->has('workoutLog.activities')
+            ->has('workoutLog.activities.0.sets.0.id')
         );
     }
 }

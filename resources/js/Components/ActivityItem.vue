@@ -1,5 +1,4 @@
 <script setup>
-import { reactive } from 'vue';
 import SetRow from '@/Components/SetRow.vue';
 
 const props = defineProps({
@@ -10,12 +9,21 @@ const props = defineProps({
 const emits = defineEmits(['update-activity', 'add-set', 'remove-set', 'remove-activity', 'save']);
 
 function onSetUpdate(set) {
-    const updated = { ...props.activity, sets: props.activity.sets.map(s => (s.order === set.order ? set : s)) };
+    const updated = {
+        ...props.activity,
+        sets: props.activity.sets.map(s => {
+            if (set.id) {
+                return s.id === set.id ? set : s;
+            }
+
+            return s.order === set.order ? set : s;
+        }),
+    };
     emits('update-activity', updated);
 }
 
-function onSetRemove(order) {
-    emits('remove-set', { activityId: props.activity.id, order });
+function onSetRemove({ id, order }) {
+    emits('remove-set', { activityId: props.activity.id, id, order });
 }
 
 function addSet() {
@@ -48,7 +56,7 @@ function save() {
         <div class="space-y-1">
             <SetRow
                 v-for="set in activity.sets"
-                :key="set.order"
+                :key="set.id ?? set.order"
                 :set="set"
                 :editable="editable"
                 @update="onSetUpdate"

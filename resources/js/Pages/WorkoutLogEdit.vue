@@ -63,7 +63,7 @@ const activities = ref(
         id: a.id,
         exercise_id: a.exercise_id ?? null,
         exercise_name: a.exercise_name ?? '',
-        sets: (a.sets ?? []).map(s => ({ order: s.order, repetitions: s.repetitions, weight: s.weight })),
+        sets: (a.sets ?? []).map(s => ({ id: s.id ?? null, order: s.order, repetitions: s.repetitions, weight: s.weight })),
     })),
 );
 
@@ -99,7 +99,7 @@ async function saveActivity(activityId) {
         return;
     }
 
-    activityForm.sets = activity.sets.map(s => ({ order: s.order, repetitions: s.repetitions, weight: s.weight }));
+    activityForm.sets = activity.sets.map(s => ({ id: s.id ?? null, order: s.order, repetitions: s.repetitions, weight: s.weight }));
 
     activityForm.patch(route('activities.update', { activity: activity.id }), {
         preserveScroll: true,
@@ -141,12 +141,17 @@ function onAddSet({ activityId }) {
     const activity = activities.value.find(a => a.id === activityId);
     if (!activity) return;
     const maxOrder = activity.sets.length ? Math.max(...activity.sets.map(s => s.order)) : 0;
-    activity.sets.push({ order: maxOrder + 1, repetitions: 0, weight: 0 });
+    activity.sets.push({ id: null, order: maxOrder + 1, repetitions: 0, weight: 0 });
 }
 
-function onRemoveSet({ activityId, order }) {
+function onRemoveSet({ activityId, id, order }) {
     const activity = activities.value.find(a => a.id === activityId);
     if (!activity) return;
+    if (id) {
+        activity.sets = activity.sets.filter(s => s.id !== id);
+        return;
+    }
+
     activity.sets = activity.sets.filter(s => s.order !== order);
 }
 
