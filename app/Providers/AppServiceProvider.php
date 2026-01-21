@@ -16,7 +16,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Services\Activity\ActivityServiceInterface::class,
+            \App\Services\Activity\ActivityService::class
+        );
+
+        $this->app->bind(
+            \App\Services\WorkoutLog\WorkoutLogServiceInterface::class,
+            \App\Services\WorkoutLog\WorkoutLogService::class
+        );
     }
 
     /**

@@ -7,7 +7,7 @@ use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
 use Illuminate\Support\Facades\DB;
 
-class WorkoutLogService
+class WorkoutLogService implements WorkoutLogServiceInterface
 {
     /**
      * Create new workout with a reference to template for the given user.

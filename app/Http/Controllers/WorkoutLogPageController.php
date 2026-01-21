@@ -6,7 +6,7 @@ use App\Http\Requests\WorkoutLogStoreRequest;
 use App\Http\Resources\ActivityResource;
 use App\Http\Resources\WorkoutLogResource;
 use App\Models\WorkoutLog;
-use App\Services\WorkoutLog\WorkoutLogService;
+use App\Services\WorkoutLog\WorkoutLogServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -58,7 +58,7 @@ class WorkoutLogPageController extends Controller
         ]);
     }
 
-    public function store(WorkoutLogStoreRequest $request, WorkoutLogService $service): RedirectResponse
+    public function store(WorkoutLogStoreRequest $request, WorkoutLogServiceInterface $service): RedirectResponse
     {
         $data = $request->validated();
         $user = $request->user();

@@ -7,7 +7,7 @@ use App\Models\Set;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class ActivityService
+class ActivityService implements ActivityServiceInterface
 {
     /**
      * Update an Activity and its sets.
@@ -94,6 +94,7 @@ class ActivityService
 
         if (empty($keepSetIds)) {
             $query->delete();
+
             return;
         }
 
