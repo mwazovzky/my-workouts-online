@@ -45,4 +45,15 @@ class WorkoutLogService implements WorkoutLogServiceInterface
 
         return $workoutLog;
     }
+
+    /**
+     * Delete workout log and all related activities and sets.
+     */
+    public function delete(WorkoutLog $workoutLog): void
+    {
+        DB::transaction(function () use ($workoutLog) {
+            $workoutLog->activities()->delete();
+            $workoutLog->delete();
+        });
+    }
 }

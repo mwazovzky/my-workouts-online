@@ -78,11 +78,11 @@ class WorkoutLogPageController extends Controller
         return redirect()->route('workout.logs.edit', ['id' => $workoutLog->id]);
     }
 
-    public function destroy(WorkoutLog $workoutLog): RedirectResponse
+    public function destroy(WorkoutLog $workoutLog, WorkoutLogServiceInterface $service): RedirectResponse
     {
         $this->authorize('delete', $workoutLog);
 
-        $workoutLog->delete();
+        $service->delete($workoutLog);
 
         return redirect()->route('workout.logs.index');
     }

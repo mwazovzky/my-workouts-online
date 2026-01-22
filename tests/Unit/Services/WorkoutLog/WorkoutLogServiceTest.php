@@ -79,7 +79,7 @@ class WorkoutLogServiceTest extends TestCase
     }
 
     #[Test]
-    public function deleting_workout_log_cascades_to_activities_and_sets(): void
+    public function delete_cascades_to_activities_and_sets(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -94,13 +94,18 @@ class WorkoutLogServiceTest extends TestCase
 
         $activityId = $activity->id;
         $setId = $set->id;
+        $workoutLogId = $workoutLog->id;
 
-        // Polymorphic relationships need manual cascade - test current behavior
-        $workoutLog->delete();
+        $service = new WorkoutLogService;
+        $service->delete($workoutLog);
 
-        // If cascade is not configured, activities and sets will remain orphaned
-        // This test documents current behavior - activities are NOT auto-deleted
-        $this->assertDatabaseHas('activities', ['id' => $activityId]);
-        $this->assertDatabaseHas('sets', ['id' => $setId]);
+        // Verify workout log is deleted
+        $this->assertDatabaseMissing('workout_logs', ['id' => $workoutLogId]);
+
+        // Verify activities are deleted via service
+        $this->assertDatabaseMissing('activities', ['id' => $activityId]);
+
+        // Verify sets are deleted via database cascade
+        $this->assertDatabaseMissing('sets', ['id' => $setId]);
     }
 }
