@@ -16,6 +16,11 @@ class ActivityService implements ActivityServiceInterface
      */
     public function update(Activity $activity, array $data): Activity
     {
+        // Business rule: Cannot update activities in completed workouts
+        if ($activity->workout->status === 'completed') {
+            abort(422, 'Cannot update activities in completed workouts');
+        }
+
         $normalizedSets = $this->normalizeSetsPayload($data['sets'] ?? []);
 
         DB::transaction(function () use ($activity, $normalizedSets) {
