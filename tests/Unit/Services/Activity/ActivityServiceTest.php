@@ -63,4 +63,75 @@ class ActivityServiceTest extends TestCase
             'weight' => 65,
         ]);
     }
+
+    public function test_update_with_empty_sets_array_deletes_all_sets(): void
+    {
+        $user = User::factory()->create();
+        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
+        $activity = Activity::factory()->for($workoutLog, 'workout')->create();
+
+        Set::factory()->for($activity, 'activity')->create(['order' => 1]);
+        Set::factory()->for($activity, 'activity')->create(['order' => 2]);
+
+        $service = new ActivityService;
+        $updated = $service->update($activity, ['sets' => []]);
+
+        $this->assertCount(0, $updated->sets);
+        $this->assertDatabaseCount('sets', 0);
+    }
+
+    public function test_update_preserves_set_attributes_not_in_payload(): void
+    {
+        $user = User::factory()->create();
+        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
+        $activity = Activity::factory()->for($workoutLog, 'workout')->create();
+
+        $set = Set::factory()->for($activity, 'activity')->create([
+            'order' => 1,
+            'repetitions' => 10,
+            'weight' => 100,
+        ]);
+
+        $originalCreatedAt = $set->created_at;
+        $originalActivityId = $set->activity_id;
+
+        // Update only repetitions and weight, order should be recalculated
+        $service = new ActivityService;
+        $updated = $service->update($activity, [
+            'sets' => [
+                ['id' => $set->id, 'order' => 1, 'repetitions' => 12, 'weight' => 110],
+            ],
+        ]);
+
+        $set->refresh();
+
+        $this->assertEquals(12, $set->repetitions);
+        $this->assertEquals(110, $set->weight);
+        $this->assertEquals($originalActivityId, $set->activity_id);
+        $this->assertEquals($originalCreatedAt->timestamp, $set->created_at->timestamp);
+    }
+
+    public function test_update_throws_exception_when_set_id_belongs_to_different_activity(): void
+    {
+        $user = User::factory()->create();
+        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
+        
+        $activity1 = Activity::factory()->for($workoutLog, 'workout')->create();
+        $activity2 = Activity::factory()->for($workoutLog, 'workout')->create();
+
+        $set1 = Set::factory()->for($activity1, 'activity')->create(['order' => 1]);
+        $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);
+
+        $service = new ActivityService;
+
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectExceptionMessage('One or more sets do not belong to this activity');
+
+        // Try to update activity1 with a set that belongs to activity2
+        $service->update($activity1, [
+            'sets' => [
+                ['id' => $set2->id, 'order' => 1, 'repetitions' => 5, 'weight' => 50],
+            ],
+        ]);
+    }
 }
