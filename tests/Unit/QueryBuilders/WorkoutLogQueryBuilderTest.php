@@ -6,13 +6,15 @@ use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WorkoutLogQueryBuilderTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_owned_by_filters_only_user_logs_without_forcing_eager_loading(): void
+    #[Test]
+    public function owned_by_filters_only_user_logs_without_forcing_eager_loading(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
@@ -26,7 +28,8 @@ class WorkoutLogQueryBuilderTest extends TestCase
         $this->assertFalse($result->first()->relationLoaded('workoutTemplate'));
     }
 
-    public function test_with_template_and_with_activities_count_shape_the_result(): void
+    #[Test]
+    public function with_template_and_with_activities_count_shape_the_result(): void
     {
         $user = User::factory()->create();
         $workoutTemplate = WorkoutTemplate::factory()->create();
@@ -47,7 +50,8 @@ class WorkoutLogQueryBuilderTest extends TestCase
         $this->assertEquals(0, $result->first()->activities_count);
     }
 
-    public function test_latest_updated_orders_results_and_is_deterministic_on_ties(): void
+    #[Test]
+    public function latest_updated_orders_results_and_is_deterministic_on_ties(): void
     {
         $user = User::factory()->create();
         $older = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => now()->subDay()]);

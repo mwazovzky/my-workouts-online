@@ -8,13 +8,15 @@ use App\Models\Exercise;
 use App\Models\Set;
 use App\Models\WorkoutLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ActivityResourceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_resource_transforms_activity_to_correct_json_structure(): void
+    #[Test]
+    public function resource_transforms_activity_to_correct_json_structure(): void
     {
         $exercise = Exercise::factory()->create(['name' => 'Bench Press']);
         $workoutLog = WorkoutLog::factory()->create();
@@ -33,7 +35,8 @@ class ActivityResourceTest extends TestCase
         $this->assertEquals($exercise->id, $array['exercise_id']);
     }
 
-    public function test_resource_includes_exercise_name_via_accessor(): void
+    #[Test]
+    public function resource_includes_exercise_name_via_accessor(): void
     {
         $exercise = Exercise::factory()->create(['name' => 'Squat']);
         $workoutLog = WorkoutLog::factory()->create();
@@ -52,7 +55,8 @@ class ActivityResourceTest extends TestCase
         $this->assertEquals('Squat', $array['exercise_name']);
     }
 
-    public function test_resource_handles_exercise_name_when_exercise_not_loaded(): void
+    #[Test]
+    public function resource_handles_exercise_name_when_exercise_not_loaded(): void
     {
         $exercise = Exercise::factory()->create(['name' => 'Deadlift']);
         $workoutLog = WorkoutLog::factory()->create();
@@ -72,7 +76,8 @@ class ActivityResourceTest extends TestCase
         $this->assertNull($array['exercise_name']);
     }
 
-    public function test_sets_collection_properly_transformed(): void
+    #[Test]
+    public function sets_collection_properly_transformed(): void
     {
         $workoutLog = WorkoutLog::factory()->create();
         $activity = Activity::factory()->create([
@@ -107,7 +112,8 @@ class ActivityResourceTest extends TestCase
         }
     }
 
-    public function test_sets_empty_when_not_loaded(): void
+    #[Test]
+    public function sets_empty_when_not_loaded(): void
     {
         $workoutLog = WorkoutLog::factory()->create();
         $activity = Activity::factory()->create([
@@ -132,7 +138,8 @@ class ActivityResourceTest extends TestCase
         $this->assertEmpty($array['sets']);
     }
 
-    public function test_polymorphic_workout_relationship_handled_correctly(): void
+    #[Test]
+    public function polymorphic_workout_relationship_handled_correctly(): void
     {
         $workoutLog = WorkoutLog::factory()->create();
 
@@ -150,7 +157,8 @@ class ActivityResourceTest extends TestCase
         $this->assertArrayNotHasKey('workout', $array);
     }
 
-    public function test_resource_includes_all_expected_keys(): void
+    #[Test]
+    public function resource_includes_all_expected_keys(): void
     {
         $exercise = Exercise::factory()->create();
         $workoutLog = WorkoutLog::factory()->create();

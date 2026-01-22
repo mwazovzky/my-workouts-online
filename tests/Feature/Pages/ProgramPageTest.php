@@ -6,17 +6,17 @@ use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ProgramPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_program_index_page_is_rendered(): void
+    #[Test]
+    public function program_index_page_is_rendered(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->create();
 
         $program = Program::factory()->create();
 
@@ -35,11 +35,10 @@ class ProgramPageTest extends TestCase
         );
     }
 
-    public function test_program_show_page_is_rendered_with_id_prop(): void
+    #[Test]
+    public function program_show_page_is_rendered_with_id_prop(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->create();
 
         $program = Program::factory()->create();
 
@@ -58,9 +57,10 @@ class ProgramPageTest extends TestCase
         );
     }
 
-    public function test_program_index_shows_enrolled_true_for_enrolled_user(): void
+    #[Test]
+    public function program_index_shows_enrolled_true_for_enrolled_user(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->create();
         $program = Program::factory()->create();
 
         $program->users()->attach($user);
@@ -75,9 +75,10 @@ class ProgramPageTest extends TestCase
         );
     }
 
-    public function test_program_show_shows_enrolled_true_for_enrolled_user(): void
+    #[Test]
+    public function program_show_shows_enrolled_true_for_enrolled_user(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->create();
         $program = Program::factory()->create();
 
         $program->users()->attach($user);
@@ -92,9 +93,10 @@ class ProgramPageTest extends TestCase
         );
     }
 
-    public function test_program_index_does_not_expose_enrolled_users_list(): void
+    #[Test]
+    public function program_index_does_not_expose_enrolled_users_list(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->create();
         $otherUser = User::factory()->create();
         $program = Program::factory()->create();
 

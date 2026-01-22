@@ -8,13 +8,15 @@ use App\Models\Set;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ActivityUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_update_activity_diffs_sets_by_id_update_create_delete(): void
+    #[Test]
+    public function update_activity_diffs_sets_by_id_update_create_delete(): void
     {
         $user = User::factory()->create();
 
@@ -78,7 +80,8 @@ class ActivityUpdateTest extends TestCase
         ]);
     }
 
-    public function test_delete_first_set_and_orders_are_normalized(): void
+    #[Test]
+    public function delete_first_set_and_orders_are_normalized(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -124,7 +127,8 @@ class ActivityUpdateTest extends TestCase
         ]);
     }
 
-    public function test_delete_middle_set_and_orders_are_normalized(): void
+    #[Test]
+    public function delete_middle_set_and_orders_are_normalized(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -164,7 +168,8 @@ class ActivityUpdateTest extends TestCase
         ]);
     }
 
-    public function test_delete_last_set_and_orders_remain_correct(): void
+    #[Test]
+    public function delete_last_set_and_orders_remain_correct(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -197,7 +202,8 @@ class ActivityUpdateTest extends TestCase
         $this->assertDatabaseHas('sets', ['id' => $set2->id, 'order' => 2]);
     }
 
-    public function test_add_new_set_with_non_sequential_order_is_normalized(): void
+    #[Test]
+    public function add_new_set_with_non_sequential_order_is_normalized(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -233,7 +239,8 @@ class ActivityUpdateTest extends TestCase
         $this->assertEquals(3, Set::where('activity_id', $activity->id)->count());
     }
 
-    public function test_delete_middle_then_add_new_set_normalizes_orders(): void
+    #[Test]
+    public function delete_middle_then_add_new_set_normalizes_orders(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -273,7 +280,8 @@ class ActivityUpdateTest extends TestCase
         ]);
     }
 
-    public function test_complex_scenario_multiple_deletes_and_adds(): void
+    #[Test]
+    public function complex_scenario_multiple_deletes_and_adds(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);

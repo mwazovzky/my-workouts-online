@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RoleSeederTest extends TestCase
@@ -13,7 +14,8 @@ class RoleSeederTest extends TestCase
     /**
      * Test that the RoleSeeder seeds roles correctly.
      */
-    public function test_roles_are_seeded(): void
+    #[Test]
+    public function roles_are_seeded(): void
     {
         $this->seed(RoleSeeder::class);
 

@@ -6,13 +6,15 @@ use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WorkoutLogDeleteTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_owner_can_delete_workout_log(): void
+    #[Test]
+    public function owner_can_delete_workout_log(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create([
@@ -26,17 +28,18 @@ class WorkoutLogDeleteTest extends TestCase
         $this->assertDatabaseMissing('workout_logs', ['id' => $workoutLog->id]);
     }
 
-    public function test_non_owner_cannot_delete_workout_log(): void
+    #[Test]
+    public function non_owner_cannot_delete_workout_log(): void
     {
-        $owner = User::factory()->create();
-        $other = User::factory()->create();
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
         $workoutLog = WorkoutLog::factory()->create([
-            'user_id' => $owner->id,
+            'user_id' => $user->id,
             'workout_template_id' => WorkoutTemplate::factory(),
         ]);
 
-        $response = $this->actingAs($other)->delete(route('workout.logs.destroy', ['workoutLog' => $workoutLog->id]));
+        $response = $this->actingAs($otherUser)->delete(route('workout.logs.destroy', ['workoutLog' => $workoutLog->id]));
 
         $response->assertStatus(403);
 

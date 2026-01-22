@@ -6,13 +6,15 @@ use App\Http\Resources\ProgramResource;
 use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ProgramResourceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_resource_transforms_program_to_correct_json_structure(): void
+    #[Test]
+    public function resource_transforms_program_to_correct_json_structure(): void
     {
         $program = Program::factory()->create([
             'name' => 'Strength Training',
@@ -28,7 +30,8 @@ class ProgramResourceTest extends TestCase
         $this->assertEquals('Build muscle and strength', $array['description']);
     }
 
-    public function test_is_enrolled_field_is_false_when_users_not_counted(): void
+    #[Test]
+    public function is_enrolled_field_is_false_when_users_not_counted(): void
     {
         $program = Program::factory()->create();
         $user = User::factory()->create();
@@ -45,7 +48,8 @@ class ProgramResourceTest extends TestCase
         $this->assertFalse($array['is_enrolled']);
     }
 
-    public function test_is_enrolled_field_is_true_when_user_is_enrolled(): void
+    #[Test]
+    public function is_enrolled_field_is_true_when_user_is_enrolled(): void
     {
         $program = Program::factory()->create();
         $user = User::factory()->create();
@@ -64,7 +68,8 @@ class ProgramResourceTest extends TestCase
         $this->assertTrue($array['is_enrolled']);
     }
 
-    public function test_is_enrolled_field_is_false_when_user_is_not_enrolled(): void
+    #[Test]
+    public function is_enrolled_field_is_false_when_user_is_not_enrolled(): void
     {
         $program = Program::factory()->create();
         $user = User::factory()->create();
@@ -84,7 +89,8 @@ class ProgramResourceTest extends TestCase
         $this->assertFalse($array['is_enrolled']);
     }
 
-    public function test_users_relationship_not_exposed_in_response(): void
+    #[Test]
+    public function users_relationship_not_exposed_in_response(): void
     {
         $program = Program::factory()->create();
         $user = User::factory()->create();
@@ -100,7 +106,8 @@ class ProgramResourceTest extends TestCase
         $this->assertArrayNotHasKey('users', $array);
     }
 
-    public function test_resource_handles_null_description_gracefully(): void
+    #[Test]
+    public function resource_handles_null_description_gracefully(): void
     {
         $program = Program::factory()->create([
             'description' => null,
@@ -112,7 +119,8 @@ class ProgramResourceTest extends TestCase
         $this->assertNull($array['description']);
     }
 
-    public function test_resource_includes_all_expected_keys(): void
+    #[Test]
+    public function resource_includes_all_expected_keys(): void
     {
         $program = Program::factory()->create();
         $resource = new ProgramResource($program);
@@ -125,7 +133,8 @@ class ProgramResourceTest extends TestCase
         }
     }
 
-    public function test_resource_does_not_expose_sensitive_fields(): void
+    #[Test]
+    public function resource_does_not_expose_sensitive_fields(): void
     {
         $program = Program::factory()->create();
         $resource = new ProgramResource($program);

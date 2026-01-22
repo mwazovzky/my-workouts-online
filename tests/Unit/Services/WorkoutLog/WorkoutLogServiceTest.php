@@ -10,13 +10,15 @@ use App\Models\WorkoutTemplate;
 use App\Services\WorkoutLog\WorkoutLogService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WorkoutLogServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_from_template_creates_workout_log_and_copies_activities_and_sets(): void
+    #[Test]
+    public function create_from_template_creates_workout_log_and_copies_activities_and_sets(): void
     {
         $user = User::factory()->create();
 
@@ -65,7 +67,8 @@ class WorkoutLogServiceTest extends TestCase
         ]);
     }
 
-    public function test_create_from_template_throws_when_template_not_found(): void
+    #[Test]
+    public function create_from_template_throws_when_template_not_found(): void
     {
         $this->expectException(ModelNotFoundException::class);
 
@@ -75,7 +78,8 @@ class WorkoutLogServiceTest extends TestCase
         $service->createFromTemplate($user, 999);
     }
 
-    public function test_deleting_workout_log_cascades_to_activities_and_sets(): void
+    #[Test]
+    public function deleting_workout_log_cascades_to_activities_and_sets(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);

@@ -7,13 +7,15 @@ use App\Models\Set;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ActivityUpdateValidationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_activity_update_uses_custom_validation_messages(): void
+    #[Test]
+    public function activity_update_uses_custom_validation_messages(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create([
@@ -58,7 +60,8 @@ class ActivityUpdateValidationTest extends TestCase
         );
     }
 
-    public function test_activity_update_rejects_set_ids_that_do_not_belong_to_the_activity(): void
+    #[Test]
+    public function activity_update_rejects_set_ids_that_do_not_belong_to_the_activity(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create([

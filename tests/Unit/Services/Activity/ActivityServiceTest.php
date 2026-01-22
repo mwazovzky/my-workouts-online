@@ -8,13 +8,15 @@ use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Services\Activity\ActivityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ActivityServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_update_diffs_sets_by_id_update_create_delete(): void
+    #[Test]
+    public function update_diffs_sets_by_id_update_create_delete(): void
     {
         $user = User::factory()
             ->create();
@@ -64,7 +66,8 @@ class ActivityServiceTest extends TestCase
         ]);
     }
 
-    public function test_update_with_empty_sets_array_deletes_all_sets(): void
+    #[Test]
+    public function update_with_empty_sets_array_deletes_all_sets(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -80,7 +83,8 @@ class ActivityServiceTest extends TestCase
         $this->assertDatabaseCount('sets', 0);
     }
 
-    public function test_update_preserves_set_attributes_not_in_payload(): void
+    #[Test]
+    public function update_preserves_set_attributes_not_in_payload(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
@@ -111,13 +115,14 @@ class ActivityServiceTest extends TestCase
         $this->assertEquals($originalCreatedAt->timestamp, $set->created_at->timestamp);
     }
 
-    public function test_update_throws_exception_when_set_id_belongs_to_different_activity(): void
+    #[Test]
+    public function update_throws_exception_when_set_id_belongs_to_different_activity(): void
     {
         $user = User::factory()->create();
         $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
-        
-        $activity1 = Activity::factory()->for($workoutLog, 'workout')->create();
-        $activity2 = Activity::factory()->for($workoutLog, 'workout')->create();
+
+        $activity1 = Activity::factory()->for($workoutLog, 'workout')->create(['order' => 1]);
+        $activity2 = Activity::factory()->for($workoutLog, 'workout')->create(['order' => 2]);
 
         $set1 = Set::factory()->for($activity1, 'activity')->create(['order' => 1]);
         $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);

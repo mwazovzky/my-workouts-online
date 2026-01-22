@@ -8,13 +8,15 @@ use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WorkoutLogResourceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_resource_transforms_workout_log_to_correct_json_structure(): void
+    #[Test]
+    public function resource_transforms_workout_log_to_correct_json_structure(): void
     {
         $user = User::factory()->create();
         $workoutTemplate = WorkoutTemplate::factory()->create();
@@ -35,7 +37,8 @@ class WorkoutLogResourceTest extends TestCase
         $this->assertNotNull($array['created_at']);
     }
 
-    public function test_activities_relationship_conditionally_included_when_loaded(): void
+    #[Test]
+    public function activities_relationship_conditionally_included_when_loaded(): void
     {
         $workoutLog = WorkoutLog::factory()->create();
 
@@ -64,7 +67,8 @@ class WorkoutLogResourceTest extends TestCase
         $this->assertCount(3, $arrayWith['activities']);
     }
 
-    public function test_activities_count_conditionally_included_when_counted(): void
+    #[Test]
+    public function activities_count_conditionally_included_when_counted(): void
     {
         $workoutLog = WorkoutLog::factory()->create();
 
@@ -95,7 +99,8 @@ class WorkoutLogResourceTest extends TestCase
         $this->assertEquals(5, $arrayWith['activities_count']);
     }
 
-    public function test_workout_template_conditionally_included_when_loaded(): void
+    #[Test]
+    public function workout_template_conditionally_included_when_loaded(): void
     {
         $workoutTemplate = WorkoutTemplate::factory()->create(['name' => 'Test Template']);
         $workoutLog = WorkoutLog::factory()->create([
@@ -118,7 +123,8 @@ class WorkoutLogResourceTest extends TestCase
         $this->assertEquals('Test Template', $arrayWith['workout_template']['name']);
     }
 
-    public function test_resource_includes_all_expected_keys(): void
+    #[Test]
+    public function resource_includes_all_expected_keys(): void
     {
         $workoutLog = WorkoutLog::factory()->create();
         $resource = new WorkoutLogResource($workoutLog);

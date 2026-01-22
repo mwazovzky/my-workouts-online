@@ -10,6 +10,7 @@ use App\Models\WorkoutTemplate;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WorkoutLogStoreTest extends TestCase
@@ -23,7 +24,8 @@ class WorkoutLogStoreTest extends TestCase
         Carbon::setTestNow('2025-01-01 10:00:00');
     }
 
-    public function test_start_creates_workout_log_and_copies_activities_and_sets_from_template(): void
+    #[Test]
+    public function start_creates_workout_log_and_copies_activities_and_sets_from_template(): void
     {
         $user = User::factory()->create();
 
@@ -78,7 +80,8 @@ class WorkoutLogStoreTest extends TestCase
         ]);
     }
 
-    public function test_requires_workout_template_id_with_custom_message(): void
+    #[Test]
+    public function requires_workout_template_id_with_custom_message(): void
     {
         $user = User::factory()->create();
 
@@ -92,7 +95,8 @@ class WorkoutLogStoreTest extends TestCase
         );
     }
 
-    public function test_requires_existing_workout_template_id_with_custom_message(): void
+    #[Test]
+    public function requires_existing_workout_template_id_with_custom_message(): void
     {
         $user = User::factory()->create();
 

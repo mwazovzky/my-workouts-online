@@ -5,13 +5,14 @@ namespace Tests\Feature\Program;
 use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ProgramEnrollTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function authenticated_user_can_enroll_in_a_program(): void
     {
         $user = User::factory()->create();
@@ -27,7 +28,7 @@ class ProgramEnrollTest extends TestCase
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function user_cannot_enroll_in_a_program_twice(): void
     {
         $user = User::factory()->create();
@@ -40,7 +41,7 @@ class ProgramEnrollTest extends TestCase
         $response->assertRedirect(route('programs.show', ['id' => $program->id]));
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function unauthenticated_user_cannot_enroll_in_a_program(): void
     {
         $program = Program::factory()->create();
@@ -54,7 +55,7 @@ class ProgramEnrollTest extends TestCase
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function cannot_enroll_in_a_nonexistent_program(): void
     {
         $user = User::factory()->create();

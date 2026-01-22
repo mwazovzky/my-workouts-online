@@ -5,54 +5,47 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WorkoutLogAuthorizationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_cannot_complete_another_users_workout_log(): void
+    #[Test]
+    public function user_cannot_complete_another_users_workout_log(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
-        $otherUser = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
-
-        $otherUsersLog = WorkoutLog::factory()->create([
+        $otherUserWorkoutLog = WorkoutLog::factory()->create([
             'user_id' => $otherUser->id,
             'status' => 'in_progress',
         ]);
 
         $response = $this
             ->actingAs($user)
-            ->post(route('workout.logs.complete', ['workoutLog' => $otherUsersLog->id]));
+            ->post(route('workout.logs.complete', ['workoutLog' => $otherUserWorkoutLog->id]));
 
         $response->assertForbidden();
 
-        $otherUsersLog->refresh();
-        $this->assertSame('in_progress', $otherUsersLog->status);
+        $otherUserWorkoutLog->refresh();
+        $this->assertSame('in_progress', $otherUserWorkoutLog->status);
     }
 
-    public function test_user_cannot_view_another_users_workout_log(): void
+    #[Test]
+    public function user_cannot_view_another_users_workout_log(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
-        $otherUser = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
-
-        $otherUsersLog = WorkoutLog::factory()->create([
+        $otherUserWorkoutLog = WorkoutLog::factory()->create([
             'user_id' => $otherUser->id,
         ]);
 
         $response = $this
             ->actingAs($user)
-            ->get(route('workout.logs.show', ['id' => $otherUsersLog->id]));
+            ->get(route('workout.logs.show', ['id' => $otherUserWorkoutLog->id]));
 
         $response->assertNotFound();
     }
