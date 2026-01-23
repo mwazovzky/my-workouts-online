@@ -35,10 +35,12 @@ class WorkoutLogPageTest extends TestCase
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('WorkoutLogIndex')
-            ->has('logs')
-            ->where('logs.0.id', $log->id)
-            ->has('logs.0.workout_template')
-            ->has('logs.0.activities_count')
+            ->has('workouts')
+            ->has('workouts.data')
+            ->has('workouts.links')
+            ->where('workouts.data.0.id', $log->id)
+            ->has('workouts.data.0.workout_template')
+            ->has('workouts.data.0.activities_count')
         );
     }
 

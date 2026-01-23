@@ -18,15 +18,19 @@ class WorkoutLogPageController extends Controller
     {
         $user = $request->user();
 
-        $logs = WorkoutLog::query()
+        $workouts = WorkoutLog::query()
             ->ownedBy($user)
             ->withTemplate()
             ->withActivitiesCount()
             ->latestUpdated()
-            ->get();
+            ->paginate(20);
+
+        $workouts->getCollection()->transform(function ($item) use ($request) {
+            return (new WorkoutLogResource($item))->toArray($request);
+        });
 
         return Inertia::render('WorkoutLogIndex', [
-            'logs' => WorkoutLogResource::collection($logs)->resolve(),
+            'workouts' => $workouts,
         ]);
     }
 
