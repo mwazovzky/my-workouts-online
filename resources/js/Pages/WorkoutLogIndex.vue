@@ -4,68 +4,89 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">My Workouts</h2>
         </template>
 
-        <div class="p-4">
-            <div v-if="workouts.data.length === 0" class="text-sm text-gray-600">No workouts yet.</div>
-            <ul v-else class="space-y-2">
-                <li v-for="workout in workouts.data" :key="workout.id" class="p-3 bg-white rounded shadow-sm flex items-center justify-between">
-                        <div>
-                            <div class="font-medium flex items-center gap-2">
-                                <!-- lock icon for completed logs -->
-                                <svg v-if="workout.status === 'completed'" class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5 8V6a5 5 0 1110 0v2h1a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1h1zm2-2a3 3 0 116 0v2H7V6z" clip-rule="evenodd"/>
-                                </svg>
-                                <span>{{ workout.workout_template?.name ?? 'Workout' }}</span>
+        <WorkoutPageLayout>
+            <div v-if="workouts.data.length === 0" class="text-sm text-muted-foreground">No workouts yet.</div>
+            <ul v-else class="space-y-3">
+                <li v-for="workout in workouts.data" :key="workout.id">
+                    <Card class="p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium flex items-center gap-2">
+                                    <Lock v-if="workout.status === 'completed'" class="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                    <span class="truncate">{{ workout.workout_template?.name ?? 'Workout' }}</span>
+                                </div>
+                                <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                                    <span>{{ formatDate(workout.created_at) }} · {{ workout.activities_count ?? 0 }} activities</span>
+                                    <span 
+                                        :class="[
+                                            'text-xs px-2 py-1 rounded-full flex-shrink-0',
+                                            workout.status === 'completed' 
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
+                                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+                                        ]"
+                                    >
+                                        {{ workout.status }}
+                                    </span>
+                                </div>
                             </div>
-                            <div class="text-sm text-gray-500">{{ workout.date ?? workout.created_at }} · {{ workout.activities_count ?? 0 }} activities</div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <!-- Open goes to canonical show (read-only) -->
-                            <Link
-                                :href="route('workout.logs.show', { id: workout.id })"
-                                class="px-3 py-1 bg-indigo-600 text-white rounded text-sm flex items-center gap-2"
-                            >
-                                Open
-                            </Link>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <Button
+                                    as="a"
+                                    :href="route('workout.logs.show', { id: workout.id })"
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    Open
+                                </Button>
 
-                            <!-- Continue (edit) only for owner and when in_progress -->
-                            <Link
-                                v-if="workout.user_id === currentUserId() && workout.status === 'in_progress'"
-                                :href="route('workout.logs.edit', { id: workout.id })"
-                                class="px-3 py-1 bg-indigo-500 text-white rounded text-sm flex items-center gap-2"
-                            >
-                                Continue
-                            </Link>
+                                <Button
+                                    v-if="workout.user_id === currentUserId() && workout.status === 'in_progress'"
+                                    as="a"
+                                    :href="route('workout.logs.edit', { id: workout.id })"
+                                    variant="default"
+                                    size="sm"
+                                >
+                                    Continue
+                                </Button>
 
-                            <button @click="deleteWorkout(workout.id)" class="px-3 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
-                            <span class="text-sm text-gray-600">{{ workout.status }}</span>
+                                <Button
+                                    @click="deleteWorkout(workout.id)"
+                                    variant="destructive"
+                                    size="sm"
+                                >
+                                    Delete
+                                </Button>
+                            </div>
                         </div>
-                    </li>
+                    </Card>
+                </li>
             </ul>
 
             <!-- Pagination Links -->
-            <nav v-if="workouts.links.length > 3" class="flex items-center justify-center gap-1 mt-4">
+            <nav v-if="workouts.links.length > 3" class="flex items-center justify-center gap-1 mt-6">
                 <template v-for="link in workouts.links" :key="link.label">
-                    <Link
+                    <Button
                         v-if="link.url"
+                        as="a"
                         :href="link.url"
-                        :class="[
-                            'px-3 py-1 rounded text-sm',
-                            link.active 
-                                ? 'bg-indigo-600 text-white' 
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
-                        ]"
+                        :variant="link.active ? 'default' : 'outline'"
+                        size="sm"
                         v-html="link.label"
                     />
-                    <span v-else class="px-3 py-1 text-gray-400 text-sm" v-html="link.label" />
+                    <span v-else class="px-3 py-1 text-muted-foreground text-sm" v-html="link.label" />
                 </template>
             </nav>
-        </div>
+        </WorkoutPageLayout>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Lock } from 'lucide-vue-next';
 
 const props = defineProps({
     workouts: {
@@ -76,6 +97,18 @@ const props = defineProps({
 
 const page = usePage();
 const currentUserId = () => page.props.auth?.user?.id ?? null;
+
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    }).format(date);
+}
 
 async function deleteWorkout(id) {
     if (!confirm('Delete this workout? This action cannot be undone.')) return;
