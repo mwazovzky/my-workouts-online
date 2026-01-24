@@ -46,7 +46,7 @@
                                     variant="outline"
                                     size="sm"
                                 >
-                                    View
+                                    Show
                                 </Button>
                             </div>
                         </div>

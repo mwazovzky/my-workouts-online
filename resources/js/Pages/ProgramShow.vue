@@ -85,7 +85,7 @@ const enrollInProgram = () => enroll(props.program.id);
                                         variant="outline"
                                         size="sm"
                                     >
-                                        View
+                                        Show
                                     </Button>
                                 </div>
                             </div>

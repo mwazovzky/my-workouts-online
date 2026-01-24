@@ -34,7 +34,7 @@
                                     variant="outline"
                                     size="sm"
                                 >
-                                    Open
+                                    Show
                                 </Button>
 
                                 <Button
