@@ -4,7 +4,7 @@
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">View Workout</h2>
     </template>
 
-    <WorkoutPageLayout>
+    <PageLayout>
       <WorkoutHeader 
         :workout-log-id="workoutLogId" 
         :workout-date="workoutDate" 
@@ -32,7 +32,7 @@
           Loading activities...
         </p>
       </div>
-    </WorkoutPageLayout>
+    </PageLayout>
 
     <WorkoutFooter :show="canEdit">
       <Button @click="goEdit" :disabled="editingNav" variant="outline" size="lg" class="px-8">
@@ -50,7 +50,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutHeader from '@/Components/WorkoutHeader.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
-import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import PageLayout from '@/Components/PageLayout.vue';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps({

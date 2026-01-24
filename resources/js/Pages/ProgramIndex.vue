@@ -6,7 +6,7 @@
             </h2>
         </template>
 
-        <WorkoutPageLayout>
+        <PageLayout>
             <!-- Filter Toggle -->
             <div class="flex items-center justify-between mb-6 p-4 border rounded-lg bg-muted/50">
                 <span class="text-sm font-medium">Enrolled programs only</span>
@@ -57,14 +57,14 @@
                     </Card>
                 </li>
             </ul>
-        </WorkoutPageLayout>
+        </PageLayout>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';

@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">My Workouts</h2>
         </template>
 
-        <WorkoutPageLayout>
+        <PageLayout>
             <div v-if="workouts.data.length === 0" class="text-sm text-muted-foreground">No workouts yet.</div>
             <ul v-else class="space-y-3">
                 <li v-for="workout in workouts.data" :key="workout.id">
@@ -76,14 +76,14 @@
                     <span v-else class="px-3 py-1 text-muted-foreground text-sm" v-html="link.label" />
                 </template>
             </nav>
-        </WorkoutPageLayout>
+        </PageLayout>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-vue-next';

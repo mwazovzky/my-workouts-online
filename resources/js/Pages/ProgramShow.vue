@@ -1,7 +1,10 @@
 <script setup>
-import { computed, toRefs } from 'vue';
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Form, Link, usePage } from '@inertiajs/vue3';
+import PageLayout from '@/Components/PageLayout.vue';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     program: {
@@ -14,14 +17,21 @@ const props = defineProps({
     },
 });
 
-const { program, workouts } = toRefs(props);
 const page = usePage();
 
-const authUser = computed(() => page.props.auth?.user ?? null);
-
 const isEnrolled = computed(() => {
-    return program.value.is_enrolled ?? false;
+    return props.program.is_enrolled ?? false;
 });
+
+function enrollInProgram() {
+    router.post(route('programs.enroll', { program: props.program.id }), {}, {
+        preserveScroll: true,
+        only: ['program'],
+        onError: () => {
+            alert('Failed to enroll in program');
+        },
+    });
+}
 </script>
 
 <template>
@@ -32,64 +42,73 @@ const isEnrolled = computed(() => {
             </h2>
         </template>
 
-        <div>
-            <div class="p-4 bg-white rounded shadow-sm">
-                <h3 class="font-semibold text-lg">{{ program.name }}</h3>
-                <p class="text-sm text-gray-600">{{ program.description }}</p>
-                <p class="text-sm text-gray-600">
-                    Duration: {{ program.start_date }} - {{ program.end_date }}
-                </p>
-            </div>
-
-            <div class="mt-4">
-                <h4 class="font-semibold text-md p-4">Workouts</h4>
-                <div v-if="workouts">
-                    <ul class="space-y-2 mt-2">
-                        <li
-                            v-for="workout in workouts"
-                            :key="workout.id"
-                            class="p-4 border rounded bg-white"
-                        >
-                            <div class="font-semibold">
-                                <Link
-                                    :href="route('workout.templates.show', { id: workout.id })"
-                                    class="text-indigo-600 hover:underline"
-                                >
-                                    {{ workout.name }}
-                                </Link>
-                            </div>
-                            <div class="text-sm text-gray-600">
-                                Scheduled: {{ workout.pivot?.weekday ?? 'Not scheduled' }}
-                            </div>
-                        </li>
-                    </ul>
+        <PageLayout>
+            <!-- Program Header - Prominent Card -->
+            <Card class="p-6 mb-8 border-2 bg-muted/50 shadow-md">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-2xl mb-3">{{ program.name }}</h3>
+                        <p class="text-base mb-3">{{ program.description }}</p>
+                        <div class="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                            <span v-if="program.start_date || program.end_date">
+                                Duration: {{ program.start_date ?? '?' }} - {{ program.end_date ?? '?' }}
+                            </span>
+                            <span
+                                v-if="isEnrolled"
+                                class="text-xs px-2 py-1 rounded-full flex-shrink-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                            >
+                                Enrolled
+                            </span>
+                        </div>
+                    </div>
+                    <Button
+                        v-if="!isEnrolled"
+                        @click="enrollInProgram"
+                        variant="default"
+                        class="flex-shrink-0"
+                    >
+                        Enroll in Program
+                    </Button>
                 </div>
-                <div
-                    v-else
-                    class="mt-2 text-sm text-gray-500"
-                >
+            </Card>
+
+            <!-- Workouts Section -->
+            <div class="mb-4">
+                <h4 class="font-semibold text-lg mb-4">Program Workouts</h4>
+                
+                <div v-if="workouts === null" class="text-sm text-muted-foreground">
                     Loading workouts...
                 </div>
+                <div v-else-if="workouts.length === 0" class="text-sm text-muted-foreground">
+                    No workouts in this program yet.
+                </div>
+                <ul v-else class="space-y-3">
+                    <li v-for="workout in workouts" :key="workout.id">
+                        <Card class="p-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium truncate">
+                                        {{ workout.name }}
+                                    </div>
+                                    <div class="text-sm text-muted-foreground mt-1">
+                                        Scheduled: {{ workout.pivot?.weekday ?? 'Not scheduled' }}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <Button
+                                        as="a"
+                                        :href="route('workout.templates.show', { id: workout.id })"
+                                        variant="outline"
+                                        size="sm"
+                                    >
+                                        View
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                    </li>
+                </ul>
             </div>
-
-            <div class="m-6">
-                <Form
-                    v-if="!isEnrolled"
-                    :action="route('programs.enroll', { program: program.id })"
-                    method="post"
-                    preserve-scroll
-                >
-                    <button
-                        type="submit"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded text-sm"
-                    >
-                        Enroll
-                    </button>
-                </Form>
-                <p v-else class="text-sm text-green-600">
-                    You are already enrolled in this program.
-                </p>
-            </div>
-        </div>
+        </PageLayout>
     </AuthenticatedLayout>
 </template>

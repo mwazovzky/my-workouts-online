@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Workout</h2>
         </template>
 
-        <WorkoutPageLayout>
+        <PageLayout>
             <WorkoutHeader 
                 :workout-log-id="workoutLogId" 
                 :workout-date="workoutDate" 
@@ -36,7 +36,7 @@
                     @update-activity="payload => onUpdateActivity(payload)"
                 />
             </div>
-        </WorkoutPageLayout>
+        </PageLayout>
 
         <WorkoutFooter :show="isEditable">
             <Button @click="finishWorkout" :disabled="isFinishing" variant="outline" size="lg" class="px-8">
@@ -54,7 +54,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutHeader from '@/Components/WorkoutHeader.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
-import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import PageLayout from '@/Components/PageLayout.vue';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps({
