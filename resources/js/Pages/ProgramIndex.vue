@@ -66,7 +66,6 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
-import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
 
 const props = defineProps({
@@ -76,7 +75,6 @@ const props = defineProps({
   },
 });
 
-const page = usePage();
 const filterEnrolled = ref(false);
 
 const isProgramEnrolled = program => {

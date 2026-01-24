@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import { Form } from '@inertiajs/vue3';
 
-const props = defineProps({
+defineProps({
   workout: {
     type: Object,
     required: true,

@@ -71,9 +71,12 @@
             :href="link.url"
             :variant="link.active ? 'default' : 'outline'"
             size="sm"
-            v-html="link.label"
-          />
-          <span v-else class="px-3 py-1 text-muted-foreground text-sm" v-html="link.label" />
+          >
+            {{ decodeHtmlEntities(link.label) }}
+          </Button>
+          <span v-else class="px-3 py-1 text-muted-foreground text-sm">
+            {{ decodeHtmlEntities(link.label) }}
+          </span>
         </template>
       </nav>
     </PageLayout>
@@ -81,7 +84,7 @@
 </template>
 
 <script setup>
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/Components/ui/card';
@@ -91,7 +94,7 @@ import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
 
-const props = defineProps({
+defineProps({
   workouts: {
     type: Object,
     required: true,
@@ -100,6 +103,13 @@ const props = defineProps({
 
 const page = usePage();
 const currentUserId = () => page.props.auth?.user?.id ?? null;
+
+// Decode HTML entities in pagination labels
+function decodeHtmlEntities(text) {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+}
 
 async function deleteWorkout(id) {
   if (!confirm('Delete this workout? This action cannot be undone.')) return;

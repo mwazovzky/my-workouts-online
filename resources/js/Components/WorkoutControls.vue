@@ -7,9 +7,6 @@ function start() {
 function finish() {
   emits('finish-workout');
 }
-function save(activityId) {
-  emits('save-activity', activityId);
-}
 </script>
 
 <template>

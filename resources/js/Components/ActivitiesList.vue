@@ -1,7 +1,7 @@
 <script setup>
 import Activity from '@/Components/Activity.vue';
 
-const props = defineProps({
+defineProps({
   activities: { type: Array, default: () => [] },
   editable: { type: Boolean, default: false },
 });

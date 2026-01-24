@@ -3,7 +3,7 @@ import ModelCard from '@/Components/ModelCard.vue';
 import { Badge } from '@/Components/ui/badge';
 import { formatDate } from '@/utils/date';
 
-const props = defineProps({
+defineProps({
   workout: {
     type: Object,
     required: true,

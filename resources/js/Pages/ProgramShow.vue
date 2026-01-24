@@ -7,7 +7,6 @@ import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
 
 const props = defineProps({
@@ -20,8 +19,6 @@ const props = defineProps({
     default: null,
   },
 });
-
-const page = usePage();
 
 const isEnrolled = computed(() => {
   return props.program.is_enrolled ?? false;

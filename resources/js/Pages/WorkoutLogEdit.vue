@@ -92,7 +92,6 @@ const activities = ref(
 );
 
 const workoutStatus = ref(props.workoutLog.status ?? null);
-const workoutDate = ref(props.workoutLog.created_at ?? null);
 const workoutOwnerId = ref(props.workoutLog.user_id ?? null);
 
 // UI flags
