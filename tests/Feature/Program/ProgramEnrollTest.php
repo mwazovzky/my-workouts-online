@@ -18,7 +18,9 @@ class ProgramEnrollTest extends TestCase
         $user = User::factory()->create();
         $program = Program::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('programs.enroll', ['program' => $program->id]));
+        $response = $this->actingAs($user)
+            ->from(route('programs.show', ['id' => $program->id]))
+            ->post(route('programs.enroll', ['program' => $program->id]));
 
         $response->assertRedirect(route('programs.show', ['id' => $program->id]));
 
@@ -36,7 +38,9 @@ class ProgramEnrollTest extends TestCase
 
         $user->programs()->attach($program);
 
-        $response = $this->actingAs($user)->post(route('programs.enroll', ['program' => $program->id]));
+        $response = $this->actingAs($user)
+            ->from(route('programs.show', ['id' => $program->id]))
+            ->post(route('programs.enroll', ['program' => $program->id]));
 
         $response->assertRedirect(route('programs.show', ['id' => $program->id]));
     }
