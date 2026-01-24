@@ -22,3 +22,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Laravel Boost generated files
+CLAUDE.md
+GEMINI.md
+.github/copilot-instructions.md
+/.junie
+
