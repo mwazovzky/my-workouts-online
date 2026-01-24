@@ -4,7 +4,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { useEnrollment } from '@/composables/useEnrollment';
 
 const props = defineProps({
     program: {
@@ -23,15 +24,8 @@ const isEnrolled = computed(() => {
     return props.program.is_enrolled ?? false;
 });
 
-function enrollInProgram() {
-    router.post(route('programs.enroll', { program: props.program.id }), {}, {
-        preserveScroll: true,
-        only: ['program'],
-        onError: () => {
-            alert('Failed to enroll in program');
-        },
-    });
-}
+const { enroll } = useEnrollment({ only: ['program'] });
+const enrollInProgram = () => enroll(props.program.id);
 </script>
 
 <template>

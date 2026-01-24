@@ -68,7 +68,8 @@ import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { useEnrollment } from '@/composables/useEnrollment';
 
 const props = defineProps({
     programs: {
@@ -92,16 +93,5 @@ const filteredPrograms = computed(() => {
     return props.programs.filter(program => isProgramEnrolled(program));
 });
 
-function enrollInProgram(programId) {
-    router.post(route('programs.enroll', { program: programId }), {}, {
-        preserveScroll: true,
-        only: ['programs'],
-        onSuccess: () => {
-            // Program list will be refreshed with updated enrollment status
-        },
-        onError: () => {
-            alert('Failed to enroll in program');
-        },
-    });
-}
+const { enroll: enrollInProgram } = useEnrollment({ only: ['programs'] });
 </script>
