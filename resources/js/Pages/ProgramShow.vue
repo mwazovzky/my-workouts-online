@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
 
@@ -67,9 +68,17 @@ const enrollInProgram = () => enroll(props.program.id);
             <div class="mb-4">
                 <h4 class="font-semibold text-lg mb-4">Program Workouts</h4>
                 
-                <Empty v-if="workouts === null">
-                    <EmptyTitle>Loading workouts...</EmptyTitle>
-                </Empty>
+                <div v-if="workouts === null" class="space-y-3">
+                    <Card v-for="i in 3" :key="i" class="p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                            <div class="flex-1 space-y-2">
+                                <Skeleton class="h-5 w-48" />
+                                <Skeleton class="h-4 w-32" />
+                            </div>
+                            <Skeleton class="h-9 w-16" />
+                        </div>
+                    </Card>
+                </div>
                 <Empty v-else-if="workouts.length === 0">
                     <EmptyTitle>No workouts yet</EmptyTitle>
                     <EmptyDescription>This program doesn't have any workouts configured</EmptyDescription>

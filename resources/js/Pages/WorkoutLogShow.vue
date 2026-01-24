@@ -25,12 +25,18 @@
           @remove-set="() => {}"
           @update-activity="() => {}"
         />
-        <p
-          v-else
-          class="text-sm text-gray-500"
-        >
-          Loading activities...
-        </p>
+        <div v-else class="space-y-4">
+          <Card v-for="i in 2" :key="i" class="p-4">
+            <div class="mb-4 pb-4 border-b">
+              <Skeleton class="h-6 w-64 mb-3" />
+              <div class="space-y-2">
+                <Skeleton class="h-4 w-full" />
+                <Skeleton class="h-4 w-full" />
+              </div>
+            </div>
+            <Skeleton class="h-10 w-full" />
+          </Card>
+        </div>
       </div>
     </PageLayout>
 
@@ -52,6 +58,8 @@ import WorkoutHeader from '@/Components/WorkoutHeader.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const props = defineProps({
   workoutLog: {
