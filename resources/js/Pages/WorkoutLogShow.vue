@@ -8,8 +8,13 @@
       <WorkoutCard :workout="workoutLog" />
 
       <!-- prominent read-only banner -->
-      <div class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded" role="status" aria-live="polite">
-        This is a read-only view of the workout. To make changes open the editor (available only while the workout is in progress and you are the owner).
+      <div
+        class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded"
+        role="status"
+        aria-live="polite"
+      >
+        This is a read-only view of the workout. To make changes open the editor (available only
+        while the workout is in progress and you are the owner).
       </div>
 
       <div>
@@ -37,7 +42,7 @@
     </PageLayout>
 
     <WorkoutFooter :show="canEdit">
-      <Button @click="goEdit" :disabled="editingNav" variant="outline" size="lg" class="px-8">
+      <Button :disabled="editingNav" variant="outline" size="lg" class="px-8" @click="goEdit">
         <span v-if="!editingNav">Continue</span>
         <span v-else>Opening…</span>
       </Button>
@@ -79,7 +84,11 @@ const editingNav = ref(false);
 
 // allow navigation to editor only for owner and when status is in_progress
 const canEdit = computed(() => {
-  return !!currentUserId.value && workoutStatus.value === 'in_progress' && workoutOwnerId.value === currentUserId.value;
+  return (
+    !!currentUserId.value &&
+    workoutStatus.value === 'in_progress' &&
+    workoutOwnerId.value === currentUserId.value
+  );
 });
 
 // go to editor (with tiny loading state)

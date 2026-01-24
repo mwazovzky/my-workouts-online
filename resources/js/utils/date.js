@@ -5,22 +5,22 @@
  * @returns {string} Formatted date string
  */
 export function formatDate(dateString, options = {}) {
-    if (!dateString) return '';
-    
-    const date = new Date(dateString);
-    
-    const defaultOptions = {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    };
-    
-    return new Intl.DateTimeFormat('en-US', {
-        ...defaultOptions,
-        ...options,
-    }).format(date);
+  if (!dateString) return '';
+
+  const date = new Date(dateString);
+
+  const defaultOptions = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  };
+
+  return new Intl.DateTimeFormat('en-US', {
+    ...defaultOptions,
+    ...options,
+  }).format(date);
 }
 
 /**
@@ -29,13 +29,13 @@ export function formatDate(dateString, options = {}) {
  * @returns {string} Formatted date string
  */
 export function formatDateOnly(dateString) {
-    if (!dateString) return '';
-    
-    const date = new Date(dateString);
-    
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(date);
+  if (!dateString) return '';
+
+  const date = new Date(dateString);
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
 }

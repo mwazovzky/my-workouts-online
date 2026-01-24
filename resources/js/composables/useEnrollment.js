@@ -7,27 +7,27 @@ import { router } from '@inertiajs/vue3';
  * @returns {Object} Enrollment utilities
  */
 export function useEnrollment(options = {}) {
-    const { only = [] } = options;
+  const { only = [] } = options;
 
-    /**
-     * Enroll a user in a program
-     * @param {number} programId - The ID of the program to enroll in
-     */
-    function enroll(programId) {
-        router.post(
-            route('programs.enroll', { program: programId }),
-            {},
-            {
-                preserveScroll: true,
-                only,
-                onError: () => {
-                    alert('Failed to enroll in program');
-                },
-            }
-        );
-    }
+  /**
+   * Enroll a user in a program
+   * @param {number} programId - The ID of the program to enroll in
+   */
+  function enroll(programId) {
+    router.post(
+      route('programs.enroll', { program: programId }),
+      {},
+      {
+        preserveScroll: true,
+        only,
+        onError: () => {
+          alert('Failed to enroll in program');
+        },
+      }
+    );
+  }
 
-    return {
-        enroll,
-    };
+  return {
+    enroll,
+  };
 }

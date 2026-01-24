@@ -1,5 +1,5 @@
 <script setup>
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const props = defineProps({
   class: { type: null, required: false },
@@ -7,11 +7,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div
-    :class="
-      cn('rounded-xl border bg-card text-card-foreground shadow', props.class)
-    "
-  >
+  <div :class="cn('rounded-xl border bg-card text-card-foreground shadow', props.class)">
     <slot />
   </div>
 </template>

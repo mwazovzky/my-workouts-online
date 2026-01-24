@@ -1,6 +1,6 @@
 <script setup>
-import { cn } from "@/lib/utils";
-import { emptyMediaVariants } from ".";
+import { cn } from '@/lib/utils';
+import { emptyMediaVariants } from '.';
 
 const props = defineProps({
   class: { type: null, required: false },
