@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
@@ -47,12 +48,7 @@ const enrollInProgram = () => enroll(props.program.id);
                             <span v-if="program.start_date || program.end_date">
                                 Duration: {{ program.start_date ?? '?' }} - {{ program.end_date ?? '?' }}
                             </span>
-                            <span
-                                v-if="isEnrolled"
-                                class="text-xs px-2 py-1 rounded-full flex-shrink-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                            >
-                                Enrolled
-                            </span>
+                            <Badge v-if="isEnrolled" variant="success">Enrolled</Badge>
                         </div>
                     </div>
                     <Button

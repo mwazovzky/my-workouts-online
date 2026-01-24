@@ -27,12 +27,7 @@
                                 </div>
                                 <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                                     <span class="truncate">{{ program.description ?? 'No description' }}</span>
-                                    <span
-                                        v-if="isProgramEnrolled(program)"
-                                        class="text-xs px-2 py-1 rounded-full flex-shrink-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                                    >
-                                        Enrolled
-                                    </span>
+                                    <Badge v-if="isProgramEnrolled(program)" variant="success">Enrolled</Badge>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
@@ -66,6 +61,7 @@ import { ref, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { usePage } from '@inertiajs/vue3';

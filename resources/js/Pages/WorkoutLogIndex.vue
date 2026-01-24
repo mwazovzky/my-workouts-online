@@ -17,16 +17,11 @@
                                 </div>
                                 <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                                     <span>{{ formatDate(workout.created_at) }} · {{ workout.activities_count ?? 0 }} activities</span>
-                                    <span 
-                                        :class="[
-                                            'text-xs px-2 py-1 rounded-full flex-shrink-0',
-                                            workout.status === 'completed' 
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
-                                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
-                                        ]"
+                                    <Badge 
+                                        :variant="workout.status === 'completed' ? 'success' : 'warning'"
                                     >
                                         {{ workout.status }}
-                                    </span>
+                                    </Badge>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
@@ -85,6 +80,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
