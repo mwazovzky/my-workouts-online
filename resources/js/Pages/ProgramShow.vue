@@ -2,11 +2,11 @@
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
-import { Skeleton } from '@/components/ui/skeleton';
+import ProgramCard from '@/Components/ProgramCard.vue';
+import { Card } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
 
@@ -40,29 +40,12 @@ const enrollInProgram = () => enroll(props.program.id);
         </template>
 
         <PageLayout>
-            <!-- Program Header - Prominent Card -->
-            <Card class="p-6 mb-8 border-2 bg-muted/50 shadow-md">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-bold text-2xl mb-3">{{ program.name }}</h3>
-                        <p class="text-base mb-3">{{ program.description }}</p>
-                        <div class="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-                            <span v-if="program.start_date || program.end_date">
-                                Duration: {{ program.start_date ?? '?' }} - {{ program.end_date ?? '?' }}
-                            </span>
-                            <Badge v-if="isEnrolled" variant="success">Enrolled</Badge>
-                        </div>
-                    </div>
-                    <Button
-                        v-if="!isEnrolled"
-                        @click="enrollInProgram"
-                        variant="default"
-                        class="flex-shrink-0"
-                    >
-                        Enroll in Program
-                    </Button>
-                </div>
-            </Card>
+            <!-- Program Header -->
+            <ProgramCard 
+                :program="program" 
+                :is-enrolled="isEnrolled"
+                @enroll="enrollInProgram"
+            />
 
             <!-- Workouts Section -->
             <div class="mb-4">

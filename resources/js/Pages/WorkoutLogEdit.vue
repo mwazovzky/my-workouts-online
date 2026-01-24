@@ -5,10 +5,8 @@
         </template>
 
         <PageLayout>
-            <WorkoutHeader 
-                :workout-log-id="workoutLogId" 
-                :workout-date="workoutDate" 
-                :workout-status="workoutStatus"
+            <WorkoutCard 
+                :workout="workoutLog" 
                 title="Editing Workout Log"
             />
 
@@ -52,10 +50,10 @@ import { ref, computed } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
-import WorkoutHeader from '@/Components/WorkoutHeader.vue';
+import WorkoutCard from '@/Components/WorkoutCard.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import PageLayout from '@/Components/PageLayout.vue';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps({
     workoutLog: {

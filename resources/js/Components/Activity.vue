@@ -1,7 +1,7 @@
 <script setup>
 import Set from '@/Components/Set.vue';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
 import { Plus, Save, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({

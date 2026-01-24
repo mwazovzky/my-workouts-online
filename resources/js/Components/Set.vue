@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, watch } from 'vue';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
 import { Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({

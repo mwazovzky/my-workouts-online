@@ -5,11 +5,7 @@
     </template>
 
     <PageLayout>
-      <WorkoutHeader 
-        :workout-log-id="workoutLogId" 
-        :workout-date="workoutDate" 
-        :workout-status="workoutStatus"
-      />
+      <WorkoutCard :workout="workoutLog" />
 
       <!-- prominent read-only banner -->
       <div class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded" role="status" aria-live="polite">
@@ -54,12 +50,12 @@ import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
-import WorkoutHeader from '@/Components/WorkoutHeader.vue';
+import WorkoutCard from '@/Components/WorkoutCard.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import PageLayout from '@/Components/PageLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/Components/ui/button';
+import { Card } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
 
 const props = defineProps({
   workoutLog: {
@@ -72,10 +68,8 @@ const props = defineProps({
   },
 });
 
-const workoutLogId = computed(() => props.workoutLog.id);
-const workoutStatus = computed(() => props.workoutLog.status ?? null);
-const workoutDate = computed(() => props.workoutLog.created_at ?? null);
 const workoutOwnerId = computed(() => props.workoutLog.user_id ?? null);
+const workoutStatus = computed(() => props.workoutLog.status ?? null);
 const activities = computed(() => props.activities ?? []);
 
 const page = usePage();
@@ -92,7 +86,7 @@ const canEdit = computed(() => {
 function goEdit() {
   if (!canEdit.value) return;
   editingNav.value = true;
-  router.visit(route('workout.logs.edit', { id: workoutLogId.value }), {
+  router.visit(route('workout.logs.edit', { id: props.workoutLog.id }), {
     onFinish: () => {
       editingNav.value = false;
     },
