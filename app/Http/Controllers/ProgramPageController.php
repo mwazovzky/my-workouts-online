@@ -45,6 +45,6 @@ class ProgramPageController extends Controller
 
         $program->users()->syncWithoutDetaching([$user->id]);
 
-        return redirect()->route('programs.show', ['id' => $program->id]);
+        return redirect()->back();
     }
 }
