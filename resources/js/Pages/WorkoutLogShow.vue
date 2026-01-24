@@ -4,29 +4,16 @@
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">View Workout</h2>
     </template>
 
-    <div class="p-4">
-      <div class="mb-4 p-4 bg-white rounded shadow-sm">
-        <div class="font-semibold text-lg">Workout Log #{{ workoutLogId }}</div>
-        <div class="text-sm text-gray-600">Date: {{ workoutDate }} · Status: {{ workoutStatus }}</div>
-      </div>
+    <WorkoutPageLayout>
+      <WorkoutHeader 
+        :workout-log-id="workoutLogId" 
+        :workout-date="workoutDate" 
+        :workout-status="workoutStatus"
+      />
 
       <!-- prominent read-only banner -->
       <div class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded" role="status" aria-live="polite">
         This is a read-only view of the workout. To make changes open the editor (available only while the workout is in progress and you are the owner).
-      </div>
-
-      <div class="mb-4 flex items-center gap-3">
-        <span class="px-4 py-2 inline-block text-sm text-gray-600">View only</span>
-
-        <button
-          v-if="canEdit"
-          @click="goEdit"
-          :disabled="editingNav"
-          class="ml-2 px-4 py-2 bg-indigo-600 text-white rounded flex items-center gap-2"
-        >
-          <span v-if="!editingNav">Open editor</span>
-          <span v-else class="text-sm">Opening…</span>
-        </button>
       </div>
 
       <div>
@@ -45,7 +32,14 @@
           Loading activities...
         </p>
       </div>
-    </div>
+    </WorkoutPageLayout>
+
+    <WorkoutFooter :show="canEdit">
+      <Button @click="goEdit" :disabled="editingNav" variant="outline" size="lg" class="px-8">
+        <span v-if="!editingNav">Continue</span>
+        <span v-else>Opening…</span>
+      </Button>
+    </WorkoutFooter>
   </AuthenticatedLayout>
 </template>
 
@@ -54,6 +48,10 @@ import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
+import WorkoutHeader from '@/Components/WorkoutHeader.vue';
+import WorkoutFooter from '@/Components/WorkoutFooter.vue';
+import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps({
   workoutLog: {
@@ -68,7 +66,7 @@ const props = defineProps({
 
 const workoutLogId = computed(() => props.workoutLog.id);
 const workoutStatus = computed(() => props.workoutLog.status ?? null);
-const workoutDate = computed(() => props.workoutLog.date ?? props.workoutLog.created_at ?? null);
+const workoutDate = computed(() => props.workoutLog.created_at ?? null);
 const workoutOwnerId = computed(() => props.workoutLog.user_id ?? null);
 const activities = computed(() => props.activities ?? []);
 

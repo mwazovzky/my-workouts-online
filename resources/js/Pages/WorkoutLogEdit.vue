@@ -4,15 +4,17 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Workout</h2>
         </template>
 
-        <div class="p-4">
-            <div class="mb-4 p-4 bg-white rounded shadow-sm">
-                <div class="font-semibold text-lg">Editing Workout Log #{{ workoutLogId }}</div>
-                <div class="text-sm text-gray-600">Date: {{ workoutDate }} · Status: {{ workoutStatus }}</div>
-            </div>
+        <WorkoutPageLayout>
+            <WorkoutHeader 
+                :workout-log-id="workoutLogId" 
+                :workout-date="workoutDate" 
+                :workout-status="workoutStatus"
+                title="Editing Workout Log"
+            />
 
             <!-- editing banner -->
             <div v-if="isEditable" class="mb-4 p-3 bg-green-50 border-l-4 border-green-400 text-green-800 rounded" role="status" aria-live="polite">
-                You are editing this workout. Changes will be saved to the server. Use "Finish Workout" when done.
+                You are editing this workout. Changes will be saved to the server. Use "Complete" when done.
             </div>
 
             <!-- not owner or not editable message -->
@@ -20,14 +22,8 @@
                 This workout cannot be edited here. Only the owner can edit while the workout status is "in_progress".
             </div>
 
-            <div class="mb-4">
-                <span class="px-4 py-2 inline-block text-sm text-gray-600">Workout opened</span>
-
-                <!-- Only show Finish when the log is editable (in_progress and owner) -->
-                <button v-if="isEditable" @click="finishWorkout" :disabled="isFinishing" class="ml-2 px-4 py-2 bg-green-600 text-white rounded flex items-center">
-                    <span v-if="!isFinishing">Finish Workout</span>
-                    <span v-else>Finishing…</span>
-                </button>
+            <div class="mb-6">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Workout opened</span>
             </div>
 
             <div>
@@ -40,7 +36,14 @@
                     @update-activity="payload => onUpdateActivity(payload)"
                 />
             </div>
-        </div>
+        </WorkoutPageLayout>
+
+        <WorkoutFooter :show="isEditable">
+            <Button @click="finishWorkout" :disabled="isFinishing" variant="outline" size="lg" class="px-8">
+                <span v-if="!isFinishing">Complete</span>
+                <span v-else>Completing…</span>
+            </Button>
+        </WorkoutFooter>
     </AuthenticatedLayout>
 </template>
 
@@ -49,6 +52,10 @@ import { ref, computed } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
+import WorkoutHeader from '@/Components/WorkoutHeader.vue';
+import WorkoutFooter from '@/Components/WorkoutFooter.vue';
+import WorkoutPageLayout from '@/Components/WorkoutPageLayout.vue';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps({
     workoutLog: {
@@ -68,7 +75,7 @@ const activities = ref(
 );
 
 const workoutStatus = ref(props.workoutLog.status ?? null);
-const workoutDate = ref(props.workoutLog.date ?? props.workoutLog.created_at ?? null);
+const workoutDate = ref(props.workoutLog.created_at ?? null);
 const workoutOwnerId = ref(props.workoutLog.user_id ?? null);
 
 // UI flags

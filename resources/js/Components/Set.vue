@@ -40,7 +40,7 @@ function remove() {
                     <Input v-model.number="local.repetitions" type="number" min="0" class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500" />
                 </template>
                 <template v-else>
-                    <Input :value="props.set.repetitions" type="number" disabled class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground" />
+                    <Input :model-value="local.repetitions" type="number" disabled class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground" />
                 </template>
             </div>
 
@@ -49,7 +49,7 @@ function remove() {
                     <Input v-model.number="local.weight" type="number" min="0" step="0.5" class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500" />
                 </template>
                 <template v-else>
-                    <Input :value="props.set.weight" type="number" disabled class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground" />
+                    <Input :model-value="local.weight" type="number" disabled class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground" />
                 </template>
             </div>
         </div>

@@ -1,5 +1,5 @@
 <script setup>
-import ActivityItem from '@/Components/ActivityItem.vue';
+import Activity from '@/Components/Activity.vue';
 
 const props = defineProps({
     activities: { type: Array, default: () => [] },
@@ -14,8 +14,8 @@ function forward(evName, payload) {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <ActivityItem
+    <div class="space-y-6">
+        <Activity
             v-for="activity in activities"
             :key="activity.id ?? activity.client_temp_id ?? activity.activity_template_id"
             :activity="activity"
