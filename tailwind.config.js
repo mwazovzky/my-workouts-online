@@ -10,6 +10,32 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
     ],
+    safelist: [
+        'bg-primary',
+        'bg-destructive',
+        'bg-secondary',
+        'text-primary-foreground',
+        'text-destructive-foreground',
+        'text-secondary-foreground',
+        'hover:bg-primary/90',
+        'hover:bg-primary/80',
+        'hover:bg-destructive/90',
+        'hover:bg-destructive/80',
+        'hover:bg-secondary/80',
+        // Badge variant classes
+        'bg-green-100',
+        'text-green-700',
+        'bg-yellow-100',
+        'text-yellow-700',
+        'bg-blue-100',
+        'text-blue-700',
+        'dark:bg-green-900',
+        'dark:text-green-300',
+        'dark:bg-yellow-900',
+        'dark:text-yellow-300',
+        'dark:bg-blue-900',
+        'dark:text-blue-300',
+    ],
 
     theme: {
     	extend: {
