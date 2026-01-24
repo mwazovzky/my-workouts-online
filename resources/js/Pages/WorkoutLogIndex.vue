@@ -5,7 +5,10 @@
         </template>
 
         <PageLayout>
-            <div v-if="workouts.data.length === 0" class="text-sm text-muted-foreground">No workouts yet.</div>
+            <Empty v-if="workouts.data.length === 0">
+                <EmptyTitle>No workouts yet</EmptyTitle>
+                <EmptyDescription>Start a workout to see it listed here</EmptyDescription>
+            </Empty>
             <ul v-else class="space-y-3">
                 <li v-for="workout in workouts.data" :key="workout.id">
                     <Card class="p-4">
@@ -82,6 +85,7 @@ import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
 

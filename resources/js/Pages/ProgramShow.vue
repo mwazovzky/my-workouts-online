@@ -5,6 +5,7 @@ import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
 
@@ -66,12 +67,13 @@ const enrollInProgram = () => enroll(props.program.id);
             <div class="mb-4">
                 <h4 class="font-semibold text-lg mb-4">Program Workouts</h4>
                 
-                <div v-if="workouts === null" class="text-sm text-muted-foreground">
-                    Loading workouts...
-                </div>
-                <div v-else-if="workouts.length === 0" class="text-sm text-muted-foreground">
-                    No workouts in this program yet.
-                </div>
+                <Empty v-if="workouts === null">
+                    <EmptyTitle>Loading workouts...</EmptyTitle>
+                </Empty>
+                <Empty v-else-if="workouts.length === 0">
+                    <EmptyTitle>No workouts yet</EmptyTitle>
+                    <EmptyDescription>This program doesn't have any workouts configured</EmptyDescription>
+                </Empty>
                 <ul v-else class="space-y-3">
                     <li v-for="workout in workouts" :key="workout.id">
                         <Card class="p-4">

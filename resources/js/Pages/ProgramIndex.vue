@@ -14,9 +14,10 @@
             </div>
 
             <!-- Program List -->
-            <div v-if="filteredPrograms.length === 0" class="text-sm text-muted-foreground">
-                No programs found.
-            </div>
+            <Empty v-if="filteredPrograms.length === 0">
+                <EmptyTitle>No programs found</EmptyTitle>
+                <EmptyDescription>There are no programs matching your filter</EmptyDescription>
+            </Empty>
             <ul v-else class="space-y-3">
                 <li v-for="program in filteredPrograms" :key="program.id">
                     <Card class="p-4">
@@ -64,6 +65,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { usePage } from '@inertiajs/vue3';
 import { useEnrollment } from '@/composables/useEnrollment';
 
