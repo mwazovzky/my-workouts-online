@@ -1,6 +1,8 @@
 # Laravel Workouts App
 
-![testing](https://github.com/mwazovzky/workouts/actions/workflows/testing.yml/badge.svg)
+
+![tests](https://github.com/mwazovzky/workouts/actions/workflows/tests.yml/badge.svg)
+![code style](https://github.com/mwazovzky/workouts/actions/workflows/code-style.yml/badge.svg)
 ![lint](https://github.com/mwazovzky/workouts/actions/workflows/lint.yml/badge.svg)
 [![codecov](https://codecov.io/gh/mwazovzky/workouts/graph/badge.svg)](https://codecov.io/gh/mwazovzky/workouts)
 
