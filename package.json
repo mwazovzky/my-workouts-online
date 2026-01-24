@@ -1,24 +1,31 @@
 {
      "name": "workouts",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite"
-    },
-    "devDependencies": {
-        "@inertiajs/vue3": "^2.0.0",
-        "@tailwindcss/forms": "^0.5.3",
-        "@tailwindcss/vite": "^4.0.0",
-        "@vitejs/plugin-vue": "^6.0.0",
-        "autoprefixer": "^10.4.12",
-        "axios": "^1.11.0",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^2.0.0",
-        "postcss": "^8.4.31",
-        "tailwindcss": "^3.2.1",
-        "vite": "^7.0.4",
-        "vite-plugin-vue-devtools": "^8.0.5",
-        "vue": "^3.4.0"
-    }
+     "private": true,
+     "type": "module",
+     "scripts": {
+          "build": "vite build",
+          "dev": "vite"
+     },
+     "devDependencies": {
+          "@inertiajs/vue3": "^2.0.0",
+          "@tailwindcss/forms": "^0.5.3",
+          "@tailwindcss/vite": "^4.0.0",
+          "@vitejs/plugin-vue": "^6.0.0",
+          "autoprefixer": "^10.4.12",
+          "axios": "^1.11.0",
+          "concurrently": "^9.0.1",
+          "laravel-vite-plugin": "^2.0.0",
+          "postcss": "^8.4.31",
+          "tailwindcss": "^3.2.1",
+          "vite": "^7.0.4",
+          "vite-plugin-vue-devtools": "^8.0.5",
+          "vue": "^3.4.0"
+     },
+     "dependencies": {
+          "class-variance-authority": "^0.7.1",
+          "clsx": "^2.1.1",
+          "lucide-vue-next": "^0.563.0",
+          "tailwind-merge": "^3.4.0",
+          "tailwindcss-animate": "^1.0.7"
+     }
 }
