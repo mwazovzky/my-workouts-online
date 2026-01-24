@@ -87,6 +87,7 @@ import PageLayout from '@/Components/PageLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-vue-next';
+import { formatDate } from '@/utils/date';
 
 const props = defineProps({
     workouts: {
@@ -97,18 +98,6 @@ const props = defineProps({
 
 const page = usePage();
 const currentUserId = () => page.props.auth?.user?.id ?? null;
-
-function formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    }).format(date);
-}
 
 async function deleteWorkout(id) {
     if (!confirm('Delete this workout? This action cannot be undone.')) return;
