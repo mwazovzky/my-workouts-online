@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
+import PageHeader from '@/Components/PageHeader.vue';
 import ProgramCard from '@/Components/ProgramCard.vue';
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -31,7 +32,7 @@ const enrollInProgram = () => enroll(props.program.id);
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Program Details</h2>
+      <PageHeader title="Program Show" />
     </template>
 
     <PageLayout>

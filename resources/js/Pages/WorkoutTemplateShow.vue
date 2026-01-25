@@ -1,22 +1,27 @@
 <script setup>
+import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import PageHeader from '@/Components/PageHeader.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
+import WorkoutFooter from '@/Components/WorkoutFooter.vue';
+import { Button } from '@/Components/ui/button';
 import { Form } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
   workout: {
     type: Object,
     required: true,
   },
 });
+
+const isStarting = ref(false);
 </script>
 
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        Workout Template Details
-      </h2>
+      <PageHeader title="Workout Template Show" />
     </template>
 
     <div>
@@ -32,27 +37,31 @@ defineProps({
         </div>
       </div>
 
-      <div class="mt-6">
-        <Form
-          v-slot="{ errors, processing }"
-          :action="route('workout.logs.store')"
-          method="post"
-          preserve-scroll
-        >
-          <input type="hidden" name="workout_template_id" :value="workout.id" />
-          <button
+    </div>
+
+    <WorkoutFooter :show="true">
+      <Form
+        v-slot="{ errors, processing }"
+        :action="route('workout.logs.store')"
+        method="post"
+        preserve-scroll
+      >
+        <div class="flex flex-col gap-2 w-full">
+          <Button
             type="submit"
-            class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium rounded hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-75"
+            size="lg"
+            class="px-8"
             :disabled="processing"
           >
             <span v-if="!processing">Start Workout</span>
             <span v-else>Starting…</span>
-          </button>
-          <p v-if="errors.workout_template_id" class="mt-2 text-sm text-red-600 dark:text-red-400">
+          </Button>
+          <p v-if="errors.workout_template_id" class="text-sm text-red-600 dark:text-red-400">
             {{ errors.workout_template_id }}
           </p>
-        </Form>
-      </div>
-    </div>
+        </div>
+        <input type="hidden" name="workout_template_id" :value="props.workout.id" />
+      </Form>
+    </WorkoutFooter>
   </AuthenticatedLayout>
 </template>

@@ -1,43 +1,30 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Show Workout</h2>
+      <PageHeader title="Workout Show" />
     </template>
 
     <PageLayout>
       <WorkoutCard :workout="workoutLog" />
-
-      <!-- prominent read-only banner -->
-      <div
-        class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded"
-        role="status"
-        aria-live="polite"
-      >
-        This is a read-only view of the workout. To make changes open the editor (available only
-        while the workout is in progress and you are the owner).
-      </div>
-
-      <div>
-        <ActivitiesList
-          v-if="activities.length"
-          :activities="activities"
-          :editable="false"
-          @add-set="() => {}"
-          @remove-set="() => {}"
-          @update-activity="() => {}"
-        />
-        <div v-else class="space-y-4">
-          <Card v-for="i in 2" :key="i" class="p-4">
-            <div class="mb-4 pb-4 border-b">
-              <Skeleton class="h-6 w-64 mb-3" />
-              <div class="space-y-2">
-                <Skeleton class="h-4 w-full" />
-                <Skeleton class="h-4 w-full" />
-              </div>
+      <ActivitiesList
+        v-if="activities.length"
+        :activities="activities"
+        :editable="false"
+        @add-set="() => {}"
+        @remove-set="() => {}"
+        @update-activity="() => {}"
+      />
+      <div v-else class="space-y-4">
+        <Card v-for="i in 2" :key="i" class="p-4">
+          <div class="mb-4 pb-4 border-b">
+            <Skeleton class="h-6 w-64 mb-3" />
+            <div class="space-y-2">
+              <Skeleton class="h-4 w-full" />
+              <Skeleton class="h-4 w-full" />
             </div>
-            <Skeleton class="h-10 w-full" />
-          </Card>
-        </div>
+          </div>
+          <Skeleton class="h-10 w-full" />
+        </Card>
       </div>
     </PageLayout>
 
@@ -58,6 +45,7 @@ import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutCard from '@/Components/WorkoutCard.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import PageLayout from '@/Components/PageLayout.vue';
+import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Skeleton } from '@/Components/ui/skeleton';

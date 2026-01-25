@@ -40,6 +40,8 @@ class WorkoutLogPageController extends Controller
 
         $workoutLog = WorkoutLog::query()
             ->ownedBy($user)
+            ->withActivitiesCount()
+            ->withTemplate()
             ->findOrFail($id);
 
         return Inertia::render('WorkoutLogShow', [

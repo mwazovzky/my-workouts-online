@@ -1,7 +1,7 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">My Workouts</h2>
+      <PageHeader title="Workout Index" />
     </template>
 
     <PageLayout>
@@ -87,6 +87,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
+import PageHeader from '@/Components/PageHeader.vue';
 import { Card } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

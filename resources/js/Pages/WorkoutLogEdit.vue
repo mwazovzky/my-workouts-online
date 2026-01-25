@@ -1,36 +1,11 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Workout</h2>
+      <PageHeader title="Workout Edit" />
     </template>
 
     <PageLayout>
-      <WorkoutCard :workout="workoutLog" title="Editing Workout Log" />
-
-      <!-- editing banner -->
-      <div
-        v-if="isEditable"
-        class="mb-4 p-3 bg-green-50 border-l-4 border-green-400 text-green-800 rounded"
-        role="status"
-        aria-live="polite"
-      >
-        You are editing this workout. Changes will be saved to the server. Use "Complete" when done.
-      </div>
-
-      <!-- not owner or not editable message -->
-      <div
-        v-else
-        class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded"
-        role="status"
-        aria-live="polite"
-      >
-        This workout cannot be edited here. Only the owner can edit while the workout status is
-        "in_progress".
-      </div>
-
-      <div class="mb-6">
-        <span class="text-sm text-gray-600 dark:text-gray-400">Workout opened</span>
-      </div>
+      <WorkoutCard :workout="workoutLog" />
 
       <div>
         <ActivitiesList
@@ -67,6 +42,7 @@ import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutCard from '@/Components/WorkoutCard.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import PageLayout from '@/Components/PageLayout.vue';
+import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
 
 const props = defineProps({
