@@ -1,6 +1,4 @@
 <script setup>
-import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
@@ -15,7 +13,6 @@ const props = defineProps({
   },
 });
 
-const isStarting = ref(false);
 </script>
 
 <template>
@@ -36,7 +33,6 @@ const isStarting = ref(false);
           <ActivitiesList :activities="workout.activities ?? []" :editable="false" />
         </div>
       </div>
-
     </div>
 
     <WorkoutFooter :show="true">
@@ -47,12 +43,7 @@ const isStarting = ref(false);
         preserve-scroll
       >
         <div class="flex flex-col gap-2 w-full">
-          <Button
-            type="submit"
-            size="lg"
-            class="px-8"
-            :disabled="processing"
-          >
+          <Button type="submit" size="lg" class="px-8" :disabled="processing">
             <span v-if="!processing">Start Workout</span>
             <span v-else>Starting…</span>
           </Button>

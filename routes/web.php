@@ -7,6 +7,7 @@ use App\Http\Controllers\ProgramPageController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\WorkoutLogPageController;
 use App\Http\Controllers\WorkoutTemplatePageController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index']);
@@ -64,5 +65,32 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/health', static fn () => response()->json([
+    'status' => 'ok',
+    'timestamp' => now()->toIso8601String(),
+]))->name('health');
+
+Route::get('/health/ready', static function () {
+    try {
+        DB::connection()->getPdo();
+
+        return response()->json([
+            'status' => 'ok',
+            'components' => [
+                'database' => 'up',
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    } catch (Throwable) {
+        return response()->json([
+            'status' => 'degraded',
+            'components' => [
+                'database' => 'down',
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ], 503);
+    }
+})->name('health.ready');
 
 require __DIR__.'/auth.php';
