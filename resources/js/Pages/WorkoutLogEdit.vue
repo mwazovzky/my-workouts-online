@@ -15,6 +15,7 @@
           @add-set="payload => onAddSet(payload)"
           @remove-set="payload => onRemoveSet(payload)"
           @update-activity="payload => onUpdateActivity(payload)"
+          @remove-activity="onRemoveActivity"
         />
       </div>
     </PageLayout>
@@ -166,5 +167,27 @@ function onRemoveSet({ activityId, id, order }) {
 function onUpdateActivity(updated) {
   const idx = activities.value.findIndex(a => a.id === updated.id);
   if (idx !== -1) activities.value[idx] = updated;
+}
+
+function onRemoveActivity(activityId) {
+  if (!isEditable.value) {
+    alert('This workout cannot be edited');
+    return;
+  }
+
+  if (!confirm('Delete this activity? This action cannot be undone.')) {
+    return;
+  }
+
+  router.delete(route('activities.destroy', { activity: activityId }), {
+    preserveScroll: true,
+    onSuccess: () => {
+      // Remove from local state to keep unsaved changes in other activities
+      activities.value = activities.value.filter(a => a.id !== activityId);
+    },
+    onError: () => {
+      alert('Failed to delete activity');
+    },
+  });
 }
 </script>

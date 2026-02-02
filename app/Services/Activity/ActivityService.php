@@ -158,4 +158,23 @@ class ActivityService implements ActivityServiceInterface
             );
         }
     }
+
+    /**
+     * Delete an Activity and its sets.
+     */
+    public function delete(Activity $activity): void
+    {
+        // Business rule: Cannot delete activities from completed workouts
+        if ($activity->workout->status === 'completed') {
+            abort(422, 'Cannot delete activities from completed workouts');
+        }
+
+        DB::transaction(function () use ($activity) {
+            // Explicitly delete sets (cascade exists but explicit for clarity)
+            $activity->sets()->delete();
+
+            // Delete the activity
+            $activity->delete();
+        });
+    }
 }

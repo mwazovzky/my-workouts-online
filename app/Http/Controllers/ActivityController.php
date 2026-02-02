@@ -21,4 +21,16 @@ class ActivityController extends Controller
 
         return back();
     }
+
+    /**
+     * Delete an Activity.
+     */
+    public function destroy(Activity $activity, ActivityServiceInterface $service): RedirectResponse
+    {
+        $this->authorize('delete', $activity);
+
+        $service->delete($activity);
+
+        return back();
+    }
 }

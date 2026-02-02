@@ -12,4 +12,9 @@ interface ActivityServiceInterface
      * @param  array{sets?: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric}>}  $data
      */
     public function update(Activity $activity, array $data): Activity;
+
+    /**
+     * Delete an Activity and its sets.
+     */
+    public function delete(Activity $activity): void;
 }

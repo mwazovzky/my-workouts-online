@@ -60,6 +60,10 @@ Route::patch('/activities/{activity}', [ActivityController::class, 'update'])
     ->middleware(['auth', 'verified'])
     ->name('activities.update');
 
+Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])
+    ->name('activities.destroy');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
