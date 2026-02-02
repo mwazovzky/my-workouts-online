@@ -15,7 +15,15 @@ class Exercise extends Model
         'name',
         'description',
         'equipment_id',
+        'rest_time_seconds',
     ];
+
+    public function casts(): array
+    {
+        return [
+            'rest_time_seconds' => 'integer',
+        ];
+    }
 
     public function equipment(): BelongsTo
     {

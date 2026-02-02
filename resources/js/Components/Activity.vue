@@ -2,7 +2,7 @@
 import Set from '@/Components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Plus, Save, Trash2 } from 'lucide-vue-next';
+import { Plus, Save, Trash2, Clock } from 'lucide-vue-next';
 
 const props = defineProps({
   activity: { type: Object, required: true },
@@ -10,6 +10,20 @@ const props = defineProps({
 });
 
 const emits = defineEmits(['update-activity', 'add-set', 'remove-set', 'remove-activity', 'save']);
+
+const formatRestTime = seconds => {
+  if (!seconds) return null;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (minutes > 0 && remainingSeconds > 0) {
+    return `${minutes}m ${remainingSeconds}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m`;
+  }
+  return `${seconds}s`;
+};
 
 function onSetUpdate(set) {
   const updated = {
@@ -46,7 +60,16 @@ function save() {
   <Card class="max-w-md mx-auto">
     <CardHeader class="pb-3 border-b">
       <div class="flex items-center justify-between gap-4">
-        <CardTitle class="text-base">{{ activity.exercise_name }}</CardTitle>
+        <div class="flex-1">
+          <CardTitle class="text-base">{{ activity.exercise_name }}</CardTitle>
+          <div
+            v-if="activity.rest_time_seconds"
+            class="flex items-center gap-1 text-xs text-muted-foreground mt-1"
+          >
+            <Clock class="h-3 w-3" />
+            <span>Rest: {{ formatRestTime(activity.rest_time_seconds) }}</span>
+          </div>
+        </div>
         <div v-if="editable" class="flex items-center gap-1 bg-muted/50 p-1 rounded-md">
           <Button variant="outline" size="sm" class="h-8" @click="addSet">
             <Plus class="h-4 w-4" />

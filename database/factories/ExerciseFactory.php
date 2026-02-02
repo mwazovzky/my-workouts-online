@@ -16,6 +16,7 @@ class ExerciseFactory extends Factory
             'name' => $this->faker->word,
             'description' => $this->faker->sentence,
             'equipment_id' => Equipment::factory(),
+            'rest_time_seconds' => $this->faker->randomElement([30, 45, 60, 90, 120, 180]),
         ];
     }
 }

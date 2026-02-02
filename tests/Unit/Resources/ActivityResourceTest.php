@@ -36,7 +36,7 @@ class ActivityResourceTest extends TestCase
     }
 
     #[Test]
-    public function resource_includes_exercise_name_via_accessor(): void
+    public function resource_includes_exercise_name_when_exercise_loaded(): void
     {
         $exercise = Exercise::factory()->create(['name' => 'Squat']);
         $workoutLog = WorkoutLog::factory()->create();
@@ -53,6 +53,7 @@ class ActivityResourceTest extends TestCase
         $array = $resource->toArray(request());
 
         $this->assertEquals('Squat', $array['exercise_name']);
+        $this->assertEquals($exercise->rest_time_seconds, $array['rest_time_seconds']);
     }
 
     #[Test]
@@ -72,8 +73,9 @@ class ActivityResourceTest extends TestCase
         $resource = new ActivityResource($activityWithoutExercise);
         $array = $resource->toArray(request());
 
-        // exercise_name accessor returns null when relationship not loaded
+        // exercise_name should be null when relationship not loaded
         $this->assertNull($array['exercise_name']);
+        $this->assertNull($array['rest_time_seconds']);
     }
 
     #[Test]
@@ -172,7 +174,7 @@ class ActivityResourceTest extends TestCase
         $resource = new ActivityResource($activity);
         $array = $resource->toArray(request());
 
-        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'sets'];
+        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'rest_time_seconds', 'sets'];
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $array);

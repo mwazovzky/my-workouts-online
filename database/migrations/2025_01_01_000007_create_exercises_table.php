@@ -14,6 +14,7 @@ class CreateExercisesTable extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('equipment_id')->nullable();
             $table->foreign('equipment_id')->references('id')->on('equipment')->onDelete('set null');
+            $table->unsignedInteger('rest_time_seconds')->default(90);
             $table->timestamps();
         });
     }
