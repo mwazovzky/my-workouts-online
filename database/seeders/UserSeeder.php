@@ -4,17 +4,20 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $users = [
-            ['name' => 'John Doe', 'email' => 'test@example.com', 'password' => bcrypt('password')],
-        ];
-
-        foreach ($users as $user) {
-            User::factory()->create($user);
-        }
+        User::updateOrCreate(
+            [
+                'email' => 'test@example.com',
+            ],
+            [
+                'name' => 'John Doe',
+                'password' => Hash::make('password'),
+            ],
+        );
     }
 }

@@ -15,7 +15,7 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::factory()->create([
+        Role::create([
             'name' => 'Admin',
             'description' => 'Administrator role with full access',
         ]);

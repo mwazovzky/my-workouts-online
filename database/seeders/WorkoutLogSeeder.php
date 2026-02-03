@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Activity;
-use App\Models\Set;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
@@ -36,7 +34,7 @@ class WorkoutLogSeeder extends Seeder
             $status = $i < 25 ? 'completed' : 'in_progress';
             $timestamp = now()->subDays($i);
 
-            $workoutLog = WorkoutLog::factory()->create([
+            $workoutLog = WorkoutLog::create([
                 'user_id' => $user->id,
                 'workout_template_id' => $template->id,
                 'status' => $status,
@@ -46,16 +44,13 @@ class WorkoutLogSeeder extends Seeder
 
             // Copy activities and sets from the template
             foreach ($template->activities()->orderBy('order')->get() as $templateActivity) {
-                $activity = Activity::factory()->create([
-                    'workout_type' => 'workout_log',
-                    'workout_id' => $workoutLog->id,
+                $activity = $workoutLog->activities()->create([
                     'exercise_id' => $templateActivity->exercise_id,
                     'order' => $templateActivity->order,
                 ]);
 
                 foreach ($templateActivity->sets()->orderBy('order')->get() as $templateSet) {
-                    Set::factory()->create([
-                        'activity_id' => $activity->id,
+                    $activity->sets()->create([
                         'order' => $templateSet->order,
                         'weight' => $templateSet->weight,
                         'repetitions' => $templateSet->repetitions,
