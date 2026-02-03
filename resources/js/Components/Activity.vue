@@ -2,17 +2,23 @@
 import Set from '@/Components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Plus, Save, Trash2, Clock } from 'lucide-vue-next';
+import { Plus, Trash2, Clock } from 'lucide-vue-next';
 
 const props = defineProps({
   activity: { type: Object, required: true },
   editable: { type: Boolean, default: false },
 });
 
-const emits = defineEmits(['update-activity', 'add-set', 'remove-set', 'remove-activity', 'save']);
+const emits = defineEmits([
+  'update-activity',
+  'add-set',
+  'remove-set',
+  'remove-activity',
+  'set-completion-toggled',
+]);
 
 const formatRestTime = seconds => {
-  if (!seconds) return null;
+  if (seconds == null) return null;
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
 
@@ -43,6 +49,12 @@ function onSetRemove({ id, order }) {
   emits('remove-set', { activityId: props.activity.id, id, order });
 }
 
+function onSetCompletionToggled(payload) {
+  // Ensure parent state reflects the toggled completion before we ask it to persist.
+  onSetUpdate(payload);
+  emits('set-completion-toggled', { activityId: props.activity.id, ...payload });
+}
+
 function addSet() {
   emits('add-set', { activityId: props.activity.id });
 }
@@ -50,39 +62,34 @@ function addSet() {
 function removeActivity() {
   emits('remove-activity', props.activity.id);
 }
-
-function save() {
-  emits('save', props.activity.id);
-}
 </script>
 
 <template>
   <Card class="max-w-md mx-auto">
     <CardHeader class="pb-3 border-b">
-      <div class="flex items-center justify-between gap-4">
+      <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
           <CardTitle class="text-base">{{ activity.exercise_name }}</CardTitle>
           <div
-            v-if="activity.rest_time_seconds"
-            class="flex items-center gap-1 text-xs text-muted-foreground mt-1"
+            v-if="activity.rest_time_seconds != null"
+            class="flex items-center gap-1 text-sm mt-1"
           >
-            <Clock class="h-3 w-3" />
+            <Clock class="h-4 w-4" />
             <span>Rest: {{ formatRestTime(activity.rest_time_seconds) }}</span>
           </div>
         </div>
-        <div v-if="editable" class="flex items-center gap-1 bg-muted/50 p-1 rounded-md">
-          <Button variant="outline" size="sm" class="h-8" @click="addSet">
-            <Plus class="h-4 w-4" />
+        <div v-if="editable" class="flex items-center gap-1">
+          <Button variant="outline" size="icon" aria-label="Add set" @click="addSet">
+            <Plus />
           </Button>
           <Button
-            size="sm"
-            class="h-8 active:scale-95 active:shadow-inner transition-transform"
-            @click="save"
+            variant="outline"
+            size="icon"
+            class="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            aria-label="Delete activity"
+            @click="removeActivity"
           >
-            <Save class="h-4 w-4" />
-          </Button>
-          <Button variant="destructive" size="sm" class="h-8" @click="removeActivity">
-            <Trash2 class="h-4 w-4" />
+            <Trash2 />
           </Button>
         </div>
       </div>
@@ -91,21 +98,19 @@ function save() {
     <CardContent class="py-3">
       <div class="space-y-2">
         <!-- Column Headers -->
-        <div class="flex items-end gap-2 pb-1">
-          <div class="w-12"></div>
-          <div class="flex gap-3 flex-1">
-            <div class="flex-1">
-              <label class="text-xs text-gray-500 dark:text-gray-400 text-right block pr-3"
-                >Reps</label
-              >
-            </div>
-            <div class="flex-1">
-              <label class="text-xs text-gray-500 dark:text-gray-400 text-right block pr-3"
-                >Weight</label
-              >
-            </div>
+        <div
+          class="grid grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem] items-end gap-2 text-xs font-medium text-muted-foreground"
+        >
+          <div class="text-center">#</div>
+          <div class="text-right pr-3">Reps</div>
+          <div class="text-right pr-3">Weight</div>
+          <div
+            class="text-center"
+            :title="editable ? 'Edits save when you mark a set complete.' : undefined"
+          >
+            Done
           </div>
-          <div class="w-8"></div>
+          <div class="text-center"><span class="sr-only">Remove</span></div>
         </div>
 
         <!-- Set Rows -->
@@ -116,6 +121,7 @@ function save() {
           :editable="editable"
           @update="onSetUpdate"
           @remove="onSetRemove"
+          @completion-toggled="onSetCompletionToggled"
         />
       </div>
     </CardContent>

@@ -15,6 +15,7 @@ class Set extends Model
         'order',
         'repetitions',
         'weight',
+        'is_completed',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class Set extends Model
             'order' => 'integer',
             'repetitions' => 'integer',
             'weight' => 'integer',
+            'is_completed' => 'boolean',
         ];
     }
 

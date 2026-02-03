@@ -28,6 +28,7 @@ class ActivityUpdateRequest extends FormRequest
             'sets.*.order' => ['required', 'integer', 'min:1', 'distinct'],
             'sets.*.repetitions' => ['required', 'integer', 'min:0'],
             'sets.*.weight' => ['required', 'numeric', 'min:0'],
+            'sets.*.is_completed' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -47,6 +48,7 @@ class ActivityUpdateRequest extends FormRequest
             'sets.*.order' => 'set order',
             'sets.*.repetitions' => 'set repetitions',
             'sets.*.weight' => 'set weight',
+            'sets.*.is_completed' => 'set completion',
         ];
     }
 }

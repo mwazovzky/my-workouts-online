@@ -12,7 +12,7 @@ class ActivityService implements ActivityServiceInterface
     /**
      * Update an Activity and its sets.
      *
-     * @param  array{sets?: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric}>}  $data
+     * @param  array{sets?: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>}  $data
      */
     public function update(Activity $activity, array $data): Activity
     {
@@ -39,7 +39,7 @@ class ActivityService implements ActivityServiceInterface
      * Normalize the sets payload and recalculate orders to be sequential starting from 1.
      *
      * @param  array<int, mixed>  $sets
-     * @return array<int, array{id: int|null, order: int, repetitions: int, weight: numeric}>
+     * @return array<int, array{id: int|null, order: int, repetitions: int, weight: numeric, is_completed: bool}>
      */
     private function normalizeSetsPayload(array $sets): array
     {
@@ -51,6 +51,7 @@ class ActivityService implements ActivityServiceInterface
                 'order' => $index + 1,
                 'repetitions' => (int) $set['repetitions'],
                 'weight' => $set['weight'],
+                'is_completed' => (bool) ($set['is_completed'] ?? false),
             ])
             ->all();
     }
@@ -126,7 +127,7 @@ class ActivityService implements ActivityServiceInterface
     /**
      * Upsert sets using bulk operations for better performance.
      *
-     * @param  array<int, array{id: int|null, order: int, repetitions: int, weight: numeric}>  $sets
+     * @param  array<int, array{id: int|null, order: int, repetitions: int, weight: numeric, is_completed: bool}>  $sets
      */
     private function upsertSets(Activity $activity, array $sets): void
     {
@@ -141,9 +142,10 @@ class ActivityService implements ActivityServiceInterface
                     'order' => $set['order'],
                     'repetitions' => $set['repetitions'],
                     'weight' => $set['weight'],
+                    'is_completed' => $set['is_completed'],
                 ])->all(),
                 uniqueBy: ['id'],
-                update: ['order', 'repetitions', 'weight']
+                update: ['order', 'repetitions', 'weight', 'is_completed']
             );
         }
 
@@ -154,6 +156,7 @@ class ActivityService implements ActivityServiceInterface
                     'order' => $set['order'],
                     'repetitions' => $set['repetitions'],
                     'weight' => $set['weight'],
+                    'is_completed' => $set['is_completed'],
                 ])->all()
             );
         }

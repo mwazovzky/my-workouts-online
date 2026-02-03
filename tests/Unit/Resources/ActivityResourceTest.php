@@ -111,6 +111,7 @@ class ActivityResourceTest extends TestCase
             $this->assertArrayHasKey('order', $set);
             $this->assertArrayHasKey('repetitions', $set);
             $this->assertArrayHasKey('weight', $set);
+            $this->assertArrayHasKey('is_completed', $set);
         }
     }
 

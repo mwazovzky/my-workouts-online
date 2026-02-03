@@ -11,7 +11,7 @@
         <ActivitiesList
           :activities="activities"
           :editable="isEditable"
-          @save-activity="onSaveActivity"
+          @set-completion-toggled="onSetCompletionToggled"
           @add-set="payload => onAddSet(payload)"
           @remove-set="payload => onRemoveSet(payload)"
           @update-activity="payload => onUpdateActivity(payload)"
@@ -59,11 +59,13 @@ const activities = ref(
     id: a.id,
     exercise_id: a.exercise_id ?? null,
     exercise_name: a.exercise_name ?? '',
+    rest_time_seconds: a.rest_time_seconds ?? null,
     sets: (a.sets ?? []).map(s => ({
       id: s.id ?? null,
       order: s.order,
       repetitions: s.repetitions,
       weight: s.weight,
+      is_completed: s.is_completed ?? false,
     })),
   }))
 );
@@ -91,7 +93,7 @@ const activityForm = useForm({
 });
 
 // Save a single activity (upsert sets)
-async function saveActivity(activityId) {
+function saveActivity(activityId, { onError } = {}) {
   if (!isEditable.value) {
     alert('This workout cannot be edited');
     return;
@@ -108,11 +110,13 @@ async function saveActivity(activityId) {
     order: s.order,
     repetitions: s.repetitions,
     weight: s.weight,
+    is_completed: s.is_completed ?? false,
   }));
 
   activityForm.patch(route('activities.update', { activity: activity.id }), {
     preserveScroll: true,
     onError: () => {
+      onError?.();
       alert('Failed to save activity');
     },
   });
@@ -140,9 +144,23 @@ function finishWorkout() {
   });
 }
 
-// handlers forwarded from components
-function onSaveActivity(id) {
-  saveActivity(id);
+function revertSetCompletion({ activityId, id, order, previous }) {
+  const activity = activities.value.find(a => a.id === activityId);
+  if (!activity) return;
+
+  const set = activity.sets.find(s => (id ? s.id === id : s.order === order));
+  if (!set) return;
+
+  set.is_completed = previous;
+}
+
+function onSetCompletionToggled(payload) {
+  // Persist only on checkbox toggle.
+  saveActivity(payload.activityId, {
+    onError: () => {
+      revertSetCompletion(payload);
+    },
+  });
 }
 
 // remove/add set handlers (simple client-side updates)
@@ -150,7 +168,13 @@ function onAddSet({ activityId }) {
   const activity = activities.value.find(a => a.id === activityId);
   if (!activity) return;
   const maxOrder = activity.sets.length ? Math.max(...activity.sets.map(s => s.order)) : 0;
-  activity.sets.push({ id: null, order: maxOrder + 1, repetitions: 0, weight: 0 });
+  activity.sets.push({
+    id: null,
+    order: maxOrder + 1,
+    repetitions: 0,
+    weight: 0,
+    is_completed: false,
+  });
 }
 
 function onRemoveSet({ activityId, id, order }) {

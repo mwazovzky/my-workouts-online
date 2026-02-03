@@ -9,7 +9,7 @@ interface ActivityServiceInterface
     /**
      * Update an Activity and its sets.
      *
-     * @param  array{sets?: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric}>}  $data
+     * @param  array{sets?: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>}  $data
      */
     public function update(Activity $activity, array $data): Activity;
 

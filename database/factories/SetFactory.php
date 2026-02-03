@@ -17,6 +17,7 @@ class SetFactory extends Factory
             'order' => $this->faker->numberBetween(1, 5),
             'repetitions' => $this->faker->numberBetween(5, 15),
             'weight' => $this->faker->randomFloat(2, 10, 100),
+            'is_completed' => $this->faker->boolean(20),
         ];
     }
 }

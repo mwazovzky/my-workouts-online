@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Set;
 use App\Models\User;
 use App\Models\WorkoutLog;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -29,9 +30,12 @@ class ActivityDeleteTest extends TestCase
             'workout_id' => $workoutLog->id,
         ]);
 
-        Set::factory()->count(3)->create([
-            'activity_id' => $activity->id,
-        ]);
+        Set::factory()
+            ->count(3)
+            ->state(new Sequence(fn (Sequence $sequence) => ['order' => $sequence->index + 1]))
+            ->create([
+                'activity_id' => $activity->id,
+            ]);
 
         $this->assertDatabaseHas('activities', ['id' => $activity->id]);
         $this->assertDatabaseCount('sets', 3);
@@ -61,9 +65,12 @@ class ActivityDeleteTest extends TestCase
             'workout_id' => $otherUserWorkoutLog->id,
         ]);
 
-        Set::factory()->count(2)->create([
-            'activity_id' => $activity->id,
-        ]);
+        Set::factory()
+            ->count(2)
+            ->state(new Sequence(fn (Sequence $sequence) => ['order' => $sequence->index + 1]))
+            ->create([
+                'activity_id' => $activity->id,
+            ]);
 
         $response = $this
             ->actingAs($user)
@@ -90,9 +97,12 @@ class ActivityDeleteTest extends TestCase
             'workout_id' => $workoutLog->id,
         ]);
 
-        Set::factory()->count(2)->create([
-            'activity_id' => $activity->id,
-        ]);
+        Set::factory()
+            ->count(2)
+            ->state(new Sequence(fn (Sequence $sequence) => ['order' => $sequence->index + 1]))
+            ->create([
+                'activity_id' => $activity->id,
+            ]);
 
         $response = $this
             ->actingAs($user)

@@ -11,7 +11,7 @@ const emits = defineEmits([
   'add-set',
   'remove-set',
   'remove-activity',
-  'save-activity',
+  'set-completion-toggled',
 ]);
 
 function forward(evName, payload) {
@@ -30,7 +30,7 @@ function forward(evName, payload) {
       @add-set="payload => forward('add-set', payload)"
       @remove-set="payload => forward('remove-set', payload)"
       @remove-activity="payload => forward('remove-activity', payload)"
-      @save="id => forward('save-activity', id)"
+      @set-completion-toggled="payload => forward('set-completion-toggled', payload)"
     />
   </div>
 </template>

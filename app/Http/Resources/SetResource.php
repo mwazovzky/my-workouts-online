@@ -13,6 +13,7 @@ class SetResource extends JsonResource
             'order' => $this->order,
             'repetitions' => $this->repetitions ?? 0,
             'weight' => $this->weight ?? 0,
+            'is_completed' => $this->is_completed,
         ];
     }
 }

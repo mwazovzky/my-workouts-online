@@ -1,22 +1,25 @@
 <script setup>
-import { reactive, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import { Trash2 } from 'lucide-vue-next';
+import { Check, Minus } from 'lucide-vue-next';
 
 const props = defineProps({
   set: { type: Object, required: true },
   editable: { type: Boolean, default: false },
 });
 
-const emits = defineEmits(['update', 'remove']);
+const emits = defineEmits(['update', 'remove', 'completion-toggled']);
 
 const local = reactive({
   id: props.set.id ?? null,
   order: props.set.order,
   repetitions: props.set.repetitions ?? 0,
   weight: props.set.weight ?? 0,
+  is_completed: props.set.is_completed ?? false,
 });
+
+const inputsDisabled = computed(() => !props.editable || local.is_completed);
 
 watch(
   () => [local.repetitions, local.weight],
@@ -26,9 +29,43 @@ watch(
       order: local.order,
       repetitions: Number(local.repetitions),
       weight: Number(local.weight),
+      is_completed: local.is_completed,
     });
   }
 );
+
+watch(
+  () => props.set.is_completed,
+  val => {
+    local.is_completed = !!val;
+  }
+);
+
+function onCheckedUpdate(val) {
+  if (!props.editable) {
+    return;
+  }
+
+  const previous = local.is_completed;
+  local.is_completed = !!val;
+
+  emits('update', {
+    id: local.id,
+    order: local.order,
+    repetitions: Number(local.repetitions),
+    weight: Number(local.weight),
+    is_completed: local.is_completed,
+  });
+
+  emits('completion-toggled', {
+    id: local.id,
+    order: local.order,
+    repetitions: Number(local.repetitions),
+    weight: Number(local.weight),
+    is_completed: local.is_completed,
+    previous,
+  });
+}
 
 function remove() {
   emits('remove', { id: local.id, order: local.order });
@@ -36,54 +73,59 @@ function remove() {
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <div class="w-12 text-sm font-medium text-muted-foreground">Set {{ local.order }}</div>
-
-    <div class="flex gap-4 flex-1">
-      <div class="flex flex-col gap-1 flex-1">
-        <template v-if="editable">
-          <Input
-            v-model.number="local.repetitions"
-            type="number"
-            min="0"
-            class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500"
-          />
-        </template>
-        <template v-else>
-          <Input
-            :model-value="local.repetitions"
-            type="number"
-            disabled
-            class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground"
-          />
-        </template>
-      </div>
-
-      <div class="flex flex-col gap-1 flex-1">
-        <template v-if="editable">
-          <Input
-            v-model.number="local.weight"
-            type="number"
-            min="0"
-            step="0.5"
-            class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500"
-          />
-        </template>
-        <template v-else>
-          <Input
-            :model-value="local.weight"
-            type="number"
-            disabled
-            class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground"
-          />
-        </template>
-      </div>
+  <div
+    class="group grid grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem] items-center gap-2"
+    :class="{ 'opacity-70': local.is_completed }"
+  >
+    <div class="text-xs font-medium tabular-nums text-muted-foreground text-center">
+      {{ local.order }}
     </div>
 
-    <div>
-      <Button v-if="editable" variant="destructive" size="sm" class="h-8 w-8 p-0" @click="remove">
-        <Trash2 class="h-4 w-4" />
-      </Button>
+    <Input
+      v-model.number="local.repetitions"
+      type="number"
+      min="0"
+      :disabled="inputsDisabled"
+      class="h-9 text-right tabular-nums"
+    />
+
+    <Input
+      v-model.number="local.weight"
+      type="number"
+      min="0"
+      step="0.5"
+      :disabled="inputsDisabled"
+      class="h-9 text-right tabular-nums"
+    />
+
+    <Button
+      v-if="editable"
+      :variant="local.is_completed ? 'secondary' : 'outline'"
+      size="icon"
+      :class="local.is_completed ? 'text-foreground' : 'text-muted-foreground'"
+      :aria-label="`Mark set ${local.order} as ${local.is_completed ? 'incomplete' : 'complete'}`"
+      @click="onCheckedUpdate(!local.is_completed)"
+    >
+      <Check v-if="local.is_completed" class="h-4 w-4" />
+    </Button>
+    <div
+      v-else
+      class="h-9 w-9 rounded-md border border-input bg-background flex items-center justify-center opacity-60"
+      aria-hidden="true"
+    >
+      <Check v-if="local.is_completed" class="h-4 w-4" />
     </div>
+
+    <Button
+      v-if="editable"
+      variant="outline"
+      size="icon"
+      class="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      :aria-label="`Remove set ${local.order}`"
+      @click="remove"
+    >
+      <Minus class="h-4 w-4" />
+    </Button>
+    <div v-else class="h-9 w-9" />
   </div>
 </template>
