@@ -60,6 +60,8 @@ const activities = ref(
     exercise_id: a.exercise_id ?? null,
     exercise_name: a.exercise_name ?? '',
     rest_time_seconds: a.rest_time_seconds ?? null,
+    exercise_equipment_name: a.exercise_equipment_name ?? null,
+    exercise_category_names: a.exercise_category_names ?? [],
     sets: (a.sets ?? []).map(s => ({
       id: s.id ?? null,
       order: s.order,

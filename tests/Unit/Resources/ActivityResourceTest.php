@@ -4,6 +4,8 @@ namespace Tests\Unit\Resources;
 
 use App\Http\Resources\ActivityResource;
 use App\Models\Activity;
+use App\Models\Category;
+use App\Models\Equipment;
 use App\Models\Exercise;
 use App\Models\Set;
 use App\Models\WorkoutLog;
@@ -38,7 +40,15 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function resource_includes_exercise_name_when_exercise_loaded(): void
     {
-        $exercise = Exercise::factory()->create(['name' => 'Squat']);
+        $equipment = Equipment::factory()->create(['name' => 'Barbell']);
+        $category = Category::query()->create(['name' => 'Strength']);
+
+        $exercise = Exercise::factory()->create([
+            'name' => 'Squat',
+            'equipment_id' => $equipment->id,
+        ]);
+
+        $exercise->categories()->attach($category);
         $workoutLog = WorkoutLog::factory()->create();
 
         $activity = Activity::factory()->create([
@@ -47,13 +57,15 @@ class ActivityResourceTest extends TestCase
             'workout_type' => 'workout_log',
         ]);
 
-        // Load activity with exercise relationship
-        $activityWithExercise = Activity::with('exercise')->find($activity->id);
+        // Load activity with exercise relationship (including equipment + categories)
+        $activityWithExercise = Activity::with('exercise.equipment', 'exercise.categories')->find($activity->id);
         $resource = new ActivityResource($activityWithExercise);
         $array = $resource->toArray(request());
 
         $this->assertEquals('Squat', $array['exercise_name']);
         $this->assertEquals($exercise->rest_time_seconds, $array['rest_time_seconds']);
+        $this->assertSame('Barbell', $array['exercise_equipment_name']);
+        $this->assertSame(['Strength'], $array['exercise_category_names']);
     }
 
     #[Test]
@@ -76,6 +88,8 @@ class ActivityResourceTest extends TestCase
         // exercise_name should be null when relationship not loaded
         $this->assertNull($array['exercise_name']);
         $this->assertNull($array['rest_time_seconds']);
+        $this->assertNull($array['exercise_equipment_name']);
+        $this->assertSame([], $array['exercise_category_names']);
     }
 
     #[Test]
@@ -175,7 +189,7 @@ class ActivityResourceTest extends TestCase
         $resource = new ActivityResource($activity);
         $array = $resource->toArray(request());
 
-        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'rest_time_seconds', 'sets'];
+        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'rest_time_seconds', 'exercise_equipment_name', 'exercise_category_names', 'sets'];
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $array);

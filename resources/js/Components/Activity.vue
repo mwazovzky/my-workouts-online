@@ -1,6 +1,7 @@
 <script setup>
 import Set from '@/Components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Plus, Trash2, Clock } from 'lucide-vue-next';
 
@@ -70,6 +71,15 @@ function removeActivity() {
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
           <CardTitle class="text-base">{{ activity.exercise_name }}</CardTitle>
+
+          <div class="flex flex-wrap items-center gap-2 mt-1">
+            <Badge variant="secondary">
+              Category: {{ (activity.exercise_category_names ?? []).join(', ') || '—' }}
+            </Badge>
+            <Badge variant="secondary">
+              Equipment: {{ activity.exercise_equipment_name ?? '—' }}
+            </Badge>
+          </div>
           <div
             v-if="activity.rest_time_seconds != null"
             class="flex items-center gap-1 text-sm mt-1"
