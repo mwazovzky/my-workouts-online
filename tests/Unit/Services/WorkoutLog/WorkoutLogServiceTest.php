@@ -41,7 +41,7 @@ class WorkoutLogServiceTest extends TestCase
 
         $this->assertInstanceOf(WorkoutLog::class, $workoutLog);
         $this->assertEquals($workoutTemplate->id, $workoutLog->workout_template_id);
-        $this->assertEquals('in_progress', $workoutLog->status);
+        $this->assertEquals('in_progress', $workoutLog->status->value);
 
         $this->assertDatabaseHas('workout_logs', [
             'id' => $workoutLog->id,

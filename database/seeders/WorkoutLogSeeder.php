@@ -37,6 +37,7 @@ class WorkoutLogSeeder extends Seeder
             $workoutLog = WorkoutLog::create([
                 'user_id' => $user->id,
                 'workout_template_id' => $template->id,
+                'name' => $template->name,
                 'status' => $status,
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,

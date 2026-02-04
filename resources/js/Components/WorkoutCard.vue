@@ -13,8 +13,8 @@ defineProps({
 
 <template>
   <ModelCard
-    :title="workout.workout_template.name"
-    :description="workout.workout_template.description"
+    :title="workout.name ?? workout.workout_template?.name ?? 'Workout'"
+    :description="workout.workout_template?.description ?? null"
   >
     <template #metadata>
       <div class="flex items-center gap-2 flex-wrap">

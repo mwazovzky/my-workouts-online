@@ -39,6 +39,7 @@ class WorkoutLogPageTest extends TestCase
             ->has('workouts.data')
             ->has('workouts.links')
             ->where('workouts.data.0.id', $log->id)
+            ->has('workouts.data.0.name')
             ->has('workouts.data.0.workout_template')
             ->has('workouts.data.0.activities_count')
         );
@@ -65,6 +66,7 @@ class WorkoutLogPageTest extends TestCase
             ->component('WorkoutLogShow')
             ->has('workoutLog')
             ->where('workoutLog.id', $log->id)
+            ->has('workoutLog.name')
         );
     }
 
@@ -97,6 +99,7 @@ class WorkoutLogPageTest extends TestCase
             ->component('WorkoutLogEdit')
             ->has('workoutLog')
             ->where('workoutLog.id', $log->id)
+            ->has('workoutLog.name')
             ->has('workoutLog.activities')
             ->has('workoutLog.activities.0.sets.0.id')
         );

@@ -28,11 +28,32 @@
       </div>
     </PageLayout>
 
-    <WorkoutFooter :show="canEdit">
-      <Button :disabled="editingNav" variant="outline" size="lg" class="px-8" @click="goEdit">
-        <span v-if="!editingNav">Continue</span>
-        <span v-else>Opening…</span>
-      </Button>
+    <WorkoutFooter :show="canEdit || canRepeat">
+      <div class="flex items-center gap-2">
+        <Button
+          v-if="canRepeat"
+          :disabled="repeatNav"
+          variant="default"
+          size="lg"
+          class="px-8"
+          @click="repeatWorkout"
+        >
+          <span v-if="!repeatNav">Repeat workout</span>
+          <span v-else>Starting…</span>
+        </Button>
+
+        <Button
+          v-if="canEdit"
+          :disabled="editingNav"
+          variant="outline"
+          size="lg"
+          class="px-8"
+          @click="goEdit"
+        >
+          <span v-if="!editingNav">Continue</span>
+          <span v-else>Opening…</span>
+        </Button>
+      </div>
     </WorkoutFooter>
   </AuthenticatedLayout>
 </template>
@@ -69,12 +90,21 @@ const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
 
 const editingNav = ref(false);
+const repeatNav = ref(false);
 
 // allow navigation to editor only for owner and when status is in_progress
 const canEdit = computed(() => {
   return (
     !!currentUserId.value &&
     workoutStatus.value === 'in_progress' &&
+    workoutOwnerId.value === currentUserId.value
+  );
+});
+
+const canRepeat = computed(() => {
+  return (
+    !!currentUserId.value &&
+    workoutStatus.value === 'completed' &&
     workoutOwnerId.value === currentUserId.value
   );
 });
@@ -88,5 +118,19 @@ function goEdit() {
       editingNav.value = false;
     },
   });
+}
+
+function repeatWorkout() {
+  if (!canRepeat.value) return;
+  repeatNav.value = true;
+  router.post(
+    route('workout.logs.repeat', { workoutLog: props.workoutLog.id }),
+    {},
+    {
+      onFinish: () => {
+        repeatNav.value = false;
+      },
+    }
+  );
 }
 </script>

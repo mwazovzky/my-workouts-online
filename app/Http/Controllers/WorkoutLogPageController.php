@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\WorkoutLogStatus;
 use App\Http\Requests\WorkoutLogStoreRequest;
 use App\Http\Resources\ActivityResource;
 use App\Http\Resources\WorkoutLogResource;
@@ -78,10 +79,19 @@ class WorkoutLogPageController extends Controller
     {
         $this->authorize('complete', $workoutLog);
 
-        $workoutLog->status = 'completed';
+        $workoutLog->status = WorkoutLogStatus::Completed;
         $workoutLog->save();
 
         return redirect()->route('workout.logs.edit', ['id' => $workoutLog->id]);
+    }
+
+    public function repeat(WorkoutLog $workoutLog, Request $request, WorkoutLogServiceInterface $service): RedirectResponse
+    {
+        $this->authorize('repeat', $workoutLog);
+
+        $newWorkoutLog = $service->repeat($workoutLog);
+
+        return redirect()->route('workout.logs.edit', ['id' => $newWorkoutLog->id]);
     }
 
     public function destroy(WorkoutLog $workoutLog, WorkoutLogServiceInterface $service): RedirectResponse

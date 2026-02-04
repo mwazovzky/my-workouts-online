@@ -57,6 +57,7 @@ class WorkoutLogStoreTest extends TestCase
         $this->assertDatabaseHas('workout_logs', [
             'id' => $workout->id,
             'workout_template_id' => $workoutTemplate->id,
+            'name' => $workoutTemplate->name,
         ]);
 
         $this->assertDatabaseHas('activities', [

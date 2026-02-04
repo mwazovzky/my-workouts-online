@@ -30,7 +30,7 @@ class WorkoutLogAuthorizationTest extends TestCase
         $response->assertForbidden();
 
         $otherUserWorkoutLog->refresh();
-        $this->assertSame('in_progress', $otherUserWorkoutLog->status);
+        $this->assertSame('in_progress', $otherUserWorkoutLog->status->value);
     }
 
     #[Test]

@@ -2,6 +2,7 @@
 
 namespace App\Services\Activity;
 
+use App\Enums\WorkoutLogStatus;
 use App\Models\Activity;
 use App\Models\Set;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class ActivityService implements ActivityServiceInterface
     public function update(Activity $activity, array $data): Activity
     {
         // Business rule: Cannot update activities in completed workouts
-        if ($activity->workout->status === 'completed') {
+        if ($activity->workout->status === WorkoutLogStatus::Completed) {
             abort(422, 'Cannot update activities in completed workouts');
         }
 
@@ -168,7 +169,7 @@ class ActivityService implements ActivityServiceInterface
     public function delete(Activity $activity): void
     {
         // Business rule: Cannot delete activities from completed workouts
-        if ($activity->workout->status === 'completed') {
+        if ($activity->workout->status === WorkoutLogStatus::Completed) {
             abort(422, 'Cannot delete activities from completed workouts');
         }
 

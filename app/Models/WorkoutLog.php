@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\WorkoutLogStatus;
 use App\QueryBuilders\WorkoutLogBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,7 @@ class WorkoutLog extends Model
     protected $fillable = [
         'user_id',
         'workout_template_id',
+        'name',
         'status',
     ];
 
@@ -30,6 +32,8 @@ class WorkoutLog extends Model
         return [
             'user_id' => 'integer',
             'workout_template_id' => 'integer',
+            'name' => 'string',
+            'status' => WorkoutLogStatus::class,
         ];
     }
 

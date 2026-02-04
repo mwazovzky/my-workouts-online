@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\WorkoutLogStatus;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
@@ -16,7 +17,8 @@ class WorkoutLogFactory extends Factory
         return [
             'workout_template_id' => WorkoutTemplate::factory(),
             'user_id' => User::factory(),
-            'status' => 'in_progress',
+            'name' => $this->faker->words(3, true),
+            'status' => WorkoutLogStatus::InProgress,
         ];
     }
 }

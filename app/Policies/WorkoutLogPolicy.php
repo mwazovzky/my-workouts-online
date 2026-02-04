@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\WorkoutLogStatus;
 use App\Models\User;
 use App\Models\WorkoutLog;
 
@@ -18,6 +19,15 @@ class WorkoutLogPolicy
             return false;
         }
 
-        return $workoutLog->status === 'in_progress';
+        return $workoutLog->status === WorkoutLogStatus::InProgress;
+    }
+
+    public function repeat(User $user, WorkoutLog $workoutLog): bool
+    {
+        if ($workoutLog->user_id !== $user->id) {
+            return false;
+        }
+
+        return $workoutLog->status === WorkoutLogStatus::Completed;
     }
 }

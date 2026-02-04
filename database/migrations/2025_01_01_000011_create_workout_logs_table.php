@@ -10,8 +10,9 @@ class CreateWorkoutLogsTable extends Migration
     {
         Schema::create('workout_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('workout_template_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('workout_template_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
             $table->string('status')->default('in_progress');
             $table->timestamps();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Services\WorkoutLog;
 
+use App\Enums\WorkoutLogStatus;
 use App\Models\User;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutTemplate;
@@ -20,7 +21,8 @@ class WorkoutLogService implements WorkoutLogServiceInterface
             $workoutLog = WorkoutLog::create([
                 'workout_template_id' => $workoutTemplate->id,
                 'user_id' => $user->id,
-                'status' => 'in_progress',
+                'name' => $workoutTemplate->name,
+                'status' => WorkoutLogStatus::InProgress,
             ]);
 
             foreach ($workoutTemplate->activities as $templateActivity) {
@@ -44,6 +46,41 @@ class WorkoutLogService implements WorkoutLogServiceInterface
         $workoutLog->setRelation('workoutTemplate', $workoutTemplate);
 
         return $workoutLog;
+    }
+
+    /**
+     * Create a new in-progress workout log by copying from an existing workout log.
+     */
+    public function repeat(WorkoutLog $sourceWorkoutLog): WorkoutLog
+    {
+        $sourceWorkoutLog->loadMissing(['activities.sets']);
+
+        return DB::transaction(function () use ($sourceWorkoutLog) {
+            $newWorkoutLog = WorkoutLog::create([
+                'workout_template_id' => null,
+                'user_id' => $sourceWorkoutLog->user_id,
+                'name' => $sourceWorkoutLog->name,
+                'status' => WorkoutLogStatus::InProgress,
+            ]);
+
+            foreach ($sourceWorkoutLog->activities as $sourceActivity) {
+                $newActivity = $newWorkoutLog->activities()->create([
+                    'exercise_id' => $sourceActivity->exercise_id,
+                    'order' => $sourceActivity->order,
+                ]);
+
+                foreach ($sourceActivity->sets as $sourceSet) {
+                    $newActivity->sets()->create([
+                        'order' => $sourceSet->order,
+                        'repetitions' => $sourceSet->repetitions,
+                        'weight' => $sourceSet->weight,
+                        'is_completed' => false,
+                    ]);
+                }
+            }
+
+            return $newWorkoutLog;
+        });
     }
 
     /**

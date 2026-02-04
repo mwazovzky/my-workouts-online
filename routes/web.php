@@ -52,6 +52,10 @@ Route::post('/workout-logs/{workoutLog}/complete', [WorkoutLogPageController::cl
     ->middleware(['auth', 'verified'])
     ->name('workout.logs.complete');
 
+Route::post('/workout-logs/{workoutLog}/repeat', [WorkoutLogPageController::class, 'repeat'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.repeat');
+
 Route::delete('/workout-logs/{workoutLog}', [WorkoutLogPageController::class, 'destroy'])
     ->middleware(['auth', 'verified'])
     ->name('workout.logs.destroy');

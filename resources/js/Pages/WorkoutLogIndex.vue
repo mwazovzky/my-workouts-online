@@ -21,7 +21,9 @@
                     v-if="workout.status === 'completed'"
                     class="w-4 h-4 text-muted-foreground flex-shrink-0"
                   />
-                  <span class="truncate">{{ workout.workout_template?.name ?? 'Workout' }}</span>
+                  <span class="truncate">{{
+                    workout.name ?? workout.workout_template?.name ?? 'Workout'
+                  }}</span>
                 </div>
                 <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                   <span
