@@ -5,7 +5,7 @@
     </template>
 
     <PageLayout>
-      <WorkoutCard :workout="workoutLog" />
+      <WorkoutCard :workout="workout" />
       <ActivitiesList
         v-if="activities.length"
         :activities="activities"
@@ -72,7 +72,7 @@ import { Card } from '@/Components/ui/card';
 import { Skeleton } from '@/Components/ui/skeleton';
 
 const props = defineProps({
-  workoutLog: {
+  workout: {
     type: Object,
     required: true,
   },
@@ -82,8 +82,8 @@ const props = defineProps({
   },
 });
 
-const workoutOwnerId = computed(() => props.workoutLog.user_id ?? null);
-const workoutStatus = computed(() => props.workoutLog.status ?? null);
+const workoutOwnerId = computed(() => props.workout.user_id ?? null);
+const workoutStatus = computed(() => props.workout.status ?? null);
 const activities = computed(() => props.activities ?? []);
 
 const page = usePage();
@@ -113,7 +113,7 @@ const canRepeat = computed(() => {
 function goEdit() {
   if (!canEdit.value) return;
   editingNav.value = true;
-  router.visit(route('workout.logs.edit', { id: props.workoutLog.id }), {
+  router.visit(route('workouts.edit', { id: props.workout.id }), {
     onFinish: () => {
       editingNav.value = false;
     },
@@ -124,7 +124,7 @@ function repeatWorkout() {
   if (!canRepeat.value) return;
   repeatNav.value = true;
   router.post(
-    route('workout.logs.repeat', { workoutLog: props.workoutLog.id }),
+    route('workouts.repeat', { workout: props.workout.id }),
     {},
     {
       onFinish: () => {

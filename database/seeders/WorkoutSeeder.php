@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Seeder;
 
-class WorkoutLogSeeder extends Seeder
+class WorkoutSeeder extends Seeder
 {
     public function run(): void
     {
@@ -34,7 +34,7 @@ class WorkoutLogSeeder extends Seeder
             $status = $i < 25 ? 'completed' : 'in_progress';
             $timestamp = now()->subDays($i);
 
-            $workoutLog = WorkoutLog::create([
+            $workout = Workout::create([
                 'user_id' => $user->id,
                 'workout_template_id' => $template->id,
                 'name' => $template->name,
@@ -45,7 +45,7 @@ class WorkoutLogSeeder extends Seeder
 
             // Copy activities and sets from the template
             foreach ($template->activities()->orderBy('order')->get() as $templateActivity) {
-                $activity = $workoutLog->activities()->create([
+                $activity = $workout->activities()->create([
                     'exercise_id' => $templateActivity->exercise_id,
                     'order' => $templateActivity->order,
                 ]);

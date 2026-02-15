@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature\WorkoutLog;
+namespace Tests\Feature\Workout;
 
 use App\Models\Activity;
 use App\Models\Set;
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class WorkoutLogStoreTest extends TestCase
+class WorkoutStoreTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -25,7 +25,7 @@ class WorkoutLogStoreTest extends TestCase
     }
 
     #[Test]
-    public function start_creates_workout_log_and_copies_activities_and_sets_from_template(): void
+    public function start_creates_workout_and_copies_activities_and_sets_from_template(): void
     {
         $user = User::factory()->create();
 
@@ -44,17 +44,17 @@ class WorkoutLogStoreTest extends TestCase
             ))
             ->create();
 
-        $response = $this->actingAs($user)->post(route('workout.logs.store'), [
+        $response = $this->actingAs($user)->post(route('workouts.store'), [
             'workout_template_id' => $workoutTemplate->id,
         ]);
 
         $response->assertRedirect();
-        $response->assertRedirect(route('workout.logs.edit', ['id' => WorkoutLog::latest('id')->first()->id]));
+        $response->assertRedirect(route('workouts.edit', ['id' => Workout::latest('id')->first()->id]));
 
-        $workout = WorkoutLog::latest('id')->first();
+        $workout = Workout::latest('id')->first();
         $activity = $workout->activities->first();
 
-        $this->assertDatabaseHas('workout_logs', [
+        $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,
             'workout_template_id' => $workoutTemplate->id,
             'name' => $workoutTemplate->name,
@@ -63,7 +63,7 @@ class WorkoutLogStoreTest extends TestCase
         $this->assertDatabaseHas('activities', [
             'id' => $activity->id,
             'workout_id' => $workout->id,
-            'workout_type' => 'workout_log',
+            'workout_type' => 'workout',
         ]);
 
         $this->assertDatabaseHas('sets', [
@@ -86,7 +86,7 @@ class WorkoutLogStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('workout.logs.store'), []);
+        $response = $this->actingAs($user)->post(route('workouts.store'), []);
 
         $response->assertSessionHasErrors(['workout_template_id']);
 
@@ -101,7 +101,7 @@ class WorkoutLogStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('workout.logs.store'), [
+        $response = $this->actingAs($user)->post(route('workouts.store'), [
             'workout_template_id' => 9999,
         ]);
 

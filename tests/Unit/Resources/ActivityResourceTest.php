@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\Equipment;
 use App\Models\Exercise;
 use App\Models\Set;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -21,12 +21,12 @@ class ActivityResourceTest extends TestCase
     public function resource_transforms_activity_to_correct_json_structure(): void
     {
         $exercise = Exercise::factory()->create(['name' => 'Bench Press']);
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([
             'exercise_id' => $exercise->id,
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         $resource = new ActivityResource($activity);
@@ -49,12 +49,12 @@ class ActivityResourceTest extends TestCase
         ]);
 
         $exercise->categories()->attach($category);
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([
             'exercise_id' => $exercise->id,
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         // Load activity with exercise relationship (including equipment + categories)
@@ -72,12 +72,12 @@ class ActivityResourceTest extends TestCase
     public function resource_handles_exercise_name_when_exercise_not_loaded(): void
     {
         $exercise = Exercise::factory()->create(['name' => 'Deadlift']);
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([
             'exercise_id' => $exercise->id,
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         // Load activity WITHOUT exercise relationship
@@ -95,10 +95,10 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function sets_collection_properly_transformed(): void
     {
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
         $activity = Activity::factory()->create([
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         Set::factory()
@@ -132,10 +132,10 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function sets_empty_when_not_loaded(): void
     {
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
         $activity = Activity::factory()->create([
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         Set::factory()
@@ -158,11 +158,11 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function polymorphic_workout_relationship_handled_correctly(): void
     {
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         $resource = new ActivityResource($activity);
@@ -178,12 +178,12 @@ class ActivityResourceTest extends TestCase
     public function resource_includes_all_expected_keys(): void
     {
         $exercise = Exercise::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([
             'exercise_id' => $exercise->id,
-            'workout_id' => $workoutLog->id,
-            'workout_type' => 'workout_log',
+            'workout_id' => $workout->id,
+            'workout_type' => 'workout',
         ]);
 
         $resource = new ActivityResource($activity);

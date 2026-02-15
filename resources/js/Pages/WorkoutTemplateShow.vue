@@ -37,7 +37,7 @@ const props = defineProps({
     <WorkoutFooter :show="true">
       <Form
         v-slot="{ errors, processing }"
-        :action="route('workout.logs.store')"
+        :action="route('workouts.store')"
         method="post"
         preserve-scroll
       >

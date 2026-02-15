@@ -1,17 +1,17 @@
 <?php
 
-namespace Tests\Feature\WorkoutLog;
+namespace Tests\Feature\Workout;
 
 use App\Models\Activity;
 use App\Models\Exercise;
 use App\Models\Set;
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class WorkoutLogSaveTest extends TestCase
+class WorkoutSaveTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -23,10 +23,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_updates_existing_sets(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
@@ -39,7 +39,7 @@ class WorkoutLogSaveTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -74,10 +74,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_creates_new_sets_and_deletes_removed_ones(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
@@ -86,7 +86,7 @@ class WorkoutLogSaveTest extends TestCase
         $set2 = Set::factory()->for($activity, 'activity')->create(['order' => 2]);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -118,14 +118,14 @@ class WorkoutLogSaveTest extends TestCase
     public function save_deletes_activities_not_in_payload(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity1 = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity1 = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
-        $activity2 = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity2 = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 2,
         ]);
@@ -134,7 +134,7 @@ class WorkoutLogSaveTest extends TestCase
         $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -160,18 +160,18 @@ class WorkoutLogSaveTest extends TestCase
     public function save_creates_new_activities(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise1 = Exercise::factory()->create();
         $exercise2 = Exercise::factory()->create();
 
-        $activity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise1->id,
             'order' => 1,
         ]);
         Set::factory()->for($activity, 'activity')->create(['order' => 1]);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -197,7 +197,7 @@ class WorkoutLogSaveTest extends TestCase
 
         $this->assertDatabaseCount('activities', 2);
         $this->assertDatabaseHas('activities', [
-            'workout_id' => $workoutLog->id,
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise2->id,
             'order' => 2,
         ]);
@@ -207,10 +207,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_handles_complex_diff_multiple_deletes_and_adds(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
@@ -222,7 +222,7 @@ class WorkoutLogSaveTest extends TestCase
 
         // Keep set1 (updated), delete set2 and set4, keep set3, add two new
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -253,10 +253,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_preserves_set_order_as_sent_by_frontend(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
@@ -267,7 +267,7 @@ class WorkoutLogSaveTest extends TestCase
 
         // Frontend sends already-normalized orders [1, 2] after deleting the middle set
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -299,11 +299,11 @@ class WorkoutLogSaveTest extends TestCase
     {
         $user = User::factory()->create();
         $otherUser = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $otherUser->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $otherUser->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -324,11 +324,11 @@ class WorkoutLogSaveTest extends TestCase
     public function user_cannot_save_completed_workout(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'completed']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'completed']);
         $exercise = Exercise::factory()->create();
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -348,10 +348,10 @@ class WorkoutLogSaveTest extends TestCase
     #[Test]
     public function guest_cannot_save_workout(): void
     {
-        $workoutLog = WorkoutLog::factory()->create(['status' => 'in_progress']);
+        $workout = Workout::factory()->create(['status' => 'in_progress']);
 
         $response = $this->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             ['activities' => []],
         );
 
@@ -364,7 +364,7 @@ class WorkoutLogSaveTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => 99999]),
+            route('workouts.save', ['workout' => 99999]),
             ['activities' => []],
         );
 
@@ -379,10 +379,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_rejects_empty_activities(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             ['activities' => []],
         );
 
@@ -393,11 +393,11 @@ class WorkoutLogSaveTest extends TestCase
     public function save_rejects_activity_with_no_sets(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -416,10 +416,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_rejects_invalid_exercise_id(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -440,17 +440,17 @@ class WorkoutLogSaveTest extends TestCase
     public function save_rejects_activity_id_belonging_to_another_workout(): void
     {
         $user = User::factory()->create();
-        $workoutLog1 = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
-        $workoutLog2 = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout1 = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout2 = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $otherActivity = Activity::factory()->for($workoutLog2, 'workout')->create([
+        $otherActivity = Activity::factory()->for($workout2, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog1->id]),
+            route('workouts.save', ['workout' => $workout1->id]),
             [
                 'activities' => [
                     [
@@ -472,11 +472,11 @@ class WorkoutLogSaveTest extends TestCase
     public function save_rejects_set_with_missing_required_fields(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -501,11 +501,11 @@ class WorkoutLogSaveTest extends TestCase
     public function save_rejects_completed_set_with_zero_repetitions(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -530,18 +530,18 @@ class WorkoutLogSaveTest extends TestCase
     public function save_replaces_all_activities_with_new_ones(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise1 = Exercise::factory()->create();
         $exercise2 = Exercise::factory()->create();
 
-        $oldActivity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $oldActivity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise1->id,
             'order' => 1,
         ]);
         $oldSet = Set::factory()->for($oldActivity, 'activity')->create(['order' => 1]);
 
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -561,7 +561,7 @@ class WorkoutLogSaveTest extends TestCase
         $this->assertDatabaseMissing('sets', ['id' => $oldSet->id]);
         $this->assertDatabaseCount('activities', 1);
         $this->assertDatabaseHas('activities', [
-            'workout_id' => $workoutLog->id,
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise2->id,
         ]);
     }
@@ -570,14 +570,14 @@ class WorkoutLogSaveTest extends TestCase
     public function save_handles_set_id_belonging_to_different_activity_in_same_workout(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity1 = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity1 = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
-        $activity2 = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity2 = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 2,
         ]);
@@ -587,7 +587,7 @@ class WorkoutLogSaveTest extends TestCase
 
         // Try to put set2 (belongs to activity2) into activity1's sets
         $response = $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             [
                 'activities' => [
                     [
@@ -617,10 +617,10 @@ class WorkoutLogSaveTest extends TestCase
     public function save_is_idempotent_when_sent_same_data_twice(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $activity = Activity::factory()->for($workoutLog, 'workout')->create([
+        $activity = Activity::factory()->for($workout, 'workout')->create([
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
@@ -652,12 +652,12 @@ class WorkoutLogSaveTest extends TestCase
         ];
 
         $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             $payload,
         )->assertRedirect();
 
         $this->actingAs($user)->patch(
-            route('workout.logs.save', ['workoutLog' => $workoutLog->id]),
+            route('workouts.save', ['workout' => $workout->id]),
             $payload,
         )->assertRedirect();
 

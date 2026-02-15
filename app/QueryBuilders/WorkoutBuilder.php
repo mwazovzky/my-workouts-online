@@ -5,7 +5,7 @@ namespace App\QueryBuilders;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
-class WorkoutLogBuilder extends Builder
+class WorkoutBuilder extends Builder
 {
     public function ownedBy(User $user): self
     {

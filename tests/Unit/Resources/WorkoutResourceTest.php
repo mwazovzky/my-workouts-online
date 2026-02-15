@@ -2,36 +2,36 @@
 
 namespace Tests\Unit\Resources;
 
-use App\Http\Resources\WorkoutLogResource;
+use App\Http\Resources\WorkoutResource;
 use App\Models\Activity;
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class WorkoutLogResourceTest extends TestCase
+class WorkoutResourceTest extends TestCase
 {
     use RefreshDatabase;
 
     #[Test]
-    public function resource_transforms_workout_log_to_correct_json_structure(): void
+    public function resource_transforms_workout_to_correct_json_structure(): void
     {
         $user = User::factory()->create();
         $workoutTemplate = WorkoutTemplate::factory()->create();
 
-        $workoutLog = WorkoutLog::factory()->create([
+        $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'workout_template_id' => $workoutTemplate->id,
             'status' => 'in_progress',
         ]);
 
-        $resource = new WorkoutLogResource($workoutLog);
+        $resource = new WorkoutResource($workout);
         $array = $resource->toArray(request());
 
         $this->assertIsArray($array);
-        $this->assertEquals($workoutLog->id, $array['id']);
+        $this->assertEquals($workout->id, $array['id']);
         $this->assertEquals($user->id, $array['user_id']);
         $this->assertEquals('in_progress', $array['status']);
         $this->assertNotNull($array['created_at']);
@@ -40,10 +40,10 @@ class WorkoutLogResourceTest extends TestCase
     #[Test]
     public function activities_relationship_conditionally_included_when_loaded(): void
     {
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         Activity::factory()
-            ->for($workoutLog, 'workout')
+            ->for($workout, 'workout')
             ->count(3)
             ->sequence(
                 ['order' => 1],
@@ -53,15 +53,15 @@ class WorkoutLogResourceTest extends TestCase
             ->create();
 
         // Without eager loading
-        $workoutLogWithoutActivities = WorkoutLog::find($workoutLog->id);
-        $resourceWithout = new WorkoutLogResource($workoutLogWithoutActivities);
+        $workoutWithoutActivities = Workout::find($workout->id);
+        $resourceWithout = new WorkoutResource($workoutWithoutActivities);
         $arrayWithout = $resourceWithout->toArray(request());
 
         $this->assertEmpty($arrayWithout['activities']);
 
         // With eager loading
-        $workoutLogWithActivities = WorkoutLog::with('activities')->find($workoutLog->id);
-        $resourceWith = new WorkoutLogResource($workoutLogWithActivities);
+        $workoutWithActivities = Workout::with('activities')->find($workout->id);
+        $resourceWith = new WorkoutResource($workoutWithActivities);
         $arrayWith = $resourceWith->toArray(request());
 
         $this->assertCount(3, $arrayWith['activities']);
@@ -70,10 +70,10 @@ class WorkoutLogResourceTest extends TestCase
     #[Test]
     public function activities_count_conditionally_included_when_counted(): void
     {
-        $workoutLog = WorkoutLog::factory()->create();
+        $workout = Workout::factory()->create();
 
         Activity::factory()
-            ->for($workoutLog, 'workout')
+            ->for($workout, 'workout')
             ->count(5)
             ->sequence(
                 ['order' => 1],
@@ -85,15 +85,15 @@ class WorkoutLogResourceTest extends TestCase
             ->create();
 
         // Without withCount
-        $workoutLogWithoutCount = WorkoutLog::find($workoutLog->id);
-        $resourceWithout = new WorkoutLogResource($workoutLogWithoutCount);
+        $workoutWithoutCount = Workout::find($workout->id);
+        $resourceWithout = new WorkoutResource($workoutWithoutCount);
         $arrayWithout = $resourceWithout->toArray(request());
 
         $this->assertNull($arrayWithout['activities_count']);
 
         // With withCount
-        $workoutLogWithCount = WorkoutLog::withCount('activities')->find($workoutLog->id);
-        $resourceWith = new WorkoutLogResource($workoutLogWithCount);
+        $workoutWithCount = Workout::withCount('activities')->find($workout->id);
+        $resourceWith = new WorkoutResource($workoutWithCount);
         $arrayWith = $resourceWith->toArray(request());
 
         $this->assertEquals(5, $arrayWith['activities_count']);
@@ -103,20 +103,20 @@ class WorkoutLogResourceTest extends TestCase
     public function workout_template_conditionally_included_when_loaded(): void
     {
         $workoutTemplate = WorkoutTemplate::factory()->create(['name' => 'Test Template']);
-        $workoutLog = WorkoutLog::factory()->create([
+        $workout = Workout::factory()->create([
             'workout_template_id' => $workoutTemplate->id,
         ]);
 
         // Without eager loading
-        $workoutLogWithoutTemplate = WorkoutLog::find($workoutLog->id);
-        $resourceWithout = new WorkoutLogResource($workoutLogWithoutTemplate);
+        $workoutWithoutTemplate = Workout::find($workout->id);
+        $resourceWithout = new WorkoutResource($workoutWithoutTemplate);
         $arrayWithout = $resourceWithout->toArray(request());
 
         $this->assertNull($arrayWithout['workout_template']);
 
         // With eager loading
-        $workoutLogWithTemplate = WorkoutLog::with('workoutTemplate')->find($workoutLog->id);
-        $resourceWith = new WorkoutLogResource($workoutLogWithTemplate);
+        $workoutWithTemplate = Workout::with('workoutTemplate')->find($workout->id);
+        $resourceWith = new WorkoutResource($workoutWithTemplate);
         $arrayWith = $resourceWith->toArray(request());
 
         $this->assertNotNull($arrayWith['workout_template']);
@@ -126,8 +126,8 @@ class WorkoutLogResourceTest extends TestCase
     #[Test]
     public function resource_includes_all_expected_keys(): void
     {
-        $workoutLog = WorkoutLog::factory()->create();
-        $resource = new WorkoutLogResource($workoutLog);
+        $workout = Workout::factory()->create();
+        $resource = new WorkoutResource($workout);
         $array = $resource->toArray(request());
 
         $expectedKeys = ['id', 'user_id', 'status', 'created_at', 'activities_count', 'workout_template', 'activities'];

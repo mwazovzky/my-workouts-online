@@ -38,7 +38,7 @@
               <div class="flex items-center gap-2 flex-shrink-0">
                 <Button
                   as="a"
-                  :href="route('workout.logs.show', { id: workout.id })"
+                  :href="route('workouts.show', { id: workout.id })"
                   variant="outline"
                   size="sm"
                 >
@@ -48,7 +48,7 @@
                 <Button
                   v-if="workout.user_id === currentUserId() && workout.status === 'in_progress'"
                   as="a"
-                  :href="route('workout.logs.edit', { id: workout.id })"
+                  :href="route('workouts.edit', { id: workout.id })"
                   variant="default"
                   size="sm"
                 >
@@ -156,7 +156,7 @@ async function deleteWorkout(id) {
     description: 'This action cannot be undone.',
     confirmLabel: 'Delete',
     onConfirm: () => {
-      router.delete(route('workout.logs.destroy', { workoutLog: id }), {
+      router.delete(route('workouts.destroy', { workout: id }), {
         preserveScroll: true,
         onError: () => {
           toast.error('Failed to delete workout');

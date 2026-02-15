@@ -5,7 +5,7 @@
     </template>
 
     <PageLayout>
-      <WorkoutCard :workout="workoutLog" />
+      <WorkoutCard :workout="workout" />
 
       <div v-if="totalSets > 0" class="mb-3 flex items-center gap-3">
         <div class="flex-1 h-2 rounded-full bg-muted overflow-hidden">
@@ -84,15 +84,15 @@ import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
 
 const props = defineProps({
-  workoutLog: {
+  workout: {
     type: Object,
     required: true,
   },
 });
 
-const workoutLogId = ref(props.workoutLog.id ?? null);
+const workoutId = ref(props.workout.id ?? null);
 const activities = ref(
-  (props.workoutLog.activities ?? []).map(a => ({
+  (props.workout.activities ?? []).map(a => ({
     id: a.id,
     exercise_id: a.exercise_id ?? null,
     exercise_name: a.exercise_name ?? '',
@@ -109,8 +109,8 @@ const activities = ref(
   }))
 );
 
-const workoutStatus = ref(props.workoutLog.status ?? null);
-const workoutOwnerId = ref(props.workoutLog.user_id ?? null);
+const workoutStatus = ref(props.workout.status ?? null);
+const workoutOwnerId = ref(props.workout.user_id ?? null);
 
 // UI flags
 const isSaving = ref(false);
@@ -156,7 +156,7 @@ const progressPercent = computed(() =>
 // Editable only when owner and status is in_progress
 const isEditable = computed(() => {
   return (
-    !!workoutLogId.value &&
+    !!workoutId.value &&
     workoutStatus.value === 'in_progress' &&
     workoutOwnerId.value === currentUserId.value
   );
@@ -221,7 +221,7 @@ function saveWorkout({ onSuccess, onError } = {}) {
   isSaving.value = true;
   skipNavigationGuard.value = true;
 
-  router.patch(route('workout.logs.save', { workoutLog: workoutLogId.value }), buildSavePayload(), {
+  router.patch(route('workouts.save', { workout: workoutId.value }), buildSavePayload(), {
     preserveScroll: true,
     onSuccess: () => {
       isDirty.value = false;
@@ -240,7 +240,7 @@ function saveWorkout({ onSuccess, onError } = {}) {
 }
 
 function finishWorkout() {
-  if (!workoutLogId.value || isFinishing.value) {
+  if (!workoutId.value || isFinishing.value) {
     return;
   }
 
@@ -267,7 +267,7 @@ function completeWorkout() {
   skipNavigationGuard.value = true;
 
   router.post(
-    route('workout.logs.complete', { workoutLog: workoutLogId.value }),
+    route('workouts.complete', { workout: workoutId.value }),
     {},
     {
       onFinish: () => {

@@ -3,28 +3,28 @@
 namespace Tests\Unit\QueryBuilders;
 
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class WorkoutLogQueryBuilderTest extends TestCase
+class WorkoutQueryBuilderTest extends TestCase
 {
     use RefreshDatabase;
 
     #[Test]
-    public function owned_by_filters_only_user_logs_without_forcing_eager_loading(): void
+    public function owned_by_filters_only_user_workouts_without_forcing_eager_loading(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
-        $myLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
-        WorkoutLog::factory()->create(['user_id' => $other->id]);
+        $myWorkout = Workout::factory()->create(['user_id' => $user->id]);
+        Workout::factory()->create(['user_id' => $other->id]);
 
-        $result = WorkoutLog::query()->ownedBy($user)->get();
+        $result = Workout::query()->ownedBy($user)->get();
 
         $this->assertCount(1, $result);
-        $this->assertEquals($myLog->id, $result->first()->id);
+        $this->assertEquals($myWorkout->id, $result->first()->id);
         $this->assertFalse($result->first()->relationLoaded('workoutTemplate'));
     }
 
@@ -33,19 +33,19 @@ class WorkoutLogQueryBuilderTest extends TestCase
     {
         $user = User::factory()->create();
         $workoutTemplate = WorkoutTemplate::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create([
+        $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'workout_template_id' => $workoutTemplate->id,
         ]);
 
-        $result = WorkoutLog::query()
+        $result = Workout::query()
             ->ownedBy($user)
             ->withTemplate()
             ->withActivitiesCount()
             ->get();
 
         $this->assertCount(1, $result);
-        $this->assertEquals($workoutLog->id, $result->first()->id);
+        $this->assertEquals($workout->id, $result->first()->id);
         $this->assertTrue($result->first()->relationLoaded('workoutTemplate'));
         $this->assertEquals(0, $result->first()->activities_count);
     }
@@ -54,19 +54,19 @@ class WorkoutLogQueryBuilderTest extends TestCase
     public function latest_updated_orders_results_and_is_deterministic_on_ties(): void
     {
         $user = User::factory()->create();
-        $older = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => now()->subDay()]);
-        $newer = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => now()]);
+        $older = Workout::factory()->create(['user_id' => $user->id, 'updated_at' => now()->subDay()]);
+        $newer = Workout::factory()->create(['user_id' => $user->id, 'updated_at' => now()]);
 
-        $workoutLogs = WorkoutLog::query()->ownedBy($user)->latestUpdated()->get();
+        $workouts = Workout::query()->ownedBy($user)->latestUpdated()->get();
 
-        $this->assertEquals($newer->id, $workoutLogs->first()->id);
-        $this->assertEquals($older->id, $workoutLogs->last()->id);
+        $this->assertEquals($newer->id, $workouts->first()->id);
+        $this->assertEquals($older->id, $workouts->last()->id);
 
         $sameTime = now()->subHours(3);
-        $first = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => $sameTime]);
-        $second = WorkoutLog::factory()->create(['user_id' => $user->id, 'updated_at' => $sameTime]);
+        $first = Workout::factory()->create(['user_id' => $user->id, 'updated_at' => $sameTime]);
+        $second = Workout::factory()->create(['user_id' => $user->id, 'updated_at' => $sameTime]);
 
-        $tied = WorkoutLog::query()
+        $tied = Workout::query()
             ->ownedBy($user)
             ->whereIn('id', [$first->id, $second->id])
             ->latestUpdated()

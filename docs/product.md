@@ -4,16 +4,16 @@ A workout tracking app. Users browse curated workout programs, enroll in them, s
 
 ## Domain Glossary
 
-| Term | Definition |
-|---|---|
-| **Program** | A named collection of workout templates (e.g. "Push/Pull/Legs"). Users enroll in programs. |
-| **Workout Template** | A reusable workout blueprint within a program, assigned to a weekday. Contains template activities. |
-| **Workout Log** | A user's concrete workout session, created from a template. Has status: `in_progress` → `completed`. |
-| **Activity** | An exercise slot inside a template or log. Polymorphic — belongs to either a WorkoutTemplate or a WorkoutLog. Ordered. |
-| **Set** | A single set within an activity: repetitions, weight, completion flag. Ordered. |
-| **Exercise** | Catalog entry: name, description, rest time. Belongs to one equipment, many categories. |
-| **Equipment** | Gear type with a measurement unit (e.g. "Barbell", kg). |
-| **Category** | Exercise classification (e.g. "Chest", "Legs"). Many-to-many with exercises. |
+| Term                 | Definition                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Program**          | A named collection of workout templates (e.g. "Push/Pull/Legs"). Users enroll in programs.                              |
+| **Workout Template** | A reusable workout blueprint within a program, assigned to a weekday. Contains template activities.                     |
+| **Workout**          | A user's concrete workout session, created from a template. Has status: `in_progress` → `completed`.                    |
+| **Activity**         | An exercise slot inside a template or workout. Polymorphic — belongs to either a WorkoutTemplate or a Workout. Ordered. |
+| **Set**              | A single set within an activity: repetitions, weight, completion flag. Ordered.                                         |
+| **Exercise**         | Catalog entry: name, description, rest time. Belongs to one equipment, many categories.                                 |
+| **Equipment**        | Gear type with a measurement unit (e.g. "Barbell", kg).                                                                 |
+| **Category**         | Exercise classification (e.g. "Chest", "Legs"). Many-to-many with exercises.                                            |
 
 ## Features
 
@@ -32,8 +32,8 @@ A workout tracking app. Users browse curated workout programs, enroll in them, s
 1. **Browse programs** → `ProgramIndex` page lists all programs
 2. **View program** → `ProgramShow` page shows templates by weekday
 3. **Enroll** → POST enrolls the user in the program
-4. **Start workout** → POST creates a workout log from a template, redirects to edit
-5. **Track workout** → `WorkoutLogEdit` page — update sets, mark them complete, delete activities
+4. **Start workout** → POST creates a workout from a template, redirects to edit
+5. **Track workout** → `WorkoutEdit` page — update sets, mark them complete, delete activities
 6. **Complete workout** → POST transitions status to `completed`
-7. **Review history** → `WorkoutLogIndex` lists past logs (paginated); `WorkoutLogShow` shows details
-8. **Repeat workout** → POST on a completed log creates a new in-progress copy
+7. **Review history** → `WorkoutIndex` lists past workouts (paginated); `WorkoutShow` shows details
+8. **Repeat workout** → POST on a completed workout creates a new in-progress copy

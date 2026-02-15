@@ -122,8 +122,8 @@ const showingNavigationDropdown = ref(false);
               Programs
             </ResponsiveNavLink>
             <ResponsiveNavLink
-              :href="route('workout.logs.index')"
-              :active="route().current('workout.logs.index')"
+              :href="route('workouts.index')"
+              :active="route().current('workouts.index')"
             >
               Workouts
             </ResponsiveNavLink>

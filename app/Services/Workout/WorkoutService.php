@@ -1,35 +1,35 @@
 <?php
 
-namespace App\Services\WorkoutLog;
+namespace App\Services\Workout;
 
-use App\Enums\WorkoutLogStatus;
+use App\Enums\WorkoutStatus;
 use App\Models\Activity;
 use App\Models\Set;
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class WorkoutLogService implements WorkoutLogServiceInterface
+class WorkoutService implements WorkoutServiceInterface
 {
     /**
      * Create new workout with a reference to template for the given user.
      */
-    public function createFromTemplate(User $user, int $workoutTemplateId): WorkoutLog
+    public function createFromTemplate(User $user, int $workoutTemplateId): Workout
     {
         $workoutTemplate = WorkoutTemplate::with('activities.sets')->findOrFail($workoutTemplateId);
 
-        $workoutLog = DB::transaction(function () use ($workoutTemplate, $user) {
-            $workoutLog = WorkoutLog::create([
+        $workout = DB::transaction(function () use ($workoutTemplate, $user) {
+            $workout = Workout::create([
                 'workout_template_id' => $workoutTemplate->id,
                 'user_id' => $user->id,
                 'name' => $workoutTemplate->name,
-                'status' => WorkoutLogStatus::InProgress,
+                'status' => WorkoutStatus::InProgress,
             ]);
 
             foreach ($workoutTemplate->activities as $templateActivity) {
-                $activity = $workoutLog->activities()->create([
+                $activity = $workout->activities()->create([
                     'exercise_id' => $templateActivity->exercise_id,
                     'order' => $templateActivity->order,
                 ]);
@@ -43,31 +43,31 @@ class WorkoutLogService implements WorkoutLogServiceInterface
                 }
             }
 
-            return $workoutLog;
+            return $workout;
         });
 
-        $workoutLog->setRelation('workoutTemplate', $workoutTemplate);
+        $workout->setRelation('workoutTemplate', $workoutTemplate);
 
-        return $workoutLog;
+        return $workout;
     }
 
     /**
-     * Create a new in-progress workout log by copying from an existing workout log.
+     * Create a new in-progress workout by copying from an existing workout.
      */
-    public function repeat(WorkoutLog $sourceWorkoutLog): WorkoutLog
+    public function repeat(Workout $sourceWorkout): Workout
     {
-        $sourceWorkoutLog->loadMissing(['activities.sets']);
+        $sourceWorkout->loadMissing(['activities.sets']);
 
-        return DB::transaction(function () use ($sourceWorkoutLog) {
-            $newWorkoutLog = WorkoutLog::create([
+        return DB::transaction(function () use ($sourceWorkout) {
+            $newWorkout = Workout::create([
                 'workout_template_id' => null,
-                'user_id' => $sourceWorkoutLog->user_id,
-                'name' => $sourceWorkoutLog->name,
-                'status' => WorkoutLogStatus::InProgress,
+                'user_id' => $sourceWorkout->user_id,
+                'name' => $sourceWorkout->name,
+                'status' => WorkoutStatus::InProgress,
             ]);
 
-            foreach ($sourceWorkoutLog->activities as $sourceActivity) {
-                $newActivity = $newWorkoutLog->activities()->create([
+            foreach ($sourceWorkout->activities as $sourceActivity) {
+                $newActivity = $newWorkout->activities()->create([
                     'exercise_id' => $sourceActivity->exercise_id,
                     'order' => $sourceActivity->order,
                 ]);
@@ -82,12 +82,12 @@ class WorkoutLogService implements WorkoutLogServiceInterface
                 }
             }
 
-            return $newWorkoutLog;
+            return $newWorkout;
         });
     }
 
     /**
-     * Save (sync) the full set of activities and sets for a workout log.
+     * Save (sync) the full set of activities and sets for a workout.
      *
      * Diffs the provided payload against the database:
      * - Activities not in the payload are deleted
@@ -96,47 +96,47 @@ class WorkoutLogService implements WorkoutLogServiceInterface
      *
      * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>}>}  $data
      */
-    public function save(WorkoutLog $workoutLog, array $data): WorkoutLog
+    public function save(Workout $workout, array $data): Workout
     {
-        if ($workoutLog->status === WorkoutLogStatus::Completed) {
+        if ($workout->status === WorkoutStatus::Completed) {
             abort(422, 'Cannot update a completed workout.');
         }
 
         $payloadActivities = collect($data['activities']);
 
-        DB::transaction(function () use ($workoutLog, $payloadActivities) {
+        DB::transaction(function () use ($workout, $payloadActivities) {
             $payloadActivityIds = $payloadActivities
                 ->pluck('id')
                 ->filter(fn ($id) => $id !== null)
                 ->values()
                 ->all();
 
-            $this->assertActivityIdsBelongToWorkout($workoutLog, $payloadActivityIds);
-            $this->deleteActivitiesNotInPayload($workoutLog, $payloadActivityIds);
+            $this->assertActivityIdsBelongToWorkout($workout, $payloadActivityIds);
+            $this->deleteActivitiesNotInPayload($workout, $payloadActivityIds);
 
             foreach ($payloadActivities as $activityData) {
-                $activity = $this->upsertActivity($workoutLog, $activityData);
+                $activity = $this->upsertActivity($workout, $activityData);
                 $this->syncSets($activity, $activityData['sets'] ?? []);
             }
         });
 
-        return $workoutLog->load(['activities.sets' => fn ($query) => $query->orderBy('order')]);
+        return $workout->load(['activities.sets' => fn ($query) => $query->orderBy('order')]);
     }
 
     /**
-     * Validate that all provided activity IDs belong to this workout log.
+     * Validate that all provided activity IDs belong to this workout.
      *
      * @param  array<int, int>  $activityIds
      */
-    private function assertActivityIdsBelongToWorkout(WorkoutLog $workoutLog, array $activityIds): void
+    private function assertActivityIdsBelongToWorkout(Workout $workout, array $activityIds): void
     {
         if (empty($activityIds)) {
             return;
         }
 
         $validCount = Activity::query()
-            ->where('workout_type', 'workout_log')
-            ->where('workout_id', $workoutLog->id)
+            ->where('workout_type', 'workout')
+            ->where('workout_id', $workout->id)
             ->whereIn('id', $activityIds)
             ->count();
 
@@ -152,9 +152,9 @@ class WorkoutLogService implements WorkoutLogServiceInterface
      *
      * @param  array<int, int>  $keepActivityIds
      */
-    private function deleteActivitiesNotInPayload(WorkoutLog $workoutLog, array $keepActivityIds): void
+    private function deleteActivitiesNotInPayload(Workout $workout, array $keepActivityIds): void
     {
-        $query = $workoutLog->activities();
+        $query = $workout->activities();
 
         if (! empty($keepActivityIds)) {
             $query->whereNotIn('id', $keepActivityIds);
@@ -174,7 +174,7 @@ class WorkoutLogService implements WorkoutLogServiceInterface
      *
      * @param  array{id?: int|null, exercise_id: int, order: int}  $data
      */
-    private function upsertActivity(WorkoutLog $workoutLog, array $data): Activity
+    private function upsertActivity(Workout $workout, array $data): Activity
     {
         $activityId = $data['id'] ?? null;
 
@@ -188,7 +188,7 @@ class WorkoutLogService implements WorkoutLogServiceInterface
             return $activity;
         }
 
-        return $workoutLog->activities()->create([
+        return $workout->activities()->create([
             'exercise_id' => $data['exercise_id'],
             'order' => $data['order'],
         ]);
@@ -283,13 +283,13 @@ class WorkoutLogService implements WorkoutLogServiceInterface
     }
 
     /**
-     * Delete workout log and all related activities and sets.
+     * Delete workout and all related activities and sets.
      */
-    public function delete(WorkoutLog $workoutLog): void
+    public function delete(Workout $workout): void
     {
-        DB::transaction(function () use ($workoutLog) {
-            $workoutLog->activities()->delete();
-            $workoutLog->delete();
+        DB::transaction(function () use ($workout) {
+            $workout->activities()->delete();
+            $workout->delete();
         });
     }
 }

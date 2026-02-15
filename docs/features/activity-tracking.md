@@ -1,10 +1,10 @@
 # Activity Tracking
 
-Users edit exercises and sets within an in-progress workout log.
+Users edit exercises and sets within an in-progress workout.
 
 ## Current Behavior
 
-1. On **WorkoutLogEdit**, user sees a list of activities (exercises) with their sets
+1. On **WorkoutEdit**, user sees a list of activities (exercises) with their sets
 2. Each set shows: order, repetitions, weight, completion toggle
 3. All editing (add/remove sets, toggle completion, update reps/weight, remove activities) is **client-side only**
 4. A **Save** button appears when there are unsaved changes — sends all activities and sets in one bulk request
@@ -14,22 +14,22 @@ Users edit exercises and sets within an in-progress workout log.
 
 ## Business Rules
 
-- Only in-progress workout logs can be saved (`WorkoutLogPolicy@save`)
-- The bulk save endpoint (`PATCH /workout-logs/{workoutLog}/save`) receives the full activities+sets payload:
+- Only in-progress workouts can be saved (`WorkoutPolicy@save`)
+- The bulk save endpoint (`PATCH /workouts/{workout}/save`) receives the full activities+sets payload:
   - Existing activities (with `id`) are updated, new ones (without `id`) are created
   - Activities missing from the payload are deleted (along with their sets)
   - Within each activity, sets follow the same upsert/delete pattern
   - Set IDs must belong to the correct activity (validated)
-  - Activity IDs must belong to the target workout log (validated)
+  - Activity IDs must belong to the target workout (validated)
 - Minimum 1 activity per workout, minimum 1 set per activity
 - Frontend normalizes orders to sequential 1-based values before sending
 - Set validation: `repetitions` ≥ 0 (integer), `weight` ≥ 0 (numeric), `order` ≥ 1 (integer), `is_completed` (boolean, optional)
 - All operations run in a single database transaction
-- Owner check via `WorkoutLogPolicy` — `user_id` must match authenticated user
+- Owner check via `WorkoutPolicy` — `user_id` must match authenticated user
 
 ## Known Limitations
 
-- No adding new activities (exercises) to an existing workout log from the edit page
+- No adding new activities (exercises) to an existing workout from the edit page
 - No reordering activities within a log
 - No exercise substitution (swap one exercise for another)
 - No rest timer integration
@@ -39,10 +39,10 @@ Users edit exercises and sets within an in-progress workout log.
 
 ## Pages & Routes
 
-| Action              | Method | Path                              | Name                | Guard                   |
-| ------------------- | ------ | --------------------------------- | ------------------- | ----------------------- |
-| Save workout (bulk) | PATCH  | `/workout-logs/{workoutLog}/save` | `workout.logs.save` | `WorkoutLogPolicy@save` |
+| Action              | Method | Path                       | Name            | Guard                |
+| ------------------- | ------ | -------------------------- | --------------- | -------------------- |
+| Save workout (bulk) | PATCH  | `/workouts/{workout}/save` | `workouts.save` | `WorkoutPolicy@save` |
 
 ## Related
 
-- [Workout Logging](workout-logging.md) — the workout log lifecycle that contains activities
+- [Workout Logging](workout-logging.md) — the workout lifecycle that contains activities

@@ -1,24 +1,24 @@
 <?php
 
-namespace Tests\Unit\Services\WorkoutLog;
+namespace Tests\Unit\Services\Workout;
 
 use App\Models\Activity;
 use App\Models\Set;
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
-use App\Services\WorkoutLog\WorkoutLogService;
+use App\Services\Workout\WorkoutService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class WorkoutLogServiceTest extends TestCase
+class WorkoutServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     #[Test]
-    public function create_from_template_creates_workout_log_and_copies_activities_and_sets(): void
+    public function create_from_template_creates_workout_and_copies_activities_and_sets(): void
     {
         $user = User::factory()->create();
 
@@ -36,20 +36,20 @@ class WorkoutLogServiceTest extends TestCase
             ->for($workoutTemplateActivity, 'activity')
             ->create(['order' => 2, 'repetitions' => 8, 'weight' => 22]);
 
-        $service = new WorkoutLogService;
-        $workoutLog = $service->createFromTemplate($user, $workoutTemplate->id);
+        $service = new WorkoutService;
+        $workout = $service->createFromTemplate($user, $workoutTemplate->id);
 
-        $this->assertInstanceOf(WorkoutLog::class, $workoutLog);
-        $this->assertEquals($workoutTemplate->id, $workoutLog->workout_template_id);
-        $this->assertEquals('in_progress', $workoutLog->status->value);
+        $this->assertInstanceOf(Workout::class, $workout);
+        $this->assertEquals($workoutTemplate->id, $workout->workout_template_id);
+        $this->assertEquals('in_progress', $workout->status->value);
 
-        $this->assertDatabaseHas('workout_logs', [
-            'id' => $workoutLog->id,
+        $this->assertDatabaseHas('workouts', [
+            'id' => $workout->id,
             'workout_template_id' => $workoutTemplate->id,
             'user_id' => $user->id,
         ]);
 
-        $workoutActivity = Activity::where('workout_id', $workoutLog->id)->first();
+        $workoutActivity = Activity::where('workout_id', $workout->id)->first();
         $this->assertNotNull($workoutActivity);
 
         $this->assertDatabaseHas('sets', [
@@ -74,7 +74,7 @@ class WorkoutLogServiceTest extends TestCase
 
         $user = User::factory()->create();
 
-        $service = new WorkoutLogService;
+        $service = new WorkoutService;
         $service->createFromTemplate($user, 999);
     }
 
@@ -82,10 +82,10 @@ class WorkoutLogServiceTest extends TestCase
     public function delete_cascades_to_activities_and_sets(): void
     {
         $user = User::factory()->create();
-        $workoutLog = WorkoutLog::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
 
         $activity = Activity::factory()
-            ->for($workoutLog, 'workout')
+            ->for($workout, 'workout')
             ->create(['order' => 1]);
 
         $set = Set::factory()
@@ -94,13 +94,13 @@ class WorkoutLogServiceTest extends TestCase
 
         $activityId = $activity->id;
         $setId = $set->id;
-        $workoutLogId = $workoutLog->id;
+        $workoutId = $workout->id;
 
-        $service = new WorkoutLogService;
-        $service->delete($workoutLog);
+        $service = new WorkoutService;
+        $service->delete($workout);
 
-        // Verify workout log is deleted
-        $this->assertDatabaseMissing('workout_logs', ['id' => $workoutLogId]);
+        // Verify workout is deleted
+        $this->assertDatabaseMissing('workouts', ['id' => $workoutId]);
 
         // Verify activities are deleted via service
         $this->assertDatabaseMissing('activities', ['id' => $activityId]);

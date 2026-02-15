@@ -6,7 +6,7 @@ use App\Rules\CompletedSetRequiresReps;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class WorkoutLogSaveRequest extends FormRequest
+class WorkoutSaveRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,8 +18,8 @@ class WorkoutLogSaveRequest extends FormRequest
      */
     public function rules(): array
     {
-        $workoutLog = $this->route('workoutLog');
-        $workoutLogId = is_object($workoutLog) ? $workoutLog->getKey() : $workoutLog;
+        $workout = $this->route('workout');
+        $workoutId = is_object($workout) ? $workout->getKey() : $workout;
 
         return [
             'activities' => ['required', 'array', 'min:1'],
@@ -29,8 +29,8 @@ class WorkoutLogSaveRequest extends FormRequest
                 'integer',
                 'distinct',
                 Rule::exists('activities', 'id')
-                    ->where('workout_type', 'workout_log')
-                    ->where('workout_id', $workoutLogId),
+                    ->where('workout_type', 'workout')
+                    ->where('workout_id', $workoutId),
             ],
             'activities.*.exercise_id' => ['required', 'integer', Rule::exists('exercises', 'id')],
             'activities.*.order' => ['required', 'integer', 'min:1', 'distinct'],

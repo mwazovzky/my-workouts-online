@@ -17,8 +17,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Services\WorkoutLog\WorkoutLogServiceInterface::class,
-            \App\Services\WorkoutLog\WorkoutLogService::class
+            \App\Services\Workout\WorkoutServiceInterface::class,
+            \App\Services\Workout\WorkoutService::class
         );
     }
 
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         Relation::morphMap([
             'workout_template' => \App\Models\WorkoutTemplate::class,
-            'workout_log' => \App\Models\WorkoutLog::class,
+            'workout' => \App\Models\Workout::class,
         ]);
 
         // Share authenticated user info with Inertia pages

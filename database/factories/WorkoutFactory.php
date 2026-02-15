@@ -2,15 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Enums\WorkoutLogStatus;
+use App\Enums\WorkoutStatus;
 use App\Models\User;
-use App\Models\WorkoutLog;
+use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class WorkoutLogFactory extends Factory
+class WorkoutFactory extends Factory
 {
-    protected $model = WorkoutLog::class;
+    protected $model = Workout::class;
 
     public function definition()
     {
@@ -18,7 +18,7 @@ class WorkoutLogFactory extends Factory
             'workout_template_id' => WorkoutTemplate::factory(),
             'user_id' => User::factory(),
             'name' => $this->faker->words(3, true),
-            'status' => WorkoutLogStatus::InProgress,
+            'status' => WorkoutStatus::InProgress,
         ];
     }
 }

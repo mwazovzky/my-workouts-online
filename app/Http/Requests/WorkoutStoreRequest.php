@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class WorkoutLogStoreRequest extends FormRequest
+class WorkoutStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {

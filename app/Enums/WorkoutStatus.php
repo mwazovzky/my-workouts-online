@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum WorkoutLogStatus: string
+enum WorkoutStatus: string
 {
     case InProgress = 'in_progress';
     case Completed = 'completed';

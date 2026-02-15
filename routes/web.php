@@ -4,7 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramPageController;
 use App\Http\Controllers\WelcomeController;
-use App\Http\Controllers\WorkoutLogPageController;
+use App\Http\Controllers\WorkoutPageController;
 use App\Http\Controllers\WorkoutTemplatePageController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -31,37 +31,37 @@ Route::get('/workout-templates/{id}', [WorkoutTemplatePageController::class, 'sh
     ->middleware(['auth', 'verified'])
     ->name('workout.templates.show');
 
-Route::get('/workout-logs', [WorkoutLogPageController::class, 'index'])
+Route::get('/workouts', [WorkoutPageController::class, 'index'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.index');
+    ->name('workouts.index');
 
-Route::get('/workout-logs/{id}', [WorkoutLogPageController::class, 'show'])
+Route::get('/workouts/{id}', [WorkoutPageController::class, 'show'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.show');
+    ->name('workouts.show');
 
-Route::get('/workout-logs/{id}/edit', [WorkoutLogPageController::class, 'edit'])
+Route::get('/workouts/{id}/edit', [WorkoutPageController::class, 'edit'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.edit');
+    ->name('workouts.edit');
 
-Route::post('/workout-logs', [WorkoutLogPageController::class, 'store'])
+Route::post('/workouts', [WorkoutPageController::class, 'store'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.store');
+    ->name('workouts.store');
 
-Route::patch('/workout-logs/{workoutLog}/save', [WorkoutLogPageController::class, 'save'])
+Route::patch('/workouts/{workout}/save', [WorkoutPageController::class, 'save'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.save');
+    ->name('workouts.save');
 
-Route::post('/workout-logs/{workoutLog}/complete', [WorkoutLogPageController::class, 'complete'])
+Route::post('/workouts/{workout}/complete', [WorkoutPageController::class, 'complete'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.complete');
+    ->name('workouts.complete');
 
-Route::post('/workout-logs/{workoutLog}/repeat', [WorkoutLogPageController::class, 'repeat'])
+Route::post('/workouts/{workout}/repeat', [WorkoutPageController::class, 'repeat'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.repeat');
+    ->name('workouts.repeat');
 
-Route::delete('/workout-logs/{workoutLog}', [WorkoutLogPageController::class, 'destroy'])
+Route::delete('/workouts/{workout}', [WorkoutPageController::class, 'destroy'])
     ->middleware(['auth', 'verified'])
-    ->name('workout.logs.destroy');
+    ->name('workouts.destroy');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
