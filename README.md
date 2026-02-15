@@ -5,6 +5,8 @@
 ![lint](https://github.com/mwazovzky/workouts/actions/workflows/lint.yml/badge.svg?branch=main)
 [![codecov](https://codecov.io/gh/mwazovzky/workouts/graph/badge.svg)](https://codecov.io/gh/mwazovzky/workouts)
 
+> Product docs, features & architecture: [docs/](docs/README.md)
+
 ## Local development
 
 ### Run with Artisan
