@@ -6,7 +6,7 @@ Users create workout sessions from templates, track them in real time, and manag
 
 1. **Start** — User clicks "Start Workout" on a template → POST creates a new workout log cloned from the template (activities + sets copied, status = `in_progress`), redirects to edit page
 2. **Track** — User edits the in-progress log on **WorkoutLogEdit** (see [Activity Tracking](activity-tracking.md))
-3. **Complete** — User clicks "Complete" → POST transitions status to `completed`, stays on same page (now read-only)
+3. **Complete** — User clicks "Complete" → POST transitions status to `completed`, redirects to the workout show page
 4. **Review** — **WorkoutLogIndex** lists all user's logs (paginated, 20/page, newest first). **WorkoutLogShow** shows a single log with deferred activities
 5. **Repeat** — On a completed log, user clicks "Repeat" → POST creates a new in-progress copy with same activities/sets (weights and reps preserved, completion flags reset, `workout_template_id` set to null)
 6. **Delete** — User deletes a log → all activities and sets cascade-deleted in a transaction, redirects to index

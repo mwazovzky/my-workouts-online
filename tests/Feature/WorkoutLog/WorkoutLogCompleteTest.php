@@ -23,7 +23,7 @@ class WorkoutLogCompleteTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('workout.logs.complete', ['workoutLog' => $workoutLog->id]));
 
-        $response->assertRedirect(route('workout.logs.edit', ['id' => $workoutLog->id]));
+        $response->assertRedirect(route('workout.logs.show', ['id' => $workoutLog->id]));
 
         $this->assertDatabaseHas('workout_logs', [
             'id' => $workoutLog->id,

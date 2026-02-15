@@ -124,7 +124,7 @@ function saveActivity(activityId, { onError } = {}) {
   });
 }
 
-// Finish workout via Inertia; update status locally on success
+// Finish workout via Inertia; server redirects to show page on success
 function finishWorkout() {
   if (!workoutLogId.value || isFinishing.value) {
     return;
@@ -132,18 +132,15 @@ function finishWorkout() {
 
   isFinishing.value = true;
 
-  router.post(route('workout.logs.complete', { workoutLog: workoutLogId.value }), {
-    preserveScroll: true,
-    onSuccess: () => {
-      workoutStatus.value = 'completed';
+  router.post(
+    route('workout.logs.complete', { workoutLog: workoutLogId.value }),
+    {},
+    {
+      onFinish: () => {
+        isFinishing.value = false;
+      },
     },
-    onError: () => {
-      alert('Failed to finish workout');
-    },
-    onFinish: () => {
-      isFinishing.value = false;
-    },
-  });
+  );
 }
 
 function revertSetCompletion({ activityId, id, order, previous }) {

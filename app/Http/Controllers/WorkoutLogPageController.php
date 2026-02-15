@@ -86,7 +86,7 @@ class WorkoutLogPageController extends Controller
         $workoutLog->status = WorkoutLogStatus::Completed;
         $workoutLog->save();
 
-        return redirect()->route('workout.logs.edit', ['id' => $workoutLog->id]);
+        return redirect()->route('workout.logs.show', ['id' => $workoutLog->id]);
     }
 
     public function repeat(WorkoutLog $workoutLog, Request $request, WorkoutLogServiceInterface $service): RedirectResponse
