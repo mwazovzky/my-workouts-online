@@ -7,6 +7,18 @@
     <PageLayout>
       <WorkoutCard :workout="workoutLog" />
 
+      <div v-if="totalSets > 0" class="mb-3 flex items-center gap-3">
+        <div class="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            class="h-full rounded-full bg-primary transition-all duration-300"
+            :style="{ width: progressPercent + '%' }"
+          />
+        </div>
+        <span class="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+          {{ completedSets }}/{{ totalSets }} sets
+        </span>
+      </div>
+
       <div>
         <ActivitiesList
           :activities="activities"
@@ -36,7 +48,7 @@
         </Button>
         <Button
           :disabled="isFinishing"
-          variant="outline"
+          variant="default"
           size="lg"
           class="px-8"
           @click="finishWorkout"
@@ -46,16 +58,27 @@
         </Button>
       </div>
     </WorkoutFooter>
+
+    <ConfirmDialog
+      :open="confirmDialog.open"
+      :title="confirmDialog.title"
+      :description="confirmDialog.description"
+      :confirm-label="confirmDialog.confirmLabel"
+      @confirm="onConfirmDialogConfirm"
+      @cancel="onConfirmDialogCancel"
+    />
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutCard from '@/Components/WorkoutCard.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
+import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
@@ -93,9 +116,42 @@ const workoutOwnerId = ref(props.workoutLog.user_id ?? null);
 const isSaving = ref(false);
 const isFinishing = ref(false);
 const isDirty = ref(false);
+const skipNavigationGuard = ref(false);
+
+// Confirm dialog state
+const confirmDialog = ref({
+  open: false,
+  title: '',
+  description: '',
+  confirmLabel: 'Continue',
+  onConfirm: null,
+});
+
+function openConfirm({ title, description, confirmLabel = 'Continue', onConfirm }) {
+  confirmDialog.value = { open: true, title, description, confirmLabel, onConfirm };
+}
+
+function onConfirmDialogConfirm() {
+  const callback = confirmDialog.value.onConfirm;
+  confirmDialog.value.open = false;
+  callback?.();
+}
+
+function onConfirmDialogCancel() {
+  confirmDialog.value.open = false;
+}
 
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
+
+// Progress tracking
+const totalSets = computed(() => activities.value.reduce((sum, a) => sum + a.sets.length, 0));
+const completedSets = computed(() =>
+  activities.value.reduce((sum, a) => sum + a.sets.filter(s => s.is_completed).length, 0)
+);
+const progressPercent = computed(() =>
+  totalSets.value > 0 ? Math.round((completedSets.value / totalSets.value) * 100) : 0
+);
 
 // Editable only when owner and status is in_progress
 const isEditable = computed(() => {
@@ -109,6 +165,32 @@ const isEditable = computed(() => {
 function markDirty() {
   isDirty.value = true;
 }
+
+// Navigation guard — warn about unsaved changes
+function onBeforeUnload(e) {
+  if (isDirty.value) {
+    e.preventDefault();
+  }
+}
+
+let removeInertiaListener = null;
+
+onMounted(() => {
+  window.addEventListener('beforeunload', onBeforeUnload);
+  removeInertiaListener = router.on('before', event => {
+    if (skipNavigationGuard.value) {
+      return;
+    }
+    if (isDirty.value && !confirm('You have unsaved changes. Leave anyway?')) {
+      event.preventDefault();
+    }
+  });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', onBeforeUnload);
+  removeInertiaListener?.();
+});
 
 /**
  * Normalize activity and set orders to be sequential starting from 1,
@@ -137,19 +219,22 @@ function saveWorkout({ onSuccess, onError } = {}) {
   }
 
   isSaving.value = true;
+  skipNavigationGuard.value = true;
 
   router.patch(route('workout.logs.save', { workoutLog: workoutLogId.value }), buildSavePayload(), {
     preserveScroll: true,
     onSuccess: () => {
       isDirty.value = false;
+      toast.success('Workout saved');
       onSuccess?.();
     },
     onError: () => {
       onError?.();
-      alert('Failed to save workout');
+      toast.error('Failed to save workout');
     },
     onFinish: () => {
       isSaving.value = false;
+      skipNavigationGuard.value = false;
     },
   });
 }
@@ -179,12 +264,15 @@ function finishWorkout() {
 }
 
 function completeWorkout() {
+  skipNavigationGuard.value = true;
+
   router.post(
     route('workout.logs.complete', { workoutLog: workoutLogId.value }),
     {},
     {
       onFinish: () => {
         isFinishing.value = false;
+        skipNavigationGuard.value = false;
       },
     }
   );
@@ -199,12 +287,13 @@ function onAddSet({ activityId }) {
   const activity = activities.value.find(a => a.id === activityId);
   if (!activity) return;
 
+  const lastSet = activity.sets.length ? activity.sets[activity.sets.length - 1] : null;
   const maxOrder = activity.sets.length ? Math.max(...activity.sets.map(s => s.order)) : 0;
   activity.sets.push({
     id: null,
     order: maxOrder + 1,
-    repetitions: 0,
-    weight: 0,
+    repetitions: lastSet ? lastSet.repetitions : 0,
+    weight: lastSet ? lastSet.weight : 0,
     is_completed: false,
   });
   markDirty();
@@ -216,11 +305,15 @@ function onRemoveSet({ activityId, id, order }) {
 
   // If this is the last set, confirm and remove the entire activity
   if (activity.sets.length === 1) {
-    if (!confirm('Removing the last set will delete this activity. Continue?')) {
-      return;
-    }
-    activities.value = activities.value.filter(a => a.id !== activityId);
-    markDirty();
+    openConfirm({
+      title: 'Remove activity?',
+      description: 'Removing the last set will delete this activity.',
+      confirmLabel: 'Remove',
+      onConfirm: () => {
+        activities.value = activities.value.filter(a => a.id !== activityId);
+        markDirty();
+      },
+    });
 
     return;
   }
@@ -243,7 +336,7 @@ function onUpdateActivity(updated) {
 
 function onRemoveActivity(activityId) {
   if (!isEditable.value) {
-    alert('This workout cannot be edited');
+    toast.error('This workout cannot be edited');
 
     return;
   }
@@ -252,11 +345,14 @@ function onRemoveActivity(activityId) {
     return;
   }
 
-  if (!confirm('Delete this activity? This action cannot be undone.')) {
-    return;
-  }
-
-  activities.value = activities.value.filter(a => a.id !== activityId);
-  markDirty();
+  openConfirm({
+    title: 'Delete activity?',
+    description: 'This action cannot be undone.',
+    confirmLabel: 'Delete',
+    onConfirm: () => {
+      activities.value = activities.value.filter(a => a.id !== activityId);
+      markDirty();
+    },
+  });
 }
 </script>

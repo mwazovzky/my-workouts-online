@@ -31,7 +31,7 @@
                     {{ workout.activities_count ?? 0 }} activities</span
                   >
                   <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-                    {{ workout.status }}
+                    {{ formatStatus(workout.status) }}
                   </Badge>
                 </div>
               </div>
@@ -82,20 +82,33 @@
         </template>
       </nav>
     </PageLayout>
+
+    <ConfirmDialog
+      :open="confirmDialog.open"
+      :title="confirmDialog.title"
+      :description="confirmDialog.description"
+      :confirm-label="confirmDialog.confirmLabel"
+      @confirm="onConfirmDialogConfirm"
+      @cancel="onConfirmDialogCancel"
+    />
   </AuthenticatedLayout>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
+import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 import { Card } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
+import { formatStatus } from '@/utils/format';
 
 defineProps({
   workouts: {
@@ -114,15 +127,41 @@ function decodeHtmlEntities(text) {
   return textarea.value;
 }
 
+// Confirm dialog state
+const confirmDialog = ref({
+  open: false,
+  title: '',
+  description: '',
+  confirmLabel: 'Delete',
+  onConfirm: null,
+});
+
+function openConfirm({ title, description, confirmLabel = 'Delete', onConfirm }) {
+  confirmDialog.value = { open: true, title, description, confirmLabel, onConfirm };
+}
+
+function onConfirmDialogConfirm() {
+  const callback = confirmDialog.value.onConfirm;
+  confirmDialog.value.open = false;
+  callback?.();
+}
+
+function onConfirmDialogCancel() {
+  confirmDialog.value.open = false;
+}
+
 async function deleteWorkout(id) {
-  if (!confirm('Delete this workout? This action cannot be undone.')) return;
-  router.delete(route('workout.logs.destroy', { workoutLog: id }), {
-    preserveScroll: true,
-    onSuccess: () => {
-      // Inertia will reload the index; workouts will be refreshed from props.
-    },
-    onError: () => {
-      alert('Failed to delete workout');
+  openConfirm({
+    title: 'Delete workout?',
+    description: 'This action cannot be undone.',
+    confirmLabel: 'Delete',
+    onConfirm: () => {
+      router.delete(route('workout.logs.destroy', { workoutLog: id }), {
+        preserveScroll: true,
+        onError: () => {
+          toast.error('Failed to delete workout');
+        },
+      });
     },
   });
 }

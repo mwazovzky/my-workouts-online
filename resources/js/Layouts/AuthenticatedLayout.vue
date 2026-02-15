@@ -6,6 +6,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import Navigation from '@/Components/Navigation.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import { Toaster } from '@/Components/ui/sonner';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -160,6 +161,8 @@ const showingNavigationDropdown = ref(false);
       <main class="m-4">
         <slot />
       </main>
+
+      <Toaster position="top-right" :duration="3000" />
     </div>
   </div>
 </template>

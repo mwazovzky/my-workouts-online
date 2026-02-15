@@ -14,11 +14,11 @@ defineProps({
 </script>
 
 <template>
-  <Card class="p-6 mb-8 border-2 bg-muted/50 shadow-md">
-    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+  <Card class="p-4 mb-4 border bg-muted/50 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
       <div class="flex-1 min-w-0">
-        <h3 class="font-bold text-2xl mb-2">{{ title }}</h3>
-        <p v-if="description" class="text-base mb-2">{{ description }}</p>
+        <h3 class="font-bold text-lg mb-1">{{ title }}</h3>
+        <p v-if="description" class="text-sm mb-1">{{ description }}</p>
 
         <!-- Slot for metadata (date, badges, etc.) -->
         <div class="text-sm text-muted-foreground">

@@ -1,7 +1,6 @@
 <script setup>
 import Set from '@/Components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Plus, Trash2, Clock } from 'lucide-vue-next';
 
@@ -68,25 +67,22 @@ function removeActivity() {
 
 <template>
   <Card class="max-w-md mx-auto">
-    <CardHeader class="pb-3 border-b">
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex-1">
-          <CardTitle class="text-base">{{ activity.exercise_name }}</CardTitle>
+    <CardHeader class="px-4 py-3 border-b">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <CardTitle class="text-sm font-semibold">{{ activity.exercise_name }}</CardTitle>
 
-          <div class="flex flex-wrap items-center gap-2 mt-1">
-            <Badge variant="secondary">
-              Category: {{ (activity.exercise_category_names ?? []).join(', ') || '—' }}
-            </Badge>
-            <Badge variant="secondary">
-              Equipment: {{ activity.exercise_equipment_name ?? '—' }}
-            </Badge>
-          </div>
-          <div
-            v-if="activity.rest_time_seconds != null"
-            class="flex items-center gap-1 text-sm mt-1"
-          >
-            <Clock class="h-4 w-4" />
-            <span>Rest: {{ formatRestTime(activity.rest_time_seconds) }}</span>
+          <div class="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+            <span>{{ (activity.exercise_category_names ?? []).join(', ') || '—' }}</span>
+            <span>·</span>
+            <span>{{ activity.exercise_equipment_name ?? '—' }}</span>
+            <template v-if="activity.rest_time_seconds != null">
+              <span>·</span>
+              <span class="inline-flex items-center gap-0.5">
+                <Clock class="h-3 w-3" />
+                {{ formatRestTime(activity.rest_time_seconds) }}
+              </span>
+            </template>
           </div>
         </div>
         <div v-if="editable" class="flex items-center gap-1">
@@ -107,8 +103,8 @@ function removeActivity() {
       </div>
     </CardHeader>
 
-    <CardContent class="py-3">
-      <div class="space-y-2">
+    <CardContent class="px-4 py-3">
+      <div class="space-y-1.5">
         <!-- Column Headers -->
         <div
           class="grid grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem] items-end gap-2 text-xs font-medium text-muted-foreground"
@@ -116,12 +112,7 @@ function removeActivity() {
           <div class="text-center">#</div>
           <div class="text-right pr-3">Reps</div>
           <div class="text-right pr-3">Weight</div>
-          <div
-            class="text-center"
-            :title="editable ? 'Edits save when you mark a set complete.' : undefined"
-          >
-            Done
-          </div>
+          <div class="text-center">Done</div>
           <div class="text-center"><span class="sr-only">Remove</span></div>
         </div>
 

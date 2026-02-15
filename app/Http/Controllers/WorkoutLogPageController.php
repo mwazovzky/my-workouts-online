@@ -48,7 +48,7 @@ class WorkoutLogPageController extends Controller
 
         return Inertia::render('WorkoutLogShow', [
             'workoutLog' => (new WorkoutLogResource($workoutLog))->resolve(),
-            'activities' => Inertia::defer(fn () => ActivityResource::collection(
+            'activities' => Inertia::defer(fn() => ActivityResource::collection(
                 $workoutLog->activities()
                     ->with(['sets', 'exercise.equipment', 'exercise.categories'])
                     ->get()
@@ -62,6 +62,7 @@ class WorkoutLogPageController extends Controller
 
         $workoutLog = WorkoutLog::query()
             ->ownedBy($user)
+            ->withActivitiesCount()
             ->with(['workoutTemplate', 'activities.sets', 'activities.exercise.equipment', 'activities.exercise.categories'])
             ->findOrFail($id);
 
