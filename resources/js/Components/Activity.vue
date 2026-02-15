@@ -8,6 +8,7 @@ import { Plus, Trash2, Clock } from 'lucide-vue-next';
 const props = defineProps({
   activity: { type: Object, required: true },
   editable: { type: Boolean, default: false },
+  canRemove: { type: Boolean, default: true },
 });
 
 const emits = defineEmits([
@@ -93,6 +94,7 @@ function removeActivity() {
             <Plus />
           </Button>
           <Button
+            v-if="canRemove"
             variant="outline"
             size="icon"
             class="text-muted-foreground hover:text-destructive hover:bg-destructive/10"

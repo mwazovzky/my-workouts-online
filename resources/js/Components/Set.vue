@@ -20,10 +20,16 @@ const local = reactive({
 });
 
 const inputsDisabled = computed(() => !props.editable || local.is_completed);
+const canComplete = computed(() => props.editable && Number(local.repetitions) > 0);
 
 watch(
   () => [local.repetitions, local.weight],
   () => {
+    // Auto-uncheck if reps changed to 0 while completed
+    if (local.is_completed && Number(local.repetitions) <= 0) {
+      local.is_completed = false;
+    }
+
     emits('update', {
       id: local.id,
       order: local.order,
@@ -102,6 +108,7 @@ function remove() {
       v-if="editable"
       :variant="local.is_completed ? 'secondary' : 'outline'"
       size="icon"
+      :disabled="!canComplete"
       :class="local.is_completed ? 'text-foreground' : 'text-muted-foreground'"
       :aria-label="`Mark set ${local.order} as ${local.is_completed ? 'incomplete' : 'complete'}`"
       @click="onCheckedUpdate(!local.is_completed)"

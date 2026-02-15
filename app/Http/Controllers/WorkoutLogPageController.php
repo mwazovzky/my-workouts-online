@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\WorkoutLogStatus;
+use App\Http\Requests\WorkoutLogSaveRequest;
 use App\Http\Requests\WorkoutLogStoreRequest;
 use App\Http\Resources\ActivityResource;
 use App\Http\Resources\WorkoutLogResource;
@@ -77,6 +78,16 @@ class WorkoutLogPageController extends Controller
         $workoutLog = $service->createFromTemplate($user, $data['workout_template_id']);
 
         return redirect()->route('workout.logs.edit', ['id' => $workoutLog->id]);
+    }
+
+    public function save(WorkoutLogSaveRequest $request, WorkoutLog $workoutLog, WorkoutLogServiceInterface $service): RedirectResponse
+    {
+        $this->authorize('save', $workoutLog);
+
+        $data = $request->validated();
+        $service->save($workoutLog, $data);
+
+        return back();
     }
 
     public function complete(WorkoutLog $workoutLog): RedirectResponse

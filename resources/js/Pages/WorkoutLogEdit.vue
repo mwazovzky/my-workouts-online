@@ -11,6 +11,7 @@
         <ActivitiesList
           :activities="activities"
           :editable="isEditable"
+          :can-remove-activity="activities.length > 1"
           @set-completion-toggled="onSetCompletionToggled"
           @add-set="payload => onAddSet(payload)"
           @remove-set="payload => onRemoveSet(payload)"
@@ -21,23 +22,36 @@
     </PageLayout>
 
     <WorkoutFooter :show="isEditable">
-      <Button
-        :disabled="isFinishing"
-        variant="outline"
-        size="lg"
-        class="px-8"
-        @click="finishWorkout"
-      >
-        <span v-if="!isFinishing">Complete</span>
-        <span v-else>Completing…</span>
-      </Button>
+      <div class="flex items-center gap-3">
+        <Button
+          v-if="isDirty"
+          :disabled="isSaving"
+          variant="outline"
+          size="lg"
+          class="px-8"
+          @click="saveWorkout"
+        >
+          <span v-if="!isSaving">Save</span>
+          <span v-else>Saving…</span>
+        </Button>
+        <Button
+          :disabled="isFinishing"
+          variant="outline"
+          size="lg"
+          class="px-8"
+          @click="finishWorkout"
+        >
+          <span v-if="!isFinishing">Complete</span>
+          <span v-else>Completing…</span>
+        </Button>
+      </div>
     </WorkoutFooter>
   </AuthenticatedLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutCard from '@/Components/WorkoutCard.vue';
@@ -76,12 +90,14 @@ const workoutStatus = ref(props.workoutLog.status ?? null);
 const workoutOwnerId = ref(props.workoutLog.user_id ?? null);
 
 // UI flags
+const isSaving = ref(false);
 const isFinishing = ref(false);
+const isDirty = ref(false);
 
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
 
-// editable only when owner and status is in_progress
+// Editable only when owner and status is in_progress
 const isEditable = computed(() => {
   return (
     !!workoutLogId.value &&
@@ -90,41 +106,54 @@ const isEditable = computed(() => {
   );
 });
 
-const activityForm = useForm({
-  sets: [],
-});
+function markDirty() {
+  isDirty.value = true;
+}
 
-// Save a single activity (upsert sets)
-function saveActivity(activityId, { onError } = {}) {
-  if (!isEditable.value) {
-    alert('This workout cannot be edited');
+/**
+ * Normalize activity and set orders to be sequential starting from 1,
+ * and build the payload for the save endpoint.
+ */
+function buildSavePayload() {
+  return {
+    activities: activities.value.map((a, aIdx) => ({
+      id: a.id ?? undefined,
+      exercise_id: a.exercise_id,
+      order: aIdx + 1,
+      sets: a.sets.map((s, sIdx) => ({
+        id: s.id ?? undefined,
+        order: sIdx + 1,
+        repetitions: Number(s.repetitions),
+        weight: Number(s.weight),
+        is_completed: s.is_completed ?? false,
+      })),
+    })),
+  };
+}
+
+function saveWorkout({ onSuccess, onError } = {}) {
+  if (!isEditable.value || isSaving.value) {
     return;
   }
 
-  const activity = activities.value.find(a => a.id === activityId);
-  if (!activity || !workoutLogId.value) {
-    alert('No activity or workout not started');
-    return;
-  }
+  isSaving.value = true;
 
-  activityForm.sets = activity.sets.map(s => ({
-    id: s.id ?? null,
-    order: s.order,
-    repetitions: s.repetitions,
-    weight: s.weight,
-    is_completed: s.is_completed ?? false,
-  }));
-
-  activityForm.patch(route('activities.update', { activity: activity.id }), {
+  router.patch(route('workout.logs.save', { workoutLog: workoutLogId.value }), buildSavePayload(), {
     preserveScroll: true,
+    onSuccess: () => {
+      isDirty.value = false;
+      onSuccess?.();
+    },
     onError: () => {
       onError?.();
-      alert('Failed to save activity');
+      alert('Failed to save workout');
+    },
+    onFinish: () => {
+      isSaving.value = false;
     },
   });
 }
 
-// Finish workout via Inertia; server redirects to show page on success
 function finishWorkout() {
   if (!workoutLogId.value || isFinishing.value) {
     return;
@@ -132,6 +161,24 @@ function finishWorkout() {
 
   isFinishing.value = true;
 
+  // If there are unsaved changes, save first then complete
+  if (isDirty.value) {
+    saveWorkout({
+      onSuccess: () => {
+        completeWorkout();
+      },
+      onError: () => {
+        isFinishing.value = false;
+      },
+    });
+
+    return;
+  }
+
+  completeWorkout();
+}
+
+function completeWorkout() {
   router.post(
     route('workout.logs.complete', { workoutLog: workoutLogId.value }),
     {},
@@ -139,33 +186,19 @@ function finishWorkout() {
       onFinish: () => {
         isFinishing.value = false;
       },
-    },
+    }
   );
 }
 
-function revertSetCompletion({ activityId, id, order, previous }) {
-  const activity = activities.value.find(a => a.id === activityId);
-  if (!activity) return;
-
-  const set = activity.sets.find(s => (id ? s.id === id : s.order === order));
-  if (!set) return;
-
-  set.is_completed = previous;
+// Set completion toggle — now client-side only (no auto-save)
+function onSetCompletionToggled() {
+  markDirty();
 }
 
-function onSetCompletionToggled(payload) {
-  // Persist only on checkbox toggle.
-  saveActivity(payload.activityId, {
-    onError: () => {
-      revertSetCompletion(payload);
-    },
-  });
-}
-
-// remove/add set handlers (simple client-side updates)
 function onAddSet({ activityId }) {
   const activity = activities.value.find(a => a.id === activityId);
   if (!activity) return;
+
   const maxOrder = activity.sets.length ? Math.max(...activity.sets.map(s => s.order)) : 0;
   activity.sets.push({
     id: null,
@@ -174,27 +207,48 @@ function onAddSet({ activityId }) {
     weight: 0,
     is_completed: false,
   });
+  markDirty();
 }
 
 function onRemoveSet({ activityId, id, order }) {
   const activity = activities.value.find(a => a.id === activityId);
   if (!activity) return;
-  if (id) {
-    activity.sets = activity.sets.filter(s => s.id !== id);
+
+  // If this is the last set, confirm and remove the entire activity
+  if (activity.sets.length === 1) {
+    if (!confirm('Removing the last set will delete this activity. Continue?')) {
+      return;
+    }
+    activities.value = activities.value.filter(a => a.id !== activityId);
+    markDirty();
+
     return;
   }
 
-  activity.sets = activity.sets.filter(s => s.order !== order);
+  if (id) {
+    activity.sets = activity.sets.filter(s => s.id !== id);
+  } else {
+    activity.sets = activity.sets.filter(s => s.order !== order);
+  }
+  markDirty();
 }
 
 function onUpdateActivity(updated) {
   const idx = activities.value.findIndex(a => a.id === updated.id);
-  if (idx !== -1) activities.value[idx] = updated;
+  if (idx !== -1) {
+    activities.value[idx] = updated;
+    markDirty();
+  }
 }
 
 function onRemoveActivity(activityId) {
   if (!isEditable.value) {
     alert('This workout cannot be edited');
+
+    return;
+  }
+
+  if (activities.value.length <= 1) {
     return;
   }
 
@@ -202,15 +256,7 @@ function onRemoveActivity(activityId) {
     return;
   }
 
-  router.delete(route('activities.destroy', { activity: activityId }), {
-    preserveScroll: true,
-    onSuccess: () => {
-      // Remove from local state to keep unsaved changes in other activities
-      activities.value = activities.value.filter(a => a.id !== activityId);
-    },
-    onError: () => {
-      alert('Failed to delete activity');
-    },
-  });
+  activities.value = activities.value.filter(a => a.id !== activityId);
+  markDirty();
 }
 </script>

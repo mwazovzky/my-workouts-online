@@ -19,6 +19,13 @@ interface WorkoutLogServiceInterface
     public function repeat(WorkoutLog $sourceWorkoutLog): WorkoutLog;
 
     /**
+     * Save (sync) the full set of activities and sets for a workout log.
+     *
+     * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>}>}  $data
+     */
+    public function save(WorkoutLog $workoutLog, array $data): WorkoutLog;
+
+    /**
      * Delete workout log and all related activities and sets.
      */
     public function delete(WorkoutLog $workoutLog): void;

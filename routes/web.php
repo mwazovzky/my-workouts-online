@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramPageController;
@@ -48,6 +47,10 @@ Route::post('/workout-logs', [WorkoutLogPageController::class, 'store'])
     ->middleware(['auth', 'verified'])
     ->name('workout.logs.store');
 
+Route::patch('/workout-logs/{workoutLog}/save', [WorkoutLogPageController::class, 'save'])
+    ->middleware(['auth', 'verified'])
+    ->name('workout.logs.save');
+
 Route::post('/workout-logs/{workoutLog}/complete', [WorkoutLogPageController::class, 'complete'])
     ->middleware(['auth', 'verified'])
     ->name('workout.logs.complete');
@@ -59,14 +62,6 @@ Route::post('/workout-logs/{workoutLog}/repeat', [WorkoutLogPageController::clas
 Route::delete('/workout-logs/{workoutLog}', [WorkoutLogPageController::class, 'destroy'])
     ->middleware(['auth', 'verified'])
     ->name('workout.logs.destroy');
-
-Route::patch('/activities/{activity}', [ActivityController::class, 'update'])
-    ->middleware(['auth', 'verified'])
-    ->name('activities.update');
-
-Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])
-    ->middleware(['auth', 'verified'])
-    ->name('activities.destroy');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

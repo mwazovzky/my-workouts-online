@@ -13,6 +13,15 @@ class WorkoutLogPolicy
         return $workoutLog->user_id === $user->id;
     }
 
+    public function save(User $user, WorkoutLog $workoutLog): bool
+    {
+        if ($workoutLog->user_id !== $user->id) {
+            return false;
+        }
+
+        return $workoutLog->status === WorkoutLogStatus::InProgress;
+    }
+
     public function complete(User $user, WorkoutLog $workoutLog): bool
     {
         if ($workoutLog->user_id !== $user->id) {

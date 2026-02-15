@@ -6,41 +6,42 @@ Users edit exercises and sets within an in-progress workout log.
 
 1. On **WorkoutLogEdit**, user sees a list of activities (exercises) with their sets
 2. Each set shows: order, repetitions, weight, completion toggle
-3. User updates a set (reps, weight, completion) → PATCH sends the full sets array for that activity
-4. User deletes an activity → DELETE removes the activity and its sets
-5. Changes are saved immediately (no draft/save button — each action is a separate request)
+3. All editing (add/remove sets, toggle completion, update reps/weight, remove activities) is **client-side only**
+4. A **Save** button appears when there are unsaved changes — sends all activities and sets in one bulk request
+5. **Complete** saves any unsaved changes first, then marks the workout as completed
+6. The last activity cannot be removed (trash icon is hidden)
+7. Removing the last set from an activity prompts a confirmation, then removes the entire activity
 
 ## Business Rules
 
-- Only workout-log activities can be updated or deleted — template activities are rejected by `ActivityPolicy`
-- Activities in completed workout logs cannot be updated (service-level check, returns 422)
-- Activity update replaces the entire sets collection for that activity:
-  - Existing sets (with `id`) are updated in place
-  - New sets (without `id`) are created
-  - Sets missing from the payload are deleted
-  - Orders are re-normalized to sequential 1-based values
-- Set IDs in the payload must belong to the target activity (validated)
-- Minimum 1 set required per update
-- Set validation: `repetitions` ≥ 0 (integer), `weight` ≥ 0 (numeric), `order` ≥ 1 (integer, distinct), `is_completed` (boolean, optional)
-- Activity deletion cascades to sets, runs in a transaction
-- Owner check traverses `activity → workout_log → user_id`
+- Only in-progress workout logs can be saved (`WorkoutLogPolicy@save`)
+- The bulk save endpoint (`PATCH /workout-logs/{workoutLog}/save`) receives the full activities+sets payload:
+  - Existing activities (with `id`) are updated, new ones (without `id`) are created
+  - Activities missing from the payload are deleted (along with their sets)
+  - Within each activity, sets follow the same upsert/delete pattern
+  - Set IDs must belong to the correct activity (validated)
+  - Activity IDs must belong to the target workout log (validated)
+- Minimum 1 activity per workout, minimum 1 set per activity
+- Frontend normalizes orders to sequential 1-based values before sending
+- Set validation: `repetitions` ≥ 0 (integer), `weight` ≥ 0 (numeric), `order` ≥ 1 (integer), `is_completed` (boolean, optional)
+- All operations run in a single database transaction
+- Owner check via `WorkoutLogPolicy` — `user_id` must match authenticated user
 
 ## Known Limitations
 
-- No adding new activities to an existing workout log
+- No adding new activities (exercises) to an existing workout log from the edit page
 - No reordering activities within a log
 - No exercise substitution (swap one exercise for another)
 - No rest timer integration
 - No set history/comparison with previous workouts
 - No per-set notes
-- No undo for activity deletion
+- No undo for activity deletion (once saved)
 
 ## Pages & Routes
 
-| Action | Method | Path | Name | Guard |
-|---|---|---|---|---|
-| Update activity (sets) | PATCH | `/activities/{activity}` | `activities.update` | `ActivityPolicy@update` |
-| Delete activity | DELETE | `/activities/{activity}` | `activities.destroy` | `ActivityPolicy@delete` |
+| Action              | Method | Path                              | Name                | Guard                   |
+| ------------------- | ------ | --------------------------------- | ------------------- | ----------------------- |
+| Save workout (bulk) | PATCH  | `/workout-logs/{workoutLog}/save` | `workout.logs.save` | `WorkoutLogPolicy@save` |
 
 ## Related
 
