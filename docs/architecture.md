@@ -6,7 +6,7 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 ## Key Patterns
 
-**Service + Interface DI** — Business logic in service classes (`WorkoutLogService`, `ActivityService`), each behind an interface. Bound in `AppServiceProvider`.
+**Service + Interface DI** — Business logic in service classes (`WorkoutLogService`), each behind an interface. Bound in `AppServiceProvider`.
 
 **Query Builder** — `WorkoutLogBuilder` extends Eloquent Builder with composable scopes: `ownedBy()`, `withTemplate()`, `withActivitiesCount()`, `latestUpdated()`.
 
@@ -14,7 +14,7 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 **Eloquent Resources** — All Inertia responses go through API Resources (`ProgramResource`, `WorkoutLogResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).
 
-**Form Requests** — Validation via dedicated request classes (`WorkoutLogStoreRequest`, `ActivityUpdateRequest`). Authorization handled separately via policies.
+**Form Requests** — Validation via dedicated request classes (`WorkoutLogStoreRequest`, `WorkoutLogSaveRequest`). Authorization handled separately via policies.
 
 **Inertia Deferred Props** — `ProgramShow` and `WorkoutLogShow` use deferred props for lazy-loaded relationship data.
 
@@ -24,15 +24,15 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 Only non-obvious locations listed.
 
-| Path | Contains |
-|---|---|
-| `app/Services/{Domain}/` | Service class + interface per domain |
-| `app/QueryBuilders/` | Custom Eloquent builders |
-| `app/Enums/` | `WorkoutLogStatus` (InProgress, Completed) |
-| `app/Policies/` | `WorkoutLogPolicy`, `ActivityPolicy` |
+| Path                          | Contains                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `app/Services/{Domain}/`      | Service class + interface per domain                                         |
+| `app/QueryBuilders/`          | Custom Eloquent builders                                                     |
+| `app/Enums/`                  | `WorkoutLogStatus` (InProgress, Completed)                                   |
+| `app/Policies/`               | `WorkoutLogPolicy`                                                           |
 | `resources/js/Components/ui/` | Reusable UI primitives (badge, button, card, empty, input, skeleton, switch) |
-| `resources/js/composables/` | `useEnrollment` — enrollment state + toggle |
-| `resources/js/utils/` | `date` (formatting), `navigation` (route helpers) |
+| `resources/js/composables/`   | `useEnrollment` — enrollment state + toggle                                  |
+| `resources/js/utils/`         | `date` (formatting), `navigation` (route helpers)                            |
 
 ## Data Model
 
