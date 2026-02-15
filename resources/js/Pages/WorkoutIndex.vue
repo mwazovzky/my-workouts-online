@@ -46,7 +46,7 @@
                 </Button>
 
                 <Button
-                  v-if="workout.user_id === currentUserId() && workout.status === 'in_progress'"
+                  v-if="workout.user_id === currentUserId && workout.status === 'in_progress'"
                   as="a"
                   :href="route('workouts.edit', { id: workout.id })"
                   variant="default"
@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
@@ -118,7 +118,7 @@ defineProps({
 });
 
 const page = usePage();
-const currentUserId = () => page.props.auth?.user?.id ?? null;
+const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
 
 // Decode HTML entities in pagination labels
 function decodeHtmlEntities(text) {

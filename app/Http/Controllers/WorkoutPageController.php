@@ -48,9 +48,14 @@ class WorkoutPageController extends Controller
 
         return Inertia::render('WorkoutShow', [
             'workout' => (new WorkoutResource($workout))->resolve(),
-            'activities' => Inertia::defer(fn () => ActivityResource::collection(
+            'activities' => Inertia::defer(fn() => ActivityResource::collection(
                 $workout->activities()
-                    ->with(['sets', 'exercise.equipment', 'exercise.categories'])
+                    ->with([
+                        'sets' => fn($query) => $query->orderBy('order'),
+                        'exercise.equipment',
+                        'exercise.categories',
+                    ])
+                    ->orderBy('order')
                     ->get()
             )->resolve()),
         ]);
@@ -63,7 +68,13 @@ class WorkoutPageController extends Controller
         $workout = Workout::query()
             ->ownedBy($user)
             ->withActivitiesCount()
-            ->with(['workoutTemplate', 'activities.sets', 'activities.exercise.equipment', 'activities.exercise.categories'])
+            ->with([
+                'workoutTemplate',
+                'activities' => fn($query) => $query->orderBy('order'),
+                'activities.sets' => fn($query) => $query->orderBy('order'),
+                'activities.exercise.equipment',
+                'activities.exercise.categories',
+            ])
             ->findOrFail($id);
 
         return Inertia::render('WorkoutEdit', [

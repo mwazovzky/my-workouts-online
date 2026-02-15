@@ -12,7 +12,11 @@ class WorkoutTemplatePageController extends Controller
     public function show(int $id): Response
     {
         $workoutTemplate = WorkoutTemplate::query()
-            ->with(['activities.sets', 'activities.exercise'])
+            ->with([
+                'activities' => fn($query) => $query->orderBy('order'),
+                'activities.sets' => fn($query) => $query->orderBy('order'),
+                'activities.exercise',
+            ])
             ->findOrFail($id);
 
         return Inertia::render('WorkoutTemplateShow', [

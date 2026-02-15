@@ -23,7 +23,9 @@
         <ActivitiesList
           :activities="activities"
           :editable="isEditable"
+          :reorderable="isEditable && activities.length > 1"
           :can-remove-activity="activities.length > 1"
+          @reorder="markDirty"
           @set-completion-toggled="onSetCompletionToggled"
           @add-set="payload => onAddSet(payload)"
           @remove-set="payload => onRemoveSet(payload)"

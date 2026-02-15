@@ -6,11 +6,12 @@ Users edit exercises and sets within an in-progress workout.
 
 1. On **WorkoutEdit**, user sees a list of activities (exercises) with their sets
 2. Each set shows: order, repetitions, weight, completion toggle
-3. All editing (add/remove sets, toggle completion, update reps/weight, remove activities) is **client-side only**
-4. A **Save** button appears when there are unsaved changes — sends all activities and sets in one bulk request
-5. **Complete** saves any unsaved changes first, then marks the workout as completed
-6. The last activity cannot be removed (trash icon is hidden)
-7. Removing the last set from an activity prompts a confirmation, then removes the entire activity
+3. Activities can be **reordered via drag-and-drop** when more than one activity exists (drag handle visible on each card)
+4. All editing (add/remove sets, toggle completion, update reps/weight, remove activities, reorder activities) is **client-side only**
+5. A **Save** button appears when there are unsaved changes — sends all activities and sets in one bulk request
+6. **Complete** saves any unsaved changes first, then marks the workout as completed
+7. The last activity cannot be removed (trash icon is hidden)
+8. Removing the last set from an activity prompts a confirmation, then removes the entire activity
 
 ## Business Rules
 
@@ -22,7 +23,8 @@ Users edit exercises and sets within an in-progress workout.
   - Set IDs must belong to the correct activity (validated)
   - Activity IDs must belong to the target workout (validated)
 - Minimum 1 activity per workout, minimum 1 set per activity
-- Frontend normalizes orders to sequential 1-based values before sending
+- Frontend normalizes activity and set orders to sequential 1-based values before sending
+- Activity order is preserved: existing activity orders are cleared (set to `-id`) before upsert to avoid unique constraint violations
 - Set validation: `repetitions` ≥ 0 (integer), `weight` ≥ 0 (numeric), `order` ≥ 1 (integer), `is_completed` (boolean, optional)
 - All operations run in a single database transaction
 - Owner check via `WorkoutPolicy` — `user_id` must match authenticated user
@@ -30,7 +32,6 @@ Users edit exercises and sets within an in-progress workout.
 ## Known Limitations
 
 - No adding new activities (exercises) to an existing workout from the edit page
-- No reordering activities within a log
 - No exercise substitution (swap one exercise for another)
 - No rest timer integration
 - No set history/comparison with previous workouts

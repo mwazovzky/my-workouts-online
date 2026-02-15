@@ -290,6 +290,65 @@ class WorkoutSaveTest extends TestCase
         $this->assertDatabaseHas('sets', ['id' => $set3->id, 'order' => 2]);
     }
 
+    #[Test]
+    public function save_updates_activity_order_as_sent_by_frontend(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $exercise = Exercise::factory()->create();
+
+        $activity1 = Activity::factory()->for($workout, 'workout')->create([
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+        $activity2 = Activity::factory()->for($workout, 'workout')->create([
+            'exercise_id' => $exercise->id,
+            'order' => 2,
+        ]);
+
+        $set1 = Set::factory()->for($activity1, 'activity')->create(['order' => 1]);
+        $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);
+
+        $response = $this->actingAs($user)->patch(
+            route('workouts.save', ['workout' => $workout->id]),
+            [
+                'activities' => [
+                    [
+                        'id' => $activity1->id,
+                        'exercise_id' => $exercise->id,
+                        'order' => 2,
+                        'sets' => [
+                            [
+                                'id' => $set1->id,
+                                'order' => 1,
+                                'repetitions' => 5,
+                                'weight' => 50,
+                            ],
+                        ],
+                    ],
+                    [
+                        'id' => $activity2->id,
+                        'exercise_id' => $exercise->id,
+                        'order' => 1,
+                        'sets' => [
+                            [
+                                'id' => $set2->id,
+                                'order' => 1,
+                                'repetitions' => 6,
+                                'weight' => 60,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('activities', ['id' => $activity1->id, 'order' => 2]);
+        $this->assertDatabaseHas('activities', ['id' => $activity2->id, 'order' => 1]);
+    }
+
     // -------------------------------------------------------
     // Authorization
     // -------------------------------------------------------

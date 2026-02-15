@@ -33,7 +33,7 @@ A workout tracking app. Users browse curated workout programs, enroll in them, s
 2. **View program** → `ProgramShow` page shows templates by weekday
 3. **Enroll** → POST enrolls the user in the program
 4. **Start workout** → POST creates a workout from a template, redirects to edit
-5. **Track workout** → `WorkoutEdit` page — update sets, mark them complete, delete activities
+5. **Track workout** → `WorkoutEdit` page — update sets, mark them complete, reorder activities via drag-and-drop, delete activities
 6. **Complete workout** → POST transitions status to `completed`
 7. **Review history** → `WorkoutIndex` lists past workouts (paginated); `WorkoutShow` shows details
 8. **Repeat workout** → POST on a completed workout creates a new in-progress copy
