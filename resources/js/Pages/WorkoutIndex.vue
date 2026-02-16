@@ -1,13 +1,13 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <PageHeader title="Workout Index" />
+      <PageHeader :title="t('Workout Index')" />
     </template>
 
     <PageLayout>
       <Empty v-if="workouts.data.length === 0">
-        <EmptyTitle>No workouts yet</EmptyTitle>
-        <EmptyDescription>Start a workout to see it listed here</EmptyDescription>
+        <EmptyTitle>{{ t('No workouts yet') }}</EmptyTitle>
+        <EmptyDescription>{{ t('Start a workout to see it listed here') }}</EmptyDescription>
       </Empty>
       <ul v-else class="space-y-3">
         <li v-for="workout in workouts.data" :key="workout.id">
@@ -22,16 +22,18 @@
                     class="w-4 h-4 text-muted-foreground flex-shrink-0"
                   />
                   <span class="truncate">{{
-                    workout.name ?? workout.workout_template?.name ?? 'Workout'
+                    workout.name ?? workout.workout_template?.name ?? t('Workout')
                   }}</span>
                 </div>
                 <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                   <span
                     >{{ formatDate(workout.created_at) }} ·
-                    {{ workout.activities_count ?? 0 }} activities</span
+                    {{
+                      t(':count activities', { count: String(workout.activities_count ?? 0) })
+                    }}</span
                   >
                   <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-                    {{ formatStatus(workout.status) }}
+                    {{ workout.status_label }}
                   </Badge>
                 </div>
               </div>
@@ -42,7 +44,7 @@
                   variant="outline"
                   size="sm"
                 >
-                  Show
+                  {{ t('Show') }}
                 </Button>
 
                 <Button
@@ -52,11 +54,11 @@
                   variant="default"
                   size="sm"
                 >
-                  Continue
+                  {{ t('Continue') }}
                 </Button>
 
                 <Button variant="destructive" size="sm" @click="deleteWorkout(workout.id)">
-                  Delete
+                  {{ t('Delete') }}
                 </Button>
               </div>
             </div>
@@ -108,7 +110,9 @@ import { Button } from '@/Components/ui/button';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
-import { formatStatus } from '@/utils/format';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 defineProps({
   workouts: {
@@ -132,11 +136,11 @@ const confirmDialog = ref({
   open: false,
   title: '',
   description: '',
-  confirmLabel: 'Delete',
+  confirmLabel: t('Delete'),
   onConfirm: null,
 });
 
-function openConfirm({ title, description, confirmLabel = 'Delete', onConfirm }) {
+function openConfirm({ title, description, confirmLabel = t('Delete'), onConfirm }) {
   confirmDialog.value = { open: true, title, description, confirmLabel, onConfirm };
 }
 
@@ -152,14 +156,14 @@ function onConfirmDialogCancel() {
 
 async function deleteWorkout(id) {
   openConfirm({
-    title: 'Delete workout?',
-    description: 'This action cannot be undone.',
-    confirmLabel: 'Delete',
+    title: t('Delete workout?'),
+    description: t('This action cannot be undone.'),
+    confirmLabel: t('Delete'),
     onConfirm: () => {
       router.delete(route('workouts.destroy', { workout: id }), {
         preserveScroll: true,
         onError: () => {
-          toast.error('Failed to delete workout');
+          toast.error(t('Failed to delete workout'));
         },
       });
     },

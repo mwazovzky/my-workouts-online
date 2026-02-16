@@ -3,6 +3,9 @@ import Set from '@/Components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Clock, GripVertical, Plus, Trash2 } from 'lucide-vue-next';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   activity: { type: Object, required: true },
@@ -75,7 +78,7 @@ function removeActivity() {
             v-if="reorderable"
             type="button"
             class="activity-drag-handle mt-0.5 inline-flex items-center justify-center rounded text-muted-foreground/70 hover:text-foreground cursor-grab active:cursor-grabbing"
-            aria-label="Reorder activity"
+            :aria-label="t('Reorder activity')"
           >
             <GripVertical class="h-4 w-4" />
           </button>
@@ -97,7 +100,7 @@ function removeActivity() {
           </div>
         </div>
         <div v-if="editable" class="flex items-center gap-1">
-          <Button variant="outline" size="icon" aria-label="Add set" @click="addSet">
+          <Button variant="outline" size="icon" :aria-label="t('Add set')" @click="addSet">
             <Plus />
           </Button>
           <Button
@@ -105,7 +108,7 @@ function removeActivity() {
             variant="outline"
             size="icon"
             class="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            aria-label="Delete activity"
+            :aria-label="t('Delete activity')"
             @click="removeActivity"
           >
             <Trash2 />
@@ -121,10 +124,12 @@ function removeActivity() {
           class="grid grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem] items-end gap-2 text-xs font-medium text-muted-foreground"
         >
           <div class="text-center">#</div>
-          <div class="text-right pr-3">Reps</div>
-          <div class="text-right pr-3">Weight</div>
-          <div class="text-center">Done</div>
-          <div class="text-center"><span class="sr-only">Remove</span></div>
+          <div class="text-right pr-3">{{ t('Reps') }}</div>
+          <div class="text-right pr-3">{{ t('Weight') }}</div>
+          <div class="text-center">{{ t('Done') }}</div>
+          <div class="text-center">
+            <span class="sr-only">{{ t('Remove') }}</span>
+          </div>
         </div>
 
         <!-- Set Rows -->

@@ -1,4 +1,14 @@
 /**
+ * Get the current document locale, falling back to 'en-US'.
+ * Reads from <html lang="...">, which Laravel sets via app()->getLocale().
+ *
+ * @returns {string}
+ */
+function getLocale() {
+  return document.documentElement.lang || 'en-US';
+}
+
+/**
  * Format a date string for display
  * @param {string} dateString - ISO date string to format
  * @param {Object} options - Intl.DateTimeFormat options
@@ -17,7 +27,7 @@ export function formatDate(dateString, options = {}) {
     minute: '2-digit',
   };
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(getLocale(), {
     ...defaultOptions,
     ...options,
   }).format(date);
@@ -33,7 +43,7 @@ export function formatDateOnly(dateString) {
 
   const date = new Date(dateString);
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

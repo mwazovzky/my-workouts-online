@@ -3,6 +3,9 @@ import { computed, reactive, watch } from 'vue';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Check, Minus } from 'lucide-vue-next';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   set: { type: Object, required: true },
@@ -110,7 +113,11 @@ function remove() {
       size="icon"
       :disabled="!canComplete"
       :class="local.is_completed ? 'text-foreground' : 'text-muted-foreground'"
-      :aria-label="`Mark set ${local.order} as ${local.is_completed ? 'incomplete' : 'complete'}`"
+      :aria-label="
+        local.is_completed
+          ? t('Mark set :order as incomplete', { order: local.order })
+          : t('Mark set :order as complete', { order: local.order })
+      "
       @click="onCheckedUpdate(!local.is_completed)"
     >
       <Check v-if="local.is_completed" class="h-4 w-4" />
@@ -128,7 +135,7 @@ function remove() {
       variant="outline"
       size="icon"
       class="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-      :aria-label="`Remove set ${local.order}`"
+      :aria-label="t('Remove set :order', { order: local.order })"
       @click="remove"
     >
       <Minus class="h-4 w-4" />

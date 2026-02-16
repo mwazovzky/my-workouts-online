@@ -5,6 +5,9 @@ import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import { Button } from '@/Components/ui/button';
 import { Form } from '@inertiajs/vue3';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   workout: {
@@ -17,7 +20,7 @@ const props = defineProps({
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <PageHeader title="Workout Template Show" />
+      <PageHeader :title="t('Workout Template Show')" />
     </template>
 
     <div>
@@ -27,7 +30,7 @@ const props = defineProps({
       </div>
 
       <div class="mt-6">
-        <h4 class="font-semibold text-md dark:text-gray-200">Activities</h4>
+        <h4 class="font-semibold text-md dark:text-gray-200">{{ t('Activities') }}</h4>
         <div class="mt-2">
           <ActivitiesList :activities="workout.activities ?? []" :editable="false" />
         </div>
@@ -43,8 +46,8 @@ const props = defineProps({
       >
         <div class="flex flex-col gap-2 w-full">
           <Button type="submit" size="lg" class="px-8" :disabled="processing">
-            <span v-if="!processing">Start Workout</span>
-            <span v-else>Starting…</span>
+            <span v-if="!processing">{{ t('Start Workout') }}</span>
+            <span v-else>{{ t('Starting…') }}</span>
           </Button>
           <p v-if="errors.workout_template_id" class="text-sm text-red-600 dark:text-red-400">
             {{ errors.workout_template_id }}

@@ -1,20 +1,20 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <PageHeader title="Program Index" />
+      <PageHeader :title="t('Program Index')" />
     </template>
 
     <PageLayout>
       <!-- Filter Toggle -->
       <div class="flex items-center justify-between mb-6 p-4 border rounded-lg bg-muted/50">
-        <span class="text-sm font-medium">Enrolled programs only</span>
+        <span class="text-sm font-medium">{{ t('Enrolled programs only') }}</span>
         <Switch v-model="filterEnrolled" />
       </div>
 
       <!-- Program List -->
       <Empty v-if="filteredPrograms.length === 0">
-        <EmptyTitle>No programs found</EmptyTitle>
-        <EmptyDescription>There are no programs matching your filter</EmptyDescription>
+        <EmptyTitle>{{ t('No programs found') }}</EmptyTitle>
+        <EmptyDescription>{{ t('There are no programs matching your filter') }}</EmptyDescription>
       </Empty>
       <ul v-else class="space-y-3">
         <li v-for="program in filteredPrograms" :key="program.id">
@@ -27,8 +27,10 @@
                   {{ program.name }}
                 </div>
                 <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
-                  <span class="truncate">{{ program.description ?? 'No description' }}</span>
-                  <Badge v-if="isProgramEnrolled(program)" variant="success">Enrolled</Badge>
+                  <span class="truncate">{{ program.description ?? t('No description') }}</span>
+                  <Badge v-if="isProgramEnrolled(program)" variant="success">{{
+                    t('Enrolled')
+                  }}</Badge>
                 </div>
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
@@ -38,7 +40,7 @@
                   size="sm"
                   @click="enrollInProgram(program.id)"
                 >
-                  Enroll
+                  {{ t('Enroll') }}
                 </Button>
                 <Button
                   as="a"
@@ -46,7 +48,7 @@
                   variant="outline"
                   size="sm"
                 >
-                  Show
+                  {{ t('Show') }}
                 </Button>
               </div>
             </div>
@@ -68,6 +70,9 @@ import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { useEnrollment } from '@/composables/useEnrollment';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   programs: {
