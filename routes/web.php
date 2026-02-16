@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/health', static fn() => response()->json([
+Route::get('/health', static fn () => response()->json([
     'status' => 'ok',
     'timestamp' => now()->toIso8601String(),
 ]))->name('health');
@@ -97,4 +97,4 @@ Route::get('/health/ready', static function () {
     }
 })->name('health.ready');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

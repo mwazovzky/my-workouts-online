@@ -59,7 +59,7 @@ class ProgramResourceTest extends TestCase
 
         // Load program with withCount filtered by current user
         $programWithCount = Program::withCount([
-            'users' => fn($query) => $query->where('users.id', $user->id),
+            'users' => fn ($query) => $query->where('users.id', $user->id),
         ])->find($program->id);
 
         $resource = new ProgramResource($programWithCount);
@@ -80,7 +80,7 @@ class ProgramResourceTest extends TestCase
 
         // Load program with withCount filtered by current user (not enrolled)
         $programWithCount = Program::withCount([
-            'users' => fn($query) => $query->where('users.id', $user->id),
+            'users' => fn ($query) => $query->where('users.id', $user->id),
         ])->find($program->id);
 
         $resource = new ProgramResource($programWithCount);

@@ -18,7 +18,7 @@ class ProgramPageController extends Controller
 
         $programs = Program::query()
             ->withTranslations()
-            ->withCount(['users' => fn($query) => $query->where('users.id', $user->id)])
+            ->withCount(['users' => fn ($query) => $query->where('users.id', $user->id)])
             ->get();
 
         return Inertia::render('ProgramIndex', [
@@ -32,12 +32,12 @@ class ProgramPageController extends Controller
 
         $program = Program::query()
             ->withTranslations()
-            ->withCount(['users' => fn($query) => $query->where('users.id', $user->id)])
+            ->withCount(['users' => fn ($query) => $query->where('users.id', $user->id)])
             ->findOrFail($id);
 
         return Inertia::render('ProgramShow', [
             'program' => (new ProgramResource($program))->resolve(),
-            'workouts' => Inertia::defer(fn() => WorkoutTemplateResource::collection(
+            'workouts' => Inertia::defer(fn () => WorkoutTemplateResource::collection(
                 $program->workoutTemplates()->withTranslations()->get()
             )->resolve()),
         ]);

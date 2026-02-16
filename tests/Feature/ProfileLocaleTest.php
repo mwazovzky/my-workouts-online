@@ -118,7 +118,7 @@ class ProfileLocaleTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(
-            fn($page) => $page
+            fn ($page) => $page
                 ->where('locale', 'ru')
                 ->has('availableLocales')
                 ->has('translations')

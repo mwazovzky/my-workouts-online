@@ -8,5 +8,14 @@
     "The selected workout template could not be found.": "The selected workout template could not be found.",
     "A workout must have at least one activity.": "A workout must have at least one activity.",
     "Each activity must have at least one set.": "Each activity must have at least one set.",
-    "A set cannot be marked as completed with 0 repetitions.": "A set cannot be marked as completed with 0 repetitions."
+    "A set cannot be marked as completed with 0 repetitions.": "A set cannot be marked as completed with 0 repetitions.",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "Monday": "Monday",
+    "Tuesday": "Tuesday",
+    "Wednesday": "Wednesday",
+    "Thursday": "Thursday",
+    "Friday": "Friday",
+    "Saturday": "Saturday",
+    "Sunday": "Sunday"
 }

@@ -14,8 +14,8 @@ class WorkoutTemplatePageController extends Controller
         $workoutTemplate = WorkoutTemplate::query()
             ->withTranslations()
             ->with([
-                'activities' => fn($query) => $query->orderBy('order'),
-                'activities.sets' => fn($query) => $query->orderBy('order'),
+                'activities' => fn ($query) => $query->orderBy('order'),
+                'activities.sets' => fn ($query) => $query->orderBy('order'),
                 'activities.exercise.translations',
                 'activities.exercise.equipment.translations',
                 'activities.exercise.categories.translations',

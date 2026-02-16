@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
                 'en' => 'English',
                 'ru' => 'Русский',
             ],
-            'translations' => fn() => $this->loadTranslations($locale),
+            'translations' => fn () => $this->loadTranslations($locale),
         ];
     }
 

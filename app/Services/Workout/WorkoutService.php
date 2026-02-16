@@ -107,7 +107,7 @@ class WorkoutService implements WorkoutServiceInterface
         DB::transaction(function () use ($workout, $payloadActivities) {
             $payloadActivityIds = $payloadActivities
                 ->pluck('id')
-                ->filter(fn($id) => $id !== null)
+                ->filter(fn ($id) => $id !== null)
                 ->values()
                 ->all();
 
@@ -129,8 +129,8 @@ class WorkoutService implements WorkoutServiceInterface
         });
 
         return $workout->load([
-            'activities' => fn($query) => $query->orderBy('order'),
-            'activities.sets' => fn($query) => $query->orderBy('order'),
+            'activities' => fn ($query) => $query->orderBy('order'),
+            'activities.sets' => fn ($query) => $query->orderBy('order'),
         ]);
     }
 
@@ -211,7 +211,7 @@ class WorkoutService implements WorkoutServiceInterface
      */
     private function syncSets(Activity $activity, array $setsPayload): void
     {
-        $sets = collect($setsPayload)->map(fn(array $set) => [
+        $sets = collect($setsPayload)->map(fn (array $set) => [
             'id' => isset($set['id']) && $set['id'] !== null ? (int) $set['id'] : null,
             'order' => (int) $set['order'],
             'repetitions' => (int) $set['repetitions'],
@@ -219,7 +219,7 @@ class WorkoutService implements WorkoutServiceInterface
             'is_completed' => (bool) ($set['is_completed'] ?? false),
         ]);
 
-        $keepSetIds = $sets->pluck('id')->filter(fn($id) => $id !== null)->values()->all();
+        $keepSetIds = $sets->pluck('id')->filter(fn ($id) => $id !== null)->values()->all();
 
         $this->assertSetIdsBelongToActivity($activity, $keepSetIds);
 
@@ -239,11 +239,11 @@ class WorkoutService implements WorkoutServiceInterface
         }
 
         // Upsert existing sets
-        [$updates, $creates] = $sets->partition(fn($set) => $set['id'] !== null);
+        [$updates, $creates] = $sets->partition(fn ($set) => $set['id'] !== null);
 
         if ($updates->isNotEmpty()) {
             Set::upsert(
-                $updates->map(fn($set) => [
+                $updates->map(fn ($set) => [
                     'id' => $set['id'],
                     'activity_id' => $activity->id,
                     'order' => $set['order'],
@@ -259,7 +259,7 @@ class WorkoutService implements WorkoutServiceInterface
         // Create new sets
         if ($creates->isNotEmpty()) {
             $activity->sets()->createMany(
-                $creates->map(fn($set) => [
+                $creates->map(fn ($set) => [
                     'order' => $set['order'],
                     'repetitions' => $set['repetitions'],
                     'weight' => $set['weight'],

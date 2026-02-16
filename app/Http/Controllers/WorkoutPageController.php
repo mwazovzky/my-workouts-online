@@ -48,10 +48,10 @@ class WorkoutPageController extends Controller
 
         return Inertia::render('WorkoutShow', [
             'workout' => (new WorkoutResource($workout))->resolve(),
-            'activities' => Inertia::defer(fn() => ActivityResource::collection(
+            'activities' => Inertia::defer(fn () => ActivityResource::collection(
                 $workout->activities()
                     ->with([
-                        'sets' => fn($query) => $query->orderBy('order'),
+                        'sets' => fn ($query) => $query->orderBy('order'),
                         'exercise.equipment.translations',
                         'exercise.categories.translations',
                         'exercise.translations',
@@ -71,8 +71,8 @@ class WorkoutPageController extends Controller
             ->withActivitiesCount()
             ->with([
                 'workoutTemplate.translations',
-                'activities' => fn($query) => $query->orderBy('order'),
-                'activities.sets' => fn($query) => $query->orderBy('order'),
+                'activities' => fn ($query) => $query->orderBy('order'),
+                'activities.sets' => fn ($query) => $query->orderBy('order'),
                 'activities.exercise.equipment.translations',
                 'activities.exercise.categories.translations',
                 'activities.exercise.translations',
