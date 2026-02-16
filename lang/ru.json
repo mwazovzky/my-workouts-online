@@ -3,5 +3,10 @@
     "Save": "Сохранить",
     "Saved.": "Сохранено.",
     "Language": "Язык",
-    "Select your preferred language.": "Выберите предпочитаемый язык."
+    "Select your preferred language.": "Выберите предпочитаемый язык.",
+    "A workout template is required to start a workout.": "Для начала тренировки необходимо выбрать шаблон.",
+    "The selected workout template could not be found.": "Выбранный шаблон тренировки не найден.",
+    "A workout must have at least one activity.": "Тренировка должна содержать хотя бы одно упражнение.",
+    "Each activity must have at least one set.": "Каждое упражнение должно содержать хотя бы один подход.",
+    "A set cannot be marked as completed with 0 repetitions.": "Подход не может быть отмечен как выполненный с 0 повторениями."
 }

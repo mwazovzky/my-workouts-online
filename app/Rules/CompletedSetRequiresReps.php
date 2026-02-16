@@ -22,7 +22,7 @@ class CompletedSetRequiresReps implements ValidationRule
         $reps = data_get(request()->all(), $repsKey);
 
         if ((int) $reps <= 0) {
-            $fail('A set cannot be marked as completed with 0 repetitions.');
+            $fail(__('A set cannot be marked as completed with 0 repetitions.'));
         }
     }
 }

@@ -21,8 +21,8 @@ class WorkoutStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'workout_template_id.required' => 'A workout template is required to start a workout.',
-            'workout_template_id.exists' => 'The selected workout template could not be found.',
+            'workout_template_id.required' => __('A workout template is required to start a workout.'),
+            'workout_template_id.exists' => __('The selected workout template could not be found.'),
         ];
     }
 
