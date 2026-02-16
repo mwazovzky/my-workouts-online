@@ -102,7 +102,7 @@ class WorkoutResourceTest extends TestCase
     #[Test]
     public function workout_template_conditionally_included_when_loaded(): void
     {
-        $workoutTemplate = WorkoutTemplate::factory()->create(['name' => 'Test Template']);
+        $workoutTemplate = WorkoutTemplate::factory()->withTranslation('name', 'Test Template')->create();
         $workout = Workout::factory()->create([
             'workout_template_id' => $workoutTemplate->id,
         ]);
@@ -115,7 +115,7 @@ class WorkoutResourceTest extends TestCase
         $this->assertNull($arrayWithout['workout_template']);
 
         // With eager loading
-        $workoutWithTemplate = Workout::with('workoutTemplate')->find($workout->id);
+        $workoutWithTemplate = Workout::with('workoutTemplate.translations')->find($workout->id);
         $resourceWith = new WorkoutResource($workoutWithTemplate);
         $arrayWith = $resourceWith->toArray(request());
 

@@ -52,8 +52,9 @@ class WorkoutPageController extends Controller
                 $workout->activities()
                     ->with([
                         'sets' => fn($query) => $query->orderBy('order'),
-                        'exercise.equipment',
-                        'exercise.categories',
+                        'exercise.equipment.translations',
+                        'exercise.categories.translations',
+                        'exercise.translations',
                     ])
                     ->orderBy('order')
                     ->get()
@@ -69,11 +70,12 @@ class WorkoutPageController extends Controller
             ->ownedBy($user)
             ->withActivitiesCount()
             ->with([
-                'workoutTemplate',
+                'workoutTemplate.translations',
                 'activities' => fn($query) => $query->orderBy('order'),
                 'activities.sets' => fn($query) => $query->orderBy('order'),
-                'activities.exercise.equipment',
-                'activities.exercise.categories',
+                'activities.exercise.equipment.translations',
+                'activities.exercise.categories.translations',
+                'activities.exercise.translations',
             ])
             ->findOrFail($id);
 

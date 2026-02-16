@@ -12,10 +12,13 @@ class WorkoutTemplatePageController extends Controller
     public function show(int $id): Response
     {
         $workoutTemplate = WorkoutTemplate::query()
+            ->withTranslations()
             ->with([
                 'activities' => fn($query) => $query->orderBy('order'),
                 'activities.sets' => fn($query) => $query->orderBy('order'),
-                'activities.exercise',
+                'activities.exercise.translations',
+                'activities.exercise.equipment.translations',
+                'activities.exercise.categories.translations',
             ])
             ->findOrFail($id);
 

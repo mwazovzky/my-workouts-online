@@ -10,8 +10,6 @@ class CreateExercisesTable extends Migration
     {
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
             $table->unsignedBigInteger('equipment_id')->nullable();
             $table->foreign('equipment_id')->references('id')->on('equipment')->onDelete('set null');
             $table->unsignedInteger('rest_time_seconds')->default(90);

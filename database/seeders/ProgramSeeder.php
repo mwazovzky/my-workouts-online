@@ -10,8 +10,8 @@ class ProgramSeeder extends Seeder
 {
     private array $programs = [
         [
-            'name' => 'Beginner',
-            'description' => 'Beginner program: repeat the same full body workout 3 days a week.',
+            'en' => ['name' => 'Beginner', 'description' => 'Beginner program: repeat the same full body workout 3 days a week.'],
+            'ru' => ['name' => 'Начинающий', 'description' => 'Программа для начинающих: повторяйте одну и ту же тренировку на всё тело 3 дня в неделю.'],
             'workouts' => [
                 ['name' => 'Beginner Full Body Workout', 'weekday' => 'Monday'],
                 ['name' => 'Beginner Full Body Workout', 'weekday' => 'Wednesday'],
@@ -19,8 +19,8 @@ class ProgramSeeder extends Seeder
             ],
         ],
         [
-            'name' => '3 Day Split',
-            'description' => '3 Day Split: Chest/Shoulders/Triceps, Back/Biceps, Legs/Abs.',
+            'en' => ['name' => '3 Day Split', 'description' => '3 Day Split: Chest/Shoulders/Triceps, Back/Biceps, Legs/Abs.'],
+            'ru' => ['name' => '3-дневный сплит', 'description' => '3-дневный сплит: грудь/плечи/трицепс, спина/бицепс, ноги/пресс.'],
             'workouts' => [
                 ['name' => 'Chest, Shoulders & Triceps', 'weekday' => 'Monday'],
                 ['name' => 'Back & Biceps', 'weekday' => 'Wednesday'],
@@ -32,13 +32,13 @@ class ProgramSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->programs as $programData) {
-            $program = Program::create([
-                'name' => $programData['name'],
-                'description' => $programData['description'],
+            $program = Program::createWithTranslations([
+                'en' => $programData['en'],
+                'ru' => $programData['ru'],
             ]);
 
             foreach ($programData['workouts'] as $workoutData) {
-                $workout = WorkoutTemplate::where('name', $workoutData['name'])->first();
+                $workout = WorkoutTemplate::whereTranslated('name', $workoutData['name'], 'en')->first();
                 if ($workout) {
                     $program->workoutTemplates()->attach(
                         $workout->id,

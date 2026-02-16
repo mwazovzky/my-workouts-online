@@ -16,10 +16,10 @@ class ProgramResourceTest extends TestCase
     #[Test]
     public function resource_transforms_program_to_correct_json_structure(): void
     {
-        $program = Program::factory()->create([
-            'name' => 'Strength Training',
-            'description' => 'Build muscle and strength',
-        ]);
+        $program = Program::factory()
+            ->withTranslation('name', 'Strength Training')
+            ->withTranslation('description', 'Build muscle and strength')
+            ->create();
 
         $resource = new ProgramResource($program);
         $array = $resource->toArray(request());
@@ -59,7 +59,7 @@ class ProgramResourceTest extends TestCase
 
         // Load program with withCount filtered by current user
         $programWithCount = Program::withCount([
-            'users' => fn ($query) => $query->where('users.id', $user->id),
+            'users' => fn($query) => $query->where('users.id', $user->id),
         ])->find($program->id);
 
         $resource = new ProgramResource($programWithCount);
@@ -80,7 +80,7 @@ class ProgramResourceTest extends TestCase
 
         // Load program with withCount filtered by current user (not enrolled)
         $programWithCount = Program::withCount([
-            'users' => fn ($query) => $query->where('users.id', $user->id),
+            'users' => fn($query) => $query->where('users.id', $user->id),
         ])->find($program->id);
 
         $resource = new ProgramResource($programWithCount);
@@ -109,9 +109,9 @@ class ProgramResourceTest extends TestCase
     #[Test]
     public function resource_handles_null_description_gracefully(): void
     {
-        $program = Program::factory()->create([
-            'description' => null,
-        ]);
+        $program = Program::factory()
+            ->withoutTranslation('description')
+            ->create();
 
         $resource = new ProgramResource($program);
         $array = $resource->toArray(request());

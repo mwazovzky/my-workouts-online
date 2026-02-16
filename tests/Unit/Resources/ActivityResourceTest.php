@@ -20,7 +20,7 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function resource_transforms_activity_to_correct_json_structure(): void
     {
-        $exercise = Exercise::factory()->create(['name' => 'Bench Press']);
+        $exercise = Exercise::factory()->withTranslation('name', 'Bench Press')->create();
         $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([
@@ -40,11 +40,10 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function resource_includes_exercise_name_when_exercise_loaded(): void
     {
-        $equipment = Equipment::factory()->create(['name' => 'Barbell']);
-        $category = Category::query()->create(['name' => 'Strength']);
+        $equipment = Equipment::factory()->withTranslation('name', 'Barbell')->create();
+        $category = Category::factory()->withTranslation('name', 'Strength')->create();
 
-        $exercise = Exercise::factory()->create([
-            'name' => 'Squat',
+        $exercise = Exercise::factory()->withTranslation('name', 'Squat')->create([
             'equipment_id' => $equipment->id,
         ]);
 
@@ -58,7 +57,7 @@ class ActivityResourceTest extends TestCase
         ]);
 
         // Load activity with exercise relationship (including equipment + categories)
-        $activityWithExercise = Activity::with('exercise.equipment', 'exercise.categories')->find($activity->id);
+        $activityWithExercise = Activity::with('exercise.equipment.translations', 'exercise.categories.translations', 'exercise.translations')->find($activity->id);
         $resource = new ActivityResource($activityWithExercise);
         $array = $resource->toArray(request());
 
@@ -71,7 +70,7 @@ class ActivityResourceTest extends TestCase
     #[Test]
     public function resource_handles_exercise_name_when_exercise_not_loaded(): void
     {
-        $exercise = Exercise::factory()->create(['name' => 'Deadlift']);
+        $exercise = Exercise::factory()->withTranslation('name', 'Deadlift')->create();
         $workout = Workout::factory()->create();
 
         $activity = Activity::factory()->create([

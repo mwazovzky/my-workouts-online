@@ -12,40 +12,168 @@ class ExerciseSeeder extends Seeder
     public function run(): void
     {
         $exercises = [
-            ['name' => 'Bench Press', 'equipment' => 'Barbell', 'description' => 'Chest strength exercise using a barbell.', 'categories' => ['Chest', 'Triceps']],
-            ['name' => 'Squat', 'equipment' => 'Barbell', 'description' => 'Leg strength exercise using a barbell.', 'categories' => ['Legs']],
-            ['name' => 'Deadlift', 'equipment' => 'Barbell', 'description' => 'Full body strength exercise using a barbell.', 'categories' => ['Back', 'Legs']],
-            ['name' => 'Dumbbell Curl', 'equipment' => 'Dumbbell', 'description' => 'Biceps exercise using dumbbells.', 'categories' => ['Biceps']],
-            ['name' => 'Barbell Curl', 'equipment' => 'Barbell', 'description' => 'Biceps exercise using a barbell.', 'categories' => ['Biceps']],
-            ['name' => 'Triceps Extension with Dumbbell', 'equipment' => 'Dumbbell', 'description' => 'Triceps exercise using dumbbells.', 'categories' => ['Triceps']],
-            ['name' => 'Triceps Extension on High Pulley Machine', 'equipment' => 'High Pulley Machine', 'description' => 'Triceps exercise using high pulley machine.', 'categories' => ['Triceps']],
-            ['name' => 'Lat Pulldown', 'equipment' => 'Lat Pulldown Machine', 'description' => 'Back exercise using lat pulldown machine.', 'categories' => ['Back']],
-            ['name' => 'Leg Press', 'equipment' => 'Leg Press Machine', 'description' => 'Leg exercise using leg press machine.', 'categories' => ['Legs']],
-            ['name' => 'Chest Press', 'equipment' => 'Chest Press Machine', 'description' => 'Chest exercise using chest press machine.', 'categories' => ['Chest']],
-            ['name' => 'Pull-up', 'equipment' => 'Pull-up Bar', 'description' => 'Back and arms exercise using pull-up bar.', 'categories' => ['Back', 'Biceps']],
-            ['name' => 'Kettlebell Swing', 'equipment' => 'Kettlebell', 'description' => 'Full body exercise using kettlebell.', 'categories' => ['Legs', 'Back', 'Shoulders']],
-            ['name' => 'Incline Dumbbell Press', 'equipment' => 'Dumbbell', 'description' => 'Incline chest exercise using dumbbells.', 'categories' => ['Chest', 'Shoulders']],
-            ['name' => 'Lateral Raise', 'equipment' => 'Dumbbell', 'description' => 'Shoulder isolation exercise.', 'categories' => ['Shoulders']],
-            ['name' => 'Chest Fly', 'equipment' => 'Chest Press Machine', 'description' => 'Chest isolation exercise using chest press machine.', 'categories' => ['Chest']],
-            ['name' => 'Seated Row', 'equipment' => 'Seated Row Machine', 'description' => 'Back exercise using seated row machine.', 'categories' => ['Back']],
-            ['name' => 'Hammer Curl', 'equipment' => 'Dumbbell', 'description' => 'Biceps exercise using dumbbells.', 'categories' => ['Biceps']],
-            ['name' => 'Leg Extension', 'equipment' => 'Leg Extension Machine', 'description' => 'Quadriceps isolation exercise.', 'categories' => ['Legs']],
-            ['name' => 'Leg Curl', 'equipment' => 'Leg Curl Machine', 'description' => 'Hamstring isolation exercise.', 'categories' => ['Legs']],
-            ['name' => 'Calf Raise', 'equipment' => 'Calf Raise Machine', 'description' => 'Calf exercise using calf raise machine.', 'categories' => ['Legs']],
-            ['name' => 'Plank', 'equipment' => null, 'description' => 'Core stability exercise.', 'categories' => ['Abs']],
-            ['name' => 'Crunches', 'equipment' => null, 'description' => 'Core exercise performed without equipment.', 'categories' => ['Abs']],
-            ['name' => 'Shoulder Press. Dumbbell', 'equipment' => 'Dumbbell', 'description' => 'Shoulder strength exercise using dumbbells.', 'categories' => ['Shoulders']],
-            ['name' => 'Shoulder Press. Machine', 'equipment' => 'Shoulder Press Machine', 'description' => 'Shoulder strength exercise using machine.', 'categories' => ['Shoulders']],
+            [
+                'en' => ['name' => 'Bench Press', 'description' => 'Chest strength exercise using a barbell.'],
+                'ru' => ['name' => 'Жим штанги лёжа', 'description' => 'Упражнение на грудь со штангой.'],
+                'equipment' => 'Barbell',
+                'categories' => ['Chest', 'Triceps'],
+            ],
+            [
+                'en' => ['name' => 'Squat', 'description' => 'Leg strength exercise using a barbell.'],
+                'ru' => ['name' => 'Приседания со штангой', 'description' => 'Упражнение на ноги со штангой.'],
+                'equipment' => 'Barbell',
+                'categories' => ['Legs'],
+            ],
+            [
+                'en' => ['name' => 'Deadlift', 'description' => 'Full body strength exercise using a barbell.'],
+                'ru' => ['name' => 'Становая тяга', 'description' => 'Базовое упражнение на всё тело со штангой.'],
+                'equipment' => 'Barbell',
+                'categories' => ['Back', 'Legs'],
+            ],
+            [
+                'en' => ['name' => 'Dumbbell Curl', 'description' => 'Biceps exercise using dumbbells.'],
+                'ru' => ['name' => 'Сгибание рук с гантелями', 'description' => 'Упражнение на бицепс с гантелями.'],
+                'equipment' => 'Dumbbell',
+                'categories' => ['Biceps'],
+            ],
+            [
+                'en' => ['name' => 'Barbell Curl', 'description' => 'Biceps exercise using a barbell.'],
+                'ru' => ['name' => 'Сгибание рук со штангой', 'description' => 'Упражнение на бицепс со штангой.'],
+                'equipment' => 'Barbell',
+                'categories' => ['Biceps'],
+            ],
+            [
+                'en' => ['name' => 'Triceps Extension with Dumbbell', 'description' => 'Triceps exercise using dumbbells.'],
+                'ru' => ['name' => 'Разгибание рук с гантелью', 'description' => 'Упражнение на трицепс с гантелями.'],
+                'equipment' => 'Dumbbell',
+                'categories' => ['Triceps'],
+            ],
+            [
+                'en' => ['name' => 'Triceps Extension on High Pulley Machine', 'description' => 'Triceps exercise using high pulley machine.'],
+                'ru' => ['name' => 'Разгибание рук на верхнем блоке', 'description' => 'Упражнение на трицепс на верхнем блоке.'],
+                'equipment' => 'High Pulley Machine',
+                'categories' => ['Triceps'],
+            ],
+            [
+                'en' => ['name' => 'Lat Pulldown', 'description' => 'Back exercise using lat pulldown machine.'],
+                'ru' => ['name' => 'Тяга верхнего блока', 'description' => 'Упражнение на спину на тренажёре верхнего блока.'],
+                'equipment' => 'Lat Pulldown Machine',
+                'categories' => ['Back'],
+            ],
+            [
+                'en' => ['name' => 'Leg Press', 'description' => 'Leg exercise using leg press machine.'],
+                'ru' => ['name' => 'Жим ногами', 'description' => 'Упражнение на ноги на тренажёре жим ногами.'],
+                'equipment' => 'Leg Press Machine',
+                'categories' => ['Legs'],
+            ],
+            [
+                'en' => ['name' => 'Chest Press', 'description' => 'Chest exercise using chest press machine.'],
+                'ru' => ['name' => 'Жим от груди в тренажёре', 'description' => 'Упражнение на грудь на тренажёре жим от груди.'],
+                'equipment' => 'Chest Press Machine',
+                'categories' => ['Chest'],
+            ],
+            [
+                'en' => ['name' => 'Pull-up', 'description' => 'Back and arms exercise using pull-up bar.'],
+                'ru' => ['name' => 'Подтягивания', 'description' => 'Упражнение на спину и руки на турнике.'],
+                'equipment' => 'Pull-up Bar',
+                'categories' => ['Back', 'Biceps'],
+            ],
+            [
+                'en' => ['name' => 'Kettlebell Swing', 'description' => 'Full body exercise using kettlebell.'],
+                'ru' => ['name' => 'Махи гирей', 'description' => 'Упражнение на всё тело с гирей.'],
+                'equipment' => 'Kettlebell',
+                'categories' => ['Legs', 'Back', 'Shoulders'],
+            ],
+            [
+                'en' => ['name' => 'Incline Dumbbell Press', 'description' => 'Incline chest exercise using dumbbells.'],
+                'ru' => ['name' => 'Жим гантелей на наклонной скамье', 'description' => 'Упражнение на верхнюю часть груди с гантелями.'],
+                'equipment' => 'Dumbbell',
+                'categories' => ['Chest', 'Shoulders'],
+            ],
+            [
+                'en' => ['name' => 'Lateral Raise', 'description' => 'Shoulder isolation exercise.'],
+                'ru' => ['name' => 'Разведение гантелей в стороны', 'description' => 'Изолирующее упражнение на плечи.'],
+                'equipment' => 'Dumbbell',
+                'categories' => ['Shoulders'],
+            ],
+            [
+                'en' => ['name' => 'Chest Fly', 'description' => 'Chest isolation exercise using chest press machine.'],
+                'ru' => ['name' => 'Разведение рук на тренажёре', 'description' => 'Изолирующее упражнение на грудь на тренажёре.'],
+                'equipment' => 'Chest Press Machine',
+                'categories' => ['Chest'],
+            ],
+            [
+                'en' => ['name' => 'Seated Row', 'description' => 'Back exercise using seated row machine.'],
+                'ru' => ['name' => 'Тяга сидя', 'description' => 'Упражнение на спину на тренажёре тяги сидя.'],
+                'equipment' => 'Seated Row Machine',
+                'categories' => ['Back'],
+            ],
+            [
+                'en' => ['name' => 'Hammer Curl', 'description' => 'Biceps exercise using dumbbells.'],
+                'ru' => ['name' => 'Молотковые сгибания', 'description' => 'Упражнение на бицепс с гантелями.'],
+                'equipment' => 'Dumbbell',
+                'categories' => ['Biceps'],
+            ],
+            [
+                'en' => ['name' => 'Leg Extension', 'description' => 'Quadriceps isolation exercise.'],
+                'ru' => ['name' => 'Разгибание ног', 'description' => 'Изолирующее упражнение на квадрицепсы.'],
+                'equipment' => 'Leg Extension Machine',
+                'categories' => ['Legs'],
+            ],
+            [
+                'en' => ['name' => 'Leg Curl', 'description' => 'Hamstring isolation exercise.'],
+                'ru' => ['name' => 'Сгибание ног', 'description' => 'Изолирующее упражнение на бицепс бедра.'],
+                'equipment' => 'Leg Curl Machine',
+                'categories' => ['Legs'],
+            ],
+            [
+                'en' => ['name' => 'Calf Raise', 'description' => 'Calf exercise using calf raise machine.'],
+                'ru' => ['name' => 'Подъём на носки', 'description' => 'Упражнение на икры на тренажёре.'],
+                'equipment' => 'Calf Raise Machine',
+                'categories' => ['Legs'],
+            ],
+            [
+                'en' => ['name' => 'Plank', 'description' => 'Core stability exercise.'],
+                'ru' => ['name' => 'Планка', 'description' => 'Упражнение на стабилизацию корпуса.'],
+                'equipment' => null,
+                'categories' => ['Abs'],
+            ],
+            [
+                'en' => ['name' => 'Crunches', 'description' => 'Core exercise performed without equipment.'],
+                'ru' => ['name' => 'Скручивания', 'description' => 'Упражнение на пресс без оборудования.'],
+                'equipment' => null,
+                'categories' => ['Abs'],
+            ],
+            [
+                'en' => ['name' => 'Shoulder Press. Dumbbell', 'description' => 'Shoulder strength exercise using dumbbells.'],
+                'ru' => ['name' => 'Жим гантелей сидя', 'description' => 'Жим на плечи с гантелями.'],
+                'equipment' => 'Dumbbell',
+                'categories' => ['Shoulders'],
+            ],
+            [
+                'en' => ['name' => 'Shoulder Press. Machine', 'description' => 'Shoulder strength exercise using machine.'],
+                'ru' => ['name' => 'Жим от плеч в тренажёре', 'description' => 'Жим на плечи в тренажёре.'],
+                'equipment' => 'Shoulder Press Machine',
+                'categories' => ['Shoulders'],
+            ],
         ];
 
         foreach ($exercises as $item) {
-            $equipment = $item['equipment'] ? Equipment::where('name', $item['equipment'])->firstOrFail() : null;
-            $exercise = Exercise::create([
-                'name' => $item['name'],
-                'equipment_id' => $equipment ? $equipment->id : null,
-                'description' => $item['description'],
-            ]);
-            $categoryIds = Category::whereIn('name', $item['categories'])->pluck('id')->toArray();
+            $equipment = $item['equipment']
+                ? Equipment::whereTranslated('name', $item['equipment'], 'en')->firstOrFail()
+                : null;
+
+            $exercise = Exercise::createWithTranslations(
+                ['en' => $item['en'], 'ru' => $item['ru']],
+                [
+                    'equipment_id' => $equipment?->id,
+                ],
+            );
+
+            $categoryIds = Category::whereTranslatedIn('name', $item['categories'], 'en')
+                ->pluck('id')
+                ->toArray();
+
             $exercise->categories()->sync($categoryIds);
         }
     }
