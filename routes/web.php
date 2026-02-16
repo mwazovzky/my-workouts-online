@@ -66,10 +66,11 @@ Route::delete('/workouts/{workout}', [WorkoutPageController::class, 'destroy'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/health', static fn () => response()->json([
+Route::get('/health', static fn() => response()->json([
     'status' => 'ok',
     'timestamp' => now()->toIso8601String(),
 ]))->name('health');
@@ -96,4 +97,4 @@ Route::get('/health/ready', static function () {
     }
 })->name('health.ready');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
