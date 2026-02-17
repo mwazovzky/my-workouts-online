@@ -17,8 +17,8 @@
         <span class="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
           {{
             t(':completed/:total sets', {
-              completed: String(completedSets),
-              total: String(totalSets),
+              completed: completedSets,
+              total: totalSets,
             })
           }}
         </span>

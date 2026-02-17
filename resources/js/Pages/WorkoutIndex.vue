@@ -28,9 +28,7 @@
                 <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                   <span
                     >{{ formatDate(workout.created_at) }} ·
-                    {{
-                      t(':count activities', { count: String(workout.activities_count ?? 0) })
-                    }}</span
+                    {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
                   >
                   <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
                     {{ workout.status_label }}

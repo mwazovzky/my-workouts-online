@@ -20,14 +20,14 @@ export function useTranslation() {
    * Falls back to the key itself if no translation is found.
    *
    * @param {string} key - The translation key
-   * @param {Record<string, string>} [replacements={}] - Key-value pairs for placeholder replacement
+   * @param {Record<string, string|number>} [replacements={}] - Key-value pairs for placeholder replacement
    * @returns {string} The translated string
    */
   function t(key, replacements = {}) {
     let translation = translations.value[key] || key;
 
     for (const [placeholder, value] of Object.entries(replacements)) {
-      translation = translation.replaceAll(`:${placeholder}`, value);
+      translation = translation.replaceAll(`:${placeholder}`, String(value));
     }
 
     return translation;
