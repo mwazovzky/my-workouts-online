@@ -18,7 +18,7 @@ class WorkoutService implements WorkoutServiceInterface
      */
     public function createFromTemplate(User $user, int $workoutTemplateId): Workout
     {
-        $workoutTemplate = WorkoutTemplate::with('activities.sets', 'translations')->findOrFail($workoutTemplateId);
+        $workoutTemplate = WorkoutTemplate::with('activities.sets')->findOrFail($workoutTemplateId);
 
         $workout = DB::transaction(function () use ($workoutTemplate, $user) {
             $workout = Workout::create([

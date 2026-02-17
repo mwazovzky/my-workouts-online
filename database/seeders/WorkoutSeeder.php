@@ -21,7 +21,7 @@ class WorkoutSeeder extends Seeder
         }
 
         // Get existing workout templates with translations
-        $templates = WorkoutTemplate::withTranslations()->get();
+        $templates = WorkoutTemplate::all();
 
         if ($templates->isEmpty()) {
             $this->command->warn('No workout templates found. Please run WorkoutTemplateSeeder first.');

@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\App;
 
 trait HasTranslations
 {
+    /**
+     * Auto-eager-load translations for every query.
+     * Since original text columns are removed, translations are always needed.
+     * Can be bypassed per-query with ->without('translations').
+     */
+    public function initializeHasTranslations(): void
+    {
+        $this->with = array_merge($this->with, ['translations']);
+    }
+
     public static function bootHasTranslations(): void
     {
         static::deleting(function ($model) {
@@ -129,14 +139,6 @@ trait HasTranslations
                 ->where('locale', $locale)
                 ->whereIn('value', $values);
         });
-    }
-
-    /**
-     * Scope to eager-load translations.
-     */
-    public function scopeWithTranslations(Builder $query): Builder
-    {
-        return $query->with('translations');
     }
 
     public function __toString(): string

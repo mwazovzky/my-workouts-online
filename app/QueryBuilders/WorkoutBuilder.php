@@ -14,7 +14,7 @@ class WorkoutBuilder extends Builder
 
     public function withTemplate(): self
     {
-        return $this->with('workoutTemplate.translations');
+        return $this->with('workoutTemplate');
     }
 
     public function withActivitiesCount(): self

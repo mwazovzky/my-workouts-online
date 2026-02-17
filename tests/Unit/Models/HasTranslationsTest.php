@@ -139,11 +139,11 @@ class HasTranslationsTest extends TestCase
     }
 
     #[Test]
-    public function scope_with_translations_eager_loads(): void
+    public function translations_are_auto_eager_loaded(): void
     {
         Category::createWithTranslations(['en' => ['name' => 'Chest']]);
 
-        $category = Category::withTranslations()->first();
+        $category = Category::first();
         $this->assertTrue($category->relationLoaded('translations'));
     }
 
