@@ -1,11 +1,11 @@
 /**
- * Get the current document locale, falling back to 'en-US'.
+ * Get the current document locale, falling back to 'en'.
  * Reads from <html lang="...">, which Laravel sets via app()->getLocale().
  *
  * @returns {string}
  */
 function getLocale() {
-  return document.documentElement.lang || 'en-US';
+  return document.documentElement.lang || 'en';
 }
 
 /**
