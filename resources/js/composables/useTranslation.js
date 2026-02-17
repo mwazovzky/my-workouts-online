@@ -27,7 +27,7 @@ export function useTranslation() {
     let translation = translations.value[key] || key;
 
     for (const [placeholder, value] of Object.entries(replacements)) {
-      translation = translation.replace(`:${placeholder}`, value);
+      translation = translation.replaceAll(`:${placeholder}`, value);
     }
 
     return translation;
