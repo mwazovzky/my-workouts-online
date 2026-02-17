@@ -20,6 +20,8 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 **Shared Auth** — `auth.user` shared to all Inertia pages via `HandleInertiaRequests` middleware + `AppServiceProvider`.
 
+**Internationalization** — `SetLocale` middleware sets locale from `User.locale` (or session for guests). `HasTranslations` trait on system models (Exercise, Equipment, Category, Program, WorkoutTemplate) provides polymorphic translations with auto-eager-loading. UI strings in `lang/*.json`, accessed via `useTranslation` composable (`t()` helper). `HandleInertiaRequests` shares `locale`, `availableLocales`, and `translations` to all pages.
+
 ## Directory Guide
 
 Only non-obvious locations listed.
@@ -31,8 +33,9 @@ Only non-obvious locations listed.
 | `app/Enums/`                  | `WorkoutStatus` (InProgress, Completed)                                      |
 | `app/Policies/`               | `WorkoutPolicy`                                                              |
 | `resources/js/Components/ui/` | Reusable UI primitives (badge, button, card, empty, input, skeleton, switch) |
-| `resources/js/composables/`   | `useEnrollment` — enrollment state + toggle                                  |
-| `resources/js/utils/`         | `date` (formatting), `navigation` (route helpers)                            |
+| `resources/js/composables/`   | `useEnrollment` — enrollment state + toggle; `useTranslation` — `t()` helper |
+| `resources/js/utils/`         | `date` (locale-aware formatting), `navigation` (route helpers)               |
+| `lang/`                       | JSON translation files (`en.json`, `ru.json`) for UI strings                 |
 
 ## Data Model
 
@@ -52,4 +55,5 @@ Activity ←1:N— Set
 Exercise → Equipment
 Exercise ←M:N→ Category
 User ←M:N→ Role              (unused — future RBAC)
+{Exercise,Equipment,Category,Program,WorkoutTemplate} ←morph— Translation
 ```

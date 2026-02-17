@@ -12,13 +12,14 @@ Workout tracking application — Laravel 12 / Inertia v2 / Vue 3 / Tailwind v3 /
 
 ## Features
 
-| Document                                           | Scope                                           |
-| -------------------------------------------------- | ----------------------------------------------- |
-| [Programs](features/programs.md)                   | Browse programs, view templates                 |
-| [Enrollment](features/enrollment.md)               | Enroll in a program                             |
-| [Workout Logging](features/workout-logging.md)     | Start, complete, repeat, delete workouts        |
-| [Activity Tracking](features/activity-tracking.md) | Edit sets, delete activities within a log       |
-| [Auth & Profile](features/auth-and-profile.md)     | Registration, login, password, profile, account |
+| Document                                                 | Scope                                           |
+| -------------------------------------------------------- | ----------------------------------------------- |
+| [Programs](features/programs.md)                         | Browse programs, view templates                 |
+| [Enrollment](features/enrollment.md)                     | Enroll in a program                             |
+| [Workout Logging](features/workout-logging.md)           | Start, complete, repeat, delete workouts        |
+| [Activity Tracking](features/activity-tracking.md)       | Edit sets, delete activities within a log       |
+| [Auth & Profile](features/auth-and-profile.md)           | Registration, login, password, profile, account |
+| [Internationalization](features/internationalization.md) | Multi-language support (EN, RU), translations   |
 
 ## Related
 
