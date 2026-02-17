@@ -70,7 +70,6 @@ translations:
   value             (text)
 
   UNIQUE (translatable_type, translatable_id, locale, field)
-  UNIQUE (translatable_type, locale, field, value)  — prevents duplicate names
 ```
 
 ### HasTranslations Trait
@@ -82,7 +81,7 @@ Applied to all system models. Provides:
 - Virtual accessors: `$model->name`, `$model->description` — resolve via `translated()`
 - `__toString()` — returns `$this->name`
 - `createWithTranslations(array $translations, array $attributes = [])` — static seeder helper
-- `scopeWithTranslations($query)` — eager-loads translations
+- Auto-eager-loads translations via `initializeHasTranslations()` (bypass with `->without('translations')`)
 
 ### UI Strings
 
