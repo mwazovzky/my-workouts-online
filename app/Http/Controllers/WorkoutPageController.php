@@ -48,12 +48,13 @@ class WorkoutPageController extends Controller
 
         return Inertia::render('WorkoutShow', [
             'workout' => (new WorkoutResource($workout))->resolve(),
-            'activities' => Inertia::defer(fn() => ActivityResource::collection(
+            'activities' => Inertia::defer(fn () => ActivityResource::collection(
                 $workout->activities()
                     ->with([
-                        'sets' => fn($query) => $query->orderBy('order'),
-                        'exercise.equipment',
-                        'exercise.categories',
+                        'sets' => fn ($query) => $query->orderBy('order'),
+                        'exercise.equipment.translations',
+                        'exercise.categories.translations',
+                        'exercise.translations',
                     ])
                     ->orderBy('order')
                     ->get()
@@ -69,11 +70,12 @@ class WorkoutPageController extends Controller
             ->ownedBy($user)
             ->withActivitiesCount()
             ->with([
-                'workoutTemplate',
-                'activities' => fn($query) => $query->orderBy('order'),
-                'activities.sets' => fn($query) => $query->orderBy('order'),
-                'activities.exercise.equipment',
-                'activities.exercise.categories',
+                'workoutTemplate.translations',
+                'activities' => fn ($query) => $query->orderBy('order'),
+                'activities.sets' => fn ($query) => $query->orderBy('order'),
+                'activities.exercise.equipment.translations',
+                'activities.exercise.categories.translations',
+                'activities.exercise.translations',
             ])
             ->findOrFail($id);
 

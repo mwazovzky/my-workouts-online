@@ -35,7 +35,9 @@ class ProgramPageController extends Controller
 
         return Inertia::render('ProgramShow', [
             'program' => (new ProgramResource($program))->resolve(),
-            'workouts' => Inertia::defer(fn () => WorkoutTemplateResource::collection($program->workoutTemplates)->resolve()),
+            'workouts' => Inertia::defer(fn () => WorkoutTemplateResource::collection(
+                $program->workoutTemplates()->get()
+            )->resolve()),
         ]);
     }
 

@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/vue3';
+import { useTranslation } from '@/composables/useTranslation';
 
 /**
  * Composable for handling program enrollment functionality
@@ -8,6 +9,7 @@ import { router } from '@inertiajs/vue3';
  */
 export function useEnrollment(options = {}) {
   const { only = [] } = options;
+  const { t } = useTranslation();
 
   /**
    * Enroll a user in a program
@@ -21,7 +23,7 @@ export function useEnrollment(options = {}) {
         preserveScroll: true,
         only,
         onError: () => {
-          alert('Failed to enroll in program');
+          alert(t('Failed to enroll in program'));
         },
       }
     );

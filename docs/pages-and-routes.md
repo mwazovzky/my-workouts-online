@@ -26,6 +26,7 @@
 | Repeat workout              | POST   | `/workouts/{workout}/repeat`   | `workouts.repeat`   | `WorkoutPolicy@repeat` — owner + status must be `completed`     |
 | Delete workout              | DELETE | `/workouts/{workout}`          | `workouts.destroy`  | `WorkoutPolicy@delete` — owner only                             |
 | Update profile              | PATCH  | `/profile`                     | `profile.update`    | Auth only                                                       |
+| Update language             | PATCH  | `/profile/locale`              | `profile.locale`    | Auth only                                                       |
 | Delete account              | DELETE | `/profile`                     | `profile.destroy`   | Auth only                                                       |
 
 ## API

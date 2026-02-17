@@ -2,7 +2,9 @@
 import ModelCard from '@/Components/ModelCard.vue';
 import { Badge } from '@/Components/ui/badge';
 import { formatDate } from '@/utils/date';
-import { formatStatus } from '@/utils/format';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 defineProps({
   workout: {
@@ -14,17 +16,17 @@ defineProps({
 
 <template>
   <ModelCard
-    :title="workout.name ?? workout.workout_template?.name ?? 'Workout'"
+    :title="workout.name ?? workout.workout_template?.name ?? t('Workout')"
     :description="workout.workout_template?.description ?? null"
   >
     <template #metadata>
       <div class="flex items-center gap-2 flex-wrap">
         <span
           >{{ formatDate(workout.created_at) }} ·
-          {{ workout.activities_count ?? 0 }} activities</span
+          {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
         >
         <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-          {{ formatStatus(workout.status) }}
+          {{ workout.status_label ?? workout.status }}
         </Badge>
       </div>
     </template>

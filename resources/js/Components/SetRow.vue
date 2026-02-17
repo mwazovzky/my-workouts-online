@@ -3,6 +3,9 @@ import { reactive, watch } from 'vue';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Trash2 } from 'lucide-vue-next';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   set: { type: Object, required: true },
@@ -37,7 +40,9 @@ function remove() {
 
 <template>
   <div class="flex items-center gap-2">
-    <div class="w-12 text-sm font-medium text-muted-foreground">Set {{ local.order }}</div>
+    <div class="w-12 text-sm font-medium text-muted-foreground">
+      {{ t('Set :order', { order: local.order }) }}
+    </div>
 
     <div class="flex gap-4 flex-1">
       <div class="flex flex-col gap-1 flex-1">

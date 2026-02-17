@@ -9,6 +9,9 @@ import { Button } from '@/Components/ui/button';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { useEnrollment } from '@/composables/useEnrollment';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   program: {
@@ -32,7 +35,7 @@ const enrollInProgram = () => enroll(props.program.id);
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <PageHeader title="Program Show" />
+      <PageHeader :title="t('Program Show')" />
     </template>
 
     <PageLayout>
@@ -41,7 +44,7 @@ const enrollInProgram = () => enroll(props.program.id);
 
       <!-- Workouts Section -->
       <div class="mb-4">
-        <h4 class="font-semibold text-lg mb-4">Program Workouts</h4>
+        <h4 class="font-semibold text-lg mb-4">{{ t('Program Workouts') }}</h4>
 
         <div v-if="workouts === null" class="space-y-3">
           <Card v-for="i in 3" :key="i" class="p-4">
@@ -57,8 +60,10 @@ const enrollInProgram = () => enroll(props.program.id);
           </Card>
         </div>
         <Empty v-else-if="workouts.length === 0">
-          <EmptyTitle>No workouts yet</EmptyTitle>
-          <EmptyDescription>This program doesn't have any workouts configured</EmptyDescription>
+          <EmptyTitle>{{ t('No workouts yet') }}</EmptyTitle>
+          <EmptyDescription>{{
+            t("This program doesn't have any workouts configured")
+          }}</EmptyDescription>
         </Empty>
         <ul v-else class="space-y-3">
           <li v-for="workout in workouts" :key="workout.id">
@@ -71,7 +76,7 @@ const enrollInProgram = () => enroll(props.program.id);
                     {{ workout.name }}
                   </div>
                   <div class="text-sm text-muted-foreground mt-1">
-                    Scheduled: {{ workout.pivot?.weekday ?? 'Not scheduled' }}
+                    {{ t('Scheduled:') }} {{ workout.pivot?.weekday_label ?? t('Not scheduled') }}
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -81,7 +86,7 @@ const enrollInProgram = () => enroll(props.program.id);
                     variant="outline"
                     size="sm"
                   >
-                    Show
+                    {{ t('Show') }}
                   </Button>
                 </div>
               </div>

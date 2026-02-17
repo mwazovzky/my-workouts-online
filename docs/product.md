@@ -27,6 +27,8 @@ A workout tracking app. Users browse curated workout programs, enroll in them, s
 
 **[Auth & Profile](features/auth-and-profile.md)** — Registration, login, email verification, password reset, profile edit, account deletion.
 
+**[Internationalization](features/internationalization.md)** — Multi-language support (EN, RU). System content translated via polymorphic translations table; UI strings via Laravel JSON files. Users choose language in profile settings.
+
 ## Core User Flow
 
 1. **Browse programs** → `ProgramIndex` page lists all programs

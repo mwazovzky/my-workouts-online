@@ -50,8 +50,8 @@ class WorkoutSaveRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'activities.min' => 'A workout must have at least one activity.',
-            'activities.*.sets.min' => 'Each activity must have at least one set.',
+            'activities.min' => __('A workout must have at least one activity.'),
+            'activities.*.sets.min' => __('Each activity must have at least one set.'),
         ];
     }
 

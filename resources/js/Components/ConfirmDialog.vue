@@ -11,15 +11,24 @@ import {
 } from '@/Components/ui/alert-dialog';
 import { buttonVariants } from '@/Components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/composables/useTranslation';
+import { computed } from 'vue';
 
-defineProps({
+const { t } = useTranslation();
+
+const props = defineProps({
   open: { type: Boolean, default: false },
-  title: { type: String, default: 'Are you sure?' },
-  description: { type: String, default: 'This action cannot be undone.' },
-  confirmLabel: { type: String, default: 'Continue' },
-  cancelLabel: { type: String, default: 'Cancel' },
+  title: { type: String, default: null },
+  description: { type: String, default: null },
+  confirmLabel: { type: String, default: null },
+  cancelLabel: { type: String, default: null },
   variant: { type: String, default: 'destructive' },
 });
+
+const resolvedTitle = computed(() => props.title ?? t('Are you sure?'));
+const resolvedDescription = computed(() => props.description ?? t('This action cannot be undone.'));
+const resolvedConfirmLabel = computed(() => props.confirmLabel ?? t('Continue'));
+const resolvedCancelLabel = computed(() => props.cancelLabel ?? t('Cancel'));
 
 defineEmits(['confirm', 'cancel']);
 </script>
@@ -28,13 +37,13 @@ defineEmits(['confirm', 'cancel']);
   <AlertDialog :open="open">
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>{{ title }}</AlertDialogTitle>
-        <AlertDialogDescription>{{ description }}</AlertDialogDescription>
+        <AlertDialogTitle>{{ resolvedTitle }}</AlertDialogTitle>
+        <AlertDialogDescription>{{ resolvedDescription }}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel @click="$emit('cancel')">{{ cancelLabel }}</AlertDialogCancel>
+        <AlertDialogCancel @click="$emit('cancel')">{{ resolvedCancelLabel }}</AlertDialogCancel>
         <AlertDialogAction :class="cn(buttonVariants({ variant }))" @click="$emit('confirm')">
-          {{ confirmLabel }}
+          {{ resolvedConfirmLabel }}
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>

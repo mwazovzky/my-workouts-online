@@ -1,7 +1,7 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <PageHeader title="Workout Show" />
+      <PageHeader :title="t('Workout Show')" />
     </template>
 
     <PageLayout>
@@ -38,8 +38,8 @@
           class="px-8"
           @click="repeatWorkout"
         >
-          <span v-if="!repeatNav">Repeat workout</span>
-          <span v-else>Starting…</span>
+          <span v-if="!repeatNav">{{ t('Repeat workout') }}</span>
+          <span v-else>{{ t('Starting…') }}</span>
         </Button>
 
         <Button
@@ -50,8 +50,8 @@
           class="px-8"
           @click="goEdit"
         >
-          <span v-if="!editingNav">Continue</span>
-          <span v-else>Opening…</span>
+          <span v-if="!editingNav">{{ t('Continue') }}</span>
+          <span v-else>{{ t('Opening…') }}</span>
         </Button>
       </div>
     </WorkoutFooter>
@@ -70,6 +70,9 @@ import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Skeleton } from '@/Components/ui/skeleton';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   workout: {

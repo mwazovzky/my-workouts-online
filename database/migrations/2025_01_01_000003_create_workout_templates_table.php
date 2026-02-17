@@ -10,8 +10,6 @@ class CreateWorkoutTemplatesTable extends Migration
     {
         Schema::create('workout_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

@@ -20,7 +20,7 @@ class WorkoutSeeder extends Seeder
             return;
         }
 
-        // Get existing workout templates
+        // Get existing workout templates with translations
         $templates = WorkoutTemplate::all();
 
         if ($templates->isEmpty()) {

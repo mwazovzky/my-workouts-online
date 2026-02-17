@@ -13,9 +13,11 @@ class WorkoutTemplatePageController extends Controller
     {
         $workoutTemplate = WorkoutTemplate::query()
             ->with([
-                'activities' => fn($query) => $query->orderBy('order'),
-                'activities.sets' => fn($query) => $query->orderBy('order'),
+                'activities' => fn ($query) => $query->orderBy('order'),
+                'activities.sets' => fn ($query) => $query->orderBy('order'),
                 'activities.exercise',
+                'activities.exercise.equipment',
+                'activities.exercise.categories',
             ])
             ->findOrFail($id);
 

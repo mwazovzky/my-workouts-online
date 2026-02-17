@@ -1,7 +1,7 @@
 <template>
   <AuthenticatedLayout>
     <template #header>
-      <PageHeader title="Workout Edit" />
+      <PageHeader :title="t('Workout Edit')" />
     </template>
 
     <PageLayout>
@@ -15,7 +15,12 @@
           />
         </div>
         <span class="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-          {{ completedSets }}/{{ totalSets }} sets
+          {{
+            t(':completed/:total sets', {
+              completed: completedSets,
+              total: totalSets,
+            })
+          }}
         </span>
       </div>
 
@@ -45,8 +50,8 @@
           class="px-8"
           @click="saveWorkout"
         >
-          <span v-if="!isSaving">Save</span>
-          <span v-else>Saving…</span>
+          <span v-if="!isSaving">{{ t('Save') }}</span>
+          <span v-else>{{ t('Saving…') }}</span>
         </Button>
         <Button
           :disabled="isFinishing"
@@ -55,8 +60,8 @@
           class="px-8"
           @click="finishWorkout"
         >
-          <span v-if="!isFinishing">Complete</span>
-          <span v-else>Completing…</span>
+          <span v-if="!isFinishing">{{ t('Complete') }}</span>
+          <span v-else>{{ t('Completing…') }}</span>
         </Button>
       </div>
     </WorkoutFooter>
@@ -84,6 +89,9 @@ import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
+import { useTranslation } from '@/composables/useTranslation';
+
+const { t } = useTranslation();
 
 const props = defineProps({
   workout: {
@@ -125,11 +133,11 @@ const confirmDialog = ref({
   open: false,
   title: '',
   description: '',
-  confirmLabel: 'Continue',
+  confirmLabel: '',
   onConfirm: null,
 });
 
-function openConfirm({ title, description, confirmLabel = 'Continue', onConfirm }) {
+function openConfirm({ title, description, confirmLabel = t('Continue'), onConfirm }) {
   confirmDialog.value = { open: true, title, description, confirmLabel, onConfirm };
 }
 
@@ -183,7 +191,7 @@ onMounted(() => {
     if (skipNavigationGuard.value) {
       return;
     }
-    if (isDirty.value && !confirm('You have unsaved changes. Leave anyway?')) {
+    if (isDirty.value && !confirm(t('You have unsaved changes. Leave anyway?'))) {
       event.preventDefault();
     }
   });
@@ -227,12 +235,12 @@ function saveWorkout({ onSuccess, onError } = {}) {
     preserveScroll: true,
     onSuccess: () => {
       isDirty.value = false;
-      toast.success('Workout saved');
+      toast.success(t('Workout saved'));
       onSuccess?.();
     },
     onError: () => {
       onError?.();
-      toast.error('Failed to save workout');
+      toast.error(t('Failed to save workout'));
     },
     onFinish: () => {
       isSaving.value = false;
@@ -308,9 +316,9 @@ function onRemoveSet({ activityId, id, order }) {
   // If this is the last set, confirm and remove the entire activity
   if (activity.sets.length === 1) {
     openConfirm({
-      title: 'Remove activity?',
-      description: 'Removing the last set will delete this activity.',
-      confirmLabel: 'Remove',
+      title: t('Remove activity?'),
+      description: t('Removing the last set will delete this activity.'),
+      confirmLabel: t('Remove'),
       onConfirm: () => {
         activities.value = activities.value.filter(a => a.id !== activityId);
         markDirty();
@@ -338,7 +346,7 @@ function onUpdateActivity(updated) {
 
 function onRemoveActivity(activityId) {
   if (!isEditable.value) {
-    toast.error('This workout cannot be edited');
+    toast.error(t('This workout cannot be edited'));
 
     return;
   }
@@ -348,9 +356,9 @@ function onRemoveActivity(activityId) {
   }
 
   openConfirm({
-    title: 'Delete activity?',
-    description: 'This action cannot be undone.',
-    confirmLabel: 'Delete',
+    title: t('Delete activity?'),
+    description: t('This action cannot be undone.'),
+    confirmLabel: t('Delete'),
     onConfirm: () => {
       activities.value = activities.value.filter(a => a.id !== activityId);
       markDirty();

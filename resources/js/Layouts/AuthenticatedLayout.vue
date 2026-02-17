@@ -7,8 +7,10 @@ import Navigation from '@/Components/Navigation.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 import { Toaster } from '@/Components/ui/sonner';
+import { useTranslation } from '@/composables/useTranslation';
 
 const showingNavigationDropdown = ref(false);
+const { t } = useTranslation();
 </script>
 
 <template>
@@ -61,9 +63,9 @@ const showingNavigationDropdown = ref(false);
                   </template>
 
                   <template #content>
-                    <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink>
+                    <DropdownLink :href="route('profile.edit')"> {{ t('Profile') }} </DropdownLink>
                     <DropdownLink :href="route('logout')" method="post" as="button">
-                      Log Out
+                      {{ t('Log Out') }}
                     </DropdownLink>
                   </template>
                 </Dropdown>
@@ -113,19 +115,19 @@ const showingNavigationDropdown = ref(false);
         >
           <div class="space-y-1 pb-3 pt-2">
             <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-              Dashboard
+              {{ t('Dashboard') }}
             </ResponsiveNavLink>
             <ResponsiveNavLink
               :href="route('programs.index')"
               :active="route().current('programs.index')"
             >
-              Programs
+              {{ t('Programs') }}
             </ResponsiveNavLink>
             <ResponsiveNavLink
               :href="route('workouts.index')"
               :active="route().current('workouts.index')"
             >
-              Workouts
+              {{ t('Workouts') }}
             </ResponsiveNavLink>
           </div>
 
@@ -141,9 +143,11 @@ const showingNavigationDropdown = ref(false);
             </div>
 
             <div class="mt-3 space-y-1">
-              <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink>
+              <ResponsiveNavLink :href="route('profile.edit')">
+                {{ t('Profile') }}
+              </ResponsiveNavLink>
               <ResponsiveNavLink :href="route('logout')" method="post" as="button">
-                Log Out
+                {{ t('Log Out') }}
               </ResponsiveNavLink>
             </div>
           </div>

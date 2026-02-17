@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -102,7 +103,7 @@ class WorkoutResourceTest extends TestCase
     #[Test]
     public function workout_template_conditionally_included_when_loaded(): void
     {
-        $workoutTemplate = WorkoutTemplate::factory()->create(['name' => 'Test Template']);
+        $workoutTemplate = WorkoutTemplate::factory()->withTranslation('name', 'Test Template')->create();
         $workout = Workout::factory()->create([
             'workout_template_id' => $workoutTemplate->id,
         ]);
@@ -115,7 +116,7 @@ class WorkoutResourceTest extends TestCase
         $this->assertNull($arrayWithout['workout_template']);
 
         // With eager loading
-        $workoutWithTemplate = Workout::with('workoutTemplate')->find($workout->id);
+        $workoutWithTemplate = Workout::with('workoutTemplate.translations')->find($workout->id);
         $resourceWith = new WorkoutResource($workoutWithTemplate);
         $arrayWith = $resourceWith->toArray(request());
 
@@ -130,10 +131,49 @@ class WorkoutResourceTest extends TestCase
         $resource = new WorkoutResource($workout);
         $array = $resource->toArray(request());
 
-        $expectedKeys = ['id', 'user_id', 'status', 'created_at', 'activities_count', 'workout_template', 'activities'];
+        $expectedKeys = ['id', 'user_id', 'name', 'status', 'status_label', 'created_at', 'activities_count', 'workout_template', 'activities'];
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $array);
         }
+    }
+
+    #[Test]
+    public function status_label_is_translated_for_in_progress(): void
+    {
+        $workout = Workout::factory()->create(['status' => 'in_progress']);
+
+        App::setLocale('en');
+        $resource = new WorkoutResource($workout);
+        $array = $resource->toArray(request());
+
+        $this->assertEquals('in_progress', $array['status']);
+        $this->assertEquals('In Progress', $array['status_label']);
+    }
+
+    #[Test]
+    public function status_label_is_translated_for_completed(): void
+    {
+        $workout = Workout::factory()->create(['status' => 'completed']);
+
+        App::setLocale('en');
+        $resource = new WorkoutResource($workout);
+        $array = $resource->toArray(request());
+
+        $this->assertEquals('completed', $array['status']);
+        $this->assertEquals('Completed', $array['status_label']);
+    }
+
+    #[Test]
+    public function status_label_returns_russian_translation(): void
+    {
+        $workout = Workout::factory()->create(['status' => 'in_progress']);
+
+        App::setLocale('ru');
+        $resource = new WorkoutResource($workout);
+        $array = $resource->toArray(request());
+
+        $this->assertEquals('in_progress', $array['status']);
+        $this->assertEquals('В процессе', $array['status_label']);
     }
 }

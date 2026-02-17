@@ -32,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'workout_template' => \App\Models\WorkoutTemplate::class,
             'workout' => \App\Models\Workout::class,
+            'exercise' => \App\Models\Exercise::class,
+            'category' => \App\Models\Category::class,
+            'equipment' => \App\Models\Equipment::class,
+            'program' => \App\Models\Program::class,
         ]);
 
         // Share authenticated user info with Inertia pages
