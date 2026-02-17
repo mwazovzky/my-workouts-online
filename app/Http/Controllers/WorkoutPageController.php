@@ -129,6 +129,6 @@ class WorkoutPageController extends Controller
 
         $service->delete($workout);
 
-        return redirect()->route('workouts.index');
+        return redirect()->back();
     }
 }

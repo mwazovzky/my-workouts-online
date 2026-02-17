@@ -21,9 +21,11 @@ class WorkoutDeleteTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->actingAs($user)->delete(route('workouts.destroy', ['workout' => $workout->id]));
+        $response = $this->actingAs($user)
+            ->from(route('workouts.index', ['page' => 2]))
+            ->delete(route('workouts.destroy', ['workout' => $workout->id]));
 
-        $response->assertRedirect(route('workouts.index'));
+        $response->assertRedirect(route('workouts.index', ['page' => 2]));
 
         $this->assertDatabaseMissing('workouts', ['id' => $workout->id]);
     }
