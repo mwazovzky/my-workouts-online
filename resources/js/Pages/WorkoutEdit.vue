@@ -133,7 +133,7 @@ const confirmDialog = ref({
   open: false,
   title: '',
   description: '',
-  confirmLabel: t('Continue'),
+  confirmLabel: '',
   onConfirm: null,
 });
 

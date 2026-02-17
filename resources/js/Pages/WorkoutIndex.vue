@@ -136,7 +136,7 @@ const confirmDialog = ref({
   open: false,
   title: '',
   description: '',
-  confirmLabel: t('Delete'),
+  confirmLabel: '',
   onConfirm: null,
 });
 
