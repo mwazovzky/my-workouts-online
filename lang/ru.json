@@ -9,7 +9,7 @@
     "The selected workout template could not be found.": "Выбранный шаблон тренировки не найден.",
     "A workout must have at least one activity.": "Тренировка должна содержать хотя бы одно упражнение.",
     "Each activity must have at least one set.": "Каждое упражнение должно содержать хотя бы один подход.",
-    "A set cannot be marked as completed with 0 repetitions.": "Подход не может быть отмечен как выполненный с 0 повторениями.",
+    "A set cannot be marked as completed with 0 effort.": "Подход не может быть отмечен как выполненный с нулевым усилием.",
 
     "in_progress": "В процессе",
     "completed": "Завершена",
@@ -124,7 +124,11 @@
     "Are you sure?": "Вы уверены?",
 
     "Reps": "Повт.",
+    "Duration": "Длит.",
     "Weight": "Вес",
+    "kg": "кг",
+    "lbs": "фунты",
+    "plates": "Плиты",
     "Done": "Готово",
     "Set :order": "Подход :order",
     "Reorder activity": "Изменить порядок",

@@ -9,7 +9,7 @@
     "The selected workout template could not be found.": "The selected workout template could not be found.",
     "A workout must have at least one activity.": "A workout must have at least one activity.",
     "Each activity must have at least one set.": "Each activity must have at least one set.",
-    "A set cannot be marked as completed with 0 repetitions.": "A set cannot be marked as completed with 0 repetitions.",
+    "A set cannot be marked as completed with 0 effort.": "A set cannot be marked as completed with 0 effort.",
 
     "in_progress": "In Progress",
     "completed": "Completed",
@@ -124,7 +124,11 @@
     "Are you sure?": "Are you sure?",
 
     "Reps": "Reps",
+    "Duration": "Duration",
     "Weight": "Weight",
+    "kg": "kg",
+    "lbs": "lbs",
+    "plates": "Plates",
     "Done": "Done",
     "Set :order": "Set :order",
     "Reorder activity": "Reorder activity",

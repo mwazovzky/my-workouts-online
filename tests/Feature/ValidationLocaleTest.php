@@ -149,11 +149,11 @@ class ValidationLocaleTest extends TestCase
     }
 
     // -------------------------------------------------------
-    // CompletedSetRequiresReps custom rule
+    // CompletedSetRequiresEffort custom rule
     // -------------------------------------------------------
 
     #[Test]
-    public function completed_set_zero_reps_error_in_russian(): void
+    public function completed_set_zero_effort_error_in_russian(): void
     {
         $user = User::factory()->create(['locale' => 'ru']);
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
@@ -167,7 +167,7 @@ class ValidationLocaleTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 0, 'weight' => 50, 'is_completed' => true],
+                            ['order' => 1, 'effort_value' => 0, 'difficulty_value' => 50, 'is_completed' => true],
                         ],
                     ],
                 ],
@@ -177,13 +177,13 @@ class ValidationLocaleTest extends TestCase
         $response->assertSessionHasErrors(['activities.0.sets.0.is_completed']);
 
         $this->assertSame(
-            'Подход не может быть отмечен как выполненный с 0 повторениями.',
+            'Подход не может быть отмечен как выполненный с нулевым усилием.',
             session('errors')->get('activities.0.sets.0.is_completed')[0],
         );
     }
 
     #[Test]
-    public function completed_set_zero_reps_error_in_english(): void
+    public function completed_set_zero_effort_error_in_english(): void
     {
         $user = User::factory()->create(['locale' => 'en']);
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
@@ -197,7 +197,7 @@ class ValidationLocaleTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 0, 'weight' => 50, 'is_completed' => true],
+                            ['order' => 1, 'effort_value' => 0, 'difficulty_value' => 50, 'is_completed' => true],
                         ],
                     ],
                 ],
@@ -207,7 +207,7 @@ class ValidationLocaleTest extends TestCase
         $response->assertSessionHasErrors(['activities.0.sets.0.is_completed']);
 
         $this->assertSame(
-            'A set cannot be marked as completed with 0 repetitions.',
+            'A set cannot be marked as completed with 0 effort.',
             session('errors')->get('activities.0.sets.0.is_completed')[0],
         );
     }

@@ -13,8 +13,8 @@ class Set extends Model
     protected $fillable = [
         'activity_id',
         'order',
-        'repetitions',
-        'weight',
+        'effort_value',
+        'difficulty_value',
         'is_completed',
     ];
 
@@ -23,8 +23,8 @@ class Set extends Model
         return [
             'activity_id' => 'integer',
             'order' => 'integer',
-            'repetitions' => 'integer',
-            'weight' => 'integer',
+            'effort_value' => 'integer',
+            'difficulty_value' => 'integer',
             'is_completed' => 'boolean',
         ];
     }

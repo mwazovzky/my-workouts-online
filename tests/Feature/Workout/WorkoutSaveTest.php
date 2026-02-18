@@ -33,8 +33,8 @@ class WorkoutSaveTest extends TestCase
 
         $set = Set::factory()->for($activity, 'activity')->create([
             'order' => 1,
-            'repetitions' => 5,
-            'weight' => 50,
+            'effort_value' => 5,
+            'difficulty_value' => 50,
             'is_completed' => false,
         ]);
 
@@ -50,8 +50,8 @@ class WorkoutSaveTest extends TestCase
                             [
                                 'id' => $set->id,
                                 'order' => 1,
-                                'repetitions' => 10,
-                                'weight' => 80,
+                                'effort_value' => 10,
+                                'difficulty_value' => 80,
                                 'is_completed' => true,
                             ],
                         ],
@@ -64,8 +64,8 @@ class WorkoutSaveTest extends TestCase
 
         $this->assertDatabaseHas('sets', [
             'id' => $set->id,
-            'repetitions' => 10,
-            'weight' => 80,
+            'effort_value' => 10,
+            'difficulty_value' => 80,
             'is_completed' => true,
         ]);
     }
@@ -94,8 +94,8 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['id' => $set1->id, 'order' => 1, 'repetitions' => 5, 'weight' => 50],
-                            ['order' => 2, 'repetitions' => 8, 'weight' => 60],
+                            ['id' => $set1->id, 'order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
+                            ['order' => 2, 'effort_value' => 8, 'difficulty_value' => 60],
                         ],
                     ],
                 ],
@@ -109,8 +109,8 @@ class WorkoutSaveTest extends TestCase
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 2,
-            'repetitions' => 8,
-            'weight' => 60,
+            'effort_value' => 8,
+            'difficulty_value' => 60,
         ]);
     }
 
@@ -142,7 +142,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                 ],
@@ -179,14 +179,14 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise1->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                     [
                         'exercise_id' => $exercise2->id,
                         'order' => 2,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 10, 'weight' => 100],
+                            ['order' => 1, 'effort_value' => 10, 'difficulty_value' => 100],
                         ],
                     ],
                 ],
@@ -215,10 +215,10 @@ class WorkoutSaveTest extends TestCase
             'order' => 1,
         ]);
 
-        $set1 = Set::factory()->for($activity, 'activity')->create(['order' => 1, 'repetitions' => 5, 'weight' => 50]);
-        $set2 = Set::factory()->for($activity, 'activity')->create(['order' => 2, 'repetitions' => 6, 'weight' => 60]);
-        $set3 = Set::factory()->for($activity, 'activity')->create(['order' => 3, 'repetitions' => 7, 'weight' => 70]);
-        $set4 = Set::factory()->for($activity, 'activity')->create(['order' => 4, 'repetitions' => 8, 'weight' => 80]);
+        $set1 = Set::factory()->for($activity, 'activity')->create(['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50]);
+        $set2 = Set::factory()->for($activity, 'activity')->create(['order' => 2, 'effort_value' => 6, 'difficulty_value' => 60]);
+        $set3 = Set::factory()->for($activity, 'activity')->create(['order' => 3, 'effort_value' => 7, 'difficulty_value' => 70]);
+        $set4 = Set::factory()->for($activity, 'activity')->create(['order' => 4, 'effort_value' => 8, 'difficulty_value' => 80]);
 
         // Keep set1 (updated), delete set2 and set4, keep set3, add two new
         $response = $this->actingAs($user)->patch(
@@ -230,10 +230,10 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['id' => $set1->id, 'order' => 1, 'repetitions' => 12, 'weight' => 55],
-                            ['id' => $set3->id, 'order' => 2, 'repetitions' => 7, 'weight' => 70],
-                            ['order' => 3, 'repetitions' => 10, 'weight' => 100],
-                            ['order' => 4, 'repetitions' => 11, 'weight' => 110],
+                            ['id' => $set1->id, 'order' => 1, 'effort_value' => 12, 'difficulty_value' => 55],
+                            ['id' => $set3->id, 'order' => 2, 'effort_value' => 7, 'difficulty_value' => 70],
+                            ['order' => 3, 'effort_value' => 10, 'difficulty_value' => 100],
+                            ['order' => 4, 'effort_value' => 11, 'difficulty_value' => 110],
                         ],
                     ],
                 ],
@@ -244,7 +244,7 @@ class WorkoutSaveTest extends TestCase
 
         $this->assertDatabaseMissing('sets', ['id' => $set2->id]);
         $this->assertDatabaseMissing('sets', ['id' => $set4->id]);
-        $this->assertDatabaseHas('sets', ['id' => $set1->id, 'order' => 1, 'repetitions' => 12, 'weight' => 55]);
+        $this->assertDatabaseHas('sets', ['id' => $set1->id, 'order' => 1, 'effort_value' => 12, 'difficulty_value' => 55]);
         $this->assertDatabaseHas('sets', ['id' => $set3->id, 'order' => 2]);
         $this->assertEquals(4, Set::where('activity_id', $activity->id)->count());
     }
@@ -261,9 +261,9 @@ class WorkoutSaveTest extends TestCase
             'order' => 1,
         ]);
 
-        $set1 = Set::factory()->for($activity, 'activity')->create(['order' => 1, 'repetitions' => 5, 'weight' => 50]);
-        $set2 = Set::factory()->for($activity, 'activity')->create(['order' => 2, 'repetitions' => 6, 'weight' => 60]);
-        $set3 = Set::factory()->for($activity, 'activity')->create(['order' => 3, 'repetitions' => 7, 'weight' => 70]);
+        $set1 = Set::factory()->for($activity, 'activity')->create(['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50]);
+        $set2 = Set::factory()->for($activity, 'activity')->create(['order' => 2, 'effort_value' => 6, 'difficulty_value' => 60]);
+        $set3 = Set::factory()->for($activity, 'activity')->create(['order' => 3, 'effort_value' => 7, 'difficulty_value' => 70]);
 
         // Frontend sends already-normalized orders [1, 2] after deleting the middle set
         $response = $this->actingAs($user)->patch(
@@ -275,8 +275,8 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['id' => $set1->id, 'order' => 1, 'repetitions' => 5, 'weight' => 50],
-                            ['id' => $set3->id, 'order' => 2, 'repetitions' => 7, 'weight' => 70],
+                            ['id' => $set1->id, 'order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
+                            ['id' => $set3->id, 'order' => 2, 'effort_value' => 7, 'difficulty_value' => 70],
                         ],
                     ],
                 ],
@@ -321,8 +321,8 @@ class WorkoutSaveTest extends TestCase
                             [
                                 'id' => $set1->id,
                                 'order' => 1,
-                                'repetitions' => 5,
-                                'weight' => 50,
+                                'effort_value' => 5,
+                                'difficulty_value' => 50,
                             ],
                         ],
                     ],
@@ -334,8 +334,8 @@ class WorkoutSaveTest extends TestCase
                             [
                                 'id' => $set2->id,
                                 'order' => 1,
-                                'repetitions' => 6,
-                                'weight' => 60,
+                                'effort_value' => 6,
+                                'difficulty_value' => 60,
                             ],
                         ],
                     ],
@@ -369,7 +369,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                 ],
@@ -394,7 +394,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                 ],
@@ -485,7 +485,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => 99999,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                 ],
@@ -517,7 +517,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                 ],
@@ -542,7 +542,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => null, 'repetitions' => null, 'weight' => null],
+                            ['order' => null, 'effort_value' => null, 'difficulty_value' => null],
                         ],
                     ],
                 ],
@@ -551,13 +551,12 @@ class WorkoutSaveTest extends TestCase
 
         $response->assertSessionHasErrors([
             'activities.0.sets.0.order',
-            'activities.0.sets.0.repetitions',
-            'activities.0.sets.0.weight',
+            'activities.0.sets.0.effort_value',
         ]);
     }
 
     #[Test]
-    public function save_rejects_completed_set_with_zero_repetitions(): void
+    public function save_rejects_completed_set_with_zero_effort(): void
     {
         $user = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
@@ -571,7 +570,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 0, 'weight' => 50, 'is_completed' => true],
+                            ['order' => 1, 'effort_value' => 0, 'difficulty_value' => 50, 'is_completed' => true],
                         ],
                     ],
                 ],
@@ -607,7 +606,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise2->id,
                         'order' => 1,
                         'sets' => [
-                            ['order' => 1, 'repetitions' => 10, 'weight' => 100],
+                            ['order' => 1, 'effort_value' => 10, 'difficulty_value' => 100],
                         ],
                     ],
                 ],
@@ -654,7 +653,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 1,
                         'sets' => [
-                            ['id' => $set2->id, 'order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['id' => $set2->id, 'order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                     [
@@ -662,7 +661,7 @@ class WorkoutSaveTest extends TestCase
                         'exercise_id' => $exercise->id,
                         'order' => 2,
                         'sets' => [
-                            ['id' => $set1->id, 'order' => 1, 'repetitions' => 5, 'weight' => 50],
+                            ['id' => $set1->id, 'order' => 1, 'effort_value' => 5, 'difficulty_value' => 50],
                         ],
                     ],
                 ],
@@ -686,8 +685,8 @@ class WorkoutSaveTest extends TestCase
 
         $set = Set::factory()->for($activity, 'activity')->create([
             'order' => 1,
-            'repetitions' => 5,
-            'weight' => 50,
+            'effort_value' => 5,
+            'difficulty_value' => 50,
             'is_completed' => true,
         ]);
 
@@ -701,8 +700,8 @@ class WorkoutSaveTest extends TestCase
                         [
                             'id' => $set->id,
                             'order' => 1,
-                            'repetitions' => 5,
-                            'weight' => 50,
+                            'effort_value' => 5,
+                            'difficulty_value' => 50,
                             'is_completed' => true,
                         ],
                     ],
@@ -724,8 +723,8 @@ class WorkoutSaveTest extends TestCase
         $this->assertDatabaseCount('sets', 1);
         $this->assertDatabaseHas('sets', [
             'id' => $set->id,
-            'repetitions' => 5,
-            'weight' => 50,
+            'effort_value' => 5,
+            'difficulty_value' => 50,
         ]);
     }
 }

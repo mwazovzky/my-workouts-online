@@ -33,8 +33,8 @@ class WorkoutRepeatTest extends TestCase
             ->for($activity, 'activity')
             ->count(2)
             ->state(new Sequence(
-                ['order' => 1, 'repetitions' => 10, 'weight' => 100, 'is_completed' => true],
-                ['order' => 2, 'repetitions' => 8, 'weight' => 110, 'is_completed' => false],
+                ['order' => 1, 'effort_value' => 10, 'difficulty_value' => 100, 'is_completed' => true],
+                ['order' => 2, 'effort_value' => 8, 'difficulty_value' => 110, 'is_completed' => false],
             ))
             ->create();
 
@@ -71,16 +71,16 @@ class WorkoutRepeatTest extends TestCase
         $this->assertDatabaseHas('sets', [
             'activity_id' => $newActivity->id,
             'order' => 1,
-            'repetitions' => 10,
-            'weight' => 100,
+            'effort_value' => 10,
+            'difficulty_value' => 100,
             'is_completed' => 0,
         ]);
 
         $this->assertDatabaseHas('sets', [
             'activity_id' => $newActivity->id,
             'order' => 2,
-            'repetitions' => 8,
-            'weight' => 110,
+            'effort_value' => 8,
+            'difficulty_value' => 110,
             'is_completed' => 0,
         ]);
     }

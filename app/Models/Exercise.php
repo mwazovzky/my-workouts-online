@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EffortType;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ class Exercise extends Model
 
     protected $fillable = [
         'equipment_id',
+        'effort_type',
         'rest_time_seconds',
     ];
 
@@ -25,6 +27,8 @@ class Exercise extends Model
     public function casts(): array
     {
         return [
+            'equipment_id' => 'integer',
+            'effort_type' => EffortType::class,
             'rest_time_seconds' => 'integer',
         ];
     }

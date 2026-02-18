@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch } from 'vue';
+import { reactive, computed, watch } from 'vue';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Trash2 } from 'lucide-vue-next';
@@ -10,25 +10,29 @@ const { t } = useTranslation();
 const props = defineProps({
   set: { type: Object, required: true },
   editable: { type: Boolean, default: false },
+  effortType: { type: String, default: 'repetitions' },
+  difficultyUnit: { type: String, default: null },
 });
 
 const emits = defineEmits(['update', 'remove']);
 
+const hasDifficulty = computed(() => props.difficultyUnit && props.difficultyUnit !== 'none');
+
 const local = reactive({
   id: props.set.id ?? null,
   order: props.set.order,
-  repetitions: props.set.repetitions ?? 0,
-  weight: props.set.weight ?? 0,
+  effort_value: props.set.effort_value ?? 0,
+  difficulty_value: props.set.difficulty_value ?? 0,
 });
 
 watch(
-  () => [local.repetitions, local.weight],
+  () => [local.effort_value, local.difficulty_value],
   () => {
     emits('update', {
       id: local.id,
       order: local.order,
-      repetitions: Number(local.repetitions),
-      weight: Number(local.weight),
+      effort_value: Number(local.effort_value),
+      difficulty_value: Number(local.difficulty_value),
     });
   }
 );
@@ -48,7 +52,7 @@ function remove() {
       <div class="flex flex-col gap-1 flex-1">
         <template v-if="editable">
           <Input
-            v-model.number="local.repetitions"
+            v-model.number="local.effort_value"
             type="number"
             min="0"
             class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500"
@@ -56,7 +60,7 @@ function remove() {
         </template>
         <template v-else>
           <Input
-            :value="props.set.repetitions"
+            :value="props.set.effort_value"
             type="number"
             disabled
             class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground"
@@ -64,10 +68,10 @@ function remove() {
         </template>
       </div>
 
-      <div class="flex flex-col gap-1 flex-1">
+      <div v-if="hasDifficulty" class="flex flex-col gap-1 flex-1">
         <template v-if="editable">
           <Input
-            v-model.number="local.weight"
+            v-model.number="local.difficulty_value"
             type="number"
             min="0"
             step="0.5"
@@ -76,7 +80,7 @@ function remove() {
         </template>
         <template v-else>
           <Input
-            :value="props.set.weight"
+            :value="props.set.difficulty_value"
             type="number"
             disabled
             class="h-9 text-right disabled:opacity-100 disabled:cursor-default disabled:text-foreground"

@@ -30,11 +30,11 @@ class WorkoutServiceTest extends TestCase
 
         $setOne = Set::factory()
             ->for($workoutTemplateActivity, 'activity')
-            ->create(['order' => 1, 'repetitions' => 10, 'weight' => 20]);
+            ->create(['order' => 1, 'effort_value' => 10, 'difficulty_value' => 20]);
 
         $setTwo = Set::factory()
             ->for($workoutTemplateActivity, 'activity')
-            ->create(['order' => 2, 'repetitions' => 8, 'weight' => 22]);
+            ->create(['order' => 2, 'effort_value' => 8, 'difficulty_value' => 22]);
 
         $service = new WorkoutService;
         $workout = $service->createFromTemplate($user, $workoutTemplate->id);
@@ -55,15 +55,15 @@ class WorkoutServiceTest extends TestCase
         $this->assertDatabaseHas('sets', [
             'activity_id' => $workoutActivity->id,
             'order' => $setOne->order,
-            'repetitions' => $setOne->repetitions,
-            'weight' => $setOne->weight,
+            'effort_value' => $setOne->effort_value,
+            'difficulty_value' => $setOne->difficulty_value,
         ]);
 
         $this->assertDatabaseHas('sets', [
             'activity_id' => $workoutActivity->id,
             'order' => $setTwo->order,
-            'repetitions' => $setTwo->repetitions,
-            'weight' => $setTwo->weight,
+            'effort_value' => $setTwo->effort_value,
+            'difficulty_value' => $setTwo->difficulty_value,
         ]);
     }
 

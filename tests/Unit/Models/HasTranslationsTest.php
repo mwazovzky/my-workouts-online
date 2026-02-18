@@ -57,6 +57,7 @@ class HasTranslationsTest extends TestCase
             'en' => ['name' => 'Bench Press', 'description' => 'Chest exercise.'],
             'ru' => ['name' => 'Жим лёжа', 'description' => 'Упражнение на грудь.'],
         ], [
+            'equipment_id' => Equipment::factory()->create()->id,
             'rest_time_seconds' => 90,
         ]);
 
@@ -240,6 +241,7 @@ class HasTranslationsTest extends TestCase
             'en' => ['name' => 'Squat', 'description' => 'Leg exercise.'],
             'ru' => ['name' => 'Приседания', 'description' => 'Упражнение на ноги.'],
         ], [
+            'equipment_id' => Equipment::factory()->create()->id,
             'rest_time_seconds' => 90,
         ]);
 

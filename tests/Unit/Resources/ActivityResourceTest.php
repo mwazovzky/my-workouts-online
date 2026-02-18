@@ -65,6 +65,8 @@ class ActivityResourceTest extends TestCase
         $this->assertEquals($exercise->rest_time_seconds, $array['rest_time_seconds']);
         $this->assertSame('Barbell', $array['exercise_equipment_name']);
         $this->assertSame(['Strength'], $array['exercise_category_names']);
+        $this->assertSame('repetitions', $array['exercise_effort_type']);
+        $this->assertSame('kilograms', $array['exercise_difficulty_unit']);
     }
 
     #[Test]
@@ -122,8 +124,8 @@ class ActivityResourceTest extends TestCase
         foreach ($array['sets'] as $set) {
             $this->assertArrayHasKey('id', $set);
             $this->assertArrayHasKey('order', $set);
-            $this->assertArrayHasKey('repetitions', $set);
-            $this->assertArrayHasKey('weight', $set);
+            $this->assertArrayHasKey('effort_value', $set);
+            $this->assertArrayHasKey('difficulty_value', $set);
             $this->assertArrayHasKey('is_completed', $set);
         }
     }
@@ -188,7 +190,7 @@ class ActivityResourceTest extends TestCase
         $resource = new ActivityResource($activity);
         $array = $resource->toArray(request());
 
-        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'rest_time_seconds', 'exercise_equipment_name', 'exercise_category_names', 'sets'];
+        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'rest_time_seconds', 'exercise_equipment_name', 'exercise_category_names', 'exercise_effort_type', 'exercise_difficulty_unit', 'sets'];
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $array);

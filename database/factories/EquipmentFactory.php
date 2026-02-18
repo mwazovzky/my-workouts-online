@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DifficultyUnit;
 use App\Models\Equipment;
 use Database\Factories\Concerns\HasTranslationFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -14,7 +15,9 @@ class EquipmentFactory extends Factory
 
     public function definition(): array
     {
-        return [];
+        return [
+            'difficulty_unit' => DifficultyUnit::Kilograms,
+        ];
     }
 
     public function configure(): static
@@ -22,8 +25,37 @@ class EquipmentFactory extends Factory
         return $this->afterCreating(function (Equipment $equipment) {
             $equipment->translations()->createMany([
                 ['locale' => 'en', 'field' => 'name', 'value' => fake()->randomElement(['Barbell', 'Machine', 'Horizontal Bar'])],
-                ['locale' => 'en', 'field' => 'unit', 'value' => fake()->randomElement(['kg', 'machine unit', 'none'])],
             ]);
         });
+    }
+
+    /**
+     * Bodyweight equipment with no difficulty unit.
+     */
+    public function bodyweight(): static
+    {
+        return $this->state(fn () => [
+            'difficulty_unit' => DifficultyUnit::None,
+        ]);
+    }
+
+    /**
+     * Machine equipment with plates difficulty unit.
+     */
+    public function machine(): static
+    {
+        return $this->state(fn () => [
+            'difficulty_unit' => DifficultyUnit::Plates,
+        ]);
+    }
+
+    /**
+     * Equipment with pounds difficulty unit.
+     */
+    public function pounds(): static
+    {
+        return $this->state(fn () => [
+            'difficulty_unit' => DifficultyUnit::Pounds,
+        ]);
     }
 }

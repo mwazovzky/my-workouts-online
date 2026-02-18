@@ -53,8 +53,8 @@ class WorkoutSeeder extends Seeder
                 foreach ($templateActivity->sets()->orderBy('order')->get() as $templateSet) {
                     $activity->sets()->create([
                         'order' => $templateSet->order,
-                        'weight' => $templateSet->weight,
-                        'repetitions' => $templateSet->repetitions,
+                        'effort_value' => $templateSet->effort_value,
+                        'difficulty_value' => $templateSet->difficulty_value,
                     ]);
                 }
             }

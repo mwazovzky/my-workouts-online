@@ -39,8 +39,8 @@ class WorkoutStoreTest extends TestCase
             ->for($activity, 'activity')
             ->count(2)
             ->state(new Sequence(
-                ['order' => 1, 'repetitions' => 10, 'weight' => 20],
-                ['order' => 2, 'repetitions' => 8,  'weight' => 22],
+                ['order' => 1, 'effort_value' => 10, 'difficulty_value' => 20],
+                ['order' => 2, 'effort_value' => 8,  'difficulty_value' => 22],
             ))
             ->create();
 
@@ -69,15 +69,15 @@ class WorkoutStoreTest extends TestCase
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 1,
-            'repetitions' => 10,
-            'weight' => 20,
+            'effort_value' => 10,
+            'difficulty_value' => 20,
         ]);
 
         $this->assertDatabaseHas('sets', [
             'activity_id' => $activity->id,
             'order' => 2,
-            'repetitions' => 8,
-            'weight' => 22,
+            'effort_value' => 8,
+            'difficulty_value' => 22,
         ]);
     }
 

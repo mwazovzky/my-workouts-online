@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DifficultyUnit;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,11 +12,20 @@ class Equipment extends Model
 {
     use HasFactory, HasTranslations;
 
-    protected $fillable = [];
+    protected $fillable = [
+        'difficulty_unit',
+    ];
 
     public function translatableFields(): array
     {
-        return ['name', 'unit'];
+        return ['name'];
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'difficulty_unit' => DifficultyUnit::class,
+        ];
     }
 
     public function exercises(): HasMany

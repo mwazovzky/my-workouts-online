@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\CompletedSetRequiresReps;
+use App\Rules\CompletedSetRequiresEffort;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -38,9 +38,9 @@ class WorkoutSaveRequest extends FormRequest
             'activities.*.sets' => ['required', 'array', 'min:1'],
             'activities.*.sets.*.id' => ['nullable', 'integer', 'distinct'],
             'activities.*.sets.*.order' => ['required', 'integer', 'min:1'],
-            'activities.*.sets.*.repetitions' => ['required', 'integer', 'min:0'],
-            'activities.*.sets.*.weight' => ['required', 'numeric', 'min:0'],
-            'activities.*.sets.*.is_completed' => ['sometimes', 'boolean', new CompletedSetRequiresReps],
+            'activities.*.sets.*.effort_value' => ['required', 'integer', 'min:0'],
+            'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0'],
+            'activities.*.sets.*.is_completed' => ['sometimes', 'boolean', new CompletedSetRequiresEffort],
         ];
     }
 
@@ -66,8 +66,8 @@ class WorkoutSaveRequest extends FormRequest
             'activities.*.order' => 'activity order',
             'activities.*.sets' => 'sets',
             'activities.*.sets.*.order' => 'set order',
-            'activities.*.sets.*.repetitions' => 'repetitions',
-            'activities.*.sets.*.weight' => 'weight',
+            'activities.*.sets.*.effort_value' => 'effort value',
+            'activities.*.sets.*.difficulty_value' => 'difficulty value',
             'activities.*.sets.*.is_completed' => 'completion status',
         ];
     }

@@ -4,16 +4,16 @@ A workout tracking app. Users browse curated workout programs, enroll in them, s
 
 ## Domain Glossary
 
-| Term                 | Definition                                                                                                              |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Program**          | A named collection of workout templates (e.g. "Push/Pull/Legs"). Users enroll in programs.                              |
-| **Workout Template** | A reusable workout blueprint within a program, assigned to a weekday. Contains template activities.                     |
-| **Workout**          | A user's concrete workout session, created from a template. Has status: `in_progress` → `completed`.                    |
-| **Activity**         | An exercise slot inside a template or workout. Polymorphic — belongs to either a WorkoutTemplate or a Workout. Ordered. |
-| **Set**              | A single set within an activity: repetitions, weight, completion flag. Ordered.                                         |
-| **Exercise**         | Catalog entry: name, description, rest time. Belongs to one equipment, many categories.                                 |
-| **Equipment**        | Gear type with a measurement unit (e.g. "Barbell", kg).                                                                 |
-| **Category**         | Exercise classification (e.g. "Chest", "Legs"). Many-to-many with exercises.                                            |
+| Term                 | Definition                                                                                                                             |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Program**          | A named collection of workout templates (e.g. "Push/Pull/Legs"). Users enroll in programs.                                             |
+| **Workout Template** | A reusable workout blueprint within a program, assigned to a weekday. Contains template activities.                                    |
+| **Workout**          | A user's concrete workout session, created from a template. Has status: `in_progress` → `completed`.                                   |
+| **Activity**         | An exercise slot inside a template or workout. Polymorphic — belongs to either a WorkoutTemplate or a Workout. Ordered.                |
+| **Set**              | A single set within an activity: effort value (reps or seconds), difficulty value (weight/plates, nullable), completion flag. Ordered. |
+| **Exercise**         | Catalog entry: name, description, rest time, effort type (repetitions or duration). Belongs to one equipment, many categories.         |
+| **Equipment**        | Gear type with a difficulty unit (kilograms, pounds, plates, or none). E.g. "Barbell" (kg), "Bodyweight" (none).                       |
+| **Category**         | Exercise classification (e.g. "Chest", "Legs"). Many-to-many with exercises.                                                           |
 
 ## Features
 
@@ -23,7 +23,7 @@ A workout tracking app. Users browse curated workout programs, enroll in them, s
 
 **[Workout Logging](features/workout-logging.md)** — Start workouts from templates, track in real time, complete, repeat, or delete.
 
-**[Activity & Set Tracking](features/activity-tracking.md)** — Edit sets (reps, weight, completion) and delete activities within in-progress workouts.
+**[Activity & Set Tracking](features/activity-tracking.md)** — Edit sets (effort value, difficulty value, completion) and delete activities within in-progress workouts. Supports different exercise types: weight+reps, reps-only, duration, duration+weight.
 
 **[Auth & Profile](features/auth-and-profile.md)** — Registration, login, email verification, password reset, profile edit, account deletion.
 
