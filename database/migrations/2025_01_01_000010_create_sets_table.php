@@ -13,7 +13,7 @@ class CreateSetsTable extends Migration
             $table->foreignId('activity_id')->constrained()->onDelete('cascade');
             $table->integer('order');
             $table->integer('effort_value');
-            $table->integer('difficulty_value')->nullable();
+            $table->decimal('difficulty_value', 6, 1)->nullable();
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
             $table->unique(['activity_id', 'order']);

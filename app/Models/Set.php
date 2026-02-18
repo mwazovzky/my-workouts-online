@@ -24,7 +24,7 @@ class Set extends Model
             'activity_id' => 'integer',
             'order' => 'integer',
             'effort_value' => 'integer',
-            'difficulty_value' => 'integer',
+            'difficulty_value' => 'float',
             'is_completed' => 'boolean',
         ];
     }

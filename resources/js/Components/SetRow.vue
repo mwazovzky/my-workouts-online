@@ -32,7 +32,7 @@ watch(
       id: local.id,
       order: local.order,
       effort_value: Number(local.effort_value),
-      difficulty_value: Number(local.difficulty_value),
+      difficulty_value: hasDifficulty.value ? Number(local.difficulty_value) : null,
     });
   }
 );

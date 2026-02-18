@@ -220,7 +220,7 @@ function buildSavePayload() {
         id: s.id ?? undefined,
         order: sIdx + 1,
         effort_value: Number(s.effort_value),
-        difficulty_value: Number(s.difficulty_value),
+        difficulty_value: s.difficulty_value == null ? null : Number(s.difficulty_value),
         is_completed: s.is_completed ?? false,
       })),
     })),

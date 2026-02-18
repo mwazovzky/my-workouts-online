@@ -17,7 +17,7 @@ enum DifficultyUnit: string
         return match ($this) {
             self::Kilograms => __('kg'),
             self::Pounds => __('lbs'),
-            self::Plates => __('Plates'),
+            self::Plates => __('plates'),
             self::None => '',
         };
     }
@@ -30,7 +30,7 @@ enum DifficultyUnit: string
         return match ($this) {
             self::Kilograms => __('Weight').' ('.__('kg').')',
             self::Pounds => __('Weight').' ('.__('lbs').')',
-            self::Plates => __('Plates'),
+            self::Plates => __('plates'),
             self::None => '',
         };
     }

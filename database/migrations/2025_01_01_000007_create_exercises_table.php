@@ -10,7 +10,7 @@ class CreateExercisesTable extends Migration
     {
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('equipment_id')->constrained('equipment')->onDelete('cascade');
+            $table->foreignId('equipment_id')->constrained('equipment')->onDelete('restrict');
             $table->string('effort_type')->default('repetitions');
             $table->unsignedInteger('rest_time_seconds')->default(90);
             $table->timestamps();
