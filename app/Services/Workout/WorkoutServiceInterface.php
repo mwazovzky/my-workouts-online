@@ -21,7 +21,7 @@ interface WorkoutServiceInterface
     /**
      * Save (sync) the full set of activities and sets for a workout.
      *
-     * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>}>}  $data
+     * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, effort_value: int, difficulty_value: numeric|null, is_completed?: bool}>}>}  $data
      */
     public function save(Workout $workout, array $data): Workout;
 

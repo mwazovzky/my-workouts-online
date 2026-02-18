@@ -11,8 +11,8 @@ class SetResource extends JsonResource
         return [
             'id' => $this->id,
             'order' => $this->order,
-            'repetitions' => $this->repetitions ?? 0,
-            'weight' => $this->weight ?? 0,
+            'effort_value' => $this->effort_value ?? 0,
+            'difficulty_value' => $this->difficulty_value,
             'is_completed' => $this->is_completed,
         ];
     }

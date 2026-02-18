@@ -12,8 +12,8 @@ class CreateSetsTable extends Migration
             $table->id();
             $table->foreignId('activity_id')->constrained()->onDelete('cascade');
             $table->integer('order');
-            $table->integer('repetitions');
-            $table->integer('weight')->nullable();
+            $table->integer('effort_value');
+            $table->decimal('difficulty_value', 6, 1)->nullable();
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
             $table->unique(['activity_id', 'order']);

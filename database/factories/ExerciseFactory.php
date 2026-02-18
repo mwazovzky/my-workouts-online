@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\EffortType;
 use App\Models\Equipment;
 use App\Models\Exercise;
 use Database\Factories\Concerns\HasTranslationFactory;
@@ -17,6 +18,7 @@ class ExerciseFactory extends Factory
     {
         return [
             'equipment_id' => Equipment::factory(),
+            'effort_type' => EffortType::Repetitions,
             'rest_time_seconds' => $this->faker->randomElement([30, 45, 60, 90, 120, 180]),
         ];
     }
@@ -29,5 +31,15 @@ class ExerciseFactory extends Factory
                 ['locale' => 'en', 'field' => 'description', 'value' => fake()->sentence()],
             ]);
         });
+    }
+
+    /**
+     * Duration-based exercise.
+     */
+    public function duration(): static
+    {
+        return $this->state(fn () => [
+            'effort_type' => EffortType::Duration,
+        ]);
     }
 }

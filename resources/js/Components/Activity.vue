@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import Set from '@/Components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -21,6 +22,15 @@ const emits = defineEmits([
   'remove-activity',
   'set-completion-toggled',
 ]);
+
+const hasDifficulty = computed(
+  () =>
+    props.activity.exercise_difficulty_unit && props.activity.exercise_difficulty_unit !== 'none'
+);
+
+const effortLabel = computed(() => props.activity.exercise_effort_label || t('Reps'));
+
+const difficultyLabel = computed(() => props.activity.exercise_difficulty_label || '');
 
 const formatRestTime = seconds => {
   if (seconds == null) return null;
@@ -121,11 +131,17 @@ function removeActivity() {
       <div class="space-y-1.5">
         <!-- Column Headers -->
         <div
-          class="grid grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem] items-end gap-2 text-xs font-medium text-muted-foreground"
+          :class="[
+            'grid items-end gap-2 text-xs font-medium text-muted-foreground',
+            'grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem]',
+          ]"
         >
           <div class="text-center">#</div>
-          <div class="text-right pr-3">{{ t('Reps') }}</div>
-          <div class="text-right pr-3">{{ t('Weight') }}</div>
+          <div v-if="hasDifficulty" class="text-center whitespace-nowrap">
+            {{ difficultyLabel }}
+          </div>
+          <div v-else />
+          <div class="text-center whitespace-nowrap">{{ effortLabel }}</div>
           <div class="text-center">{{ t('Done') }}</div>
           <div class="text-center">
             <span class="sr-only">{{ t('Remove') }}</span>
@@ -138,6 +154,8 @@ function removeActivity() {
           :key="set.id ?? set.order"
           :set="set"
           :editable="editable"
+          :effort-type="activity.exercise_effort_type"
+          :difficulty-unit="activity.exercise_difficulty_unit"
           @update="onSetUpdate"
           @remove="onSetRemove"
           @completion-toggled="onSetCompletionToggled"

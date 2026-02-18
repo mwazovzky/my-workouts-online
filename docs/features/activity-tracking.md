@@ -5,9 +5,9 @@ Users edit exercises and sets within an in-progress workout.
 ## Current Behavior
 
 1. On **WorkoutEdit**, user sees a list of activities (exercises) with their sets
-2. Each set shows: order, repetitions, weight, completion toggle
+2. Each set shows: order, effort value (reps or seconds based on exercise type), difficulty value (weight/plates if applicable), completion toggle
 3. Activities can be **reordered via drag-and-drop** when more than one activity exists (drag handle visible on each card)
-4. All editing (add/remove sets, toggle completion, update reps/weight, remove activities, reorder activities) is **client-side only**
+4. All editing (add/remove sets, toggle completion, update effort/difficulty values, remove activities, reorder activities) is **client-side only**
 5. A **Save** button appears when there are unsaved changes — sends all activities and sets in one bulk request
 6. **Complete** saves any unsaved changes first, then marks the workout as completed
 7. The last activity cannot be removed (trash icon is hidden)
@@ -25,7 +25,8 @@ Users edit exercises and sets within an in-progress workout.
 - Minimum 1 activity per workout, minimum 1 set per activity
 - Frontend normalizes activity and set orders to sequential 1-based values before sending
 - Activity order is preserved: existing activity orders are cleared (set to `-id`) before upsert to avoid unique constraint violations
-- Set validation: `repetitions` ≥ 0 (integer), `weight` ≥ 0 (numeric), `order` ≥ 1 (integer), `is_completed` (boolean, optional)
+- Set validation: `effort_value` ≥ 0 (integer, required), `difficulty_value` ≥ 0 (numeric, nullable), `order` ≥ 1 (integer), `is_completed` (boolean, optional)
+- Completed sets must have `effort_value` > 0 (enforced by `CompletedSetRequiresEffort` rule)
 - All operations run in a single database transaction
 - Owner check via `WorkoutPolicy` — `user_id` must match authenticated user
 

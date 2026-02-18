@@ -37,8 +37,8 @@ class WorkoutService implements WorkoutServiceInterface
                 foreach ($templateActivity->sets as $templateActivitySet) {
                     $activity->sets()->create([
                         'order' => $templateActivitySet->order,
-                        'repetitions' => $templateActivitySet->repetitions,
-                        'weight' => $templateActivitySet->weight,
+                        'effort_value' => $templateActivitySet->effort_value,
+                        'difficulty_value' => $templateActivitySet->difficulty_value,
                     ]);
                 }
             }
@@ -75,8 +75,8 @@ class WorkoutService implements WorkoutServiceInterface
                 foreach ($sourceActivity->sets as $sourceSet) {
                     $newActivity->sets()->create([
                         'order' => $sourceSet->order,
-                        'repetitions' => $sourceSet->repetitions,
-                        'weight' => $sourceSet->weight,
+                        'effort_value' => $sourceSet->effort_value,
+                        'difficulty_value' => $sourceSet->difficulty_value,
                         'is_completed' => false,
                     ]);
                 }
@@ -94,7 +94,7 @@ class WorkoutService implements WorkoutServiceInterface
      * - Existing activities are updated, new ones are created
      * - Within each activity, sets are diffed the same way
      *
-     * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>}>}  $data
+     * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, effort_value: int, difficulty_value: numeric|null, is_completed?: bool}>}>}  $data
      */
     public function save(Workout $workout, array $data): Workout
     {
@@ -207,15 +207,15 @@ class WorkoutService implements WorkoutServiceInterface
     /**
      * Sync sets for an activity: delete missing, upsert existing, create new.
      *
-     * @param  array<int, array{id?: int|null, order: int, repetitions: int, weight: numeric, is_completed?: bool}>  $setsPayload
+     * @param  array<int, array{id?: int|null, order: int, effort_value: int, difficulty_value: numeric|null, is_completed?: bool}>  $setsPayload
      */
     private function syncSets(Activity $activity, array $setsPayload): void
     {
         $sets = collect($setsPayload)->map(fn (array $set) => [
             'id' => isset($set['id']) && $set['id'] !== null ? (int) $set['id'] : null,
             'order' => (int) $set['order'],
-            'repetitions' => (int) $set['repetitions'],
-            'weight' => $set['weight'],
+            'effort_value' => (int) $set['effort_value'],
+            'difficulty_value' => $set['difficulty_value'],
             'is_completed' => (bool) ($set['is_completed'] ?? false),
         ]);
 
@@ -247,12 +247,12 @@ class WorkoutService implements WorkoutServiceInterface
                     'id' => $set['id'],
                     'activity_id' => $activity->id,
                     'order' => $set['order'],
-                    'repetitions' => $set['repetitions'],
-                    'weight' => $set['weight'],
+                    'effort_value' => $set['effort_value'],
+                    'difficulty_value' => $set['difficulty_value'],
                     'is_completed' => $set['is_completed'],
                 ])->all(),
                 uniqueBy: ['id'],
-                update: ['order', 'repetitions', 'weight', 'is_completed']
+                update: ['order', 'effort_value', 'difficulty_value', 'is_completed']
             );
         }
 
@@ -261,8 +261,8 @@ class WorkoutService implements WorkoutServiceInterface
             $activity->sets()->createMany(
                 $creates->map(fn ($set) => [
                     'order' => $set['order'],
-                    'repetitions' => $set['repetitions'],
-                    'weight' => $set['weight'],
+                    'effort_value' => $set['effort_value'],
+                    'difficulty_value' => $set['difficulty_value'],
                     'is_completed' => $set['is_completed'],
                 ])->all()
             );

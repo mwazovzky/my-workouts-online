@@ -109,11 +109,15 @@ const activities = ref(
     rest_time_seconds: a.rest_time_seconds ?? null,
     exercise_equipment_name: a.exercise_equipment_name ?? null,
     exercise_category_names: a.exercise_category_names ?? [],
+    exercise_effort_type: a.exercise_effort_type ?? 'repetitions',
+    exercise_effort_label: a.exercise_effort_label ?? '',
+    exercise_difficulty_unit: a.exercise_difficulty_unit ?? null,
+    exercise_difficulty_label: a.exercise_difficulty_label ?? '',
     sets: (a.sets ?? []).map(s => ({
       id: s.id ?? null,
       order: s.order,
-      repetitions: s.repetitions,
-      weight: s.weight,
+      effort_value: s.effort_value,
+      difficulty_value: s.difficulty_value,
       is_completed: s.is_completed ?? false,
     })),
   }))
@@ -215,8 +219,8 @@ function buildSavePayload() {
       sets: a.sets.map((s, sIdx) => ({
         id: s.id ?? undefined,
         order: sIdx + 1,
-        repetitions: Number(s.repetitions),
-        weight: Number(s.weight),
+        effort_value: Number(s.effort_value),
+        difficulty_value: s.difficulty_value == null ? null : Number(s.difficulty_value),
         is_completed: s.is_completed ?? false,
       })),
     })),
@@ -299,11 +303,13 @@ function onAddSet({ activityId }) {
 
   const lastSet = activity.sets.length ? activity.sets[activity.sets.length - 1] : null;
   const maxOrder = activity.sets.length ? Math.max(...activity.sets.map(s => s.order)) : 0;
+  const hasDifficulty =
+    activity.exercise_difficulty_unit && activity.exercise_difficulty_unit !== 'none';
   activity.sets.push({
     id: null,
     order: maxOrder + 1,
-    repetitions: lastSet ? lastSet.repetitions : 0,
-    weight: lastSet ? lastSet.weight : 0,
+    effort_value: lastSet ? lastSet.effort_value : 0,
+    difficulty_value: lastSet ? lastSet.difficulty_value : hasDifficulty ? 0 : null,
     is_completed: false,
   });
   markDirty();

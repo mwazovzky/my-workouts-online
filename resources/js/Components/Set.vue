@@ -10,34 +10,38 @@ const { t } = useTranslation();
 const props = defineProps({
   set: { type: Object, required: true },
   editable: { type: Boolean, default: false },
+  effortType: { type: String, default: 'repetitions' },
+  difficultyUnit: { type: String, default: null },
 });
 
 const emits = defineEmits(['update', 'remove', 'completion-toggled']);
 
+const hasDifficulty = computed(() => props.difficultyUnit && props.difficultyUnit !== 'none');
+
 const local = reactive({
   id: props.set.id ?? null,
   order: props.set.order,
-  repetitions: props.set.repetitions ?? 0,
-  weight: props.set.weight ?? 0,
+  effort_value: props.set.effort_value ?? 0,
+  difficulty_value: props.set.difficulty_value ?? 0,
   is_completed: props.set.is_completed ?? false,
 });
 
 const inputsDisabled = computed(() => !props.editable || local.is_completed);
-const canComplete = computed(() => props.editable && Number(local.repetitions) > 0);
+const canComplete = computed(() => props.editable && Number(local.effort_value) > 0);
 
 watch(
-  () => [local.repetitions, local.weight],
+  () => [local.effort_value, local.difficulty_value],
   () => {
-    // Auto-uncheck if reps changed to 0 while completed
-    if (local.is_completed && Number(local.repetitions) <= 0) {
+    // Auto-uncheck if effort changed to 0 while completed
+    if (local.is_completed && Number(local.effort_value) <= 0) {
       local.is_completed = false;
     }
 
     emits('update', {
       id: local.id,
       order: local.order,
-      repetitions: Number(local.repetitions),
-      weight: Number(local.weight),
+      effort_value: Number(local.effort_value),
+      difficulty_value: hasDifficulty.value ? Number(local.difficulty_value) : null,
       is_completed: local.is_completed,
     });
   }
@@ -61,16 +65,16 @@ function onCheckedUpdate(val) {
   emits('update', {
     id: local.id,
     order: local.order,
-    repetitions: Number(local.repetitions),
-    weight: Number(local.weight),
+    effort_value: Number(local.effort_value),
+    difficulty_value: hasDifficulty.value ? Number(local.difficulty_value) : null,
     is_completed: local.is_completed,
   });
 
   emits('completion-toggled', {
     id: local.id,
     order: local.order,
-    repetitions: Number(local.repetitions),
-    weight: Number(local.weight),
+    effort_value: Number(local.effort_value),
+    difficulty_value: hasDifficulty.value ? Number(local.difficulty_value) : null,
     is_completed: local.is_completed,
     previous,
   });
@@ -83,7 +87,7 @@ function remove() {
 
 <template>
   <div
-    class="group grid grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem] items-center gap-2"
+    class="group grid items-center gap-2 grid-cols-[2rem_1fr_1fr_2.25rem_2.25rem]"
     :class="{ 'opacity-70': local.is_completed }"
   >
     <div class="text-xs font-medium tabular-nums text-muted-foreground text-center">
@@ -91,18 +95,22 @@ function remove() {
     </div>
 
     <Input
-      v-model.number="local.repetitions"
-      type="number"
-      min="0"
-      :disabled="inputsDisabled"
-      class="h-9 text-right tabular-nums"
-    />
-
-    <Input
-      v-model.number="local.weight"
+      v-if="hasDifficulty"
+      v-model.number="local.difficulty_value"
       type="number"
       min="0"
       step="0.5"
+      placeholder="0"
+      :disabled="inputsDisabled"
+      class="h-9 text-right tabular-nums"
+    />
+    <div v-else />
+
+    <Input
+      v-model.number="local.effort_value"
+      type="number"
+      min="0"
+      placeholder="0"
       :disabled="inputsDisabled"
       class="h-9 text-right tabular-nums"
     />

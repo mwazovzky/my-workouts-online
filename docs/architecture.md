@@ -22,6 +22,8 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 **Internationalization** — `SetLocale` middleware sets locale from `User.locale` (or session for guests). `HasTranslations` trait on system models (Exercise, Equipment, Category, Program, WorkoutTemplate) provides polymorphic translations with auto-eager-loading. UI strings in `lang/*.json`, accessed via `useTranslation` composable (`t()` helper). `HandleInertiaRequests` shares `locale`, `availableLocales`, and `translations` to all pages.
 
+**Two-Axis Measurement Model** — Sets use generic `effort_value` (reps or seconds) + `difficulty_value` (weight/plates, nullable). The axes are independent: `Equipment.difficulty_unit` (enum: kilograms, pounds, plates, none) controls the load dimension; `Exercise.effort_type` (enum: repetitions, duration) controls the work dimension. A special "Bodyweight" equipment record (`difficulty_unit = none`) eliminates nullable exercise→equipment FKs. All 4×2 combinations are valid real exercises.
+
 ## Directory Guide
 
 Only non-obvious locations listed.
