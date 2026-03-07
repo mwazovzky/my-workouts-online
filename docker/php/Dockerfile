@@ -66,6 +66,7 @@ RUN rm -f /var/www/html/bootstrap/cache/*.php || true
 RUN rm -f /var/www/html/public/hot || true
 
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY docker/nginx/default-ssl.conf.template /etc/nginx/templates/default-ssl.conf.template
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/web/start.sh /usr/local/bin/start-web
 
@@ -74,7 +75,7 @@ RUN chmod +x /usr/local/bin/start-web \
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 80 443
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD pgrep php-fpm >/dev/null 2>&1 || exit 1
 
 CMD ["/usr/local/bin/start-web"]

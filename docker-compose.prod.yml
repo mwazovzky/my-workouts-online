@@ -2,14 +2,19 @@ services:
   web:
     image: "${IMAGE_NAME}:${IMAGE_TAG}"
     env_file:
-      - .env.production
+      - .env
     environment:
       PHP_FPM_UPSTREAM: "127.0.0.1:9000"
       APP_ROOT: /var/www/html/public
+      DOMAIN_NAME: "${DOMAIN_NAME}"
     depends_on:
       - mysql
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
     restart: unless-stopped
 
   mysql:
@@ -25,3 +30,5 @@ services:
 
 volumes:
   mysql_data:
+  certbot_certs:
+  certbot_webroot:
