@@ -26,4 +26,3 @@ Workout tracking application — Laravel 12 / Inertia v2 / Vue 3 / Tailwind v3 /
 - [Local development & deployment](../README.md)
 - [Deployment guide (DigitalOcean)](../.ai/guidelines/deployment-guide.md)
 - [Code standards](../.ai/guidelines/code_style.md)
-- [DB diagram](https://dbdiagram.io/d/workouts-68a1ae421d75ee360ae77ad8)

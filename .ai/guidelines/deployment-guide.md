@@ -151,8 +151,8 @@ With the site running on HTTP and DNS pointed to the droplet, obtain an SSL cert
 
 ```bash
 docker run --rm \
-  -v workouts_certbot_certs:/etc/letsencrypt \
-  -v workouts_certbot_webroot:/var/www/certbot \
+  -v my-workouts-online_certbot_certs:/etc/letsencrypt \
+  -v my-workouts-online_certbot_webroot:/var/www/certbot \
   certbot/certbot:latest \
   certonly --webroot -w /var/www/certbot \
   --email your-email@example.com \
@@ -165,8 +165,8 @@ If the staging test succeeds, obtain the real certificate (remove `--staging` an
 
 ```bash
 docker run --rm \
-  -v workouts_certbot_certs:/etc/letsencrypt \
-  -v workouts_certbot_webroot:/var/www/certbot \
+  -v my-workouts-online_certbot_certs:/etc/letsencrypt \
+  -v my-workouts-online_certbot_webroot:/var/www/certbot \
   certbot/certbot:latest \
   certonly --webroot -w /var/www/certbot \
   --email your-email@example.com \
@@ -214,10 +214,10 @@ Create the renewal script:
 ```bash
 cat > ~/renew-certs.sh << 'SCRIPT'
 #!/bin/bash
-cd /home/deploy/workouts
+cd /home/deploy/my-workouts-online
 docker run --rm \
-  -v workouts_certbot_certs:/etc/letsencrypt \
-  -v workouts_certbot_webroot:/var/www/certbot \
+  -v my-workouts-online_certbot_certs:/etc/letsencrypt \
+  -v my-workouts-online_certbot_webroot:/var/www/certbot \
   certbot/certbot:latest renew --quiet
 docker compose -f docker-compose.prod.yml exec -T web nginx -s reload
 SCRIPT
@@ -235,8 +235,8 @@ Verify the renewal process works:
 
 ```bash
 docker run --rm \
-  -v workouts_certbot_certs:/etc/letsencrypt \
-  -v workouts_certbot_webroot:/var/www/certbot \
+  -v my-workouts-online_certbot_certs:/etc/letsencrypt \
+  -v my-workouts-online_certbot_webroot:/var/www/certbot \
   certbot/certbot:latest renew --dry-run
 ```
 
