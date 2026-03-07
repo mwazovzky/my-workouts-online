@@ -31,46 +31,17 @@ php artisan serve
 
 This mirrors the production compose topology (nginx + php-fpm + mysql) while keeping code bind-mounted for live edits.
 
+## Documentation
+
+- [Product overview](docs/product.md)
+- [Feature docs](docs/README.md)
+- [Architecture](docs/architecture.md)
+- [Pages & routes](docs/pages-and-routes.md)
+- [Deployment runbook](docs/deployment.md)
+
 ## Production
 
-### First-time deployment (DigitalOcean)
-
-See: [.ai/guidelines/deployment-guide.md](.ai/guidelines/deployment-guide.md)
-
-### Redeploy (release engineer)
-
-1. Build + push a new production image tag (run locally or in CI)
-```bash
-export IMAGE_NAME=mwazovzky/my-workouts-online
-export IMAGE_TAG=prod-$(date +%Y%m%d%H%M)
-
-docker login
-
-docker buildx build \
-  --platform linux/amd64 \
-  --target web \
-  --build-arg APP_ENV=production \
-  -t ${IMAGE_NAME}:${IMAGE_TAG} \
-  -f docker/php/Dockerfile .
-
-docker push ${IMAGE_NAME}:${IMAGE_TAG}
-echo $IMAGE_TAG
-```
-
-2. On the droplet: update IMAGE_TAG in .env.production, then redeploy
-```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml pull
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --force-recreate --remove-orphans
-docker compose --env-file .env.production -f docker-compose.prod.yml exec -T web php artisan migrate --force
-docker compose --env-file .env.production -f docker-compose.prod.yml exec -T web php artisan optimize
-```
-
-3. Quick verify (run on the droplet)
-```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=80 web
-curl -f http://localhost/health
-curl -f http://localhost/health/ready
-```
+Deployment and redeploy instructions live in [docs/deployment.md](docs/deployment.md).
 
 ### Linting / formatting
 

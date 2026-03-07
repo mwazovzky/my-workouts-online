@@ -6,23 +6,54 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 ## Key Patterns
 
-**Service + Interface DI** — Business logic in service classes (`WorkoutService`), each behind an interface. Bound in `AppServiceProvider`.
+**Service + Interface DI** — Business logic in service classes (`WorkoutService`), each behind an interface, bound in `AppServiceProvider`.
 
 **Query Builder** — `WorkoutBuilder` extends Eloquent Builder with composable scopes: `ownedBy()`, `withTemplate()`, `withActivitiesCount()`, `latestUpdated()`.
 
-**Polymorphic Activities** — `Activity` uses a morph relation (`workout_type` / `workout_id`) to belong to either `WorkoutTemplate` or `Workout`. Morph map registered in `AppServiceProvider`: `workout_template`, `workout`.
+**Polymorphic Activities** — `Activity` morphs to `WorkoutTemplate` or `Workout`. Morph map in `AppServiceProvider`: `workout_template`, `workout`, `exercise`, `category`, `equipment`, `program`.
 
 **Eloquent Resources** — All Inertia responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).
 
-**Form Requests** — Validation via dedicated request classes (`WorkoutStoreRequest`, `WorkoutSaveRequest`). Authorization handled separately via policies.
+**Form Requests** — Validation via dedicated request classes. Authorization via policies separately.
 
-**Inertia Deferred Props** — `ProgramShow` and `WorkoutShow` use deferred props for lazy-loaded relationship data.
+**Deferred Props** — `ProgramShow` defers `workouts` (templates list); `WorkoutShow` defers `activities` (with sets, exercise, equipment, categories).
 
-**Shared Auth** — `auth.user` shared to all Inertia pages via `HandleInertiaRequests` middleware + `AppServiceProvider`.
+**Shared Auth** — `auth.user` shared to all pages via `HandleInertiaRequests` + `AppServiceProvider`.
 
-**Internationalization** — `SetLocale` middleware sets locale from `User.locale` (or session for guests). `HasTranslations` trait on system models (Exercise, Equipment, Category, Program, WorkoutTemplate) provides polymorphic translations with auto-eager-loading. UI strings in `lang/*.json`, accessed via `useTranslation` composable (`t()` helper). `HandleInertiaRequests` shares `locale`, `availableLocales`, and `translations` to all pages.
+**Internationalization** — `SetLocale` middleware sets locale from `User.locale`. `HasTranslations` trait on system models provides polymorphic translations with auto-eager-loading. UI strings in `lang/*.json` are shared through Inertia and consumed via `useTranslation`.
 
-**Two-Axis Measurement Model** — Sets use generic `effort_value` (reps or seconds) + `difficulty_value` (weight/plates, nullable). The axes are independent: `Equipment.difficulty_unit` (enum: kilograms, pounds, plates, none) controls the load dimension; `Exercise.effort_type` (enum: repetitions, duration) controls the work dimension. A special "Bodyweight" equipment record (`difficulty_unit = none`) eliminates nullable exercise→equipment FKs. All 4×2 combinations are valid real exercises.
+**Two-Axis Measurement** — Sets use `effort_value` (reps/seconds) + `difficulty_value` (weight/plates, nullable). `Equipment.difficulty_unit` (kilograms, pounds, plates, none) controls load; `Exercise.effort_type` (repetitions, duration) controls work. "Bodyweight" equipment (`difficulty_unit = none`) eliminates nullable FKs. All 4x2 combinations valid.
+
+## Key Decisions
+
+**Programs and workouts are separate concepts** — Programs and templates are shared catalog data. User workouts are personal copies that can diverge from the original template.
+
+**Bulk workout save** — Workout editing happens client-side and is persisted as a full activities-and-sets payload. The service diffs, validates ownership, and applies changes transactionally.
+
+**Repeat breaks template linkage** — Repeated workouts set `workout_template_id` to `null` so the repeated workout is treated as a user-owned copy, not a live projection of the original template.
+
+**Translation strategy is backend-first** — System content is translated in the database, UI strings are translated from JSON files, and the frontend receives translated values rather than owning a separate i18n data source.
+
+## Internationalization
+
+### Locale Resolution
+
+- Supported locales: `en`, `ru`
+- User preference is stored in `users.locale`
+- `SetLocale` middleware applies the authenticated user's locale
+- `HandleInertiaRequests` shares `locale`, `availableLocales`, and JSON translations with every page
+
+### Translation Sources
+
+- System models use the polymorphic `translations` table
+- UI strings live in `lang/en.json` and `lang/ru.json`
+- Validation and auth messages use Laravel language files under `lang/{locale}`
+
+### Model Translation Rules
+
+- `Exercise`, `Category`, `Equipment`, `Program`, and `WorkoutTemplate` are translated through `HasTranslations`
+- User content is not re-translated after creation
+- Workouts copy the translated template name at creation time
 
 ## Directory Guide
 
@@ -32,11 +63,12 @@ Only non-obvious locations listed.
 | ----------------------------- | ---------------------------------------------------------------------------- |
 | `app/Services/{Domain}/`      | Service class + interface per domain                                         |
 | `app/QueryBuilders/`          | Custom Eloquent builders                                                     |
-| `app/Enums/`                  | `WorkoutStatus` (InProgress, Completed)                                      |
-| `app/Policies/`               | `WorkoutPolicy`                                                              |
-| `resources/js/Components/ui/` | Reusable UI primitives (badge, button, card, empty, input, skeleton, switch) |
+| `app/Enums/`                  | `WorkoutStatus` (InProgress, Completed), `EffortType` (Repetitions, Duration), `DifficultyUnit` (Kilograms, Pounds, Plates, None) |
+| `app/Policies/`               | `WorkoutPolicy` — owner + status checks for workout mutations                |
+| `app/Rules/`                  | Custom validation rules (`CompletedSetRequiresEffort`)                       |
+| `resources/js/Components/ui/` | Reusable UI primitives (alert, alert-dialog, avatar, badge, button, card, empty, input, separator, sheet, skeleton, sonner, switch, table, tooltip) |
 | `resources/js/composables/`   | `useEnrollment` — enrollment state + toggle; `useTranslation` — `t()` helper |
-| `resources/js/utils/`         | `date` (locale-aware formatting), `navigation` (route helpers)               |
+| `resources/js/utils/`         | `date` (locale-aware formatting), `format` (status display), `navigation` (route helpers) |
 | `lang/`                       | JSON translation files (`en.json`, `ru.json`) for UI strings                 |
 
 ## Data Model

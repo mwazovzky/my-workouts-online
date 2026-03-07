@@ -4,25 +4,23 @@ Workout tracking application — Laravel 12 / Inertia v2 / Vue 3 / Tailwind v3 /
 
 ## Contents
 
-| Document                              | What it covers                                               |
-| ------------------------------------- | ------------------------------------------------------------ |
-| [Product Overview](product.md)        | What the app does, domain glossary, features, core user flow |
-| [Pages & Routes](pages-and-routes.md) | Page inventory, mutation endpoints, access rules             |
-| [Architecture](architecture.md)       | Tech stack, key patterns, directory guide, data model        |
+| Document | What it covers |
+| --- | --- |
+| [Product Overview](product.md) | App summary, glossary, core user flow, feature index |
+| [Pages & Routes](pages-and-routes.md) | Complete page and endpoint inventory with owning feature |
+| [Architecture](architecture.md) | Technical patterns, key decisions, data model, i18n strategy |
+| [Code Style](code-style.md) | Project coding standards and conventions |
+| [Deployment](deployment.md) | Deployment and operational runbook |
+| [Documentation Standard](documentation-standard.md) | Rules for keeping docs concise, scoped, and non-duplicative |
 
 ## Features
 
-| Document                                                 | Scope                                           |
-| -------------------------------------------------------- | ----------------------------------------------- |
-| [Programs](features/programs.md)                         | Browse programs, view templates                 |
-| [Enrollment](features/enrollment.md)                     | Enroll in a program                             |
-| [Workout Logging](features/workout-logging.md)           | Start, complete, repeat, delete workouts        |
-| [Activity Tracking](features/activity-tracking.md)       | Edit sets, delete activities within a log       |
-| [Auth & Profile](features/auth-and-profile.md)           | Registration, login, password, profile, account |
-| [Internationalization](features/internationalization.md) | Multi-language support (EN, RU), translations   |
+| Document | Scope |
+| --- | --- |
+| [Programs](features/programs.md) | Browse programs, inspect templates, and enroll |
+| [Workout Logging](features/workout-logging.md) | Start workouts, edit activities and sets, save, complete, repeat, and delete |
+| [Auth & Profile](features/auth-and-profile.md) | Registration, authentication, password flows, profile, and locale selection |
 
 ## Related
 
 - [Local development & deployment](../README.md)
-- [Deployment guide (DigitalOcean)](../.ai/guidelines/deployment-guide.md)
-- [Code standards](../.ai/guidelines/code_style.md)

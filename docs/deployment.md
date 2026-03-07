@@ -6,13 +6,9 @@
 2. Push the image to Docker Hub.
 3. On the droplet, pull that image and run it with `docker compose`.
 
-## Repository layout rule (no duplication)
+## Repository Layout
 
-- Keep **one** `docker/` folder used by both local and production.
-- Do **not** maintain parallel config files like `default.local.conf` and `default.prod.conf`.
-- Use a **single** Nginx config template (example: `docker/nginx/default.conf.template`) and set the upstream via an env var:
-  - Local: `PHP_FPM_UPSTREAM=app:9000`
-  - Production: `PHP_FPM_UPSTREAM=127.0.0.1:9000`
+Single `docker/` folder for both local and production. One Nginx config template (`docker/nginx/default.conf.template`), upstream set via env var (`PHP_FPM_UPSTREAM=app:9000` local, `127.0.0.1:9000` production).
 
 ## 0. Build & push the image (until CI takes over)
 
@@ -95,13 +91,13 @@ Before deploying, create a DNS A record pointing your domain to the droplet's IP
 
 ## 6. Create the environment file on the droplet
 
-Create a `.env` file in the project root on the droplet. Docker compose auto-loads `.env` for variable interpolation, and `docker-compose.prod.yml` passes it to the web container via `env_file`.
+Create `.env` in the project root. Docker compose auto-loads it for variable interpolation and passes it to the web container via `env_file`.
 
 ```bash
 vim .env
 ```
 
-Set these values in `.env` (use `.env.production` from the repo as a reference):
+Required values (see `.env.production` in repo for full reference):
 
 - `APP_ENV=production`
 - `APP_DEBUG=false`
@@ -116,7 +112,6 @@ Set these values in `.env` (use `.env.production` from the repo as a reference):
 - `IMAGE_NAME=YOUR_DOCKERHUB_USER/PROJECT_NAME`
 - `IMAGE_TAG=prod-YYYYMMDDHHMM`
 
-See `.env.production` in the repo for all available settings (logging, cache, queue, mail, etc.).
 
 ## 7. Login to Docker Hub on the droplet
 
@@ -126,15 +121,13 @@ docker login
 
 ## 8. Start the production stack (HTTP first)
 
-The site works on HTTP immediately. SSL certificates are obtained in the next step.
-
 ```bash
 docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d --force-recreate
 docker compose -f docker-compose.prod.yml ps
 ```
 
-Note: docker compose auto-loads `.env` from the project directory for variable interpolation. Always run compose commands from the project root so it can find `.env`.
+Always run compose commands from the project root so it finds `.env`.
 
 ## 9. Run migrations and warm caches
 
@@ -145,9 +138,7 @@ docker compose -f docker-compose.prod.yml exec -T web php artisan optimize
 
 ## 10. Obtain SSL certificate (Let's Encrypt)
 
-With the site running on HTTP and DNS pointed to the droplet, obtain an SSL certificate.
-
-**Test first with staging** (recommended to avoid rate limits):
+**Test with staging first** (avoids rate limits):
 
 ```bash
 docker run --rm \
@@ -161,7 +152,7 @@ docker run --rm \
   --staging
 ```
 
-If the staging test succeeds, obtain the real certificate (remove `--staging` and add `--force-renewal` to replace the staging cert):
+If staging succeeds, obtain the real certificate:
 
 ```bash
 docker run --rm \
@@ -179,7 +170,7 @@ To include `www.your-domain.com`, add `-d www.your-domain.com` to the command.
 
 ## 11. Activate HTTPS
 
-Recreate the web container so `start.sh` detects the new certificates and switches to the SSL Nginx config:
+Recreate web container so `start.sh` detects certificates and switches to SSL config:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --force-recreate web
@@ -192,22 +183,20 @@ curl -I https://your-domain.com
 # Should return HTTP/2 200 with Strict-Transport-Security header
 ```
 
-Now update `.env` to use HTTPS and secure cookies:
+Update `.env`:
 
-```
+```ini
 APP_URL=https://your-domain.com
 SESSION_SECURE_COOKIE=true
 ```
 
-Recreate the web container again to pick up the `.env` changes:
+Recreate to pick up changes:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --force-recreate web
 ```
 
-## 12. Auto-renewal
-
-Certificates expire every 90 days. Set up a cron job on the **host** to renew and reload Nginx.
+## 12. Auto-renewal (every 90 days)
 
 Create the renewal script:
 
@@ -224,14 +213,14 @@ SCRIPT
 chmod +x ~/renew-certs.sh
 ```
 
-Add a cron job to run it every 12 hours:
+Cron job (every 12 hours):
 
 ```bash
 (echo '0 */12 * * * /home/deploy/renew-certs.sh') | crontab -
 crontab -l
 ```
 
-Verify the renewal process works:
+Verify:
 
 ```bash
 docker run --rm \
@@ -255,9 +244,7 @@ docker compose -f docker-compose.prod.yml logs -f --tail=200 web
 docker compose -f docker-compose.prod.yml logs -f --tail=200 mysql
 ```
 
-## 15. Optional cleanup (disk space)
-
-On small droplets, old images/build cache can fill the disk.
+## 15. Optional cleanup
 
 ```bash
 docker system df
@@ -284,20 +271,3 @@ docker system prune -a --volumes -f
 - **Mixed content warnings**: Ensure `APP_URL` in `.env` starts with `https://`.
 - **Browser shows "Not Secure"**: The staging certificate is not trusted by browsers. Obtain the real certificate (without `--staging`).
 
-## Suggested Improvements
-
-### Planned (not implemented yet)
-
-- Build/push the production image via GitHub Actions (CD) instead of running `docker buildx build` manually.
-
-### Recommended (incremental)
-
-- Nginx hardening: set `server_tokens off;` and add basic security headers in `docker/nginx/default.conf.template`.
-- Health checks: prefer an HTTP healthcheck for the `web` container (e.g. `curl -f http://localhost/health`) and a MySQL healthcheck (`mysqladmin ping`).
-- Production PHP tuning: set production opcache settings (e.g. `opcache.validate_timestamps=0`) in the production image.
-- Build performance: use BuildKit cache mounts for npm/composer to speed up repeat builds (useful now, even more in CI).
-- Image traceability: add OCI labels (source repo + version/tag) to the production image.
-
-### Notes
-
-- Avoid switching the production `web` container to a non-root user without reworking how nginx binds to port 80 (or using capabilities / non-privileged ports).

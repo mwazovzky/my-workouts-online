@@ -1,39 +1,39 @@
 # Programs
 
-Users browse a curated catalog of workout programs and view their workout templates.
+Browse workout programs, inspect their templates, and enroll.
 
 ## Current Behavior
 
-1. User opens **ProgramIndex** — sees all programs with name, description, and enrollment badge
-2. User clicks a program → **ProgramShow** — sees program details and workout templates grouped by weekday (deferred load)
-3. User clicks a template → **WorkoutTemplateShow** — sees template name, description, activities with exercises and sets
+1. User opens **ProgramIndex** and sees all programs with enrollment state for the current user.
+2. User opens **ProgramShow** and sees the selected program plus its workout templates grouped by weekday.
+3. User clicks **Enroll** and is enrolled without leaving the page.
+4. User opens **WorkoutTemplateShow** to inspect a single template with its activities and sets.
 
 ## Business Rules
 
-- Programs are global catalog data — all authenticated users see the same list
-- Program list includes an `is_enrolled` flag per user (derived from `users_count`)
-- Templates are linked to programs via M:N pivot with a `weekday` attribute
-- Templates, activities, and sets in templates are read-only for users
+- Programs are global catalog data. All authenticated and verified users see the same list.
+- Enrollment is idempotent. Repeating the enroll action has no effect because the relation is synced without duplicates.
+- Program responses expose `is_enrolled` per user rather than the full enrolled-users list.
+- Templates are attached to programs through a many-to-many relation with a `weekday` pivot attribute.
+- Templates, template activities, and template sets are read-only for end users.
+- Users can start workouts from templates regardless of enrollment status. Enrollment currently affects only the visible state in the program UI.
 
 ## Known Limitations
 
-- No search, filter, or sort on program list
-- No program categories or difficulty levels
-- No pagination — all programs load at once
-- Templates show on ProgramShow but without exercise detail (activities loaded without equipment/categories)
-- No program images or media
-- No program CRUD — all data is seeded
-- Dashboard is empty — no enrolled-programs summary or "next workout" suggestion
+- No unenroll action.
+- No search, filter, or sort on the program list.
+- No pagination for programs.
+- No program categories, media, or difficulty metadata.
+- No dashboard summary for enrolled programs or next suggested workout.
+- No admin or user-facing CRUD for programs or templates.
 
-## Pages & Routes
+## Surface Area
 
-| Page | Route | Name |
-|---|---|---|
-| ProgramIndex | `GET /programs` | `programs.index` |
-| ProgramShow | `GET /programs/{id}` | `programs.show` |
-| WorkoutTemplateShow | `GET /workout-templates/{id}` | `workout.templates.show` |
+- Pages: `ProgramIndex`, `ProgramShow`, `WorkoutTemplateShow`
+- Route names: `programs.index`, `programs.show`, `programs.enroll`, `workout.templates.show`
+- Full reference: [Pages & Routes](../pages-and-routes.md)
 
 ## Related
 
-- [Enrollment](enrollment.md) — enrolling in a program
-- [Workout Logging](workout-logging.md) — starting a workout from a template
+- [Workout Logging](workout-logging.md)
+- [Product Overview](../product.md)
