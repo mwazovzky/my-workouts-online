@@ -15,7 +15,7 @@ const page = usePage();
 const availableLocales = computed(() => page.props.availableLocales ?? {});
 const currentLocale = computed(() => page.props.locale ?? 'en');
 const currentLocaleLabel = computed(
-  () => availableLocales.value[currentLocale.value] ?? currentLocale.value.toUpperCase(),
+  () => availableLocales.value[currentLocale.value] ?? currentLocale.value.toUpperCase()
 );
 
 function updateLocale(locale) {
@@ -30,7 +30,7 @@ function updateLocale(locale) {
       preserveScroll: true,
       preserveState: true,
       replace: true,
-    },
+    }
   );
 }
 </script>
@@ -64,9 +64,7 @@ function updateLocale(locale) {
         :key="code"
         type="button"
         class="flex w-full items-center justify-between px-4 py-2 text-left text-sm leading-5 text-popover-foreground transition duration-150 ease-in-out hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
-        :class="[
-          code === currentLocale ? 'bg-accent text-accent-foreground' : '',
-        ]"
+        :class="[code === currentLocale ? 'bg-accent text-accent-foreground' : '']"
         @click="updateLocale(code)"
       >
         <span>{{ label }}</span>

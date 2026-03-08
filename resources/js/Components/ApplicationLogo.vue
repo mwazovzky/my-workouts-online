@@ -3,7 +3,7 @@ defineProps({
   variant: {
     type: String,
     default: 'dumbbell',
-    validator: (value) => ['monogram', 'barbell', 'progress', 'dumbbell'].includes(value),
+    validator: value => ['monogram', 'barbell', 'progress', 'dumbbell'].includes(value),
   },
 });
 </script>
@@ -36,11 +36,15 @@ defineProps({
     aria-hidden="true"
   >
     <rect x="14" y="14" width="100" height="100" rx="28" fill="currentColor" opacity="0.14" />
+    <path d="M31 36h13l11 40 9-25h9l9 25 11-40h13l-18 56H79l-11-27-11 27H49z" fill="currentColor" />
     <path
-      d="M31 36h13l11 40 9-25h9l9 25 11-40h13l-18 56H79l-11-27-11 27H49z"
-      fill="currentColor"
+      d="M42 24h44"
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-width="6"
+      opacity="0.4"
     />
-    <path d="M42 24h44" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="6" opacity="0.4" />
   </svg>
 
   <svg
@@ -49,7 +53,15 @@ defineProps({
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
   >
-    <circle cx="64" cy="64" r="48" fill="none" stroke="currentColor" stroke-width="12" opacity="0.16" />
+    <circle
+      cx="64"
+      cy="64"
+      r="48"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="12"
+      opacity="0.16"
+    />
     <path
       d="M64 16a48 48 0 0 1 45.78 34.32"
       fill="none"
@@ -57,10 +69,7 @@ defineProps({
       stroke-linecap="round"
       stroke-width="12"
     />
-    <path
-      d="M38 84V43h10l16 22 16-22h10v41H79V60L64 80 49 60v24z"
-      fill="currentColor"
-    />
+    <path d="M38 84V43h10l16 22 16-22h10v41H79V60L64 80 49 60v24z" fill="currentColor" />
     <circle cx="103" cy="51" r="6" fill="currentColor" />
   </svg>
 
@@ -77,9 +86,6 @@ defineProps({
     <rect x="42" y="56" width="7" height="16" rx="3" fill="currentColor" opacity="0.82" />
     <rect x="79" y="56" width="7" height="16" rx="3" fill="currentColor" opacity="0.82" />
     <rect x="88" y="52" width="8" height="24" rx="3" fill="currentColor" />
-    <path
-      d="M40 84l8-33h6l10 19 10-19h6l8 33h-9l-4-17-8 15h-6l-8-15-4 17z"
-      fill="currentColor"
-    />
+    <path d="M40 84l8-33h6l10 19 10-19h6l8 33h-9l-4-17-8 15h-6l-8-15-4 17z" fill="currentColor" />
   </svg>
 </template>

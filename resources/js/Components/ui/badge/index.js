@@ -15,8 +15,7 @@ export const badgeVariants = cva(
           'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-1 dark:ring-emerald-400/20',
         warning:
           'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-1 dark:ring-amber-400/20',
-        info:
-          'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-1 dark:ring-sky-400/20',
+        info: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-1 dark:ring-sky-400/20',
       },
     },
     defaultVariants: {
