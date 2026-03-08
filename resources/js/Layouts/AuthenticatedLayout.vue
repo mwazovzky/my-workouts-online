@@ -26,7 +26,7 @@ const { t } = useTranslation();
               <!-- Logo -->
               <div class="flex shrink-0 items-center">
                 <Link :href="route('dashboard')">
-                  <ApplicationLogo class="block h-9 w-auto fill-current text-foreground" />
+                  <ApplicationLogo class="block h-11 w-11 fill-current text-foreground" />
                 </Link>
               </div>
 

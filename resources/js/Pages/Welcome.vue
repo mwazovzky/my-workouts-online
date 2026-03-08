@@ -53,7 +53,7 @@ const appHighlights = [
         class="relative flex items-center justify-between rounded-full border border-border/80 bg-background/80 px-5 py-3 shadow-sm backdrop-blur"
       >
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-2xl bg-primary/10 p-2 text-primary">
+          <div class="h-12 w-12 rounded-2xl bg-primary/10 p-1.5 text-primary">
             <ApplicationLogo class="h-full w-full fill-current" />
           </div>
           <div>
@@ -151,7 +151,7 @@ const appHighlights = [
                     {{ t('Built for a simple training flow') }}
                   </h2>
                 </div>
-                <div class="h-12 w-12 rounded-2xl bg-background/10 p-2 text-primary">
+                <div class="h-14 w-14 rounded-2xl bg-background/10 p-1.5 text-primary">
                   <ApplicationLogo class="h-full w-full fill-current" />
                 </div>
               </div>
