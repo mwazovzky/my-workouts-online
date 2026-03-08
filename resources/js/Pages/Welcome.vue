@@ -182,7 +182,9 @@ const appHighlights = [
                       {{ t('Monday') }}
                     </div>
                     <div class="mt-2 text-sm font-semibold">{{ t('Upper Body') }}</div>
-                    <div class="mt-1 text-sm text-muted-foreground">{{ t('Strength program') }}</div>
+                    <div class="mt-1 text-sm text-muted-foreground">
+                      {{ t('Strength program') }}
+                    </div>
                   </div>
                   <div
                     class="rounded-2xl border border-background/10 bg-transparent px-4 py-3 text-background"
@@ -191,7 +193,9 @@ const appHighlights = [
                       {{ t('Wednesday') }}
                     </div>
                     <div class="mt-2 text-sm font-semibold">{{ t('Legs & Conditioning') }}</div>
-                    <div class="mt-1 text-sm text-background/60">{{ t('Progress stays visible') }}</div>
+                    <div class="mt-1 text-sm text-background/60">
+                      {{ t('Progress stays visible') }}
+                    </div>
                   </div>
                 </div>
               </div>
