@@ -3,7 +3,8 @@
 ![tests](https://github.com/mwazovzky/my-workouts-online/actions/workflows/tests.yml/badge.svg?branch=main)
 ![code style](https://github.com/mwazovzky/my-workouts-online/actions/workflows/code-style.yml/badge.svg?branch=main)
 ![lint](https://github.com/mwazovzky/my-workouts-online/actions/workflows/lint.yml/badge.svg?branch=main)
-[![codecov](https://codecov.io/gh/mwazovzky/my-workouts-online/graph/badge.svg)](https://codecov.io/gh/mwazovzky/my-workouts-online)
+[![backend coverage](https://codecov.io/github/mwazovzky/my-workouts-online/graph/badge.svg?flag=backend)](https://app.codecov.io/github/mwazovzky/my-workouts-online)
+[![frontend coverage](https://codecov.io/github/mwazovzky/my-workouts-online/graph/badge.svg?flag=frontend)](https://app.codecov.io/github/mwazovzky/my-workouts-online)
 
 > Product docs, features & architecture: [docs/](docs/README.md)
 
