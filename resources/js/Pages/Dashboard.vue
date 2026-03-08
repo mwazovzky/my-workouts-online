@@ -69,7 +69,7 @@ function resolveWorkoutName(workout) {
                 {{ t('Continue where you left off before starting something new.') }}
               </p>
               <p class="mt-2 text-sm text-muted-foreground">
-                {{ t('Last updated') }}: {{ formatDate(inProgressWorkout.created_at) }}
+                {{ t('Last updated') }}: {{ formatDate(inProgressWorkout.updated_at) }}
               </p>
             </div>
 

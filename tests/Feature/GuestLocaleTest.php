@@ -66,7 +66,7 @@ class GuestLocaleTest extends TestCase
             fn ($page) => $page
                 ->component('Welcome')
                 ->where('locale', 'ru')
-                ->has('availableLocales')
+                ->where('availableLocales', config('app.available_locales'))
                 ->has('translations')
         );
     }

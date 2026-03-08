@@ -49,6 +49,7 @@ class DashboardPageTest extends TestCase
         try {
             $user = User::factory()->create();
             $otherUser = User::factory()->create();
+            $lastUpdatedAt = CarbonImmutable::parse('2026-03-08 08:45:00');
 
             $program = Program::factory()->create();
             $user->programs()->attach($program);
@@ -63,6 +64,8 @@ class DashboardPageTest extends TestCase
                 'user_id' => $user->id,
                 'workout_template_id' => $mondayWorkout->id,
                 'status' => WorkoutStatus::InProgress,
+                'created_at' => CarbonImmutable::parse('2026-03-08 08:00:00'),
+                'updated_at' => $lastUpdatedAt,
             ]);
 
             Workout::factory()->create([
@@ -95,6 +98,7 @@ class DashboardPageTest extends TestCase
                 ->where('upcomingSchedule.1.scheduled_for', '2026-03-13')
                 ->where('inProgressWorkout.id', $inProgressWorkout->id)
                 ->where('inProgressWorkout.status', WorkoutStatus::InProgress->value)
+                ->where('inProgressWorkout.updated_at', $lastUpdatedAt->toJSON())
                 ->has('recentWorkouts', 2)
             );
         } finally {

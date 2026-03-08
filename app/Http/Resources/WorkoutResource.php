@@ -18,6 +18,7 @@ class WorkoutResource extends JsonResource
             'status' => $this->status->value,
             'status_label' => __($this->status->value),
             'created_at' => $this->created_at ?? null,
+            'updated_at' => $this->updated_at ?? null,
             'activities_count' => $this->activities_count ?? null,
             'workout_template' => $workoutTemplate ? (new WorkoutTemplateResource($workoutTemplate))->resolve() : null,
             'activities' => ActivityResource::collection($activities)->resolve(),

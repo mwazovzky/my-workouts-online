@@ -36,6 +36,7 @@ class WorkoutResourceTest extends TestCase
         $this->assertEquals($user->id, $array['user_id']);
         $this->assertEquals('in_progress', $array['status']);
         $this->assertNotNull($array['created_at']);
+        $this->assertNotNull($array['updated_at']);
     }
 
     #[Test]
@@ -131,7 +132,7 @@ class WorkoutResourceTest extends TestCase
         $resource = new WorkoutResource($workout);
         $array = $resource->toArray(request());
 
-        $expectedKeys = ['id', 'user_id', 'name', 'status', 'status_label', 'created_at', 'activities_count', 'workout_template', 'activities'];
+        $expectedKeys = ['id', 'user_id', 'name', 'status', 'status_label', 'created_at', 'updated_at', 'activities_count', 'workout_template', 'activities'];
 
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $array);

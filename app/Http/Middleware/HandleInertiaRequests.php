@@ -39,10 +39,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'locale' => $locale,
             'themePreference' => $request->user()?->theme_preference ?? 'system',
-            'availableLocales' => [
-                'en' => 'English',
-                'ru' => 'Русский',
-            ],
+            'availableLocales' => config('app.available_locales', []),
             'availableThemePreferences' => [
                 'light' => 'Light',
                 'dark' => 'Dark',

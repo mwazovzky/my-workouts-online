@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProfileLocaleRequest extends FormRequest
 {
@@ -14,7 +15,7 @@ class ProfileLocaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'locale' => ['required', 'string', 'in:en,ru'],
+            'locale' => ['required', 'string', Rule::in(array_keys(config('app.available_locales', [])))],
         ];
     }
 

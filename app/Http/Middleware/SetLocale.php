@@ -12,7 +12,12 @@ class SetLocale
     /**
      * @var list<string>
      */
-    private array $availableLocales = ['en', 'ru'];
+    private array $availableLocales;
+
+    public function __construct()
+    {
+        $this->availableLocales = array_keys(config('app.available_locales', []));
+    }
 
     /**
      * Set the application locale based on the authenticated user's preference.
