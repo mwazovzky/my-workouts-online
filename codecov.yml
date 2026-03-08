@@ -1,0 +1,39 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+    patch:
+      default:
+        target: auto
+        threshold: 0.5%
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 0.5%
+  individual_flags:
+    - name: backend
+      paths:
+        - app/**
+        - bootstrap/**
+        - config/**
+        - database/**
+        - routes/**
+    - name: frontend
+      paths:
+        - resources/js/**
+
+comment:
+  layout: "header, diff, flags"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true

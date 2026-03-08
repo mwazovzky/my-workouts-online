@@ -27,3 +27,8 @@ GEMINI.md
 .github/copilot-instructions.md
 /.junie
 
+# Coverage artifacts
+/coverage
+coverage.xml
+*.lcov
+

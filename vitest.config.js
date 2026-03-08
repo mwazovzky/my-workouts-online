@@ -12,5 +12,18 @@ export default defineConfig({
     test: {
         environment: 'happy-dom',
         include: ['resources/js/**/*.test.js'],
+        coverage: {
+            provider: 'v8',
+            reportsDirectory: './coverage/frontend',
+            reporter: ['text', 'lcov', 'json-summary'],
+            all: true,
+            include: ['resources/js/**/*.{js,vue}'],
+            exclude: [
+                'resources/js/**/*.test.js',
+                'resources/js/app.js',
+                'resources/js/bootstrap.js',
+                'resources/js/Pages/**/*.vue',
+            ],
+        },
     },
 });
