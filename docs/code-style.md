@@ -74,6 +74,21 @@
 - Database transaction rollback tests **should** be added for complex service operations.
 - Test naming and structure **must** be consistent.
 
+## Commit Messages
+
+- Use conventional commit-style subjects: `feat:`, `fix:`, `docs:`, `test:`, `chore:`.
+- Keep the subject short, specific, and written in the imperative mood.
+- Prefer one logical change per commit when practical.
+- Match the scope of the commit message to the actual diff; do not label mixed changes as `docs:` or `test:` if the commit materially changes application behavior.
+
+Examples from this repository:
+
+- `feat: add HTTPS/SSL support with Let's Encrypt certbot`
+- `fix: preserve pagination on workout delete`
+- `docs: add product planning workflow and epic story specs`
+- `test: add frontend testing setup and CI checks`
+- `chore: rename project`
+
 ## Code Quality
 
 - `vendor/bin/pint` **must** be run to ensure consistent code style.
