@@ -63,6 +63,36 @@ git push origin v1.4.0
 
 Release tags should be immutable. If you need a new production build, create a new version tag instead of moving an existing one.
 
+## Release runbook
+
+Pre-release:
+
+- Confirm the target commit is already on `main`.
+- Confirm the required GitHub workflows for that commit are green.
+- Choose the next immutable version tag.
+
+Release commands:
+
+```bash
+git checkout main
+git pull --ff-only origin main
+git tag -a v1.4.0 -m "Release v1.4.0"
+git push origin v1.4.0
+```
+
+Release verification:
+
+- Confirm the `deploy` workflow starts from the new tag in GitHub Actions.
+- Confirm the workflow completes successfully.
+- Confirm the production home page and health endpoints respond successfully.
+- Confirm the droplet `.env` contains the expected `IMAGE_TAG`.
+
+Rollback:
+
+- Run the `deploy` workflow manually.
+- Set `image_tag` to the last known-good release tag, for example `v1.3.2`.
+- Leave `release_ref` blank unless the image tag does not match the Git ref you need.
+
 ## 1. Create the droplet
 
 - Create an Ubuntu LTS droplet.
