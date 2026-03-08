@@ -1,5 +1,6 @@
 <script setup>
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import GuestLocaleSwitcher from '@/Components/GuestLocaleSwitcher.vue';
 import { useTranslation } from '@/composables/useTranslation';
 import { Head, Link } from '@inertiajs/vue3';
 
@@ -65,6 +66,7 @@ const appHighlights = [
         </div>
 
         <nav v-if="canLogin" class="flex items-center gap-2">
+          <GuestLocaleSwitcher />
           <Link
             :href="route('login')"
             class="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"

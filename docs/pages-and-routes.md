@@ -42,6 +42,7 @@ Lookup reference for the app surface area. Detailed behavior belongs in feature 
 | Update password             | `PUT`    | `/password`                        | `password.update`     | Auth                      | Auth & Profile  |
 | Logout                      | `POST`   | `/logout`                          | `logout`              | Auth                      | Auth & Profile  |
 | Update profile              | `PATCH`  | `/profile`                         | `profile.update`      | Auth                      | Auth & Profile  |
+| Update guest locale         | `PATCH`  | `/locale`                          | `locale.update`       | Public                    | Landing         |
 | Update language             | `PATCH`  | `/profile/locale`                  | `profile.locale`      | Auth                      | Auth & Profile  |
 | Update theme                | `PATCH`  | `/profile/theme`                   | `profile.theme`       | Auth                      | Auth & Profile  |
 | Delete account              | `DELETE` | `/profile`                         | `profile.destroy`     | Auth                      | Auth & Profile  |

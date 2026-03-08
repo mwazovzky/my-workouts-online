@@ -6,7 +6,6 @@ use App\Models\Exercise;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\App;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -219,12 +218,12 @@ class ValidationLocaleTest extends TestCase
     #[Test]
     public function login_failed_message_uses_app_locale(): void
     {
-        App::setLocale('ru');
-
-        $response = $this->post('/login', [
-            'email' => 'nonexistent@example.com',
-            'password' => 'wrong-password',
-        ]);
+        $response = $this
+            ->withSession(['locale' => 'ru'])
+            ->post('/login', [
+                'email' => 'nonexistent@example.com',
+                'password' => 'wrong-password',
+            ]);
 
         $response->assertSessionHasErrors(['email']);
 
