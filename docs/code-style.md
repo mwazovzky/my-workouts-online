@@ -66,6 +66,7 @@
 
 ## Testing
 
+- Follow [Testing](testing.md) for suite structure, coverage rules, and common patterns.
 - Always use the `#[Test]` attribute for PHPUnit test methods.
 - Always use the `#[DataProvider]` attribute for PHPUnit data provider methods.
 - Tests **must** be organized into Feature (full HTTP stack) and Unit (isolated) tests.

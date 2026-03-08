@@ -30,6 +30,19 @@ export default [
         },
     },
     {
+        files: ['resources/js/**/*.test.js'],
+        languageOptions: {
+            globals: {
+                describe: 'readonly',
+                it: 'readonly',
+                expect: 'readonly',
+                vi: 'readonly',
+                beforeEach: 'readonly',
+                afterEach: 'readonly',
+            },
+        },
+    },
+    {
         ignores: [
             'node_modules/**',
             'vendor/**',

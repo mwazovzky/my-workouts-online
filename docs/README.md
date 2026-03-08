@@ -10,6 +10,7 @@ Workout tracking application — Laravel 12 / Inertia v2 / Vue 3 / Tailwind v3 /
 | [Pages & Routes](pages-and-routes.md) | Complete page and endpoint inventory with owning feature |
 | [Architecture](architecture.md) | Technical patterns, key decisions, data model, i18n strategy |
 | [Code Style](code-style.md) | Project coding standards and conventions |
+| [Testing](testing.md) | Test suite structure, required coverage, and common test patterns |
 | [Deployment](deployment.md) | Deployment and operational runbook |
 | [Documentation Standard](documentation-standard.md) | Rules for keeping docs concise, scoped, and non-duplicative |
 

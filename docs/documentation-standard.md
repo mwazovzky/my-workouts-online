@@ -25,6 +25,7 @@ This is a solo-maintained project. The goal is not maximum coverage. The goal is
 | Architecture | Cross-cutting technical patterns, data model, key decisions | `docs/architecture.md` |
 | Runbook | Operational procedure for deployment and recovery | `docs/deployment.md` |
 | Code Style | Project coding standards and conventions | `docs/code-style.md` |
+| Testing Guide | Test suite structure, coverage rules, and project testing patterns | `docs/testing.md` |
 | LLM Context | Condensed project summary for AI tools | `CLAUDE.md` |
 
 ## Single-Owner Rules
@@ -38,6 +39,7 @@ Every piece of information has one canonical location. Other docs may link to it
 | Full page and endpoint list | `docs/pages-and-routes.md` | Feature docs |
 | Technical patterns and data model | `docs/architecture.md` | Feature docs, `docs/product.md` |
 | Deployment steps and checks | `docs/deployment.md` | `README.md` |
+| Test suite structure and testing patterns | `docs/testing.md` | `docs/code-style.md`, feature docs |
 | Local setup commands | `README.md` | Feature docs |
 
 ## Product Doc Rules
@@ -130,6 +132,7 @@ Update docs when:
 - A page or route is added, removed, or renamed — update `docs/pages-and-routes.md`
 - A new major capability appears — update `docs/product.md`
 - A cross-cutting pattern changes — update `docs/architecture.md`
+- Testing conventions or required coverage change — update `docs/testing.md`
 - Deployment or release steps change — update `docs/deployment.md`
 - Any of the above changes project summary or commands — update `CLAUDE.md` or `README.md` if needed
 
