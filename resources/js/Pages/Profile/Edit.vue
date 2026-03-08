@@ -4,6 +4,7 @@ import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdateLanguageForm from './Partials/UpdateLanguageForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
+import UpdateThemeForm from './Partials/UpdateThemeForm.vue';
 import { useTranslation } from '@/composables/useTranslation.js';
 import { Head } from '@inertiajs/vue3';
 
@@ -41,6 +42,10 @@ defineProps({
 
         <div class="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-8">
           <UpdateLanguageForm class="max-w-xl" />
+        </div>
+
+        <div class="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-8">
+          <UpdateThemeForm class="max-w-xl" />
         </div>
 
         <div class="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-8">

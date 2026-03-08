@@ -4,6 +4,11 @@
   "Saved.": "Сохранено.",
   "Language": "Язык",
   "Select your preferred language.": "Выберите предпочитаемый язык.",
+  "Theme": "Тема",
+  "Choose how the app should handle light and dark appearance.": "Выберите, как приложение должно переключать светлую и тёмную тему.",
+  "Light": "Светлая",
+  "Dark": "Тёмная",
+  "Match device": "Как на устройстве",
 
   "A workout template is required to start a workout.": "Для начала тренировки необходимо выбрать шаблон.",
   "The selected workout template could not be found.": "Выбранный шаблон тренировки не найден.",

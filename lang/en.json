@@ -4,6 +4,11 @@
   "Saved.": "Saved.",
   "Language": "Language",
   "Select your preferred language.": "Select your preferred language.",
+  "Theme": "Theme",
+  "Choose how the app should handle light and dark appearance.": "Choose how the app should handle light and dark appearance.",
+  "Light": "Light",
+  "Dark": "Dark",
+  "Match device": "Match device",
 
   "A workout template is required to start a workout.": "A workout template is required to start a workout.",
   "The selected workout template could not be found.": "The selected workout template could not be found.",

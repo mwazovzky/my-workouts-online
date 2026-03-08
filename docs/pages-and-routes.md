@@ -20,7 +20,7 @@ Lookup reference for the app surface area. Detailed behavior belongs in feature 
 | `Reset Password`      | `/reset-password/{token}` | Guest           | Auth & Profile  | Enter a new password                                                     |
 | `Verify Email`        | `/verify-email`           | Auth            | Auth & Profile  | Prompt for email verification                                            |
 | `Confirm Password`    | `/confirm-password`       | Auth            | Auth & Profile  | Confirm password for sensitive actions                                   |
-| `Profile/Edit`        | `/profile`                | Auth            | Auth & Profile  | Update profile, password, locale, or delete account                      |
+| `Profile/Edit`        | `/profile`                | Auth            | Auth & Profile  | Update profile, password, locale, theme, or delete account               |
 
 ## Endpoints
 
@@ -43,6 +43,7 @@ Lookup reference for the app surface area. Detailed behavior belongs in feature 
 | Logout                      | `POST`   | `/logout`                          | `logout`              | Auth                      | Auth & Profile  |
 | Update profile              | `PATCH`  | `/profile`                         | `profile.update`      | Auth                      | Auth & Profile  |
 | Update language             | `PATCH`  | `/profile/locale`                  | `profile.locale`      | Auth                      | Auth & Profile  |
+| Update theme                | `PATCH`  | `/profile/theme`                   | `profile.theme`       | Auth                      | Auth & Profile  |
 | Delete account              | `DELETE` | `/profile`                         | `profile.destroy`     | Auth                      | Auth & Profile  |
 | Health check                | `GET`    | `/health`                          | `health`              | Public                    | Operations      |
 | Readiness check             | `GET`    | `/health/ready`                    | `health.ready`        | Public                    | Operations      |

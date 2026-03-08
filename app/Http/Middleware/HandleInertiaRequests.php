@@ -38,9 +38,15 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'locale' => $locale,
+            'themePreference' => $request->user()?->theme_preference ?? 'system',
             'availableLocales' => [
                 'en' => 'English',
                 'ru' => 'Русский',
+            ],
+            'availableThemePreferences' => [
+                'light' => 'Light',
+                'dark' => 'Dark',
+                'system' => 'Match device',
             ],
             'translations' => fn () => $this->loadTranslations($locale),
         ];
