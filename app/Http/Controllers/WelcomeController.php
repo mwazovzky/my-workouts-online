@@ -13,7 +13,7 @@ class WelcomeController extends Controller
     public function index(): Response|RedirectResponse
     {
         if (Auth::check()) {
-            return to_route('dashboard');
+            return redirect(route('dashboard', absolute: false));
         }
 
         return Inertia::render('Welcome', [
