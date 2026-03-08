@@ -8,15 +8,20 @@ import { useForm, usePage } from '@inertiajs/vue3';
 const { t } = useTranslation();
 const page = usePage();
 
-const availableLocales = page.props.availableLocales;
+const availableThemePreferences = page.props.availableThemePreferences;
 
 const form = useForm({
-  locale: page.props.locale,
+  theme_preference: page.props.themePreference,
 });
 
 function submit() {
-  form.patch(route('profile.locale'), {
+  form.patch(route('profile.theme'), {
     preserveScroll: true,
+    onSuccess: () => {
+      if (window.applyThemePreference) {
+        window.applyThemePreference(form.theme_preference);
+      }
+    },
   });
 }
 </script>
@@ -24,28 +29,28 @@ function submit() {
 <template>
   <section>
     <header>
-      <h2 class="text-lg font-medium text-foreground">{{ t('Language') }}</h2>
+      <h2 class="text-lg font-medium text-foreground">{{ t('Theme') }}</h2>
 
       <p class="mt-1 text-sm text-muted-foreground">
-        {{ t('Select your preferred language.') }}
+        {{ t('Choose how the app should handle light and dark appearance.') }}
       </p>
     </header>
 
     <form class="mt-6 space-y-6" @submit.prevent="submit">
       <div>
-        <InputLabel for="locale" :value="t('Language')" />
+        <InputLabel for="theme_preference" :value="t('Theme')" />
 
         <select
-          id="locale"
-          v-model="form.locale"
+          id="theme_preference"
+          v-model="form.theme_preference"
           class="mt-1 block w-full rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary"
         >
-          <option v-for="(label, code) in availableLocales" :key="code" :value="code">
-            {{ label }}
+          <option v-for="(label, code) in availableThemePreferences" :key="code" :value="code">
+            {{ t(label) }}
           </option>
         </select>
 
-        <InputError class="mt-2" :message="form.errors.locale" />
+        <InputError class="mt-2" :message="form.errors.theme_preference" />
       </div>
 
       <div class="flex items-center gap-4">

@@ -26,7 +26,7 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
   <GuestLayout>
     <Head :title="t('Email Verification')" />
 
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    <div class="mb-4 text-sm text-muted-foreground">
       {{
         t(
           "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another."
@@ -36,7 +36,7 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
 
     <div
       v-if="verificationLinkSent"
-      class="mb-4 text-sm font-medium text-green-600 dark:text-green-400"
+      class="mb-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300"
     >
       {{
         t(
@@ -55,7 +55,7 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
           :href="route('logout')"
           method="post"
           as="button"
-          class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+          class="rounded-md text-sm text-primary underline underline-offset-4 hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
           >{{ t('Log Out') }}</Link
         >
       </div>

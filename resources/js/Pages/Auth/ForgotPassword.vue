@@ -28,7 +28,7 @@ const submit = () => {
   <GuestLayout>
     <Head :title="t('Forgot Password')" />
 
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    <div class="mb-4 text-sm text-muted-foreground">
       {{
         t(
           'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.'
@@ -36,7 +36,10 @@ const submit = () => {
       }}
     </div>
 
-    <div v-if="status" class="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
+    <div
+      v-if="status"
+      class="mb-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300"
+    >
       {{ status }}
     </div>
 

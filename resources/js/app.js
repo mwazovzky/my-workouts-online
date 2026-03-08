@@ -7,6 +7,15 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+darkModeQuery.addEventListener('change', () => {
+  const themePreference = document.documentElement.dataset.themePreference ?? 'system';
+
+  if (themePreference === 'system' && window.applyThemePreference) {
+    window.applyThemePreference(themePreference);
+  }
+});
 
 createInertiaApp({
   title: title => `${title} - ${appName}`,

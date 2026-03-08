@@ -1,5 +1,6 @@
 <script setup>
 import { reactiveOmit } from '@vueuse/core';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -34,11 +35,35 @@ const props = defineProps({
   containerAriaLabel: { type: String, required: false },
 });
 const delegatedProps = reactiveOmit(props, 'toastOptions');
+const resolvedTheme = ref('light');
+
+const themeValue = computed(() => props.theme ?? resolvedTheme.value);
+
+function syncResolvedTheme() {
+  resolvedTheme.value = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+}
+
+let observer;
+
+onMounted(() => {
+  syncResolvedTheme();
+
+  observer = new window.MutationObserver(syncResolvedTheme);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+});
+
+onBeforeUnmount(() => {
+  observer?.disconnect();
+});
 </script>
 
 <template>
   <Sonner
     class="toaster group"
+    :theme="themeValue"
     :toast-options="{
       classes: {
         toast:

@@ -28,11 +28,11 @@ const form = useForm({
 <template>
   <section>
     <header>
-      <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+      <h2 class="text-lg font-medium text-foreground">
         {{ t('Profile Information') }}
       </h2>
 
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      <p class="mt-1 text-sm text-muted-foreground">
         {{ t("Update your account's profile information and email address.") }}
       </p>
     </header>
@@ -70,13 +70,13 @@ const form = useForm({
       </div>
 
       <div v-if="mustVerifyEmail && user.email_verified_at === null">
-        <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
+        <p class="mt-2 text-sm text-foreground">
           {{ t('Your email address is unverified.') }}
           <Link
             :href="route('verification.send')"
             method="post"
             as="button"
-            class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+            class="rounded-md text-sm text-primary underline underline-offset-4 hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
           >
             {{ t('Click here to re-send the verification email.') }}
           </Link>
@@ -84,7 +84,7 @@ const form = useForm({
 
         <div
           v-show="status === 'verification-link-sent'"
-          class="mt-2 text-sm font-medium text-green-600 dark:text-green-400"
+          class="mt-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300"
         >
           {{ t('A new verification link has been sent to your email address.') }}
         </div>
@@ -99,7 +99,7 @@ const form = useForm({
           leave-active-class="transition ease-in-out"
           leave-to-class="opacity-0"
         >
-          <p v-if="form.recentlySuccessful" class="text-sm text-gray-600 dark:text-gray-400">
+          <p v-if="form.recentlySuccessful" class="text-sm text-muted-foreground">
             {{ t('Saved.') }}
           </p>
         </Transition>

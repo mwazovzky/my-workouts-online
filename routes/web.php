@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramPageController;
 use App\Http\Controllers\WelcomeController;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index']);
+Route::patch('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -67,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
+    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class ProfileLocaleRequest extends FormRequest
+class ProfileThemeRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -15,7 +14,7 @@ class ProfileLocaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'locale' => ['required', 'string', Rule::in(array_keys(config('app.available_locales', [])))],
+            'theme_preference' => ['required', 'string', 'in:light,dark,system'],
         ];
     }
 
@@ -27,7 +26,7 @@ class ProfileLocaleRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'locale' => __('Language'),
+            'theme_preference' => __('Theme'),
         ];
     }
 }

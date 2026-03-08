@@ -23,8 +23,8 @@ const props = defineProps({
 
 const classes = computed(() =>
   props.active
-    ? 'block w-full px-4 py-2 text-left text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md focus:outline-none focus:bg-indigo-200'
-    : 'block w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-md focus:outline-none focus:bg-gray-100 focus:text-gray-900'
+    ? 'block w-full rounded-md bg-primary/10 px-4 py-2 text-left text-sm font-medium text-primary focus:bg-primary/15 focus:outline-none'
+    : 'block w-full rounded-md px-4 py-2 text-left text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none'
 );
 </script>
 

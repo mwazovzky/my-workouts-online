@@ -55,7 +55,7 @@ function remove() {
             v-model.number="local.effort_value"
             type="number"
             min="0"
-            class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500"
+            class="h-9 text-right transition-colors hover:border-primary/50"
           />
         </template>
         <template v-else>
@@ -75,7 +75,7 @@ function remove() {
             type="number"
             min="0"
             step="0.5"
-            class="h-9 text-right transition-colors hover:border-gray-400 dark:hover:border-gray-500"
+            class="h-9 text-right transition-colors hover:border-primary/50"
           />
         </template>
         <template v-else>
