@@ -24,13 +24,13 @@ const props = defineProps({
     </template>
 
     <div>
-      <div class="p-4 bg-white dark:bg-gray-800 rounded shadow-sm">
-        <h3 class="font-semibold text-lg dark:text-gray-100">{{ workout.name }}</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400">{{ workout.description }}</p>
+      <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <h3 class="text-lg font-semibold text-card-foreground">{{ workout.name }}</h3>
+        <p class="text-sm text-muted-foreground">{{ workout.description }}</p>
       </div>
 
       <div class="mt-6">
-        <h4 class="font-semibold text-md dark:text-gray-200">{{ t('Activities') }}</h4>
+        <h4 class="text-md font-semibold text-foreground">{{ t('Activities') }}</h4>
         <div class="mt-2">
           <ActivitiesList :activities="workout.activities ?? []" :editable="false" />
         </div>
@@ -49,7 +49,7 @@ const props = defineProps({
             <span v-if="!processing">{{ t('Start Workout') }}</span>
             <span v-else>{{ t('Starting…') }}</span>
           </Button>
-          <p v-if="errors.workout_template_id" class="text-sm text-red-600 dark:text-red-400">
+          <p v-if="errors.workout_template_id" class="text-sm text-destructive">
             {{ errors.workout_template_id }}
           </p>
         </div>

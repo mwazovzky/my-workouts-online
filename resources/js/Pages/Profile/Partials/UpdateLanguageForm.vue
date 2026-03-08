@@ -24,9 +24,9 @@ function submit() {
 <template>
   <section>
     <header>
-      <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ t('Language') }}</h2>
+      <h2 class="text-lg font-medium text-foreground">{{ t('Language') }}</h2>
 
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      <p class="mt-1 text-sm text-muted-foreground">
         {{ t('Select your preferred language.') }}
       </p>
     </header>
@@ -38,7 +38,7 @@ function submit() {
         <select
           id="locale"
           v-model="form.locale"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
+          class="mt-1 block w-full rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary"
         >
           <option v-for="(label, code) in availableLocales" :key="code" :value="code">
             {{ label }}
@@ -57,7 +57,7 @@ function submit() {
           leave-active-class="transition ease-in-out"
           leave-to-class="opacity-0"
         >
-          <p v-if="form.recentlySuccessful" class="text-sm text-gray-600 dark:text-gray-400">
+          <p v-if="form.recentlySuccessful" class="text-sm text-muted-foreground">
             {{ t('Saved.') }}
           </p>
         </Transition>

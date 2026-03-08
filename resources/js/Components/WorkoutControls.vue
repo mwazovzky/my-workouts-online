@@ -1,4 +1,5 @@
 <script setup>
+import { Button } from '@/Components/ui/button';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
@@ -13,13 +14,13 @@ function finish() {
 </script>
 
 <template>
-  <div class="flex items-center gap-3 mt-4">
-    <button class="px-4 py-2 bg-indigo-600 text-white rounded text-sm" @click="start">
+  <div class="mt-4 flex items-center gap-3">
+    <Button size="sm" @click="start">
       {{ t('Start Workout') }}
-    </button>
-    <button class="px-4 py-2 bg-green-600 text-white rounded text-sm" @click="finish">
+    </Button>
+    <Button variant="secondary" size="sm" @click="finish">
       {{ t('Finish') }}
-    </button>
+    </Button>
     <!-- Save button is contextual; the page can call save-activity with id when needed -->
   </div>
 </template>
