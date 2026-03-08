@@ -2,11 +2,12 @@
 
 ## Strategy
 
-1. A merge to `main` triggers GitHub Actions.
-2. GitHub Actions builds the production `web` image and pushes it to Docker Hub.
-3. GitHub Actions SSHes into the droplet, updates `IMAGE_TAG`, pulls the new image, recreates services, runs migrations, warms caches, and verifies health.
+1. Code lands on `main` through the normal review and CI flow.
+2. Pushing a semantic version tag such as `v1.4.0` triggers GitHub Actions.
+3. GitHub Actions builds the production `web` image, tags it with both the release version and the release commit SHA, and pushes both tags to Docker Hub.
+4. GitHub Actions SSHes into the droplet, checks out the matching release revision, updates `IMAGE_TAG`, pulls the new image, recreates services, runs migrations, warms caches, and verifies health.
 
-`main` is the release branch. Branch protection should require the validation workflows (`tests`, `lint`, `code style`) before merge so production only receives code that already passed CI.
+`main` is the integration branch, not the production trigger. Production releases happen only from explicit version tags. Branch protection should still require the validation workflows (`tests`, `lint`, `code style`) before merge so only release-ready code is tagged.
 
 ## Repository Layout
 
@@ -27,7 +28,6 @@ Required GitHub repository secrets:
 
 Optional GitHub repository secrets:
 
-- `PRODUCTION_PORT` (optional only if your droplet SSH port is not the default `22`)
 - `PRODUCTION_SSH_KNOWN_HOSTS` (recommended; if omitted, the workflow falls back to `StrictHostKeyChecking=accept-new`)
 
 Required GitHub repository variables:
@@ -41,7 +41,27 @@ Optional GitHub repository variables:
 
 The deploy workflow also supports manual `workflow_dispatch` runs. If you provide an existing `image_tag`, it deploys that tag without rebuilding. Use that for rollback or redeploying a known-good image.
 
-Most setups should leave `PRODUCTION_PORT` unset and use the default SSH port `22`.
+Optional manual workflow input:
+
+- `release_ref` — Git ref to check out on the droplet. Leave it blank to infer it from `image_tag`. For release-tag rollbacks, the default inference is usually correct.
+
+The deploy workflow assumes the standard SSH port `22`.
+
+## Release process
+
+1. Merge tested code into `main`.
+2. Create an annotated version tag from the commit you want to release, for example:
+
+```bash
+git checkout main
+git pull --ff-only origin main
+git tag -a v1.4.0 -m "Release v1.4.0"
+git push origin v1.4.0
+```
+
+3. The `deploy` workflow builds `${PRODUCTION_IMAGE_NAME}:v1.4.0` and `${PRODUCTION_IMAGE_NAME}:sha-<commit>`, then deploys `v1.4.0` to production.
+
+Release tags should be immutable. If you need a new production build, create a new version tag instead of moving an existing one.
 
 ## 1. Create the droplet
 
@@ -90,7 +110,7 @@ git clone YOUR_REPO_URL PROJECT_NAME
 cd PROJECT_NAME
 ```
 
-The droplet keeps a working checkout because the deploy workflow updates the repo before executing `scripts/deploy-production.sh`.
+The droplet keeps a working checkout because the deploy workflow fetches the repository and checks out the exact release ref before executing `scripts/deploy-production.sh`.
 
 ## 5. Point your domain to the droplet (DNS setup)
 
@@ -133,14 +153,15 @@ docker ps
 
 ## 8. First production release (HTTP first)
 
-After the droplet, repo checkout, `.env`, and GitHub secrets are configured, merge a harmless commit into `main` or run the deploy workflow manually. GitHub Actions will:
+After the droplet, repo checkout, `.env`, and GitHub secrets are configured, push a harmless version tag or run the deploy workflow manually with an existing image tag. GitHub Actions will:
 
 1. Build the `web` image from `docker/php/Dockerfile`
-2. Push it to Docker Hub as `${PRODUCTION_IMAGE_NAME}:sha-<commit>`
+2. Push it to Docker Hub as `${PRODUCTION_IMAGE_NAME}:vX.Y.Z` and `${PRODUCTION_IMAGE_NAME}:sha-<commit>`
 3. SSH into the droplet
-4. Update `IMAGE_TAG` in `.env`
-5. Ensure MySQL is running, pull the new `web` image, and recreate only the `web` service
-6. Execute migrations and `php artisan optimize`
+4. Check out the matching release revision on the droplet
+5. Update `IMAGE_TAG` in `.env`
+6. Ensure MySQL is running, pull the new `web` image, and recreate only the `web` service
+7. Execute migrations and `php artisan optimize`
 
 If you need to start the stack manually before CI/CD is ready, the commands are still:
 
@@ -299,8 +320,8 @@ docker system prune -a --volumes -f
 ### Automatic deploy troubleshooting
 
 - **Deploy workflow fails before SSH**: verify `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `PRODUCTION_HOST`, `PRODUCTION_USER`, `PRODUCTION_SSH_PRIVATE_KEY`, `PRODUCTION_APP_PATH`, and `PRODUCTION_IMAGE_NAME` are configured in GitHub.
-- **SSH connection fails**: verify the deploy user, host, port, SSH key, and `PRODUCTION_SSH_KNOWN_HOSTS` value. If you omit known hosts, the workflow uses `accept-new`.
-- **`git pull --ff-only` fails on the droplet**: the working copy on the server has local changes. Fix the server checkout so it can fast-forward cleanly.
+- **SSH connection fails**: verify the deploy user, host, SSH key, and `PRODUCTION_SSH_KNOWN_HOSTS` value. If you omit known hosts, the workflow uses `accept-new`.
+- **`git checkout --detach` fails on the droplet**: the requested release ref does not exist on the server after fetch, or the working copy has conflicting local changes. Verify the tag or ref name and make sure the droplet checkout is clean.
 - **`IMAGE_TAG entry was not found in .env`**: add `IMAGE_TAG=...` to the droplet `.env`; the deploy script updates that line in place.
 - **Automatic deploy succeeds but app is unhealthy**: inspect the `Deploy Production` job logs first, then run the manual log and curl commands from steps 13 and 14 on the droplet.
 
@@ -312,8 +333,9 @@ Use rollback like this:
 
 1. Open GitHub Actions.
 2. Run the `deploy` workflow manually.
-3. Provide a previously pushed image tag such as `sha-abcdef123456`.
-4. The workflow skips the build job and deploys that exact tag.
+3. Provide a previously pushed release tag such as `v1.3.2`.
+4. Leave `release_ref` blank unless you need to deploy an image tag that does not directly match the Git ref.
+5. The workflow skips the build job and deploys that exact tag.
 
 ### SSL/HTTPS troubleshooting
 

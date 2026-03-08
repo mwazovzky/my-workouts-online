@@ -2,12 +2,16 @@ name: deploy
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       image_tag:
-        description: Existing Docker image tag to deploy. Leave blank to build and deploy the current main commit.
+        description: Existing Docker image tag to deploy, for example v1.4.0 or sha-abcdef123456.
+        required: true
+        type: string
+      release_ref:
+        description: Git ref to check out on the droplet. Leave blank to infer from image_tag.
         required: false
         type: string
 
@@ -24,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.resolve.outputs.image_tag }}
+      image_sha_tag: ${{ steps.resolve.outputs.image_sha_tag }}
+      release_ref: ${{ steps.resolve.outputs.release_ref }}
       should_build: ${{ steps.resolve.outputs.should_build }}
 
     steps:
@@ -32,11 +38,26 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ -n "${{ inputs.image_tag }}" ]]; then
-            echo "image_tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            image_tag="${{ inputs.image_tag }}"
+            release_ref="${{ inputs.release_ref }}"
+
+            if [[ -z "${release_ref}" ]]; then
+              if [[ "${image_tag}" == sha-* ]]; then
+                release_ref="${image_tag#sha-}"
+              else
+                release_ref="${image_tag}"
+              fi
+            fi
+
+            echo "image_tag=${image_tag}" >> "$GITHUB_OUTPUT"
+            echo "image_sha_tag=" >> "$GITHUB_OUTPUT"
+            echo "release_ref=${release_ref}" >> "$GITHUB_OUTPUT"
             echo "should_build=false" >> "$GITHUB_OUTPUT"
           else
-            echo "image_tag=sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+            echo "image_tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "image_sha_tag=sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+            echo "release_ref=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
             echo "should_build=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -82,6 +103,7 @@ jobs:
           push: true
           tags: |
             ${{ vars.PRODUCTION_IMAGE_NAME }}:${{ needs.resolve-deploy-target.outputs.image_tag }}
+            ${{ vars.PRODUCTION_IMAGE_NAME }}:${{ needs.resolve-deploy-target.outputs.image_sha_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -136,21 +158,20 @@ jobs:
         env:
           PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
           PRODUCTION_USER: ${{ secrets.PRODUCTION_USER }}
-          PRODUCTION_PORT: ${{ secrets.PRODUCTION_PORT }}
           PRODUCTION_APP_PATH: ${{ secrets.PRODUCTION_APP_PATH }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           DEPLOY_HEALTHCHECK_URL: ${{ vars.PRODUCTION_HEALTHCHECK_URL }}
           DEPLOY_READYCHECK_URL: ${{ vars.PRODUCTION_READYCHECK_URL }}
           IMAGE_TAG: ${{ needs.resolve-deploy-target.outputs.image_tag }}
+          RELEASE_REF: ${{ needs.resolve-deploy-target.outputs.release_ref }}
           PRODUCTION_SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
 
-          port="${PRODUCTION_PORT:-22}"
-
           app_path_escaped=$(printf '%q' "$PRODUCTION_APP_PATH")
           image_tag_escaped=$(printf '%q' "$IMAGE_TAG")
+          release_ref_escaped=$(printf '%q' "$RELEASE_REF")
           dockerhub_username_escaped=$(printf '%q' "$DOCKERHUB_USERNAME")
           dockerhub_token_escaped=$(printf '%q' "$DOCKERHUB_TOKEN")
           healthcheck_url_escaped=$(printf '%q' "${DEPLOY_HEALTHCHECK_URL:-}")
@@ -163,14 +184,12 @@ jobs:
 
           ssh \
             -i ~/.ssh/id_ed25519 \
-            -p "$port" \
             -o StrictHostKeyChecking="$strict_host_key_checking" \
             "${PRODUCTION_USER}@${PRODUCTION_HOST}" <<EOF
           set -euo pipefail
           cd ${app_path_escaped}
-          git fetch origin main
-          git checkout main
-          git pull --ff-only origin main
+          git fetch --tags --prune origin '+refs/heads/*:refs/remotes/origin/*'
+          git checkout --detach ${release_ref_escaped}
           IMAGE_TAG=${image_tag_escaped} \
           DEPLOY_REGISTRY_USERNAME=${dockerhub_username_escaped} \
           DEPLOY_REGISTRY_TOKEN=${dockerhub_token_escaped} \
