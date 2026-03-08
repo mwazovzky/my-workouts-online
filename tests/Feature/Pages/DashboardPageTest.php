@@ -46,57 +46,59 @@ class DashboardPageTest extends TestCase
     {
         CarbonImmutable::setTestNow('2026-03-08 09:00:00');
 
-        $user = User::factory()->create();
-        $otherUser = User::factory()->create();
+        try {
+            $user = User::factory()->create();
+            $otherUser = User::factory()->create();
 
-        $program = Program::factory()->create();
-        $user->programs()->attach($program);
+            $program = Program::factory()->create();
+            $user->programs()->attach($program);
 
-        $mondayWorkout = WorkoutTemplate::factory()->create();
-        $fridayWorkout = WorkoutTemplate::factory()->create();
+            $mondayWorkout = WorkoutTemplate::factory()->create();
+            $fridayWorkout = WorkoutTemplate::factory()->create();
 
-        $program->workoutTemplates()->attach($mondayWorkout, ['weekday' => 'Monday']);
-        $program->workoutTemplates()->attach($fridayWorkout, ['weekday' => 'Friday']);
+            $program->workoutTemplates()->attach($mondayWorkout, ['weekday' => 'Monday']);
+            $program->workoutTemplates()->attach($fridayWorkout, ['weekday' => 'Friday']);
 
-        $inProgressWorkout = Workout::factory()->create([
-            'user_id' => $user->id,
-            'workout_template_id' => $mondayWorkout->id,
-            'status' => WorkoutStatus::InProgress,
-        ]);
+            $inProgressWorkout = Workout::factory()->create([
+                'user_id' => $user->id,
+                'workout_template_id' => $mondayWorkout->id,
+                'status' => WorkoutStatus::InProgress,
+            ]);
 
-        Workout::factory()->create([
-            'user_id' => $user->id,
-            'workout_template_id' => $fridayWorkout->id,
-            'status' => WorkoutStatus::Completed,
-        ]);
+            Workout::factory()->create([
+                'user_id' => $user->id,
+                'workout_template_id' => $fridayWorkout->id,
+                'status' => WorkoutStatus::Completed,
+            ]);
 
-        Workout::factory()->create([
-            'user_id' => $otherUser->id,
-            'status' => WorkoutStatus::Completed,
-        ]);
+            Workout::factory()->create([
+                'user_id' => $otherUser->id,
+                'status' => WorkoutStatus::Completed,
+            ]);
 
-        $response = $this
-            ->actingAs($user)
-            ->get('/dashboard');
+            $response = $this
+                ->actingAs($user)
+                ->get('/dashboard');
 
-        $response->assertOk();
+            $response->assertOk();
 
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Dashboard')
-            ->where('summary.enrolled_programs_count', 1)
-            ->where('summary.completed_workouts_count', 1)
-            ->where('summary.completed_last_7_days_count', 1)
-            ->where('summary.upcoming_workouts_count', 2)
-            ->has('upcomingSchedule', 2)
-            ->where('upcomingSchedule.0.weekday', 'Monday')
-            ->where('upcomingSchedule.0.scheduled_for', '2026-03-09')
-            ->where('upcomingSchedule.1.weekday', 'Friday')
-            ->where('upcomingSchedule.1.scheduled_for', '2026-03-13')
-            ->where('inProgressWorkout.id', $inProgressWorkout->id)
-            ->where('inProgressWorkout.status', WorkoutStatus::InProgress->value)
-            ->has('recentWorkouts', 2)
-        );
-
-        CarbonImmutable::setTestNow();
+            $response->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard')
+                ->where('summary.enrolled_programs_count', 1)
+                ->where('summary.completed_workouts_count', 1)
+                ->where('summary.completed_last_7_days_count', 1)
+                ->where('summary.upcoming_workouts_count', 2)
+                ->has('upcomingSchedule', 2)
+                ->where('upcomingSchedule.0.weekday', 'Monday')
+                ->where('upcomingSchedule.0.scheduled_for', '2026-03-09')
+                ->where('upcomingSchedule.1.weekday', 'Friday')
+                ->where('upcomingSchedule.1.scheduled_for', '2026-03-13')
+                ->where('inProgressWorkout.id', $inProgressWorkout->id)
+                ->where('inProgressWorkout.status', WorkoutStatus::InProgress->value)
+                ->has('recentWorkouts', 2)
+            );
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
     }
 }
