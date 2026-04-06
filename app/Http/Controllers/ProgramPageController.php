@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ProgramResource;
-use App\Http\Resources\WorkoutTemplateResource;
 use App\Models\Program;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,33 +10,14 @@ use Inertia\Response;
 
 class ProgramPageController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        $user = $request->user();
-
-        $programs = Program::query()
-            ->withCount(['users' => fn ($query) => $query->where('users.id', $user->id)])
-            ->get();
-
-        return Inertia::render('ProgramIndex', [
-            'programs' => ProgramResource::collection($programs)->resolve(),
-        ]);
+        return Inertia::render('ProgramIndex');
     }
 
-    public function show(Request $request, int $id): Response
+    public function show(int $id): Response
     {
-        $user = $request->user();
-
-        $program = Program::query()
-            ->withCount(['users' => fn ($query) => $query->where('users.id', $user->id)])
-            ->findOrFail($id);
-
-        return Inertia::render('ProgramShow', [
-            'program' => (new ProgramResource($program))->resolve(),
-            'workouts' => Inertia::defer(fn () => WorkoutTemplateResource::collection(
-                $program->workoutTemplates()->get()
-            )->resolve()),
-        ]);
+        return Inertia::render('ProgramShow', ['id' => $id]);
     }
 
     public function enroll(Request $request, Program $program): RedirectResponse

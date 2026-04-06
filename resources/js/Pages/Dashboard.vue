@@ -1,4 +1,5 @@
 <script setup>
+import { ref, onMounted } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import PageLayout from '@/Components/PageLayout.vue';
@@ -6,29 +7,33 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { formatDate, formatDateOnly } from '@/utils/date';
 import { Form, Head } from '@inertiajs/vue3';
+import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
+const { get } = useApi();
 
-defineProps({
-  upcomingSchedule: {
-    type: Array,
-    default: () => [],
-  },
-  inProgressWorkout: {
-    type: Object,
-    default: null,
-  },
-  recentWorkouts: {
-    type: Array,
-    default: () => [],
-  },
-  summary: {
-    type: Object,
-    required: true,
-  },
+const loading = ref(true);
+const upcomingSchedule = ref([]);
+const inProgressWorkout = ref(null);
+const recentWorkouts = ref([]);
+const summary = ref({
+  enrolled_programs_count: 0,
+  completed_workouts_count: 0,
+  completed_last_7_days_count: 0,
+  upcoming_workouts_count: 0,
+});
+
+onMounted(async () => {
+  const { data } = await get('/api/v1/dashboard');
+  upcomingSchedule.value = data.data.upcoming_schedule;
+  inProgressWorkout.value = data.data.in_progress_workout;
+  recentWorkouts.value = data.data.recent_workouts;
+  summary.value = data.data.summary;
+  loading.value = false;
 });
 
 function resolveWorkoutName(workout) {
@@ -55,8 +60,12 @@ function resolveWorkoutName(workout) {
 
     <PageLayout>
       <div class="space-y-6">
+        <!-- In-progress workout -->
+        <template v-if="loading">
+          <Skeleton class="h-32 w-full rounded-xl" />
+        </template>
         <Card
-          v-if="inProgressWorkout"
+          v-else-if="inProgressWorkout"
           class="border-primary/15 bg-gradient-to-r from-primary/5 via-accent/40 to-background p-5 shadow-sm"
         >
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -92,6 +101,7 @@ function resolveWorkoutName(workout) {
           </div>
         </Card>
 
+        <!-- Coming up -->
         <section class="space-y-4">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -108,7 +118,10 @@ function resolveWorkoutName(workout) {
             </Button>
           </div>
 
-          <Empty v-if="upcomingSchedule.length === 0" class="bg-card">
+          <div v-if="loading" class="space-y-3">
+            <Skeleton v-for="i in 2" :key="i" class="h-24 w-full rounded-xl" />
+          </div>
+          <Empty v-else-if="upcomingSchedule.length === 0" class="bg-card">
             <EmptyTitle>{{ t('No workouts scheduled for the next 7 days') }}</EmptyTitle>
             <EmptyDescription>{{
               t('Enroll in a program to build your upcoming schedule.')
@@ -117,7 +130,6 @@ function resolveWorkoutName(workout) {
               {{ t('Browse programs') }}
             </Button>
           </Empty>
-
           <ul v-else class="space-y-3">
             <li v-for="item in upcomingSchedule" :key="item.id">
               <Card class="p-4">
@@ -171,13 +183,15 @@ function resolveWorkoutName(workout) {
           </ul>
         </section>
 
+        <!-- Summary stats -->
         <section class="grid gap-4 md:grid-cols-3">
           <Card class="p-5">
             <div class="text-sm font-medium text-muted-foreground">
               {{ t('Programs enrolled') }}
             </div>
             <div class="mt-3 text-3xl font-semibold text-foreground">
-              {{ summary.enrolled_programs_count }}
+              <Skeleton v-if="loading" class="h-9 w-16" />
+              <template v-else>{{ summary.enrolled_programs_count }}</template>
             </div>
           </Card>
 
@@ -186,7 +200,8 @@ function resolveWorkoutName(workout) {
               {{ t('Completed workouts') }}
             </div>
             <div class="mt-3 text-3xl font-semibold text-foreground">
-              {{ summary.completed_workouts_count }}
+              <Skeleton v-if="loading" class="h-9 w-16" />
+              <template v-else>{{ summary.completed_workouts_count }}</template>
             </div>
           </Card>
 
@@ -195,11 +210,13 @@ function resolveWorkoutName(workout) {
               {{ t('Completed in last 7 days') }}
             </div>
             <div class="mt-3 text-3xl font-semibold text-foreground">
-              {{ summary.completed_last_7_days_count }}
+              <Skeleton v-if="loading" class="h-9 w-16" />
+              <template v-else>{{ summary.completed_last_7_days_count }}</template>
             </div>
           </Card>
         </section>
 
+        <!-- Recent workouts -->
         <section class="space-y-4">
           <div class="flex items-center justify-between">
             <div>
@@ -213,11 +230,13 @@ function resolveWorkoutName(workout) {
             </Button>
           </div>
 
-          <Empty v-if="recentWorkouts.length === 0" class="bg-card">
+          <div v-if="loading" class="space-y-3">
+            <Skeleton v-for="i in 3" :key="i" class="h-20 w-full rounded-xl" />
+          </div>
+          <Empty v-else-if="recentWorkouts.length === 0" class="bg-card">
             <EmptyTitle>{{ t('No workouts yet') }}</EmptyTitle>
             <EmptyDescription>{{ t('Start a workout to see it listed here') }}</EmptyDescription>
           </Empty>
-
           <ul v-else class="space-y-3">
             <li v-for="workout in recentWorkouts" :key="workout.id">
               <Card class="p-4">

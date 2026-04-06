@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\WorkoutStatus;
 use App\Http\Requests\WorkoutSaveRequest;
 use App\Http\Requests\WorkoutStoreRequest;
-use App\Http\Resources\ActivityResource;
-use App\Http\Resources\WorkoutResource;
 use App\Models\Workout;
 use App\Services\Workout\WorkoutServiceInterface;
 use Illuminate\Http\RedirectResponse;
@@ -16,72 +14,19 @@ use Inertia\Response;
 
 class WorkoutPageController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        $user = $request->user();
-
-        $workouts = Workout::query()
-            ->ownedBy($user)
-            ->withTemplate()
-            ->withActivitiesCount()
-            ->latestUpdated()
-            ->paginate(20);
-
-        $workouts->getCollection()->transform(function ($item) use ($request) {
-            return (new WorkoutResource($item))->toArray($request);
-        });
-
-        return Inertia::render('WorkoutIndex', [
-            'workouts' => $workouts,
-        ]);
+        return Inertia::render('WorkoutIndex');
     }
 
-    public function show(Request $request, int $id): Response
+    public function show(int $id): Response
     {
-        $user = $request->user();
-
-        $workout = Workout::query()
-            ->ownedBy($user)
-            ->withActivitiesCount()
-            ->withTemplate()
-            ->findOrFail($id);
-
-        return Inertia::render('WorkoutShow', [
-            'workout' => (new WorkoutResource($workout))->resolve(),
-            'activities' => Inertia::defer(fn () => ActivityResource::collection(
-                $workout->activities()
-                    ->with([
-                        'sets' => fn ($query) => $query->orderBy('order'),
-                        'exercise.equipment.translations',
-                        'exercise.categories.translations',
-                        'exercise.translations',
-                    ])
-                    ->orderBy('order')
-                    ->get()
-            )->resolve()),
-        ]);
+        return Inertia::render('WorkoutShow', ['id' => $id]);
     }
 
-    public function edit(Request $request, int $id): Response
+    public function edit(int $id): Response
     {
-        $user = $request->user();
-
-        $workout = Workout::query()
-            ->ownedBy($user)
-            ->withActivitiesCount()
-            ->with([
-                'workoutTemplate.translations',
-                'activities' => fn ($query) => $query->orderBy('order'),
-                'activities.sets' => fn ($query) => $query->orderBy('order'),
-                'activities.exercise.equipment.translations',
-                'activities.exercise.categories.translations',
-                'activities.exercise.translations',
-            ])
-            ->findOrFail($id);
-
-        return Inertia::render('WorkoutEdit', [
-            'workout' => (new WorkoutResource($workout))->resolve(),
-        ]);
+        return Inertia::render('WorkoutEdit', ['id' => $id]);
     }
 
     public function store(WorkoutStoreRequest $request, WorkoutServiceInterface $service): RedirectResponse

@@ -5,39 +5,57 @@
     </template>
 
     <PageLayout>
-      <WorkoutCard :workout="workout" />
+      <!-- Loading -->
+      <div v-if="isLoading" class="space-y-4">
+        <Skeleton class="h-24 w-full rounded-xl" />
+        <Skeleton class="h-2 w-full rounded-full" />
+        <Card v-for="i in 3" :key="i" class="p-4">
+          <div class="mb-4 pb-4 border-b">
+            <Skeleton class="h-6 w-64 mb-3" />
+            <div class="space-y-2">
+              <Skeleton class="h-4 w-full" />
+              <Skeleton class="h-4 w-full" />
+            </div>
+          </div>
+          <Skeleton class="h-10 w-full" />
+        </Card>
+      </div>
 
-      <div v-if="totalSets > 0" class="mb-3 flex items-center gap-3">
-        <div class="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-          <div
-            class="h-full rounded-full bg-primary transition-all duration-300"
-            :style="{ width: progressPercent + '%' }"
+      <template v-else>
+        <WorkoutCard :workout="workout" />
+
+        <div v-if="totalSets > 0" class="mb-3 flex items-center gap-3">
+          <div class="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+            <div
+              class="h-full rounded-full bg-primary transition-all duration-300"
+              :style="{ width: progressPercent + '%' }"
+            />
+          </div>
+          <span class="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+            {{
+              t(':completed/:total sets', {
+                completed: completedSets,
+                total: totalSets,
+              })
+            }}
+          </span>
+        </div>
+
+        <div>
+          <ActivitiesList
+            :activities="activities"
+            :editable="isEditable"
+            :reorderable="isEditable && activities.length > 1"
+            :can-remove-activity="activities.length > 1"
+            @reorder="markDirty"
+            @set-completion-toggled="onSetCompletionToggled"
+            @add-set="payload => onAddSet(payload)"
+            @remove-set="payload => onRemoveSet(payload)"
+            @update-activity="payload => onUpdateActivity(payload)"
+            @remove-activity="onRemoveActivity"
           />
         </div>
-        <span class="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-          {{
-            t(':completed/:total sets', {
-              completed: completedSets,
-              total: totalSets,
-            })
-          }}
-        </span>
-      </div>
-
-      <div>
-        <ActivitiesList
-          :activities="activities"
-          :editable="isEditable"
-          :reorderable="isEditable && activities.length > 1"
-          :can-remove-activity="activities.length > 1"
-          @reorder="markDirty"
-          @set-completion-toggled="onSetCompletionToggled"
-          @add-set="payload => onAddSet(payload)"
-          @remove-set="payload => onRemoveSet(payload)"
-          @update-activity="payload => onUpdateActivity(payload)"
-          @remove-activity="onRemoveActivity"
-        />
-      </div>
+      </template>
     </PageLayout>
 
     <WorkoutFooter :show="isEditable">
@@ -89,42 +107,24 @@ import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
+import { Card } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
+const { get } = useApi();
 
 const props = defineProps({
-  workout: {
-    type: Object,
-    required: true,
-  },
+  id: { type: Number, required: true },
 });
 
-const workoutId = ref(props.workout.id ?? null);
-const activities = ref(
-  (props.workout.activities ?? []).map(a => ({
-    id: a.id,
-    exercise_id: a.exercise_id ?? null,
-    exercise_name: a.exercise_name ?? '',
-    rest_time_seconds: a.rest_time_seconds ?? null,
-    exercise_equipment_name: a.exercise_equipment_name ?? null,
-    exercise_category_names: a.exercise_category_names ?? [],
-    exercise_effort_type: a.exercise_effort_type ?? 'repetitions',
-    exercise_effort_label: a.exercise_effort_label ?? '',
-    exercise_difficulty_unit: a.exercise_difficulty_unit ?? null,
-    exercise_difficulty_label: a.exercise_difficulty_label ?? '',
-    sets: (a.sets ?? []).map(s => ({
-      id: s.id ?? null,
-      order: s.order,
-      effort_value: s.effort_value,
-      difficulty_value: s.difficulty_value,
-      is_completed: s.is_completed ?? false,
-    })),
-  }))
-);
-
-const workoutStatus = ref(props.workout.status ?? null);
-const workoutOwnerId = ref(props.workout.user_id ?? null);
+const isLoading = ref(true);
+const workout = ref(null);
+const workoutId = ref(null);
+const activities = ref([]);
+const workoutStatus = ref(null);
+const workoutOwnerId = ref(null);
 
 // UI flags
 const isSaving = ref(false);
@@ -189,7 +189,7 @@ function onBeforeUnload(e) {
 
 let removeInertiaListener = null;
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('beforeunload', onBeforeUnload);
   removeInertiaListener = router.on('before', event => {
     if (skipNavigationGuard.value) {
@@ -199,6 +199,33 @@ onMounted(() => {
       event.preventDefault();
     }
   });
+
+  const { data } = await get(`/api/v1/workouts/${props.id}`);
+  const w = data.data;
+  workout.value = w;
+  workoutId.value = w.id ?? null;
+  workoutStatus.value = w.status ?? null;
+  workoutOwnerId.value = w.user_id ?? null;
+  activities.value = (w.activities ?? []).map(a => ({
+    id: a.id,
+    exercise_id: a.exercise_id ?? null,
+    exercise_name: a.exercise_name ?? '',
+    rest_time_seconds: a.rest_time_seconds ?? null,
+    exercise_equipment_name: a.exercise_equipment_name ?? null,
+    exercise_category_names: a.exercise_category_names ?? [],
+    exercise_effort_type: a.exercise_effort_type ?? 'repetitions',
+    exercise_effort_label: a.exercise_effort_label ?? '',
+    exercise_difficulty_unit: a.exercise_difficulty_unit ?? null,
+    exercise_difficulty_label: a.exercise_difficulty_label ?? '',
+    sets: (a.sets ?? []).map(s => ({
+      id: s.id ?? null,
+      order: s.order,
+      effort_value: s.effort_value,
+      difficulty_value: s.difficulty_value,
+      is_completed: s.is_completed ?? false,
+    })),
+  }));
+  isLoading.value = false;
 });
 
 onUnmounted(() => {

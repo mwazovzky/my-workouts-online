@@ -5,82 +5,86 @@
     </template>
 
     <PageLayout>
-      <Empty v-if="workouts.data.length === 0">
-        <EmptyTitle>{{ t('No workouts yet') }}</EmptyTitle>
-        <EmptyDescription>{{ t('Start a workout to see it listed here') }}</EmptyDescription>
-      </Empty>
-      <ul v-else class="space-y-3">
-        <li v-for="workout in workouts.data" :key="workout.id">
-          <Card class="p-4">
-            <div
-              class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
-            >
-              <div class="flex-1 min-w-0">
-                <div class="font-medium flex items-center gap-2">
-                  <Lock
-                    v-if="workout.status === 'completed'"
-                    class="w-4 h-4 text-muted-foreground flex-shrink-0"
-                  />
-                  <span class="truncate">{{
-                    workout.name ?? workout.workout_template?.name ?? t('Workout')
-                  }}</span>
-                </div>
-                <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
-                  <span
-                    >{{ formatDate(workout.created_at) }} ·
-                    {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
+      <!-- Loading -->
+      <div v-if="workouts === null" class="space-y-3">
+        <Skeleton v-for="i in 5" :key="i" class="h-20 w-full rounded-xl" />
+      </div>
+
+      <template v-else>
+        <Empty v-if="workouts.length === 0">
+          <EmptyTitle>{{ t('No workouts yet') }}</EmptyTitle>
+          <EmptyDescription>{{ t('Start a workout to see it listed here') }}</EmptyDescription>
+        </Empty>
+        <ul v-else class="space-y-3">
+          <li v-for="workout in workouts" :key="workout.id">
+            <Card class="p-4">
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
+              >
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium flex items-center gap-2">
+                    <Lock
+                      v-if="workout.status === 'completed'"
+                      class="w-4 h-4 text-muted-foreground flex-shrink-0"
+                    />
+                    <span class="truncate">{{
+                      workout.name ?? workout.workout_template?.name ?? t('Workout')
+                    }}</span>
+                  </div>
+                  <div
+                    class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap"
                   >
-                  <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-                    {{ workout.status_label }}
-                  </Badge>
+                    <span
+                      >{{ formatDate(workout.created_at) }} ·
+                      {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
+                    >
+                    <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
+                      {{ workout.status_label }}
+                    </Badge>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <Button
+                    as="a"
+                    :href="route('workouts.show', { id: workout.id })"
+                    variant="outline"
+                    size="sm"
+                  >
+                    {{ t('Show') }}
+                  </Button>
+
+                  <Button
+                    v-if="workout.user_id === currentUserId && workout.status === 'in_progress'"
+                    as="a"
+                    :href="route('workouts.edit', { id: workout.id })"
+                    variant="default"
+                    size="sm"
+                  >
+                    {{ t('Continue') }}
+                  </Button>
+
+                  <Button variant="destructive" size="sm" @click="deleteWorkout(workout.id)">
+                    {{ t('Delete') }}
+                  </Button>
                 </div>
               </div>
-              <div class="flex items-center gap-2 flex-shrink-0">
-                <Button
-                  as="a"
-                  :href="route('workouts.show', { id: workout.id })"
-                  variant="outline"
-                  size="sm"
-                >
-                  {{ t('Show') }}
-                </Button>
+            </Card>
+          </li>
+        </ul>
 
-                <Button
-                  v-if="workout.user_id === currentUserId && workout.status === 'in_progress'"
-                  as="a"
-                  :href="route('workouts.edit', { id: workout.id })"
-                  variant="default"
-                  size="sm"
-                >
-                  {{ t('Continue') }}
-                </Button>
-
-                <Button variant="destructive" size="sm" @click="deleteWorkout(workout.id)">
-                  {{ t('Delete') }}
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </li>
-      </ul>
-
-      <!-- Pagination Links -->
-      <nav v-if="workouts.links.length > 3" class="flex items-center justify-center gap-1 mt-6">
-        <template v-for="link in workouts.links" :key="link.label">
+        <!-- Pagination -->
+        <nav v-if="pagination && pagination.last_page > 1" class="flex items-center justify-center gap-1 mt-6">
           <Button
-            v-if="link.url"
-            as="a"
-            :href="link.url"
-            :variant="link.active ? 'default' : 'outline'"
+            v-for="page in pagination.last_page"
+            :key="page"
+            :variant="page === pagination.current_page ? 'default' : 'outline'"
             size="sm"
+            @click="goToPage(page)"
           >
-            {{ decodeHtmlEntities(link.label) }}
+            {{ page }}
           </Button>
-          <span v-else class="px-3 py-1 text-muted-foreground text-sm">
-            {{ decodeHtmlEntities(link.label) }}
-          </span>
-        </template>
-      </nav>
+        </nav>
+      </template>
     </PageLayout>
 
     <ConfirmDialog
@@ -95,7 +99,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
@@ -105,29 +109,36 @@ import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 import { Card } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
+import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
+const { get } = useApi();
 
-defineProps({
-  workouts: {
-    type: Object,
-    required: true,
-  },
-});
+const workouts = ref(null);
+const pagination = ref(null);
+const currentPage = ref(1);
 
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
 
-// Decode HTML entities in pagination labels
-function decodeHtmlEntities(text) {
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = text;
-  return textarea.value;
+async function fetchWorkouts(pageNum = 1) {
+  workouts.value = null;
+  const { data } = await get('/api/v1/workouts', { page: pageNum });
+  workouts.value = data.data;
+  pagination.value = data.meta;
+  currentPage.value = data.meta.current_page;
 }
+
+async function goToPage(pageNum) {
+  await fetchWorkouts(pageNum);
+}
+
+onMounted(() => fetchWorkouts(1));
 
 // Confirm dialog state
 const confirmDialog = ref({
@@ -157,13 +168,13 @@ async function deleteWorkout(id) {
     title: t('Delete workout?'),
     description: t('This action cannot be undone.'),
     confirmLabel: t('Delete'),
-    onConfirm: () => {
-      router.delete(route('workouts.destroy', { workout: id }), {
-        preserveScroll: true,
-        onError: () => {
-          toast.error(t('Failed to delete workout'));
-        },
-      });
+    onConfirm: async () => {
+      try {
+        await window.axios.delete(`/api/v1/workouts/${id}`);
+        await fetchWorkouts(currentPage.value);
+      } catch {
+        toast.error(t('Failed to delete workout'));
+      }
     },
   });
 }

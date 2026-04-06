@@ -34,7 +34,7 @@ class WorkoutAuthorizationTest extends TestCase
     }
 
     #[Test]
-    public function user_cannot_view_another_users_workout(): void
+    public function user_cannot_view_another_users_workout_via_api(): void
     {
         $user = User::factory()->create();
         $otherUser = User::factory()->create();
@@ -45,7 +45,7 @@ class WorkoutAuthorizationTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get(route('workouts.show', ['id' => $otherUserWorkout->id]));
+            ->getJson("/api/v1/workouts/{$otherUserWorkout->id}");
 
         $response->assertNotFound();
     }

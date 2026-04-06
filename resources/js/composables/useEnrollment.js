@@ -1,35 +1,20 @@
-import { router } from '@inertiajs/vue3';
 import { useTranslation } from '@/composables/useTranslation';
 
 /**
- * Composable for handling program enrollment functionality
- * @param {Object} options - Configuration options
- * @param {string[]} options.only - Array of props to reload after enrollment
- * @returns {Object} Enrollment utilities
+ * Composable for handling program enrollment via the API.
+ * Returns a promise so callers can update local state on success.
  */
-export function useEnrollment(options = {}) {
-  const { only = [] } = options;
+export function useEnrollment() {
   const { t } = useTranslation();
 
-  /**
-   * Enroll a user in a program
-   * @param {number} programId - The ID of the program to enroll in
-   */
-  function enroll(programId) {
-    router.post(
-      route('programs.enroll', { program: programId }),
-      {},
-      {
-        preserveScroll: true,
-        only,
-        onError: () => {
-          alert(t('Failed to enroll in program'));
-        },
-      }
-    );
+  async function enroll(programId) {
+    try {
+      await window.axios.post(`/api/v1/programs/${programId}/enroll`);
+    } catch {
+      alert(t('Failed to enroll in program'));
+      throw new Error('Enrollment failed');
+    }
   }
 
-  return {
-    enroll,
-  };
+  return { enroll };
 }
