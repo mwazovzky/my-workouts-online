@@ -99,6 +99,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
+import { useApi } from '@/composables/useApi';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutCard from '@/Components/WorkoutCard.vue';
@@ -109,11 +110,10 @@ import PageHeader from '@/Components/PageHeader.vue';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
-const { get } = useApi();
+const { get, patch, post } = useApi();
 
 const props = defineProps({
   id: { type: Number, required: true },
@@ -254,7 +254,7 @@ function buildSavePayload() {
   };
 }
 
-function saveWorkout({ onSuccess, onError } = {}) {
+async function saveWorkout({ onSuccess, onError } = {}) {
   if (!isEditable.value || isSaving.value) {
     return;
   }
@@ -262,22 +262,18 @@ function saveWorkout({ onSuccess, onError } = {}) {
   isSaving.value = true;
   skipNavigationGuard.value = true;
 
-  router.patch(route('workouts.save', { workout: workoutId.value }), buildSavePayload(), {
-    preserveScroll: true,
-    onSuccess: () => {
-      isDirty.value = false;
-      toast.success(t('Workout saved'));
-      onSuccess?.();
-    },
-    onError: () => {
-      onError?.();
-      toast.error(t('Failed to save workout'));
-    },
-    onFinish: () => {
-      isSaving.value = false;
-      skipNavigationGuard.value = false;
-    },
-  });
+  try {
+    await patch(`/api/v1/workouts/${workoutId.value}/save`, buildSavePayload());
+    isDirty.value = false;
+    toast.success(t('Workout saved'));
+    onSuccess?.();
+  } catch {
+    onError?.();
+    toast.error(t('Failed to save workout'));
+  } finally {
+    isSaving.value = false;
+    skipNavigationGuard.value = false;
+  }
 }
 
 function finishWorkout() {
@@ -304,19 +300,18 @@ function finishWorkout() {
   completeWorkout();
 }
 
-function completeWorkout() {
+async function completeWorkout() {
   skipNavigationGuard.value = true;
 
-  router.post(
-    route('workouts.complete', { workout: workoutId.value }),
-    {},
-    {
-      onFinish: () => {
-        isFinishing.value = false;
-        skipNavigationGuard.value = false;
-      },
-    }
-  );
+  try {
+    await post(`/api/v1/workouts/${workoutId.value}/complete`);
+    router.visit(route('workouts.show', { id: workoutId.value }));
+  } catch {
+    toast.error(t('Failed to complete workout'));
+  } finally {
+    isFinishing.value = false;
+    skipNavigationGuard.value = false;
+  }
 }
 
 // Set completion toggle — now client-side only (no auto-save)

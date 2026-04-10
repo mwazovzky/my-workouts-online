@@ -25,7 +25,7 @@ class WorkoutAuthorizationTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->post(route('workouts.complete', ['workout' => $otherUserWorkout->id]));
+            ->postJson("/api/v1/workouts/{$otherUserWorkout->id}/complete");
 
         $response->assertForbidden();
 

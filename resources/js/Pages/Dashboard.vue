@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { router, Head } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import PageLayout from '@/Components/PageLayout.vue';
@@ -9,12 +11,11 @@ import { Card } from '@/Components/ui/card';
 import { Empty, EmptyDescription, EmptyTitle } from '@/Components/ui/empty';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { formatDate, formatDateOnly } from '@/utils/date';
-import { Form, Head } from '@inertiajs/vue3';
 import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
-const { get } = useApi();
+const { get, post } = useApi();
 
 const loading = ref(true);
 const upcomingSchedule = ref([]);
@@ -38,6 +39,20 @@ onMounted(async () => {
 
 function resolveWorkoutName(workout) {
   return workout.name ?? workout.workout_template?.name ?? t('Workout');
+}
+
+const startingWorkoutId = ref(null);
+
+async function startWorkout(workoutTemplateId) {
+  if (startingWorkoutId.value) return;
+  startingWorkoutId.value = workoutTemplateId;
+  try {
+    const { data } = await post('/api/v1/workouts', { workout_template_id: workoutTemplateId });
+    router.visit(route('workouts.edit', { id: data.data.id }));
+  } catch {
+    toast.error(t('Failed to start workout'));
+    startingWorkoutId.value = null;
+  }
 }
 </script>
 
@@ -160,22 +175,14 @@ function resolveWorkoutName(workout) {
                       {{ t('Open template') }}
                     </Button>
 
-                    <Form
-                      v-slot="{ processing }"
-                      :action="route('workouts.store')"
-                      method="post"
-                      preserve-scroll
+                    <Button
+                      size="sm"
+                      :disabled="startingWorkoutId === item.workout_template_id"
+                      @click="startWorkout(item.workout_template_id)"
                     >
-                      <input
-                        type="hidden"
-                        name="workout_template_id"
-                        :value="item.workout_template_id"
-                      />
-                      <Button type="submit" size="sm" :disabled="processing">
-                        <span v-if="!processing">{{ t('Start Workout') }}</span>
-                        <span v-else>{{ t('Starting…') }}</span>
-                      </Button>
-                    </Form>
+                      <span v-if="startingWorkoutId !== item.workout_template_id">{{ t('Start Workout') }}</span>
+                      <span v-else>{{ t('Starting…') }}</span>
+                    </Button>
                   </div>
                 </div>
               </Card>

@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
 import PageLayout from '@/Components/PageLayout.vue';
@@ -8,23 +10,37 @@ import WorkoutFooter from '@/Components/WorkoutFooter.vue';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { Form } from '@inertiajs/vue3';
 import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
-const { get } = useApi();
+const { get, post } = useApi();
 
 const props = defineProps({
   id: { type: Number, required: true },
 });
 
 const workoutTemplate = ref(null);
+const isStarting = ref(false);
 
 onMounted(async () => {
   const { data } = await get(`/api/v1/workout-templates/${props.id}`);
   workoutTemplate.value = data.data;
 });
+
+async function startWorkout() {
+  if (isStarting.value) return;
+  isStarting.value = true;
+  try {
+    const { data } = await post('/api/v1/workouts', {
+      workout_template_id: workoutTemplate.value.id,
+    });
+    router.visit(route('workouts.edit', { id: data.data.id }));
+  } catch {
+    toast.error(t('Failed to start workout'));
+    isStarting.value = false;
+  }
+}
 </script>
 
 <template>
@@ -75,23 +91,10 @@ onMounted(async () => {
       </PageLayout>
 
       <WorkoutFooter :show="true">
-        <Form
-          v-slot="{ errors, processing }"
-          :action="route('workouts.store')"
-          method="post"
-          preserve-scroll
-        >
-          <div class="flex flex-col gap-2 w-full">
-            <Button type="submit" size="lg" class="px-8" :disabled="processing">
-              <span v-if="!processing">{{ t('Start Workout') }}</span>
-              <span v-else>{{ t('Starting…') }}</span>
-            </Button>
-            <p v-if="errors.workout_template_id" class="text-sm text-destructive">
-              {{ errors.workout_template_id }}
-            </p>
-          </div>
-          <input type="hidden" name="workout_template_id" :value="workoutTemplate.id" />
-        </Form>
+        <Button size="lg" class="px-8" :disabled="isStarting" @click="startWorkout">
+          <span v-if="!isStarting">{{ t('Start Workout') }}</span>
+          <span v-else>{{ t('Starting…') }}</span>
+        </Button>
       </WorkoutFooter>
     </template>
   </AuthenticatedLayout>

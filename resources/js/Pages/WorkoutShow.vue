@@ -78,6 +78,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ActivitiesList from '@/Components/ActivitiesList.vue';
 import WorkoutCard from '@/Components/WorkoutCard.vue';
@@ -91,7 +92,7 @@ import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
-const { get } = useApi();
+const { get, post } = useApi();
 
 const props = defineProps({
   id: { type: Number, required: true },
@@ -138,17 +139,15 @@ function goEdit() {
   });
 }
 
-function repeatWorkout() {
+async function repeatWorkout() {
   if (!canRepeat.value) return;
   repeatNav.value = true;
-  router.post(
-    route('workouts.repeat', { workout: workout.value.id }),
-    {},
-    {
-      onFinish: () => {
-        repeatNav.value = false;
-      },
-    }
-  );
+  try {
+    const { data } = await post(`/api/v1/workouts/${workout.value.id}/repeat`);
+    router.visit(route('workouts.edit', { id: data.data.id }));
+  } catch {
+    toast.error(t('Failed to repeat workout'));
+    repeatNav.value = false;
+  }
 }
 </script>

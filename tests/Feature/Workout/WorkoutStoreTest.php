@@ -44,12 +44,11 @@ class WorkoutStoreTest extends TestCase
             ))
             ->create();
 
-        $response = $this->actingAs($user)->post(route('workouts.store'), [
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', [
             'workout_template_id' => $workoutTemplate->id,
         ]);
 
-        $response->assertRedirect();
-        $response->assertRedirect(route('workouts.edit', ['id' => Workout::latest('id')->first()->id]));
+        $response->assertCreated();
 
         $workout = Workout::latest('id')->first();
         $activity = $workout->activities->first();
@@ -86,13 +85,14 @@ class WorkoutStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('workouts.store'), []);
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', []);
 
-        $response->assertSessionHasErrors(['workout_template_id']);
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['workout_template_id']);
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            session('errors')->get('workout_template_id')[0],
+            $response->json('errors.workout_template_id.0'),
         );
     }
 
@@ -101,15 +101,16 @@ class WorkoutStoreTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('workouts.store'), [
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', [
             'workout_template_id' => 9999,
         ]);
 
-        $response->assertSessionHasErrors(['workout_template_id']);
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['workout_template_id']);
 
         $this->assertSame(
             'The selected workout template could not be found.',
-            session('errors')->get('workout_template_id')[0],
+            $response->json('errors.workout_template_id.0'),
         );
     }
 }

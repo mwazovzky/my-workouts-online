@@ -40,9 +40,9 @@ class WorkoutRepeatTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->post(route('workouts.repeat', ['workout' => $sourceWorkout->id]));
+            ->postJson("/api/v1/workouts/{$sourceWorkout->id}/repeat");
 
-        $response->assertRedirect();
+        $response->assertCreated();
 
         $newWorkout = Workout::query()->latest('id')->first();
 
@@ -98,7 +98,7 @@ class WorkoutRepeatTest extends TestCase
 
         $response = $this
             ->actingAs($otherUser)
-            ->post(route('workouts.repeat', ['workout' => $sourceWorkout->id]));
+            ->postJson("/api/v1/workouts/{$sourceWorkout->id}/repeat");
 
         $response->assertForbidden();
     }
@@ -115,7 +115,7 @@ class WorkoutRepeatTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->post(route('workouts.repeat', ['workout' => $sourceWorkout->id]));
+            ->postJson("/api/v1/workouts/{$sourceWorkout->id}/repeat");
 
         $response->assertForbidden();
     }
