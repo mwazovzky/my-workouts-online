@@ -14,6 +14,9 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name ?? null,
+            'email' => $this->email,
+            'locale' => $this->locale,
+            'theme_preference' => $this->theme_preference,
         ];
     }
 }

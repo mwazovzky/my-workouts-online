@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileLocaleRequest;
 use App\Http\Requests\ProfileThemeRequest;
 use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\JsonResponse;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,7 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): JsonResponse
+    public function update(ProfileUpdateRequest $request): UserResource
     {
         $user = $request->user();
         $user->fill($request->validated());
@@ -29,7 +29,7 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return response()->json(['data' => $user]);
+        return new UserResource($user);
     }
 
     /**
@@ -52,21 +52,21 @@ class ProfileController extends Controller
     /**
      * Update the user's locale preference.
      */
-    public function updateLocale(ProfileLocaleRequest $request): JsonResponse
+    public function updateLocale(ProfileLocaleRequest $request): UserResource
     {
         $request->user()->update($request->validated());
 
-        return response()->json(['data' => $request->user()]);
+        return new UserResource($request->user()->refresh());
     }
 
     /**
      * Update the user's theme preference.
      */
-    public function updateTheme(ProfileThemeRequest $request): JsonResponse
+    public function updateTheme(ProfileThemeRequest $request): UserResource
     {
         $request->user()->update($request->validated());
 
-        return response()->json(['data' => $request->user()]);
+        return new UserResource($request->user()->refresh());
     }
 
     /**
