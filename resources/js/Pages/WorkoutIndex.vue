@@ -176,7 +176,7 @@ function getPageFromUrl() {
 async function goToPage(pageNum) {
   const url = new window.URL(window.location.href);
   url.searchParams.set('page', pageNum);
-  window.history.pushState({}, '', url);
+  window.history.pushState(window.history.state, '', url);
   await fetchWorkouts(pageNum);
 }
 
