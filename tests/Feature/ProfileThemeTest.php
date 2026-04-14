@@ -18,14 +18,11 @@ class ProfileThemeTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/theme', [
+            ->patchJson('/api/v1/profile/theme', [
                 'theme_preference' => 'dark',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
+        $response->assertOk();
         $this->assertSame('dark', $user->refresh()->theme_preference);
     }
 
@@ -36,14 +33,11 @@ class ProfileThemeTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/theme', [
+            ->patchJson('/api/v1/profile/theme', [
                 'theme_preference' => 'light',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
+        $response->assertOk();
         $this->assertSame('light', $user->refresh()->theme_preference);
     }
 
@@ -54,14 +48,11 @@ class ProfileThemeTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/theme', [
+            ->patchJson('/api/v1/profile/theme', [
                 'theme_preference' => 'system',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
+        $response->assertOk();
         $this->assertSame('system', $user->refresh()->theme_preference);
     }
 
@@ -72,22 +63,22 @@ class ProfileThemeTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/theme', [
+            ->patchJson('/api/v1/profile/theme', [
                 'theme_preference' => 'midnight',
             ]);
 
-        $response->assertSessionHasErrors('theme_preference');
+        $response->assertUnprocessable();
         $this->assertSame('system', $user->refresh()->theme_preference);
     }
 
     #[Test]
     public function theme_preference_update_requires_authentication(): void
     {
-        $response = $this->patch('/profile/theme', [
+        $response = $this->patchJson('/api/v1/profile/theme', [
             'theme_preference' => 'dark',
         ]);
 
-        $response->assertRedirect('/login');
+        $response->assertUnauthorized();
     }
 
     #[Test]

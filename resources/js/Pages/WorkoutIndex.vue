@@ -31,9 +31,7 @@
                       workout.name ?? workout.workout_template?.name ?? t('Workout')
                     }}</span>
                   </div>
-                  <div
-                    class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap"
-                  >
+                  <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                     <span
                       >{{ formatDate(workout.created_at) }} ·
                       {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
@@ -73,15 +71,18 @@
         </ul>
 
         <!-- Pagination -->
-        <nav v-if="pagination && pagination.last_page > 1" class="flex items-center justify-center gap-1 mt-6">
+        <nav
+          v-if="pagination && pagination.last_page > 1"
+          class="flex items-center justify-center gap-1 mt-6"
+        >
           <Button
-            v-for="page in pagination.last_page"
-            :key="page"
-            :variant="page === pagination.current_page ? 'default' : 'outline'"
+            v-for="pageNum in pagination.last_page"
+            :key="pageNum"
+            :variant="pageNum === pagination.current_page ? 'default' : 'outline'"
             size="sm"
-            @click="goToPage(page)"
+            @click="goToPage(pageNum)"
           >
-            {{ page }}
+            {{ pageNum }}
           </Button>
         </nav>
       </template>
@@ -100,7 +101,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';

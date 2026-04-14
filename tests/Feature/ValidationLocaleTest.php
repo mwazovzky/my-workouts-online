@@ -22,15 +22,15 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->patch('/profile', [
+        $response = $this->actingAs($user)->patchJson('/api/v1/profile', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
 
-        $response->assertSessionHasErrors(['name', 'email']);
+        $response->assertUnprocessable();
 
-        $errors = session('errors');
-        $this->assertStringContainsString('обязательно', $errors->get('name')[0]);
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('обязательно', $errors['name'][0]);
     }
 
     #[Test]
@@ -38,15 +38,15 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->patch('/profile', [
+        $response = $this->actingAs($user)->patchJson('/api/v1/profile', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
 
-        $response->assertSessionHasErrors(['name']);
+        $response->assertUnprocessable();
 
-        $errors = session('errors');
-        $this->assertStringContainsString('required', $errors->get('name')[0]);
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('required', $errors['name'][0]);
     }
 
     // -------------------------------------------------------
@@ -241,13 +241,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->patch('/profile/locale', [
+        $response = $this->actingAs($user)->patchJson('/api/v1/profile/locale', [
             'locale' => 'fr',
         ]);
 
-        $response->assertSessionHasErrors('locale');
+        $response->assertUnprocessable();
 
-        $errors = session('errors');
-        $this->assertStringContainsString('Язык', $errors->get('locale')[0]);
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('Язык', $errors['locale'][0]);
     }
 }

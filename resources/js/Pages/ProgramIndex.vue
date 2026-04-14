@@ -20,9 +20,7 @@
       <template v-else>
         <Empty v-if="filteredPrograms.length === 0">
           <EmptyTitle>{{ t('No programs found') }}</EmptyTitle>
-          <EmptyDescription>{{
-            t('There are no programs matching your filter')
-          }}</EmptyDescription>
+          <EmptyDescription>{{ t('There are no programs matching your filter') }}</EmptyDescription>
         </Empty>
         <ul v-else class="space-y-3">
           <li v-for="program in filteredPrograms" :key="program.id">
@@ -36,9 +34,7 @@
                   </div>
                   <div class="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                     <span class="truncate">{{ program.description ?? t('No description') }}</span>
-                    <Badge v-if="program.is_enrolled" variant="success">{{
-                      t('Enrolled')
-                    }}</Badge>
+                    <Badge v-if="program.is_enrolled" variant="success">{{ t('Enrolled') }}</Badge>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">

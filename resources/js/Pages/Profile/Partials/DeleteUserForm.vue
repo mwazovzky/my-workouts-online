@@ -5,16 +5,17 @@ import InputLabel from '@/Components/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { useForm } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { nextTick, ref } from 'vue';
 import { useTranslation } from '@/composables/useTranslation';
+import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
 
-const form = useForm({
+const form = useApiForm({
   password: '',
 });
 
@@ -25,9 +26,11 @@ const confirmUserDeletion = () => {
 };
 
 const deleteUser = () => {
-  form.delete(route('profile.destroy'), {
-    preserveScroll: true,
-    onSuccess: () => closeModal(),
+  form.delete('/api/v1/profile', {
+    onSuccess: () => {
+      closeModal();
+      router.visit('/');
+    },
     onError: () => passwordInput.value.focus(),
     onFinish: () => form.reset(),
   });

@@ -30,14 +30,12 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
+            ->patchJson('/api/v1/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+        $response->assertOk();
 
         $user->refresh();
 
@@ -53,14 +51,12 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
+            ->patchJson('/api/v1/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+        $response->assertOk();
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
@@ -72,15 +68,11 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->delete('/profile', [
+            ->deleteJson('/api/v1/profile', [
                 'password' => 'password',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
+        $response->assertNoContent();
         $this->assertNull($user->fresh());
     }
 
@@ -91,15 +83,11 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->deleteJson('/api/v1/profile', [
                 'password' => 'wrong-password',
             ]);
 
-        $response
-            ->assertSessionHasErrors('password')
-            ->assertRedirect('/profile');
-
+        $response->assertUnprocessable();
         $this->assertNotNull($user->fresh());
     }
 }

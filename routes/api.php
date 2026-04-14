@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ProgramController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Controllers\Api\WorkoutController;
@@ -24,5 +25,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('workouts/{workout}/repeat', [WorkoutController::class, 'repeat'])->name('workouts.repeat');
         Route::patch('workouts/{workout}/save', [WorkoutController::class, 'save'])->name('workouts.save');
         Route::apiResource('workouts', WorkoutController::class)->except(['update']);
+
+        Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::patch('profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
+        Route::patch('profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
+        Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 });

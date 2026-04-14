@@ -3,20 +3,20 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useTranslation } from '@/composables/useTranslation.js';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
 const page = usePage();
 
 const availableThemePreferences = page.props.availableThemePreferences;
 
-const form = useForm({
+const form = useApiForm({
   theme_preference: page.props.themePreference,
 });
 
 function submit() {
-  form.patch(route('profile.theme'), {
-    preserveScroll: true,
+  form.patch('/api/v1/profile/theme', {
     onSuccess: () => {
       if (window.applyThemePreference) {
         window.applyThemePreference(form.theme_preference);

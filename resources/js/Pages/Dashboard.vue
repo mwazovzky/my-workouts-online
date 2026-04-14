@@ -180,7 +180,9 @@ async function startWorkout(workoutTemplateId) {
                       :disabled="startingWorkoutId === item.workout_template_id"
                       @click="startWorkout(item.workout_template_id)"
                     >
-                      <span v-if="startingWorkoutId !== item.workout_template_id">{{ t('Start Workout') }}</span>
+                      <span v-if="startingWorkoutId !== item.workout_template_id">{{
+                        t('Start Workout')
+                      }}</span>
                       <span v-else>{{ t('Starting…') }}</span>
                     </Button>
                   </div>
