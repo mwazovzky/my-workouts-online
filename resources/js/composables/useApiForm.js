@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { reactive } from 'vue';
 
 const META_KEYS = new Set([
@@ -61,9 +62,9 @@ export function useApiForm(initialData) {
     try {
       let response;
       if (method === 'delete') {
-        response = await window.axios.delete(url, { data: getFormData() });
+        response = await axios.delete(url, { data: getFormData() });
       } else {
-        response = await window.axios[method](url, getFormData());
+        response = await axios[method](url, getFormData());
       }
 
       form.recentlySuccessful = true;

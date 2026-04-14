@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { toast } from 'vue-sonner';
 import { useTranslation } from '@/composables/useTranslation';
 
@@ -10,7 +11,7 @@ export function useEnrollment() {
 
   async function enroll(programId) {
     try {
-      await window.axios.post(`/api/v1/programs/${programId}/enroll`);
+      await axios.post(`/api/v1/programs/${programId}/enroll`);
       return true;
     } catch {
       toast.error(t('Failed to enroll in program'));

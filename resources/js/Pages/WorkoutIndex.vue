@@ -120,7 +120,7 @@ import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
-const { get } = useApi();
+const { get, del } = useApi();
 
 const workouts = ref(null);
 const pagination = ref(null);
@@ -203,7 +203,7 @@ async function deleteWorkout(id) {
     confirmLabel: t('Delete'),
     onConfirm: async () => {
       try {
-        await window.axios.delete(`/api/v1/workouts/${id}`);
+        await del(`/api/v1/workouts/${id}`);
         await fetchWorkouts(currentPage.value);
       } catch {
         toast.error(t('Failed to delete workout'));
