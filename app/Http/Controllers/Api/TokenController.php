@@ -27,7 +27,12 @@ class TokenController extends Controller
             ]);
         }
 
-        $token = $request->user()->createToken($request->input('device_name'));
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken($request->input('device_name'));
 
         return response()->json(['token' => $token->plainTextToken], 201);
     }
@@ -37,7 +42,11 @@ class TokenController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+
+        if ($token) {
+            $token->delete();
+        }
 
         return response()->json(null, 204);
     }
