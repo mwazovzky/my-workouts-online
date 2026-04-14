@@ -9,6 +9,9 @@
     <NavLink :href="route('workouts.index')" :active="route().current('workouts.index')">
       {{ t('Workouts') }}
     </NavLink>
+    <NavLink :href="route('about')" :active="route().current('about')">
+      {{ t('About') }}
+    </NavLink>
   </nav>
 </template>
 

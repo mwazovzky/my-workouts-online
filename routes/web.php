@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
@@ -44,6 +45,10 @@ Route::get('/workouts/{id}/edit', [WorkoutPageController::class, 'edit'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 });
+
+Route::get('/about', [AboutController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('about');
 
 Route::get('/health', static fn () => response()->json([
     'status' => 'ok',
