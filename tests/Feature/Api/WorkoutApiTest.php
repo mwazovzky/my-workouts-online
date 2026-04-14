@@ -63,7 +63,7 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
-    public function show_returns_404_for_another_users_workout(): void
+    public function show_returns_403_for_another_users_workout(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
