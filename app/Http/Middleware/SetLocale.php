@@ -34,7 +34,7 @@ class SetLocale
             return $next($request);
         }
 
-        $sessionLocale = $request->session()->get('locale');
+        $sessionLocale = $request->hasSession() ? $request->session()->get('locale') : null;
 
         if (is_string($sessionLocale) && in_array($sessionLocale, $this->availableLocales, true)) {
             App::setLocale($sessionLocale);

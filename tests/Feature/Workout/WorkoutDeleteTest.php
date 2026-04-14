@@ -22,10 +22,9 @@ class WorkoutDeleteTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->from(route('workouts.index', ['page' => 2]))
-            ->delete(route('workouts.destroy', ['workout' => $workout->id]));
+            ->deleteJson("/api/v1/workouts/{$workout->id}");
 
-        $response->assertRedirect(route('workouts.index', ['page' => 2]));
+        $response->assertNoContent();
 
         $this->assertDatabaseMissing('workouts', ['id' => $workout->id]);
     }
@@ -41,9 +40,9 @@ class WorkoutDeleteTest extends TestCase
             'workout_template_id' => WorkoutTemplate::factory(),
         ]);
 
-        $response = $this->actingAs($otherUser)->delete(route('workouts.destroy', ['workout' => $workout->id]));
+        $response = $this->actingAs($otherUser)->deleteJson("/api/v1/workouts/{$workout->id}");
 
-        $response->assertStatus(403);
+        $response->assertForbidden();
 
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,

@@ -19,10 +19,9 @@ class ProgramEnrollTest extends TestCase
         $program = Program::factory()->create();
 
         $response = $this->actingAs($user)
-            ->from(route('programs.show', ['id' => $program->id]))
-            ->post(route('programs.enroll', ['program' => $program->id]));
+            ->postJson("/api/v1/programs/{$program->id}/enroll");
 
-        $response->assertRedirect(route('programs.show', ['id' => $program->id]));
+        $response->assertNoContent();
 
         $this->assertDatabaseHas('program_user', [
             'user_id' => $user->id,
@@ -39,10 +38,9 @@ class ProgramEnrollTest extends TestCase
         $user->programs()->attach($program);
 
         $response = $this->actingAs($user)
-            ->from(route('programs.show', ['id' => $program->id]))
-            ->post(route('programs.enroll', ['program' => $program->id]));
+            ->postJson("/api/v1/programs/{$program->id}/enroll");
 
-        $response->assertRedirect(route('programs.show', ['id' => $program->id]));
+        $response->assertNoContent();
     }
 
     #[Test]
@@ -50,9 +48,9 @@ class ProgramEnrollTest extends TestCase
     {
         $program = Program::factory()->create();
 
-        $response = $this->post(route('programs.enroll', ['program' => $program->id]));
+        $response = $this->postJson("/api/v1/programs/{$program->id}/enroll");
 
-        $response->assertRedirect(route('login'));
+        $response->assertUnauthorized();
 
         $this->assertDatabaseMissing('program_user', [
             'program_id' => $program->id,
@@ -64,7 +62,7 @@ class ProgramEnrollTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('programs.enroll', ['program' => 999]));
+        $response = $this->actingAs($user)->postJson('/api/v1/programs/999/enroll');
 
         $response->assertNotFound();
     }

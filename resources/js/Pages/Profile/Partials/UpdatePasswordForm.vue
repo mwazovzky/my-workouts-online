@@ -3,24 +3,24 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { useTranslation } from '@/composables/useTranslation';
+import { toast } from 'vue-sonner';
+import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
 
 const passwordInput = ref(null);
 const currentPasswordInput = ref(null);
 
-const form = useForm({
+const form = useApiForm({
   current_password: '',
   password: '',
   password_confirmation: '',
 });
 
 const updatePassword = () => {
-  form.put(route('password.update'), {
-    preserveScroll: true,
+  form.put('/api/v1/profile/password', {
     onSuccess: () => form.reset(),
     onError: () => {
       if (form.errors.password) {
@@ -32,6 +32,7 @@ const updatePassword = () => {
         currentPasswordInput.value.focus();
       }
     },
+    onFail: () => toast.error(t('Failed to update password')),
   });
 };
 </script>

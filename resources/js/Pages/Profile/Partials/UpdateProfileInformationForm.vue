@@ -3,8 +3,10 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import { useTranslation } from '@/composables/useTranslation';
+import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
 
@@ -19,10 +21,16 @@ defineProps({
 
 const user = usePage().props.auth.user;
 
-const form = useForm({
+const form = useApiForm({
   name: user.name,
   email: user.email,
 });
+
+function submit() {
+  form.patch('/api/v1/profile', {
+    onFail: () => toast.error(t('Failed to save profile')),
+  });
+}
 </script>
 
 <template>
@@ -37,7 +45,7 @@ const form = useForm({
       </p>
     </header>
 
-    <form class="mt-6 space-y-6" @submit.prevent="form.patch(route('profile.update'))">
+    <form class="mt-6 space-y-6" @submit.prevent="submit">
       <div>
         <InputLabel for="name" :value="t('Name')" />
 

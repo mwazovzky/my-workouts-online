@@ -3,20 +3,22 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useTranslation } from '@/composables/useTranslation.js';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
+import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
 const page = usePage();
 
 const availableLocales = page.props.availableLocales;
 
-const form = useForm({
+const form = useApiForm({
   locale: page.props.locale,
 });
 
 function submit() {
-  form.patch(route('profile.locale'), {
-    preserveScroll: true,
+  form.patch('/api/v1/profile/locale', {
+    onFail: () => toast.error(t('Failed to save language')),
   });
 }
 </script>

@@ -25,10 +25,6 @@ Route::get('/programs/{id}', [ProgramPageController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('programs.show');
 
-Route::post('/programs/{program}/enroll', [ProgramPageController::class, 'enroll'])
-    ->middleware(['auth', 'verified'])
-    ->name('programs.enroll');
-
 Route::get('/workout-templates/{id}', [WorkoutTemplatePageController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('workout.templates.show');
@@ -45,32 +41,8 @@ Route::get('/workouts/{id}/edit', [WorkoutPageController::class, 'edit'])
     ->middleware(['auth', 'verified'])
     ->name('workouts.edit');
 
-Route::post('/workouts', [WorkoutPageController::class, 'store'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.store');
-
-Route::patch('/workouts/{workout}/save', [WorkoutPageController::class, 'save'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.save');
-
-Route::post('/workouts/{workout}/complete', [WorkoutPageController::class, 'complete'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.complete');
-
-Route::post('/workouts/{workout}/repeat', [WorkoutPageController::class, 'repeat'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.repeat');
-
-Route::delete('/workouts/{workout}', [WorkoutPageController::class, 'destroy'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.destroy');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::patch('/profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
-    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 Route::get('/health', static fn () => response()->json([

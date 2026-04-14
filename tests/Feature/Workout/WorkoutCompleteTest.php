@@ -21,9 +21,9 @@ class WorkoutCompleteTest extends TestCase
             'status' => 'in_progress',
         ]);
 
-        $response = $this->actingAs($user)->post(route('workouts.complete', ['workout' => $workout->id]));
+        $response = $this->actingAs($user)->postJson("/api/v1/workouts/{$workout->id}/complete");
 
-        $response->assertRedirect(route('workouts.show', ['id' => $workout->id]));
+        $response->assertOk();
 
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,
@@ -42,7 +42,7 @@ class WorkoutCompleteTest extends TestCase
             'status' => 'in_progress',
         ]);
 
-        $response = $this->actingAs($user)->post(route('workouts.complete', ['workout' => $otherUserWorkout->id]));
+        $response = $this->actingAs($user)->postJson("/api/v1/workouts/{$otherUserWorkout->id}/complete");
 
         $response->assertForbidden();
 
@@ -61,7 +61,7 @@ class WorkoutCompleteTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $response = $this->actingAs($user)->post(route('workouts.complete', ['workout' => $workout->id]));
+        $response = $this->actingAs($user)->postJson("/api/v1/workouts/{$workout->id}/complete");
 
         $response->assertForbidden();
 
@@ -76,21 +76,21 @@ class WorkoutCompleteTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('workouts.complete', ['workout' => 99999]));
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts/99999/complete');
 
         $response->assertNotFound();
     }
 
     #[Test]
-    public function guest_user_redirected_when_attempting_to_complete_workout(): void
+    public function guest_user_gets_unauthorized_when_attempting_to_complete_workout(): void
     {
         $workout = Workout::factory()->create([
             'status' => 'in_progress',
         ]);
 
-        $response = $this->post(route('workouts.complete', ['workout' => $workout->id]));
+        $response = $this->postJson("/api/v1/workouts/{$workout->id}/complete");
 
-        $response->assertRedirect(route('login'));
+        $response->assertUnauthorized();
 
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,

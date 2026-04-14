@@ -38,8 +38,8 @@ class WorkoutSaveTest extends TestCase
             'is_completed' => false,
         ]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -60,7 +60,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseHas('sets', [
             'id' => $set->id,
@@ -85,8 +85,8 @@ class WorkoutSaveTest extends TestCase
         $set1 = Set::factory()->for($activity, 'activity')->create(['order' => 1]);
         $set2 = Set::factory()->for($activity, 'activity')->create(['order' => 2]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -102,7 +102,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseHas('sets', ['id' => $set1->id]);
         $this->assertDatabaseMissing('sets', ['id' => $set2->id]);
@@ -133,8 +133,8 @@ class WorkoutSaveTest extends TestCase
         Set::factory()->for($activity1, 'activity')->create(['order' => 1]);
         $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -149,7 +149,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseHas('activities', ['id' => $activity1->id]);
         $this->assertDatabaseMissing('activities', ['id' => $activity2->id]);
@@ -170,8 +170,8 @@ class WorkoutSaveTest extends TestCase
         ]);
         Set::factory()->for($activity, 'activity')->create(['order' => 1]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -193,7 +193,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseCount('activities', 2);
         $this->assertDatabaseHas('activities', [
@@ -221,8 +221,8 @@ class WorkoutSaveTest extends TestCase
         $set4 = Set::factory()->for($activity, 'activity')->create(['order' => 4, 'effort_value' => 8, 'difficulty_value' => 80]);
 
         // Keep set1 (updated), delete set2 and set4, keep set3, add two new
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -240,7 +240,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseMissing('sets', ['id' => $set2->id]);
         $this->assertDatabaseMissing('sets', ['id' => $set4->id]);
@@ -266,8 +266,8 @@ class WorkoutSaveTest extends TestCase
         $set3 = Set::factory()->for($activity, 'activity')->create(['order' => 3, 'effort_value' => 7, 'difficulty_value' => 70]);
 
         // Frontend sends already-normalized orders [1, 2] after deleting the middle set
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -283,7 +283,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseMissing('sets', ['id' => $set2->id]);
         $this->assertDatabaseHas('sets', ['id' => $set1->id, 'order' => 1]);
@@ -309,8 +309,8 @@ class WorkoutSaveTest extends TestCase
         $set1 = Set::factory()->for($activity1, 'activity')->create(['order' => 1]);
         $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -343,7 +343,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseHas('activities', ['id' => $activity1->id, 'order' => 2]);
         $this->assertDatabaseHas('activities', ['id' => $activity2->id, 'order' => 1]);
@@ -361,8 +361,8 @@ class WorkoutSaveTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $otherUser->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -386,8 +386,8 @@ class WorkoutSaveTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'completed']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -409,12 +409,12 @@ class WorkoutSaveTest extends TestCase
     {
         $workout = Workout::factory()->create(['status' => 'in_progress']);
 
-        $response = $this->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             ['activities' => []],
         );
 
-        $response->assertRedirect(route('login'));
+        $response->assertUnauthorized();
     }
 
     #[Test]
@@ -422,8 +422,8 @@ class WorkoutSaveTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => 99999]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/99999/save',
             ['activities' => []],
         );
 
@@ -440,12 +440,12 @@ class WorkoutSaveTest extends TestCase
         $user = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             ['activities' => []],
         );
 
-        $response->assertSessionHasErrors(['activities']);
+        $response->assertJsonValidationErrors(['activities']);
     }
 
     #[Test]
@@ -455,8 +455,8 @@ class WorkoutSaveTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -468,7 +468,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.sets']);
+        $response->assertJsonValidationErrors(['activities.0.sets']);
     }
 
     #[Test]
@@ -477,8 +477,8 @@ class WorkoutSaveTest extends TestCase
         $user = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -492,7 +492,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.exercise_id']);
+        $response->assertJsonValidationErrors(['activities.0.exercise_id']);
     }
 
     #[Test]
@@ -508,8 +508,8 @@ class WorkoutSaveTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout1->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout1->id.'/save',
             [
                 'activities' => [
                     [
@@ -524,7 +524,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.id']);
+        $response->assertJsonValidationErrors(['activities.0.id']);
     }
 
     #[Test]
@@ -534,8 +534,8 @@ class WorkoutSaveTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -549,7 +549,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors([
+        $response->assertJsonValidationErrors([
             'activities.0.sets.0.order',
             'activities.0.sets.0.effort_value',
         ]);
@@ -562,8 +562,8 @@ class WorkoutSaveTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -577,7 +577,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.sets.0.is_completed']);
+        $response->assertJsonValidationErrors(['activities.0.sets.0.is_completed']);
     }
 
     // -------------------------------------------------------
@@ -598,8 +598,8 @@ class WorkoutSaveTest extends TestCase
         ]);
         $oldSet = Set::factory()->for($oldActivity, 'activity')->create(['order' => 1]);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -613,7 +613,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertRedirect();
+        $response->assertOk();
 
         $this->assertDatabaseMissing('activities', ['id' => $oldActivity->id]);
         $this->assertDatabaseMissing('sets', ['id' => $oldSet->id]);
@@ -644,8 +644,8 @@ class WorkoutSaveTest extends TestCase
         $set2 = Set::factory()->for($activity2, 'activity')->create(['order' => 1]);
 
         // Try to put set2 (belongs to activity2) into activity1's sets
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             [
                 'activities' => [
                     [
@@ -668,7 +668,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors();
+        $response->assertUnprocessable();
     }
 
     #[Test]
@@ -709,15 +709,15 @@ class WorkoutSaveTest extends TestCase
             ],
         ];
 
-        $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             $payload,
-        )->assertRedirect();
+        )->assertOk();
 
-        $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
             $payload,
-        )->assertRedirect();
+        )->assertOk();
 
         $this->assertDatabaseCount('activities', 1);
         $this->assertDatabaseCount('sets', 1);

@@ -18,14 +18,11 @@ class ProfileLocaleTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/locale', [
+            ->patchJson('/api/v1/profile/locale', [
                 'locale' => 'ru',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
+        $response->assertOk();
         $this->assertSame('ru', $user->refresh()->locale);
     }
 
@@ -36,14 +33,11 @@ class ProfileLocaleTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/locale', [
+            ->patchJson('/api/v1/profile/locale', [
                 'locale' => 'en',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
+        $response->assertOk();
         $this->assertSame('en', $user->refresh()->locale);
     }
 
@@ -54,11 +48,11 @@ class ProfileLocaleTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/locale', [
+            ->patchJson('/api/v1/profile/locale', [
                 'locale' => 'fr',
             ]);
 
-        $response->assertSessionHasErrors('locale');
+        $response->assertUnprocessable();
         $this->assertSame('en', $user->refresh()->locale);
     }
 
@@ -69,21 +63,21 @@ class ProfileLocaleTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/locale', [
+            ->patchJson('/api/v1/profile/locale', [
                 'locale' => '',
             ]);
 
-        $response->assertSessionHasErrors('locale');
+        $response->assertUnprocessable();
     }
 
     #[Test]
     public function locale_update_requires_authentication(): void
     {
-        $response = $this->patch('/profile/locale', [
+        $response = $this->patchJson('/api/v1/profile/locale', [
             'locale' => 'ru',
         ]);
 
-        $response->assertRedirect('/login');
+        $response->assertUnauthorized();
     }
 
     #[Test]

@@ -22,15 +22,15 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->patch('/profile', [
+        $response = $this->actingAs($user)->patchJson('/api/v1/profile', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
 
-        $response->assertSessionHasErrors(['name', 'email']);
+        $response->assertUnprocessable();
 
-        $errors = session('errors');
-        $this->assertStringContainsString('обязательно', $errors->get('name')[0]);
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('обязательно', $errors['name'][0]);
     }
 
     #[Test]
@@ -38,15 +38,15 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->patch('/profile', [
+        $response = $this->actingAs($user)->patchJson('/api/v1/profile', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
 
-        $response->assertSessionHasErrors(['name']);
+        $response->assertUnprocessable();
 
-        $errors = session('errors');
-        $this->assertStringContainsString('required', $errors->get('name')[0]);
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('required', $errors['name'][0]);
     }
 
     // -------------------------------------------------------
@@ -58,13 +58,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->post(route('workouts.store'), []);
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', []);
 
-        $response->assertSessionHasErrors(['workout_template_id']);
+        $response->assertUnprocessable();
 
         $this->assertSame(
             'Для начала тренировки необходимо выбрать шаблон.',
-            session('errors')->get('workout_template_id')[0],
+            $response->json('errors.workout_template_id.0'),
         );
     }
 
@@ -73,15 +73,15 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->post(route('workouts.store'), [
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', [
             'workout_template_id' => 9999,
         ]);
 
-        $response->assertSessionHasErrors(['workout_template_id']);
+        $response->assertUnprocessable();
 
         $this->assertSame(
             'Выбранный шаблон тренировки не найден.',
-            session('errors')->get('workout_template_id')[0],
+            $response->json('errors.workout_template_id.0'),
         );
     }
 
@@ -90,13 +90,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->post(route('workouts.store'), []);
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', []);
 
-        $response->assertSessionHasErrors(['workout_template_id']);
+        $response->assertUnprocessable();
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            session('errors')->get('workout_template_id')[0],
+            $response->json('errors.workout_template_id.0'),
         );
     }
 
@@ -110,15 +110,13 @@ class ValidationLocaleTest extends TestCase
         $user = User::factory()->create(['locale' => 'ru']);
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            "/api/v1/workouts/{$workout->id}/save",
             ['activities' => []],
         );
 
-        $response->assertSessionHasErrors(['activities']);
-
-        $errors = session('errors');
-        $this->assertStringContainsString('обязательно', $errors->get('activities')[0]);
+        $response->assertUnprocessable();
+        $this->assertStringContainsString('обязательно', $response->json('errors.activities.0'));
     }
 
     #[Test]
@@ -128,8 +126,8 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            "/api/v1/workouts/{$workout->id}/save",
             [
                 'activities' => [
                     [
@@ -141,10 +139,9 @@ class ValidationLocaleTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.sets']);
-
-        $errors = session('errors');
-        $this->assertStringContainsString('обязательно', $errors->get('activities.0.sets')[0]);
+        $response->assertUnprocessable();
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('обязательно', $errors['activities.0.sets'][0]);
     }
 
     // -------------------------------------------------------
@@ -158,8 +155,8 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            "/api/v1/workouts/{$workout->id}/save",
             [
                 'activities' => [
                     [
@@ -173,11 +170,12 @@ class ValidationLocaleTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.sets.0.is_completed']);
+        $response->assertUnprocessable();
 
+        $errors = $response->json('errors');
         $this->assertSame(
             'Подход не может быть отмечен как выполненный с нулевым усилием.',
-            session('errors')->get('activities.0.sets.0.is_completed')[0],
+            $errors['activities.0.sets.0.is_completed'][0],
         );
     }
 
@@ -188,8 +186,8 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patch(
-            route('workouts.save', ['workout' => $workout->id]),
+        $response = $this->actingAs($user)->patchJson(
+            "/api/v1/workouts/{$workout->id}/save",
             [
                 'activities' => [
                     [
@@ -203,11 +201,12 @@ class ValidationLocaleTest extends TestCase
             ],
         );
 
-        $response->assertSessionHasErrors(['activities.0.sets.0.is_completed']);
+        $response->assertUnprocessable();
 
+        $errors = $response->json('errors');
         $this->assertSame(
             'A set cannot be marked as completed with 0 effort.',
-            session('errors')->get('activities.0.sets.0.is_completed')[0],
+            $errors['activities.0.sets.0.is_completed'][0],
         );
     }
 
@@ -242,13 +241,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->patch('/profile/locale', [
+        $response = $this->actingAs($user)->patchJson('/api/v1/profile/locale', [
             'locale' => 'fr',
         ]);
 
-        $response->assertSessionHasErrors('locale');
+        $response->assertUnprocessable();
 
-        $errors = session('errors');
-        $this->assertStringContainsString('Язык', $errors->get('locale')[0]);
+        $errors = $response->json('errors');
+        $this->assertStringContainsString('Язык', $errors['locale'][0]);
     }
 }

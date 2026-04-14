@@ -32,11 +32,11 @@ class TranslatedResourceTest extends TestCase
             'status' => 'in_progress',
         ]);
 
-        $response = $this->actingAs($user)->get(route('workouts.index'));
+        $response = $this->actingAs($user)->getJson('/api/v1/workouts');
 
         $response->assertOk();
 
-        $workouts = $response->original->getData()['page']['props']['workouts']['data'];
+        $workouts = $response->json('data');
         $this->assertNotEmpty($workouts);
         $this->assertEquals('В процессе', $workouts[0]['status_label']);
         $this->assertEquals('in_progress', $workouts[0]['status']);
@@ -55,11 +55,11 @@ class TranslatedResourceTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $response = $this->actingAs($user)->get(route('workouts.index'));
+        $response = $this->actingAs($user)->getJson('/api/v1/workouts');
 
         $response->assertOk();
 
-        $workouts = $response->original->getData()['page']['props']['workouts']['data'];
+        $workouts = $response->json('data');
         $this->assertNotEmpty($workouts);
         $this->assertEquals('Completed', $workouts[0]['status_label']);
     }
@@ -76,13 +76,12 @@ class TranslatedResourceTest extends TestCase
 
         $program->users()->attach($user->id);
 
-        $response = $this->actingAs($user)->get(route('programs.show', ['id' => $program->id]));
+        $response = $this->actingAs($user)->getJson("/api/v1/programs/{$program->id}");
 
         $response->assertOk();
 
-        $props = $response->original->getData()['page']['props'];
-        $this->assertEquals('Начинающий', $props['program']['name']);
-        $this->assertEquals('Программа для начинающих.', $props['program']['description']);
+        $this->assertEquals('Начинающий', $response->json('data.name'));
+        $this->assertEquals('Программа для начинающих.', $response->json('data.description'));
     }
 
     #[Test]
@@ -129,11 +128,10 @@ class TranslatedResourceTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($user)->get(route('workouts.show', ['id' => $workout->id]));
+        $response = $this->actingAs($user)->getJson("/api/v1/workouts/{$workout->id}");
 
         $response->assertOk();
 
-        $props = $response->original->getData()['page']['props'];
-        $this->assertEquals('В процессе', $props['workout']['status_label']);
+        $this->assertEquals('В процессе', $response->json('data.status_label'));
     }
 }
