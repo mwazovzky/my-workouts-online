@@ -72,13 +72,13 @@ class WorkoutController extends Controller
         return new WorkoutResource($workout);
     }
 
-    public function repeat(Workout $workout, WorkoutServiceInterface $service): WorkoutResource
+    public function repeat(Workout $workout, WorkoutServiceInterface $service): JsonResponse
     {
         $this->authorize('repeat', $workout);
 
         $newWorkout = $service->repeat($workout);
 
-        return new WorkoutResource($newWorkout);
+        return (new WorkoutResource($newWorkout))->response()->setStatusCode(201);
     }
 
     public function destroy(Workout $workout, WorkoutServiceInterface $service): JsonResponse
