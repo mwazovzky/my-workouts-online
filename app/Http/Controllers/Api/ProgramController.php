@@ -21,11 +21,9 @@ class ProgramController extends Controller
         return ProgramResource::collection($programs);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, Program $program): JsonResponse
     {
-        $program = Program::query()
-            ->withCount(['users' => fn ($query) => $query->where('users.id', $request->user()->id)])
-            ->findOrFail($id);
+        $program->loadCount(['users' => fn ($query) => $query->where('users.id', $request->user()->id)]);
 
         $workoutTemplates = $program->workoutTemplates()->get();
 
