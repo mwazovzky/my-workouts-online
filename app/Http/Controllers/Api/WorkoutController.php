@@ -27,21 +27,20 @@ class WorkoutController extends Controller
         return WorkoutResource::collection($workouts);
     }
 
-    public function show(Request $request, int $id): WorkoutResource
+    public function show(Workout $workout): WorkoutResource
     {
-        $workout = Workout::query()
-            ->ownedBy($request->user())
-            ->withTemplate()
-            ->withActivitiesCount()
-            ->findOrFail($id);
+        $this->authorize('view', $workout);
 
         $workout->load([
+            'workoutTemplate',
             'activities' => fn ($query) => $query->orderBy('order'),
             'activities.sets' => fn ($query) => $query->orderBy('order'),
             'activities.exercise.equipment.translations',
             'activities.exercise.categories.translations',
             'activities.exercise.translations',
         ]);
+
+        $workout->loadCount('activities');
 
         return new WorkoutResource($workout);
     }

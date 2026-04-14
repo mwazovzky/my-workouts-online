@@ -8,6 +8,11 @@ use App\Models\Workout;
 
 class WorkoutPolicy
 {
+    public function view(User $user, Workout $workout): bool
+    {
+        return $workout->user_id === $user->id;
+    }
+
     public function delete(User $user, Workout $workout): bool
     {
         return $workout->user_id === $user->id;
