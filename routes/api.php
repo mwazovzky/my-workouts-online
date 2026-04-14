@@ -14,6 +14,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::delete('tokens/current', [TokenController::class, 'destroy'])->name('tokens.destroy');
 
+        Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::patch('profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
+        Route::patch('profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
+        Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+
+    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
@@ -25,11 +33,5 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('workouts/{workout}/repeat', [WorkoutController::class, 'repeat'])->name('workouts.repeat');
         Route::patch('workouts/{workout}/save', [WorkoutController::class, 'save'])->name('workouts.save');
         Route::apiResource('workouts', WorkoutController::class)->except(['update']);
-
-        Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-        Route::patch('profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
-        Route::patch('profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
-        Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 });
