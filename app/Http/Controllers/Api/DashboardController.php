@@ -69,16 +69,11 @@ class DashboardController extends Controller
     private function buildUpcomingSchedule(Collection $programs): array
     {
         $today = CarbonImmutable::today();
-        $windowEnd = $today->addDays(6);
 
         return $programs
-            ->flatMap(function (Program $program) use ($today, $windowEnd) {
-                return $program->workoutTemplates->map(function ($workoutTemplate) use ($program, $today, $windowEnd) {
+            ->flatMap(function (Program $program) use ($today) {
+                return $program->workoutTemplates->map(function ($workoutTemplate) use ($program, $today) {
                     $scheduledDate = $this->nextScheduledDate($workoutTemplate->pivot->weekday, $today);
-
-                    if ($scheduledDate->greaterThan($windowEnd)) {
-                        return null;
-                    }
 
                     return [
                         'id' => sprintf('%d-%d-%s', $program->id, $workoutTemplate->id, $scheduledDate->toDateString()),
@@ -91,7 +86,7 @@ class DashboardController extends Controller
                         'scheduled_at' => $scheduledDate->startOfDay()->toIso8601String(),
                         'scheduled_for' => $scheduledDate->toDateString(),
                     ];
-                })->filter();
+                });
             })
             ->sortBy('scheduled_at')
             ->values()
