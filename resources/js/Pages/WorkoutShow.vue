@@ -149,7 +149,11 @@ async function repeatWorkout() {
   repeatNav.value = true;
   try {
     const { data } = await post(`/api/v1/workouts/${workout.value.id}/repeat`);
-    router.visit(route('workouts.edit', { id: data.data.id }));
+    router.visit(route('workouts.edit', { id: data.data.id }), {
+      onFinish: () => {
+        repeatNav.value = false;
+      },
+    });
   } catch {
     toast.error(t('Failed to repeat workout'));
     repeatNav.value = false;

@@ -53,7 +53,11 @@ async function startWorkout(workoutTemplateId) {
   startingWorkoutId.value = workoutTemplateId;
   try {
     const { data } = await post('/api/v1/workouts', { workout_template_id: workoutTemplateId });
-    router.visit(route('workouts.edit', { id: data.data.id }));
+    router.visit(route('workouts.edit', { id: data.data.id }), {
+      onFinish: () => {
+        startingWorkoutId.value = null;
+      },
+    });
   } catch {
     toast.error(t('Failed to start workout'));
     startingWorkoutId.value = null;
