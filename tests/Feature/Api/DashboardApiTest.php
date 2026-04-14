@@ -23,6 +23,13 @@ class DashboardApiTest extends TestCase
         Carbon::setTestNow('2025-01-06 10:00:00'); // Monday
     }
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function index_returns_dashboard_data(): void
     {
