@@ -33,7 +33,7 @@ class WorkoutShowTest extends TestCase
 
         $response = $this->actingAs($other)->getJson("/api/v1/workouts/{$workout->id}");
 
-        $response->assertForbidden();
+        $response->assertNotFound();
     }
 
     #[Test]

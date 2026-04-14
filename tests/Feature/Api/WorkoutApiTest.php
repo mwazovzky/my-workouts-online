@@ -63,13 +63,13 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
-    public function show_returns_403_for_another_users_workout(): void
+    public function show_returns_404_for_another_users_workout(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $other->id]);
 
-        $this->actingAs($user)->getJson("/api/v1/workouts/{$workout->id}")->assertForbidden();
+        $this->actingAs($user)->getJson("/api/v1/workouts/{$workout->id}")->assertNotFound();
     }
 
     #[Test]

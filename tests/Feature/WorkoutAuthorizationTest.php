@@ -47,6 +47,6 @@ class WorkoutAuthorizationTest extends TestCase
             ->actingAs($user)
             ->getJson("/api/v1/workouts/{$otherUserWorkout->id}");
 
-        $response->assertForbidden();
+        $response->assertNotFound();
     }
 }

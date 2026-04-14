@@ -28,9 +28,9 @@ class WorkoutController extends Controller
         return WorkoutResource::collection($workouts);
     }
 
-    public function show(Workout $workout): WorkoutResource
+    public function show(Request $request, Workout $workout): WorkoutResource
     {
-        $this->authorize('view', $workout);
+        abort_if($workout->user_id !== $request->user()->id, 404);
 
         $workout->load([
             'workoutTemplate',
