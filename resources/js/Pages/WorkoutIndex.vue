@@ -164,6 +164,8 @@ async function fetchWorkouts(pageNum = 1) {
   } catch {
     toast.error(t('Failed to load workouts'));
     workouts.value = [];
+    pagination.value = null;
+    currentPage.value = 1;
   }
 }
 
