@@ -129,6 +129,9 @@ const { t } = useTranslation();
             >
               {{ t('Workouts') }}
             </ResponsiveNavLink>
+            <ResponsiveNavLink :href="route('about')" :active="route().current('about')">
+              {{ t('About') }}
+            </ResponsiveNavLink>
           </div>
 
           <!-- Responsive Settings Options -->

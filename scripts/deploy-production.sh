@@ -31,6 +31,8 @@ while IFS= read -r line; do
   if [[ "${line}" == IMAGE_TAG=* ]]; then
     printf 'IMAGE_TAG=%s\n' "${IMAGE_TAG}" >> "${tmp_env_file}"
     updated_image_tag=true
+  elif [[ "${line}" == APP_VERSION=* ]]; then
+    printf 'APP_VERSION=%s\n' "${IMAGE_TAG}" >> "${tmp_env_file}"
   else
     printf '%s\n' "${line}" >> "${tmp_env_file}"
   fi

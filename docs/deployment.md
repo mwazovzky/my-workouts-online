@@ -168,6 +168,7 @@ Required values (see `.env.production` in repo for full reference):
 - `SESSION_SECURE_COOKIE=false` (set to `true` after HTTPS is active — see step 11)
 - `IMAGE_NAME=YOUR_DOCKERHUB_USER/PROJECT_NAME`
 - `IMAGE_TAG=initial-tag` (the deploy workflow replaces this on every release)
+- `APP_VERSION=dev` (the deploy script replaces this with the release tag on every release)
 
 ## 7. Verify Docker access on the droplet
 
