@@ -131,6 +131,7 @@ const isSaving = ref(false);
 const isFinishing = ref(false);
 const isDirty = ref(false);
 const skipNavigationGuard = ref(false);
+const isRedirectingAfterLoadError = ref(false);
 
 // Confirm dialog state
 const confirmDialog = ref({
@@ -229,9 +230,12 @@ onMounted(async () => {
   } catch {
     toast.error(t('Failed to load workout'));
     skipNavigationGuard.value = true;
+    isRedirectingAfterLoadError.value = true;
     router.visit(route('workouts.index'));
   } finally {
-    isLoading.value = false;
+    if (!isRedirectingAfterLoadError.value) {
+      isLoading.value = false;
+    }
   }
 });
 
