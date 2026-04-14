@@ -82,8 +82,8 @@ export function useApiForm(initialData) {
           flattened[key] = Array.isArray(rawErrors[key]) ? rawErrors[key][0] : rawErrors[key];
         }
         form.errors = flattened;
+        options.onError?.(form.errors);
       }
-      options.onError?.(form.errors);
     } finally {
       form.processing = false;
       options.onFinish?.();

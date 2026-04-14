@@ -209,7 +209,7 @@ describe('useApiForm', () => {
   // Non-422 error path
   // -------------------------------------------------------
 
-  it('keeps form.errors empty and calls onError with {} on non-422 error', async () => {
+  it('does not call onError on non-422 errors', async () => {
     mockAxios.patch.mockRejectedValueOnce({ response: { status: 500 } });
     const onError = vi.fn();
     const form = useApiForm({ name: 'Alice' });
@@ -217,7 +217,7 @@ describe('useApiForm', () => {
     await form.patch('/api/v1/profile', { onError });
 
     expect(form.errors).toEqual({});
-    expect(onError).toHaveBeenCalledWith({});
+    expect(onError).not.toHaveBeenCalled();
     expect(form.processing).toBe(false);
   });
 
