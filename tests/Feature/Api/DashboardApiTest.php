@@ -112,6 +112,33 @@ class DashboardApiTest extends TestCase
     }
 
     #[Test]
+    public function index_includes_upcoming_schedule_for_all_weekdays(): void
+    {
+        // Frozen on Monday 2025-01-06 (day 1). Next occurrences:
+        // Monday    → today        (Jan 6,  +0 days)
+        // Tuesday   → tomorrow     (Jan 7,  +1 day)
+        // Wednesday → Jan 8        (+2 days)
+        // Thursday  → Jan 9        (+3 days)
+        // Friday    → Jan 10       (+4 days)
+        // Saturday  → Jan 11       (+5 days)
+        // Sunday    → Jan 12       (+6 days)
+        $user = User::factory()->create();
+        $program = Program::factory()->create();
+
+        foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $weekday) {
+            $template = WorkoutTemplate::factory()->create();
+            $program->workoutTemplates()->attach($template->id, ['weekday' => $weekday]);
+        }
+
+        $user->programs()->attach($program->id);
+
+        $response = $this->actingAs($user)->getJson('/api/v1/dashboard');
+
+        $response->assertOk();
+        $this->assertCount(7, $response->json('data.upcoming_schedule'));
+    }
+
+    #[Test]
     public function index_requires_authentication(): void
     {
         $this->getJson('/api/v1/dashboard')->assertUnauthorized();

@@ -69,7 +69,7 @@ class WorkoutApiTest extends TestCase
         $other = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $other->id]);
 
-        $this->actingAs($user)->getJson("/api/v1/workouts/{$workout->id}")->assertNotFound();
+        $this->actingAs($user)->getJson("/api/v1/workouts/{$workout->id}")->assertForbidden();
     }
 
     #[Test]

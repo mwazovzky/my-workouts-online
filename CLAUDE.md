@@ -35,6 +35,8 @@ npm run format            # Prettier format
 
 After modifying any `.js` or `.vue` file, always run `npm run lint:fix && npm run format` before finalizing.
 
+After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` before finalizing.
+
 ### Build
 ```bash
 npm run build             # Production frontend build
