@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
@@ -169,11 +169,29 @@ async function fetchWorkouts(pageNum = 1) {
   }
 }
 
+function getPageFromUrl() {
+  return parseInt(new window.URL(window.location.href).searchParams.get('page') || '1', 10);
+}
+
 async function goToPage(pageNum) {
+  const url = new window.URL(window.location.href);
+  url.searchParams.set('page', pageNum);
+  window.history.pushState({}, '', url);
   await fetchWorkouts(pageNum);
 }
 
-onMounted(() => fetchWorkouts(1));
+function onPopState() {
+  fetchWorkouts(getPageFromUrl());
+}
+
+onMounted(() => {
+  window.addEventListener('popstate', onPopState);
+  fetchWorkouts(getPageFromUrl());
+});
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', onPopState);
+});
 
 // Confirm dialog state
 const confirmDialog = ref({
