@@ -9,6 +9,7 @@ use App\Models\Program;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class ProgramController extends Controller
 {
@@ -35,10 +36,10 @@ class ProgramController extends Controller
         ]);
     }
 
-    public function enroll(Request $request, Program $program): JsonResponse
+    public function enroll(Request $request, Program $program): Response
     {
         $program->users()->syncWithoutDetaching([$request->user()->id]);
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

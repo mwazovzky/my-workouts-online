@@ -12,6 +12,7 @@ use App\Services\Workout\WorkoutServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class WorkoutController extends Controller
 {
@@ -80,12 +81,12 @@ class WorkoutController extends Controller
         return (new WorkoutResource($newWorkout))->response()->setStatusCode(201);
     }
 
-    public function destroy(Workout $workout, WorkoutServiceInterface $service): JsonResponse
+    public function destroy(Workout $workout, WorkoutServiceInterface $service): Response
     {
         $this->authorize('delete', $workout);
 
         $service->delete($workout);
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

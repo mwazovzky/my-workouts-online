@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\TokenIssueRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class TokenController extends Controller
@@ -29,7 +30,7 @@ class TokenController extends Controller
     /**
      * Revoke the current token.
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request): Response
     {
         $token = $request->user()->currentAccessToken();
 
@@ -37,6 +38,6 @@ class TokenController extends Controller
             $token->delete();
         }
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }
