@@ -75,15 +75,17 @@
           v-if="pagination && pagination.last_page > 1"
           class="flex items-center justify-center gap-1 mt-6"
         >
-          <Button
-            v-for="pageNum in pagination.last_page"
-            :key="pageNum"
-            :variant="pageNum === pagination.current_page ? 'default' : 'outline'"
-            size="sm"
-            @click="goToPage(pageNum)"
-          >
-            {{ pageNum }}
-          </Button>
+          <template v-for="item in paginationItems" :key="item.key">
+            <span v-if="item.ellipsis" class="px-2 text-muted-foreground text-sm">…</span>
+            <Button
+              v-else
+              :variant="item.page === pagination.current_page ? 'default' : 'outline'"
+              size="sm"
+              @click="goToPage(item.page)"
+            >
+              {{ item.page }}
+            </Button>
+          </template>
         </nav>
       </template>
     </PageLayout>
@@ -123,6 +125,31 @@ const { get } = useApi();
 const workouts = ref(null);
 const pagination = ref(null);
 const currentPage = ref(1);
+
+const paginationItems = computed(() => {
+  if (!pagination.value) return [];
+
+  const last = pagination.value.last_page;
+  const current = pagination.value.current_page;
+  const delta = 2;
+
+  const pages = new Set([1, last]);
+  for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
+    pages.add(i);
+  }
+
+  const sorted = [...pages].sort((a, b) => a - b);
+  const items = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) {
+      items.push({ key: `ellipsis-${sorted[i]}`, ellipsis: true });
+    }
+    items.push({ key: sorted[i], page: sorted[i], ellipsis: false });
+  }
+
+  return items;
+});
 
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
