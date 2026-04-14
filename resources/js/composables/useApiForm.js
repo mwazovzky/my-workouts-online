@@ -83,6 +83,8 @@ export function useApiForm(initialData) {
         }
         form.errors = flattened;
         options.onError?.(form.errors);
+      } else {
+        options.onFail?.(error);
       }
     } finally {
       form.processing = false;

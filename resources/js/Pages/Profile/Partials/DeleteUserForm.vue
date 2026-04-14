@@ -8,6 +8,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { router } from '@inertiajs/vue3';
 import { nextTick, ref } from 'vue';
 import { useTranslation } from '@/composables/useTranslation';
+import { toast } from 'vue-sonner';
 import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
@@ -32,6 +33,7 @@ const deleteUser = () => {
       router.visit('/');
     },
     onError: () => passwordInput.value.focus(),
+    onFail: () => toast.error(t('Failed to delete account')),
     onFinish: () => form.reset(),
   });
 };

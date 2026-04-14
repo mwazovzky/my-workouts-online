@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { ref } from 'vue';
 import { useTranslation } from '@/composables/useTranslation';
+import { toast } from 'vue-sonner';
 import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
@@ -31,6 +32,7 @@ const updatePassword = () => {
         currentPasswordInput.value.focus();
       }
     },
+    onFail: () => toast.error(t('Failed to update password')),
   });
 };
 </script>

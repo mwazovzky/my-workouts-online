@@ -221,6 +221,29 @@ describe('useApiForm', () => {
     expect(form.processing).toBe(false);
   });
 
+  it('calls onFail with the error on non-422 errors', async () => {
+    const error = { response: { status: 500 } };
+    mockAxios.patch.mockRejectedValueOnce(error);
+    const onFail = vi.fn();
+    const form = useApiForm({ name: 'Alice' });
+
+    await form.patch('/api/v1/profile', { onFail });
+
+    expect(onFail).toHaveBeenCalledWith(error);
+  });
+
+  it('does not call onFail on 422 errors', async () => {
+    mockAxios.patch.mockRejectedValueOnce({
+      response: { status: 422, data: { errors: { name: ['required'] } } },
+    });
+    const onFail = vi.fn();
+    const form = useApiForm({ name: '' });
+
+    await form.patch('/api/v1/profile', { onFail });
+
+    expect(onFail).not.toHaveBeenCalled();
+  });
+
   it('calls onFinish on non-422 error', async () => {
     mockAxios.patch.mockRejectedValueOnce({ response: { status: 500 } });
     const onFinish = vi.fn();

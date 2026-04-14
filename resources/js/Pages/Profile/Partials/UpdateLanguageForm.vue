@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useTranslation } from '@/composables/useTranslation.js';
 import { usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
@@ -16,7 +17,9 @@ const form = useApiForm({
 });
 
 function submit() {
-  form.patch('/api/v1/profile/locale');
+  form.patch('/api/v1/profile/locale', {
+    onFail: () => toast.error(t('Failed to save language')),
+  });
 }
 </script>
 

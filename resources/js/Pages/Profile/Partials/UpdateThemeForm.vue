@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useTranslation } from '@/composables/useTranslation.js';
 import { usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import { useApiForm } from '@/composables/useApiForm';
 
 const { t } = useTranslation();
@@ -22,6 +23,7 @@ function submit() {
         window.applyThemePreference(form.theme_preference);
       }
     },
+    onFail: () => toast.error(t('Failed to save theme')),
   });
 }
 </script>
