@@ -66,6 +66,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
@@ -97,8 +98,13 @@ const filteredPrograms = computed(() => {
 });
 
 onMounted(async () => {
-  const { data } = await get('/api/v1/programs');
-  programs.value = data.data;
+  try {
+    const { data } = await get('/api/v1/programs');
+    programs.value = data.data;
+  } catch {
+    toast.error(t('Failed to load programs'));
+    programs.value = [];
+  }
 });
 
 async function enrollInProgram(program) {

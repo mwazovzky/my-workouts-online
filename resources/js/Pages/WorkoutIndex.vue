@@ -129,10 +129,15 @@ const currentUserId = computed(() => page.props.auth?.user?.id ?? null);
 
 async function fetchWorkouts(pageNum = 1) {
   workouts.value = null;
-  const { data } = await get('/api/v1/workouts', { page: pageNum });
-  workouts.value = data.data;
-  pagination.value = data.meta;
-  currentPage.value = data.meta.current_page;
+  try {
+    const { data } = await get('/api/v1/workouts', { page: pageNum });
+    workouts.value = data.data;
+    pagination.value = data.meta;
+    currentPage.value = data.meta.current_page;
+  } catch {
+    toast.error(t('Failed to load workouts'));
+    workouts.value = [];
+  }
 }
 
 async function goToPage(pageNum) {

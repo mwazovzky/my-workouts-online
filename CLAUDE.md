@@ -33,6 +33,8 @@ npm run lint:fix          # JS/Vue lint auto-fix
 npm run format            # Prettier format
 ```
 
+After modifying any `.js` or `.vue` file, always run `npm run lint:fix && npm run format` before finalizing.
+
 ### Build
 ```bash
 npm run build             # Production frontend build

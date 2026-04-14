@@ -102,9 +102,14 @@ const workout = ref(null);
 const activities = ref([]);
 
 onMounted(async () => {
-  const { data } = await get(`/api/v1/workouts/${props.id}`);
-  workout.value = data.data;
-  activities.value = data.data.activities ?? [];
+  try {
+    const { data } = await get(`/api/v1/workouts/${props.id}`);
+    workout.value = data.data;
+    activities.value = data.data.activities ?? [];
+  } catch {
+    toast.error(t('Failed to load workout'));
+    router.visit(route('workouts.index'));
+  }
 });
 
 const page = usePage();

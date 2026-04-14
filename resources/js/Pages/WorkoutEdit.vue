@@ -200,32 +200,39 @@ onMounted(async () => {
     }
   });
 
-  const { data } = await get(`/api/v1/workouts/${props.id}`);
-  const w = data.data;
-  workout.value = w;
-  workoutId.value = w.id ?? null;
-  workoutStatus.value = w.status ?? null;
-  workoutOwnerId.value = w.user_id ?? null;
-  activities.value = (w.activities ?? []).map(a => ({
-    id: a.id,
-    exercise_id: a.exercise_id ?? null,
-    exercise_name: a.exercise_name ?? '',
-    rest_time_seconds: a.rest_time_seconds ?? null,
-    exercise_equipment_name: a.exercise_equipment_name ?? null,
-    exercise_category_names: a.exercise_category_names ?? [],
-    exercise_effort_type: a.exercise_effort_type ?? 'repetitions',
-    exercise_effort_label: a.exercise_effort_label ?? '',
-    exercise_difficulty_unit: a.exercise_difficulty_unit ?? null,
-    exercise_difficulty_label: a.exercise_difficulty_label ?? '',
-    sets: (a.sets ?? []).map(s => ({
-      id: s.id ?? null,
-      order: s.order,
-      effort_value: s.effort_value,
-      difficulty_value: s.difficulty_value,
-      is_completed: s.is_completed ?? false,
-    })),
-  }));
-  isLoading.value = false;
+  try {
+    const { data } = await get(`/api/v1/workouts/${props.id}`);
+    const w = data.data;
+    workout.value = w;
+    workoutId.value = w.id ?? null;
+    workoutStatus.value = w.status ?? null;
+    workoutOwnerId.value = w.user_id ?? null;
+    activities.value = (w.activities ?? []).map(a => ({
+      id: a.id,
+      exercise_id: a.exercise_id ?? null,
+      exercise_name: a.exercise_name ?? '',
+      rest_time_seconds: a.rest_time_seconds ?? null,
+      exercise_equipment_name: a.exercise_equipment_name ?? null,
+      exercise_category_names: a.exercise_category_names ?? [],
+      exercise_effort_type: a.exercise_effort_type ?? 'repetitions',
+      exercise_effort_label: a.exercise_effort_label ?? '',
+      exercise_difficulty_unit: a.exercise_difficulty_unit ?? null,
+      exercise_difficulty_label: a.exercise_difficulty_label ?? '',
+      sets: (a.sets ?? []).map(s => ({
+        id: s.id ?? null,
+        order: s.order,
+        effort_value: s.effort_value,
+        difficulty_value: s.difficulty_value,
+        is_completed: s.is_completed ?? false,
+      })),
+    }));
+  } catch {
+    toast.error(t('Failed to load workout'));
+    skipNavigationGuard.value = true;
+    router.visit(route('workouts.index'));
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 onUnmounted(() => {

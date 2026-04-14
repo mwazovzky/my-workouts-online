@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/Components/PageLayout.vue';
 import PageHeader from '@/Components/PageHeader.vue';
@@ -26,9 +28,14 @@ const workoutTemplates = ref(null);
 const isEnrolled = computed(() => program.value?.is_enrolled ?? false);
 
 onMounted(async () => {
-  const { data } = await get(`/api/v1/programs/${props.id}`);
-  program.value = data.data;
-  workoutTemplates.value = data.data.workout_templates;
+  try {
+    const { data } = await get(`/api/v1/programs/${props.id}`);
+    program.value = data.data;
+    workoutTemplates.value = data.data.workout_templates;
+  } catch {
+    toast.error(t('Failed to load program'));
+    router.visit(route('programs.index'));
+  }
 });
 
 async function enrollInProgram() {

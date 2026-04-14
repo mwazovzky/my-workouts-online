@@ -29,12 +29,17 @@ const summary = ref({
 });
 
 onMounted(async () => {
-  const { data } = await get('/api/v1/dashboard');
-  upcomingSchedule.value = data.data.upcoming_schedule;
-  inProgressWorkout.value = data.data.in_progress_workout;
-  recentWorkouts.value = data.data.recent_workouts;
-  summary.value = data.data.summary;
-  loading.value = false;
+  try {
+    const { data } = await get('/api/v1/dashboard');
+    upcomingSchedule.value = data.data.upcoming_schedule;
+    inProgressWorkout.value = data.data.in_progress_workout;
+    recentWorkouts.value = data.data.recent_workouts;
+    summary.value = data.data.summary;
+  } catch {
+    toast.error(t('Failed to load dashboard'));
+  } finally {
+    loading.value = false;
+  }
 });
 
 function resolveWorkoutName(workout) {

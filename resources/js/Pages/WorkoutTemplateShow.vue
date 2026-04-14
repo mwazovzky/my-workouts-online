@@ -24,8 +24,13 @@ const workoutTemplate = ref(null);
 const isStarting = ref(false);
 
 onMounted(async () => {
-  const { data } = await get(`/api/v1/workout-templates/${props.id}`);
-  workoutTemplate.value = data.data;
+  try {
+    const { data } = await get(`/api/v1/workout-templates/${props.id}`);
+    workoutTemplate.value = data.data;
+  } catch {
+    toast.error(t('Failed to load workout template'));
+    router.visit(route('programs.index'));
+  }
 });
 
 async function startWorkout() {
