@@ -91,6 +91,27 @@ trait HasTranslations
     }
 
     /**
+     * Find an existing model by its first translated field (English locale), or create it.
+     *
+     * @param  array<string, array<string, string>>  $translations  e.g. ['en' => ['name' => 'Chest'], 'ru' => ['name' => 'Грудь']]
+     * @param  array<string, mixed>  $attributes  Non-translatable model attributes
+     */
+    public static function firstOrCreateWithTranslations(array $translations, array $attributes = []): static
+    {
+        $localeTranslations = $translations['en'] ?? $translations[array_key_first($translations)];
+        $lookupField = array_key_first($localeTranslations);
+        $lookupValue = $localeTranslations[$lookupField];
+
+        $existing = static::whereTranslated($lookupField, $lookupValue, 'en')->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        return static::createWithTranslations($translations, $attributes);
+    }
+
+    /**
      * Create a model with translations in multiple locales.
      *
      * @param  array<string, array<string, string>>  $translations  e.g. ['en' => ['name' => 'Chest'], 'ru' => ['name' => 'Грудь']]

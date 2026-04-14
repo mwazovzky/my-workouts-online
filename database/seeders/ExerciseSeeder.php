@@ -193,7 +193,7 @@ class ExerciseSeeder extends Seeder
         foreach ($exercises as $item) {
             $equipment = Equipment::whereTranslated('name', $item['equipment'], 'en')->firstOrFail();
 
-            $exercise = Exercise::createWithTranslations(
+            $exercise = Exercise::firstOrCreateWithTranslations(
                 ['en' => $item['en'], 'ru' => $item['ru']],
                 [
                     'equipment_id' => $equipment->id,

@@ -65,10 +65,14 @@ class WorkoutTemplateSeeder extends Seeder
         ];
 
         foreach ($workouts as $workoutData) {
-            $workout = WorkoutTemplate::createWithTranslations([
+            $workout = WorkoutTemplate::firstOrCreateWithTranslations([
                 'en' => $workoutData['en'],
                 'ru' => $workoutData['ru'],
             ]);
+
+            if (! $workout->wasRecentlyCreated) {
+                continue;
+            }
 
             foreach ($workoutData['exercises'] as $order => $item) {
                 $exercise = Exercise::whereTranslated('name', $item['name'], 'en')->firstOrFail();

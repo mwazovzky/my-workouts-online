@@ -32,10 +32,14 @@ class ProgramSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->programs as $programData) {
-            $program = Program::createWithTranslations([
+            $program = Program::firstOrCreateWithTranslations([
                 'en' => $programData['en'],
                 'ru' => $programData['ru'],
             ]);
+
+            if (! $program->wasRecentlyCreated) {
+                continue;
+            }
 
             foreach ($programData['workouts'] as $workoutData) {
                 $workout = WorkoutTemplate::whereTranslated('name', $workoutData['name'], 'en')->first();

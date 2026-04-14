@@ -20,7 +20,7 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $names) {
-            Category::createWithTranslations([
+            Category::firstOrCreateWithTranslations([
                 'en' => ['name' => $names['en']],
                 'ru' => ['name' => $names['ru']],
             ]);

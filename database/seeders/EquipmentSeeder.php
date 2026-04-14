@@ -32,7 +32,7 @@ class EquipmentSeeder extends Seeder
         ];
 
         foreach ($equipment as $item) {
-            Equipment::createWithTranslations(
+            Equipment::firstOrCreateWithTranslations(
                 ['en' => $item['en'], 'ru' => $item['ru']],
                 ['difficulty_unit' => $item['difficulty_unit']],
             );
