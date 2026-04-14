@@ -1,8 +1,9 @@
+import { toast } from 'vue-sonner';
 import { useTranslation } from '@/composables/useTranslation';
 
 /**
  * Composable for handling program enrollment via the API.
- * Returns a promise so callers can update local state on success.
+ * Returns true on success, false on failure (error is shown via toast).
  */
 export function useEnrollment() {
   const { t } = useTranslation();
@@ -10,9 +11,10 @@ export function useEnrollment() {
   async function enroll(programId) {
     try {
       await window.axios.post(`/api/v1/programs/${programId}/enroll`);
+      return true;
     } catch {
-      alert(t('Failed to enroll in program'));
-      throw new Error('Enrollment failed');
+      toast.error(t('Failed to enroll in program'));
+      return false;
     }
   }
 

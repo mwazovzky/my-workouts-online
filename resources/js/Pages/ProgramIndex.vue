@@ -108,7 +108,8 @@ onMounted(async () => {
 });
 
 async function enrollInProgram(program) {
-  await enroll(program.id);
-  program.is_enrolled = true;
+  if (await enroll(program.id)) {
+    program.is_enrolled = true;
+  }
 }
 </script>

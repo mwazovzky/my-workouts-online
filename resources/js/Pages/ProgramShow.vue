@@ -39,8 +39,7 @@ onMounted(async () => {
 });
 
 async function enrollInProgram() {
-  await enroll(props.id);
-  if (program.value) {
+  if ((await enroll(props.id)) && program.value) {
     program.value.is_enrolled = true;
   }
 }
