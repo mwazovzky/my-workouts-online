@@ -62,6 +62,55 @@ class WorkoutTemplateSeeder extends Seeder
                     ['name' => 'Plank', 'sets' => 3, 'effort_value' => 60, 'difficulty_value' => null],
                 ],
             ],
+            [
+                'en' => ['name' => 'Treadmill Run (30 min)', 'description' => '30-minute steady run on the treadmill.'],
+                'ru' => ['name' => 'Бег на дорожке (30 мин)', 'description' => '30-минутный равномерный бег на беговой дорожке.'],
+                'exercises' => [
+                    ['name' => 'Treadmill Run', 'sets' => 1, 'effort_value' => 1800, 'difficulty_value' => null],
+                ],
+            ],
+            [
+                'en' => ['name' => 'Cycling: Zone 2 Flat + FastPedal (30 min)', 'description' => '30 min in Zone 2 on flat terrain with 10 min FastPedal program.'],
+                'ru' => ['name' => 'Велосипед: Зона 2 равнина + FastPedal (30 мин)', 'description' => '30 мин в Зоне 2 на равнинной местности с 10 мин программой FastPedal.'],
+                'exercises' => [
+                    ['name' => 'Stationary Bike Ride', 'sets' => 1, 'effort_value' => 1800, 'difficulty_value' => null],
+                ],
+            ],
+            [
+                'en' => ['name' => 'Cycling: Zone 2 + Tempo (45 min)', 'description' => '45 min in Zone 2 with 10 min Tempo program.'],
+                'ru' => ['name' => 'Велосипед: Зона 2 + Tempo (45 мин)', 'description' => '45 мин в Зоне 2 с 10 мин программой Tempo.'],
+                'exercises' => [
+                    ['name' => 'Stationary Bike Ride', 'sets' => 1, 'effort_value' => 2700, 'difficulty_value' => null],
+                ],
+            ],
+            [
+                'en' => ['name' => 'Cycling: Zone 2 Flat Cadence (60 min)', 'description' => '1 hour in Zone 2 on flat terrain; maintain 80–85 rpm cadence throughout.'],
+                'ru' => ['name' => 'Велосипед: Зона 2 равнина каденс (60 мин)', 'description' => '1 час в Зоне 2 на равнинной местности; поддерживайте каденс 80–85 об/мин на протяжении всей тренировки.'],
+                'exercises' => [
+                    ['name' => 'Stationary Bike Ride', 'sets' => 1, 'effort_value' => 3600, 'difficulty_value' => null],
+                ],
+            ],
+            [
+                'en' => ['name' => 'Cycling: Zone 2 Flat + FastPedal (45 min)', 'description' => '45 min in Zone 2 on flat terrain with 5 min FastPedal program.'],
+                'ru' => ['name' => 'Велосипед: Зона 2 равнина + FastPedal (45 мин)', 'description' => '45 мин в Зоне 2 на равнинной местности с 5 мин программой FastPedal.'],
+                'exercises' => [
+                    ['name' => 'Stationary Bike Ride', 'sets' => 1, 'effort_value' => 2700, 'difficulty_value' => null],
+                ],
+            ],
+            [
+                'en' => ['name' => 'Cycling: Zone 2 Flat + FastPedal (60 min)', 'description' => '1 hour in Zone 2 on flat terrain with 10 min FastPedal program.'],
+                'ru' => ['name' => 'Велосипед: Зона 2 равнина + FastPedal (60 мин)', 'description' => '1 час в Зоне 2 на равнинной местности с 10 мин программой FastPedal.'],
+                'exercises' => [
+                    ['name' => 'Stationary Bike Ride', 'sets' => 1, 'effort_value' => 3600, 'difficulty_value' => null],
+                ],
+            ],
+            [
+                'en' => ['name' => 'Cycling: Zone 2 + Tempo (90 min)', 'description' => '1.5 hours in Zone 2 with 15 min Tempo program.'],
+                'ru' => ['name' => 'Велосипед: Зона 2 + Tempo (90 мин)', 'description' => '1,5 часа в Зоне 2 с 15 мин программой Tempo.'],
+                'exercises' => [
+                    ['name' => 'Stationary Bike Ride', 'sets' => 1, 'effort_value' => 5400, 'difficulty_value' => null],
+                ],
+            ],
         ];
 
         foreach ($workouts as $workoutData) {

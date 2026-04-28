@@ -28,6 +28,7 @@ class EquipmentSeeder extends Seeder
             ['en' => ['name' => 'Bench'], 'ru' => ['name' => 'Скамья'], 'difficulty_unit' => DifficultyUnit::None],
             ['en' => ['name' => 'Pull-up Bar'], 'ru' => ['name' => 'Турник'], 'difficulty_unit' => DifficultyUnit::None],
             ['en' => ['name' => 'Treadmill'], 'ru' => ['name' => 'Беговая дорожка'], 'difficulty_unit' => DifficultyUnit::None],
+            ['en' => ['name' => 'Stationary Bike'], 'ru' => ['name' => 'Велотренажёр'], 'difficulty_unit' => DifficultyUnit::None],
             ['en' => ['name' => 'Bodyweight'], 'ru' => ['name' => 'Собственный вес'], 'difficulty_unit' => DifficultyUnit::None],
         ];
 

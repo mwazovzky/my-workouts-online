@@ -17,6 +17,7 @@ class CategorySeeder extends Seeder
             ['en' => 'Biceps', 'ru' => 'Бицепс'],
             ['en' => 'Legs', 'ru' => 'Ноги'],
             ['en' => 'Abs', 'ru' => 'Пресс'],
+            ['en' => 'Cardio', 'ru' => 'Кардио'],
         ];
 
         foreach ($categories as $names) {

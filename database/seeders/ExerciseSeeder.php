@@ -188,6 +188,20 @@ class ExerciseSeeder extends Seeder
                 'effort_type' => EffortType::Duration,
                 'categories' => ['Back', 'Legs'],
             ],
+            [
+                'en' => ['name' => 'Treadmill Run', 'description' => 'Steady-state cardio run on a treadmill.'],
+                'ru' => ['name' => 'Бег на беговой дорожке', 'description' => 'Равномерный кардио-бег на беговой дорожке.'],
+                'equipment' => 'Treadmill',
+                'effort_type' => EffortType::Duration,
+                'categories' => ['Cardio'],
+            ],
+            [
+                'en' => ['name' => 'Stationary Bike Ride', 'description' => 'Cardio session on a stationary bike.'],
+                'ru' => ['name' => 'Езда на велотренажёре', 'description' => 'Кардио-тренировка на велотренажёре.'],
+                'equipment' => 'Stationary Bike',
+                'effort_type' => EffortType::Duration,
+                'categories' => ['Cardio'],
+            ],
         ];
 
         foreach ($exercises as $item) {
