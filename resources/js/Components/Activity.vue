@@ -81,7 +81,7 @@ function removeActivity() {
 
 <template>
   <Card class="max-w-md mx-auto">
-    <CardHeader class="px-4 py-3 border-b">
+    <CardHeader class="px-4 py-2 border-b">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-start gap-2 min-w-0 flex-1">
           <button
@@ -127,8 +127,8 @@ function removeActivity() {
       </div>
     </CardHeader>
 
-    <CardContent class="px-4 py-3">
-      <div class="space-y-1.5">
+    <CardContent class="px-4 py-2">
+      <div class="space-y-1">
         <!-- Column Headers -->
         <div
           :class="[
