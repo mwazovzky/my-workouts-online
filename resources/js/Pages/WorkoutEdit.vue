@@ -24,7 +24,7 @@
       <template v-else>
         <WorkoutCard :workout="workout" />
 
-        <div v-if="totalSets > 0" class="mb-3 flex items-center gap-3">
+        <div v-if="totalSets > 0" class="mb-2 flex items-center gap-3">
           <div class="flex-1 h-2 rounded-full bg-muted overflow-hidden">
             <div
               class="h-full rounded-full bg-primary transition-all duration-300"
