@@ -74,14 +74,22 @@ const { t } = useTranslation();
       </nav>
 
       <!-- Page Heading -->
-      <header v-if="$slots.header" class="sm:border-b sm:border-border/70 sm:bg-card sm:shadow-sm">
-        <div class="mx-auto max-w-7xl px-4 pb-0 pt-4 sm:px-6 sm:py-4 lg:px-8">
+      <header
+        v-if="$slots.header || $slots['header-actions']"
+        class="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:border-border/70 sm:bg-card sm:shadow-sm"
+      >
+        <div
+          class="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 sm:h-auto sm:px-6 sm:py-4 lg:px-8"
+        >
           <slot name="header" />
+          <div v-if="$slots['header-actions']" class="flex-shrink-0 sm:hidden">
+            <slot name="header-actions" />
+          </div>
         </div>
       </header>
 
       <!-- Page Content -->
-      <main>
+      <main class="sm:pb-0 pb-20">
         <slot />
       </main>
 

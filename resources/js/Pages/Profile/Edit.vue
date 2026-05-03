@@ -6,7 +6,7 @@ import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import UpdateThemeForm from './Partials/UpdateThemeForm.vue';
 import { useTranslation } from '@/composables/useTranslation.js';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const { t } = useTranslation();
 
@@ -54,6 +54,20 @@ defineProps({
 
         <div class="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-8">
           <DeleteUserForm class="max-w-xl" />
+        </div>
+
+        <div class="flex items-center justify-between sm:hidden">
+          <Link :href="route('about')" class="text-sm text-muted-foreground hover:text-foreground">
+            {{ t('About') }}
+          </Link>
+          <Link
+            :href="route('logout')"
+            method="post"
+            as="button"
+            class="text-sm font-medium text-destructive hover:text-destructive/80"
+          >
+            {{ t('Log Out') }}
+          </Link>
         </div>
       </div>
     </div>

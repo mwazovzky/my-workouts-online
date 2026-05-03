@@ -4,6 +4,23 @@
       <PageHeader :title="t('Workout Edit')" />
     </template>
 
+    <template #header-actions>
+      <div class="flex gap-2">
+        <Button
+          v-if="isDirty"
+          size="sm"
+          variant="outline"
+          :disabled="isSaving"
+          @click="saveWorkout"
+        >
+          {{ isSaving ? t('Saving…') : t('Save') }}
+        </Button>
+        <Button size="sm" :disabled="isFinishing" @click="finishWorkout">
+          {{ isFinishing ? t('Completing…') : t('Complete') }}
+        </Button>
+      </div>
+    </template>
+
     <PageLayout>
       <!-- Loading -->
       <div v-if="isLoading" class="space-y-4">
@@ -58,7 +75,7 @@
       </template>
     </PageLayout>
 
-    <WorkoutFooter :show="isEditable">
+    <WorkoutFooter :show="isEditable" class="hidden sm:block">
       <div class="flex items-center gap-3">
         <Button
           v-if="isDirty"

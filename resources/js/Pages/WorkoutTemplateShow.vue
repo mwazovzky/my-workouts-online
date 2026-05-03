@@ -58,6 +58,12 @@ async function startWorkout() {
       <PageHeader :title="t('Workout Template Show')" />
     </template>
 
+    <template #header-actions>
+      <Button size="sm" :disabled="isStarting" @click="startWorkout">
+        {{ isStarting ? t('Starting…') : t('Start') }}
+      </Button>
+    </template>
+
     <!-- Loading -->
     <div v-if="workoutTemplate === null">
       <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -99,7 +105,7 @@ async function startWorkout() {
         </div>
       </PageLayout>
 
-      <WorkoutFooter :show="true">
+      <WorkoutFooter :show="true" class="hidden sm:block">
         <Button size="lg" class="px-8" :disabled="isStarting" @click="startWorkout">
           <span v-if="!isStarting">{{ t('Start Workout') }}</span>
           <span v-else>{{ t('Starting…') }}</span>
