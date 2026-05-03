@@ -4,6 +4,17 @@
       <PageHeader :title="t('Workout Show')" />
     </template>
 
+    <template #header-actions>
+      <div class="flex gap-2">
+        <Button v-if="canRepeat" size="sm" :disabled="repeatNav" @click="repeatWorkout">
+          {{ repeatNav ? t('Starting…') : t('Repeat') }}
+        </Button>
+        <Button v-if="canEdit" size="sm" variant="outline" :disabled="editingNav" @click="goEdit">
+          {{ editingNav ? t('Opening…') : t('Continue') }}
+        </Button>
+      </div>
+    </template>
+
     <PageLayout>
       <!-- Loading -->
       <div v-if="workout === null" class="space-y-4">
@@ -45,7 +56,7 @@
       </template>
     </PageLayout>
 
-    <WorkoutFooter :show="canEdit || canRepeat">
+    <WorkoutFooter :show="canEdit || canRepeat" class="hidden sm:block">
       <div class="flex items-center gap-2">
         <Button
           v-if="canRepeat"

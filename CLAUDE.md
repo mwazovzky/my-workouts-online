@@ -19,11 +19,12 @@ npm run dev               # Vite dev server only
 
 ### Testing
 ```bash
-php artisan test --compact                              # All tests
+php artisan test --compact                              # All backend tests
 php artisan test --compact tests/Feature/Workout/       # All tests in a directory
 php artisan test --compact --filter=testMethodName       # Single test by name
+npm run test:frontend                                   # All frontend tests (Vitest)
 ```
-Tests use SQLite in-memory (`phpunit.xml`). PHPUnit only — no Pest.
+Backend tests use SQLite in-memory (`phpunit.xml`). PHPUnit only — no Pest.
 
 ### Linting & Formatting
 ```bash
@@ -33,7 +34,7 @@ npm run lint:fix          # JS/Vue lint auto-fix
 npm run format            # Prettier format
 ```
 
-After modifying any `.js` or `.vue` file, always run `npm run lint:fix && npm run format` before finalizing.
+After modifying any `.js` or `.vue` file, always run `npm run lint:fix && npm run format && npm run test:frontend` before finalizing.
 
 After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` before finalizing.
 
