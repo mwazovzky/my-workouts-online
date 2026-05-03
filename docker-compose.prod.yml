@@ -20,6 +20,7 @@ services:
 
   worker:
     image: "${IMAGE_NAME}:${IMAGE_TAG}"
+    user: "www-data"
     env_file:
       - .env
     command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
