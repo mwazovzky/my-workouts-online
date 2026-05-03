@@ -8,6 +8,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  buttonClass: {
+    type: String,
+    default: 'px-3 py-2 text-xs uppercase tracking-[0.18em]',
+  },
 });
 
 const page = usePage();
@@ -41,7 +45,8 @@ function updateLocale(locale) {
       <button
         type="button"
         :class="[
-          'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] shadow-sm transition backdrop-blur',
+          'inline-flex items-center gap-2 rounded-full border font-semibold shadow-sm transition backdrop-blur',
+          props.buttonClass,
           props.inverted
             ? 'border-background/15 bg-background/10 text-background hover:bg-background/15'
             : 'border-border/80 bg-background/80 text-foreground hover:bg-accent hover:text-accent-foreground',
