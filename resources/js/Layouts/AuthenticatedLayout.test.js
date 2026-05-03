@@ -30,12 +30,12 @@ describe('AuthenticatedLayout', () => {
         },
         stubs: {
           Navigation: { template: '<nav />' },
+          BottomNav: {
+            template:
+              '<nav><a href="/dashboard">Dashboard</a><a href="/programs.index">Programs</a><a href="/workouts.index">Workouts</a><a href="/profile.edit">Profile</a></nav>',
+          },
           Dropdown: { template: '<div><slot name="trigger" /><slot name="content" /></div>' },
           DropdownLink: { props: ['href'], template: '<a :href="href"><slot /></a>' },
-          ResponsiveNavLink: {
-            props: ['href', 'active'],
-            template: '<a :href="href"><slot /></a>',
-          },
           ApplicationLogo: { template: '<div />' },
           Toaster: { template: '<div />' },
         },
@@ -46,21 +46,21 @@ describe('AuthenticatedLayout', () => {
     });
   }
 
-  it('renders responsive nav links including About', () => {
+  it('renders bottom nav tabs', () => {
     const wrapper = buildWrapper();
 
     expect(wrapper.text()).toContain('Dashboard');
     expect(wrapper.text()).toContain('Programs');
     expect(wrapper.text()).toContain('Workouts');
-    expect(wrapper.text()).toContain('About');
+    expect(wrapper.text()).toContain('Profile');
   });
 
-  it('renders the About responsive link with the correct href', () => {
+  it('renders the Profile tab with the correct href', () => {
     const wrapper = buildWrapper();
     const links = wrapper.findAll('a');
-    const aboutLink = links.find(l => l.text().trim() === 'About');
+    const profileLink = links.find(l => l.text().trim() === 'Profile');
 
-    expect(aboutLink).toBeDefined();
-    expect(aboutLink.attributes('href')).toBe('/about');
+    expect(profileLink).toBeDefined();
+    expect(profileLink.attributes('href')).toBe('/profile.edit');
   });
 });
