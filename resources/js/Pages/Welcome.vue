@@ -47,11 +47,11 @@ const appHighlights = [
         class="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-primary/10 via-accent/30 to-transparent"
       />
       <div class="absolute left-[-8rem] top-20 h-72 w-72 rounded-full bg-primary/12 blur-3xl" />
-      <div class="absolute right-[-6rem] top-32 h-80 w-80 rounded-full bg-accent blur-3xl" />
+      <div class="absolute right-[-6rem] top-32 h-80 w-80 rounded-full bg-accent/60 blur-3xl" />
     </div>
     <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-6 sm:px-8 lg:px-10">
       <header
-        class="relative flex items-center justify-between rounded-full border border-border/80 bg-background/80 px-5 py-3 shadow-sm backdrop-blur"
+        class="relative flex items-center justify-between px-0 py-3 sm:rounded-full sm:border sm:border-border/80 sm:bg-background/80 sm:px-5 sm:shadow-sm sm:backdrop-blur"
       >
         <div class="flex items-center gap-3">
           <div class="h-12 w-12 rounded-2xl bg-primary/10 p-1.5 text-primary">
@@ -66,17 +66,17 @@ const appHighlights = [
         </div>
 
         <nav v-if="canLogin" class="flex items-center gap-2">
-          <GuestLocaleSwitcher />
+          <GuestLocaleSwitcher class="hidden sm:flex" />
           <Link
             :href="route('login')"
-            class="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
+            class="hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
           >
             {{ t('Log in') }}
           </Link>
           <Link
             v-if="canRegister"
             :href="route('register')"
-            class="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+            class="hidden sm:inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             {{ t('Create account') }}
           </Link>
@@ -86,12 +86,6 @@ const appHighlights = [
       <main class="flex flex-1 items-center py-12 lg:py-20">
         <div class="grid w-full gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <section class="space-y-8">
-            <div
-              class="inline-flex rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary shadow-sm"
-            >
-              {{ t('Workout planning and logging') }}
-            </div>
-
             <div class="space-y-5">
               <h1
                 class="max-w-3xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl"
@@ -108,6 +102,10 @@ const appHighlights = [
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row">
+              <GuestLocaleSwitcher
+                class="w-full sm:hidden"
+                button-class="w-full py-3 text-sm justify-center"
+              />
               <Link
                 v-if="canRegister"
                 :href="route('register')"
