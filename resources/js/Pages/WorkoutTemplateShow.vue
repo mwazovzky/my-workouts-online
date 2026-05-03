@@ -59,7 +59,12 @@ async function startWorkout() {
     </template>
 
     <template #header-actions>
-      <Button size="sm" :disabled="isStarting" @click="startWorkout">
+      <Button
+        v-if="workoutTemplate !== null"
+        size="sm"
+        :disabled="isStarting"
+        @click="startWorkout"
+      >
         {{ isStarting ? t('Starting…') : t('Start') }}
       </Button>
     </template>

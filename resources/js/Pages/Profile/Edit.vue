@@ -56,7 +56,7 @@ defineProps({
           <DeleteUserForm class="max-w-xl" />
         </div>
 
-        <div class="flex items-center justify-between sm:hidden">
+        <div class="flex items-center justify-between px-4 sm:hidden">
           <Link :href="route('about')" class="text-sm text-muted-foreground hover:text-foreground">
             {{ t('About') }}
           </Link>

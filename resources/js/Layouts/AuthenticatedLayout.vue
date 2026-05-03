@@ -89,7 +89,7 @@ const { t } = useTranslation();
       </header>
 
       <!-- Page Content -->
-      <main class="sm:pb-0 pb-20">
+      <main class="pb-20">
         <slot />
       </main>
 
