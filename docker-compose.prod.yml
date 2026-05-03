@@ -17,6 +17,15 @@ services:
       - certbot_webroot:/var/www/certbot
     restart: unless-stopped
 
+  worker:
+    image: "${IMAGE_NAME}:${IMAGE_TAG}"
+    env_file:
+      - .env
+    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
   mysql:
     image: mysql:8.0
     environment:
