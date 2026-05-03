@@ -50,6 +50,7 @@ echo "Deploying IMAGE_TAG=${IMAGE_TAG}..."
 docker compose -f "${compose_file}" up -d mysql
 docker compose -f "${compose_file}" pull web worker
 docker compose -f "${compose_file}" up -d --no-deps --force-recreate web
+docker compose -f "${compose_file}" stop worker
 
 echo "Waiting for MySQL to accept connections..."
 for attempt in {1..20}; do
