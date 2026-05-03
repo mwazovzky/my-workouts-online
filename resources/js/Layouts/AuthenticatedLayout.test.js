@@ -63,4 +63,34 @@ describe('AuthenticatedLayout', () => {
     expect(profileLink).toBeDefined();
     expect(profileLink.attributes('href')).toBe('/profile.edit');
   });
+
+  it('renders the header slot when provided', () => {
+    const wrapper = mount(AuthenticatedLayout, {
+      slots: {
+        header: '<h1>Page Title</h1>',
+      },
+      global: {
+        config: {
+          globalProperties: {
+            route: name => (name ? `/${name}` : { current: () => false }),
+            $page: { props: { auth: { user: authUser } } },
+          },
+        },
+        stubs: {
+          Navigation: { template: '<nav />' },
+          BottomNav: { template: '<nav />' },
+          Dropdown: { template: '<div><slot name="trigger" /><slot name="content" /></div>' },
+          DropdownLink: { props: ['href'], template: '<a :href="href"><slot /></a>' },
+          ApplicationLogo: { template: '<div />' },
+          Toaster: { template: '<div />' },
+        },
+        mocks: {
+          $page: { props: { auth: { user: authUser } } },
+        },
+      },
+    });
+
+    expect(wrapper.find('header').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Page Title');
+  });
 });
