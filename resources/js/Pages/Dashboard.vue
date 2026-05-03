@@ -70,16 +70,7 @@ async function startWorkout(workoutTemplateId) {
 
   <AuthenticatedLayout>
     <template #header>
-      <div class="space-y-1">
-        <PageHeader :title="t('Your training home')" />
-        <p class="text-sm text-muted-foreground">
-          {{
-            t(
-              'See what is scheduled next, keep an eye on unfinished work, and review recent sessions.'
-            )
-          }}
-        </p>
-      </div>
+      <PageHeader :title="t('Dashboard')" />
     </template>
 
     <PageLayout>

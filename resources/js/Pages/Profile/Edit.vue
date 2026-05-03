@@ -30,8 +30,8 @@ defineProps({
       </h2>
     </template>
 
-    <div class="py-12">
-      <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+    <div class="py-4 sm:py-12">
+      <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <div class="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-8">
           <UpdateProfileInformationForm
             :must-verify-email="mustVerifyEmail"
