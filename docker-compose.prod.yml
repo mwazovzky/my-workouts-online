@@ -8,13 +8,25 @@ services:
       APP_ROOT: /var/www/html/public
       DOMAIN_NAME: "${DOMAIN_NAME}"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - certbot_certs:/etc/letsencrypt
       - certbot_webroot:/var/www/certbot
+    restart: unless-stopped
+
+  worker:
+    image: "${IMAGE_NAME}:${IMAGE_TAG}"
+    user: "www-data"
+    env_file:
+      - .env
+    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
 
   mysql:
@@ -26,6 +38,12 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h 127.0.0.1 -uroot"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
     restart: unless-stopped
 
 volumes:
