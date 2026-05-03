@@ -8,7 +8,8 @@ services:
       APP_ROOT: /var/www/html/public
       DOMAIN_NAME: "${DOMAIN_NAME}"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
@@ -23,7 +24,8 @@ services:
       - .env
     command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
 
   mysql:
@@ -35,6 +37,11 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
 volumes:
