@@ -52,9 +52,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./docker/alloy/config.alloy:/etc/alloy/config.alloy:ro
     environment:
-      LOKI_URL: ${LOKI_URL}
-      LOKI_USER_ID: ${LOKI_USER_ID}
-      LOKI_API_TOKEN: ${LOKI_API_TOKEN}
+      LOKI_URL: ${LOKI_URL?LOKI_URL is required}
+      LOKI_USER_ID: ${LOKI_USER_ID?LOKI_USER_ID is required}
+      LOKI_API_TOKEN: ${LOKI_API_TOKEN?LOKI_API_TOKEN is required}
     command: run /etc/alloy/config.alloy
     restart: unless-stopped
 
