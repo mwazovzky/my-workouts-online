@@ -1,0 +1,56 @@
+// Discover all running Docker containers
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Relabel metadata into useful Loki labels, keep only app containers
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  // Drop everything except web and worker
+  rule {
+    source_labels = ["__meta_docker_compose_service"]
+    regex         = "web|worker"
+    action        = "keep"
+  }
+
+  // Static labels — consistent schema across all apps
+  rule {
+    target_label = "app"
+    replacement  = "my-workouts"
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = "production"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "logstream"
+  }
+}
+
+// Tail logs from discovered containers
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.grafana_cloud.receiver]
+}
+
+// Push to Grafana Cloud Loki
+loki.write "grafana_cloud" {
+  endpoint {
+    url = env("LOKI_URL")
+
+    basic_auth {
+      username = env("LOKI_USER_ID")
+      password = env("LOKI_API_TOKEN")
+    }
+  }
+}

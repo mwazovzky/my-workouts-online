@@ -46,6 +46,18 @@ services:
       retries: 10
     restart: unless-stopped
 
+  alloy:
+    image: grafana/alloy:v1.8.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/alloy/config.alloy:/etc/alloy/config.alloy:ro
+    environment:
+      LOKI_URL: ${LOKI_URL}
+      LOKI_USER_ID: ${LOKI_USER_ID}
+      LOKI_API_TOKEN: ${LOKI_API_TOKEN}
+    command: run /etc/alloy/config.alloy
+    restart: unless-stopped
+
 volumes:
   mysql_data:
   certbot_certs:
