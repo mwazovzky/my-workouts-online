@@ -17,12 +17,12 @@ discovery.relabel "containers" {
   // Static labels — consistent schema across all apps
   rule {
     target_label = "app"
-    replacement  = env("APP")
+    replacement  = sys.env("APP")
   }
 
   rule {
     target_label = "env"
-    replacement  = env("ENV")
+    replacement  = sys.env("ENV")
   }
 
   rule {
@@ -47,11 +47,11 @@ loki.source.docker "containers" {
 // Push to Grafana Cloud Loki
 loki.write "grafana_cloud" {
   endpoint {
-    url = env("LOKI_URL")
+    url = sys.env("LOKI_URL")
 
     basic_auth {
-      username = env("LOKI_USER_ID")
-      password = env("LOKI_API_TOKEN")
+      username = sys.env("LOKI_USER_ID")
+      password = sys.env("LOKI_API_TOKEN")
     }
   }
 }
