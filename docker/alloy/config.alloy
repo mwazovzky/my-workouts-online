@@ -17,12 +17,12 @@ discovery.relabel "containers" {
   // Static labels — consistent schema across all apps
   rule {
     target_label = "app"
-    replacement  = "my-workouts"
+    replacement  = env("APP")
   }
 
   rule {
     target_label = "env"
-    replacement  = "production"
+    replacement  = env("ENV")
   }
 
   rule {
