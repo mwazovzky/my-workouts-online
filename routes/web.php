@@ -9,14 +9,7 @@ use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\WorkoutPageController;
 use App\Http\Controllers\WorkoutTemplatePageController;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/log-test', function () {
-    Log::error('log test from php-fpm');
-
-    return response('ok');
-});
 
 Route::get('/', [WelcomeController::class, 'index']);
 Route::patch('/locale', [LocaleController::class, 'update'])->name('locale.update');
