@@ -3,13 +3,13 @@ discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
 
-// Relabel metadata into useful Loki labels, keep only app containers
+// Define relabeling rules — targets = [] because rules are referenced via relabel_rules below
 discovery.relabel "containers" {
-  targets = discovery.docker.containers.targets
+  targets = []
 
-  // Drop everything except web and worker
+  // Keep only web and worker containers
   rule {
-    source_labels = ["__meta_docker_compose_service"]
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     regex         = "web|worker"
     action        = "keep"
   }
@@ -26,7 +26,7 @@ discovery.relabel "containers" {
   }
 
   rule {
-    source_labels = ["__meta_docker_compose_service"]
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label  = "service"
   }
 
@@ -36,11 +36,12 @@ discovery.relabel "containers" {
   }
 }
 
-// Tail logs from discovered containers
+// Tail logs — targets come directly from discovery.docker, rules applied via relabel_rules
 loki.source.docker "containers" {
-  host       = "unix:///var/run/docker.sock"
-  targets    = discovery.relabel.containers.output
-  forward_to = [loki.write.grafana_cloud.receiver]
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.write.grafana_cloud.receiver]
 }
 
 // Push to Grafana Cloud Loki
