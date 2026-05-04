@@ -43,6 +43,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd intl zip opcache
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-app.ini
+COPY docker/php/zz-app.conf /usr/local/etc/php-fpm.d/zz-app.conf
 
 # --- Stage 4: Dev PHP-FPM (bind-mounted code) ---
 FROM php-base AS app-dev
