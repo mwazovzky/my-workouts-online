@@ -15,7 +15,7 @@ class LogContext
         $route = $request->route();
 
         Log::shareContext([
-            'request_id' => $request->header('X-Request-Id') ?? (string) Str::uuid(),
+            'request_id' => $this->resolveRequestId($request),
             'user_id' => $request->user()?->id,
             'method' => $request->method(),
             'route_name' => $route?->getName(),
@@ -23,5 +23,16 @@ class LogContext
         ]);
 
         return $next($request);
+    }
+
+    private function resolveRequestId(Request $request): string
+    {
+        $header = $request->header('X-Request-Id');
+
+        if (is_string($header) && Str::isUuid($header)) {
+            return $header;
+        }
+
+        return (string) Str::uuid();
     }
 }
