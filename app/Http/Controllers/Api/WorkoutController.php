@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class WorkoutController extends Controller
 {
@@ -50,6 +51,8 @@ class WorkoutController extends Controller
     {
         $workout = $service->createFromTemplate($request->user(), $request->validated()['workout_template_id']);
 
+        Log::info('workout.started', ['workout_id' => $workout->id, 'template_id' => $request->validated()['workout_template_id']]);
+
         return (new WorkoutResource($workout))->response()->setStatusCode(201);
     }
 
@@ -69,6 +72,8 @@ class WorkoutController extends Controller
         $workout->status = WorkoutStatus::Completed;
         $workout->save();
 
+        Log::info('workout.completed', ['workout_id' => $workout->id]);
+
         return new WorkoutResource($workout);
     }
 
@@ -78,6 +83,8 @@ class WorkoutController extends Controller
 
         $newWorkout = $service->repeat($workout);
 
+        Log::info('workout.repeated', ['source_id' => $workout->id, 'new_id' => $newWorkout->id]);
+
         return (new WorkoutResource($newWorkout))->response()->setStatusCode(201);
     }
 
@@ -86,6 +93,8 @@ class WorkoutController extends Controller
         $this->authorize('delete', $workout);
 
         $service->delete($workout);
+
+        Log::info('workout.deleted', ['workout_id' => $workout->id]);
 
         return response()->noContent();
     }
