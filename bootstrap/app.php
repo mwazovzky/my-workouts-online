@@ -33,10 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->context(fn (Throwable $e) => [
+        $exceptions->context(fn (Throwable $e) => array_filter([
             'exception_class' => $e::class,
-            'exception_file' => $e->getFile().':'.$e->getLine(),
-        ]);
+            'exception_file' => config('app.debug') ? $e->getFile().':'.$e->getLine() : null,
+        ]));
 
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
