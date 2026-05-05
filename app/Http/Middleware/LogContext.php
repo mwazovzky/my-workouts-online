@@ -12,11 +12,14 @@ class LogContext
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $route = $request->route();
+
         Log::shareContext([
             'request_id' => (string) Str::uuid(),
             'user_id' => $request->user()?->id,
             'method' => $request->method(),
-            'url' => $request->url(),
+            'route_name' => $route?->getName(),
+            'route_uri' => $route?->uri(),
         ]);
 
         return $next($request);
