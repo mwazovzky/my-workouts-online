@@ -15,7 +15,7 @@ class LogContext
         $route = $request->route();
 
         Log::shareContext([
-            'request_id' => (string) Str::uuid(),
+            'request_id' => $request->header('X-Request-Id') ?? (string) Str::uuid(),
             'user_id' => $request->user()?->id,
             'method' => $request->method(),
             'route_name' => $route?->getName(),
