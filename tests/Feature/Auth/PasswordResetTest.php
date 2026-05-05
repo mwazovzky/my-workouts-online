@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -19,6 +21,16 @@ class PasswordResetTest extends TestCase
         $response = $this->get('/forgot-password');
 
         $response->assertStatus(200);
+    }
+
+    #[Test]
+    public function reset_password_link_returns_error_when_provider_throws(): void
+    {
+        Password::shouldReceive('sendResetLink')->andThrow(new RuntimeException('SMTP failure'));
+
+        $response = $this->post('/forgot-password', ['email' => 'user@example.com']);
+
+        $response->assertSessionHasErrors(['email']);
     }
 
     #[Test]
