@@ -41,7 +41,10 @@ class ProgramController extends Controller
     {
         $program->users()->syncWithoutDetaching([$request->user()->id]);
 
-        Log::info('program.enrolled', ['program_id' => $program->id]);
+        Log::info('program.enrolled', [
+            'user_id' => $request->user()->id,
+            'program_id' => $program->id,
+        ]);
 
         return response()->noContent();
     }
