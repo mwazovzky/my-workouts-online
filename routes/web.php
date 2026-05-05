@@ -66,7 +66,9 @@ Route::get('/health/ready', static function () {
             ],
             'timestamp' => now()->toIso8601String(),
         ]);
-    } catch (Throwable) {
+    } catch (Throwable $e) {
+        report($e);
+
         return response()->json([
             'status' => 'degraded',
             'components' => [
