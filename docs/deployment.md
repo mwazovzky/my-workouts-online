@@ -55,8 +55,8 @@ The deploy workflow assumes the standard SSH port `22`.
 ```bash
 git checkout main
 git pull --ff-only origin main
-git tag -a v1.4.0 -m "Release v1.4.0"
-git push origin v1.4.0
+git tag -a v0.2.11 -m "Release v0.2.11 | Structured logging"
+git push origin v0.2.11
 ```
 
 3. The `deploy` workflow builds `${PRODUCTION_IMAGE_NAME}:v1.4.0` and `${PRODUCTION_IMAGE_NAME}:sha-<commit>`, then deploys `v1.4.0` to production.
@@ -76,8 +76,8 @@ Release commands:
 ```bash
 git checkout main
 git pull --ff-only origin main
-git tag -a v1.4.0 -m "Release v1.4.0"
-git push origin v1.4.0
+git tag -a v0.2.10 -m "Release v0.2.10| Test route"
+git push origin v0.2.10
 ```
 
 Release verification:

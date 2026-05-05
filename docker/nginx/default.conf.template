@@ -1,6 +1,7 @@
 server {
     listen 80;
     server_name ${DOMAIN_NAME};
+    access_log off;
     root ${APP_ROOT};
 
     index index.php;
