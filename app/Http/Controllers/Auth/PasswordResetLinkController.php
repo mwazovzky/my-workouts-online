@@ -42,7 +42,9 @@ class PasswordResetLinkController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return back()->withErrors(['email' => __('Unable to send reset link. Please try again later.')]);
+            return back()
+                ->withErrors(['email' => __('Unable to send reset link. Please try again later.')])
+                ->withInput($request->only('email'));
         }
 
         if ($status == Password::RESET_LINK_SENT) {
