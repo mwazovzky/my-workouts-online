@@ -26,7 +26,10 @@ class PasswordResetTest extends TestCase
     #[Test]
     public function reset_password_link_returns_error_when_provider_throws(): void
     {
-        Password::shouldReceive('sendResetLink')->andThrow(new RuntimeException('SMTP failure'));
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->with(['email' => 'user@example.com'])
+            ->andThrow(new RuntimeException('SMTP failure'));
 
         $response = $this->post('/forgot-password', ['email' => 'user@example.com']);
 
