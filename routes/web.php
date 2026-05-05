@@ -67,7 +67,11 @@ Route::get('/health/ready', static function () {
             'timestamp' => now()->toIso8601String(),
         ]);
     } catch (Throwable $e) {
-        report($e);
+        logger()->warning('Readiness check failed', [
+            'component' => 'database',
+            'exception' => $e::class,
+            'message' => $e->getMessage(),
+        ]);
 
         return response()->json([
             'status' => 'degraded',
