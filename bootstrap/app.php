@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            \App\Http\Middleware\LogContext::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
@@ -25,12 +26,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(append: [
+            \App\Http\Middleware\LogContext::class,
             \App\Http\Middleware\SetLocale::class,
         ]);
 
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->context(fn (Throwable $e) => array_filter([
+            'exception_class' => $e::class,
+            'exception_file' => config('app.debug') ? $e->getFile().':'.$e->getLine() : null,
+        ]));
+
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([

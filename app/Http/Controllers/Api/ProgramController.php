@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class ProgramController extends Controller
 {
@@ -39,6 +40,11 @@ class ProgramController extends Controller
     public function enroll(Request $request, Program $program): Response
     {
         $program->users()->syncWithoutDetaching([$request->user()->id]);
+
+        Log::info('program.enrolled', [
+            'user_id' => $request->user()->id,
+            'program_id' => $program->id,
+        ]);
 
         return response()->noContent();
     }
