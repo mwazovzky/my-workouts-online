@@ -4,44 +4,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Workout tracking app: users browse programs, enroll, log workouts, and track sets. Built with Laravel 12 / Inertia v2 / Vue 3 (Composition API, `<script setup>`) / Tailwind v3 / MySQL.
+Workout tracking app: users browse programs, enroll, log workouts, and track sets. Monorepo:
+
+- `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). Also still contains the legacy Inertia v2 frontend, unreachable behind nginx and scheduled for removal.
+- `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
+- `contracts/openapi.yaml` — the API contract every client and backend implements.
+- `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), dev nginx config.
 
 Full product docs in `docs/` — see `docs/README.md` for index.
 
 ## Common Commands
 
-### Development
+The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`. Run tools through the containers unless PHP/Node are installed on the host.
+
+### Backend (`services/api-php`)
 ```bash
-composer run dev          # Starts server, queue, logs, and Vite concurrently
-php artisan serve         # Backend only
-npm run dev               # Vite dev server only
+docker compose exec -T app php artisan test --compact                        # All backend tests
+docker compose exec -T app php artisan test --compact tests/Feature/Workout/  # A directory
+docker compose exec -T app php artisan test --compact --filter=testMethodName # One test
+docker compose exec -T app vendor/bin/pint --dirty                           # PHP formatting
+```
+Backend tests use SQLite in-memory (`phpunit.xml`, values forced so container env cannot leak in). PHPUnit only — no Pest.
+
+### Web SPA (`apps/web`)
+```bash
+docker compose exec -T node npm test          # Vitest
+docker compose exec -T node npm run lint:fix  # ESLint auto-fix
+docker compose exec -T node npm run format    # Prettier
+docker compose exec -T node npm run build     # Production build
+docker compose exec -T node npm run api:types # Regenerate TS types from contracts/openapi.yaml
 ```
 
-### Testing
-```bash
-php artisan test --compact                              # All backend tests
-php artisan test --compact tests/Feature/Workout/       # All tests in a directory
-php artisan test --compact --filter=testMethodName       # Single test by name
-npm run test:frontend                                   # All frontend tests (Vitest)
-```
-Backend tests use SQLite in-memory (`phpunit.xml`). PHPUnit only — no Pest.
+After modifying any `.js` or `.vue` file in `apps/web`, always run `npm run lint:fix && npm run format && npm test` there before finalizing.
 
-### Linting & Formatting
-```bash
-vendor/bin/pint --dirty   # PHP formatting (run before finalizing changes)
-npm run lint              # JS/Vue lint check
-npm run lint:fix          # JS/Vue lint auto-fix
-npm run format            # Prettier format
-```
+After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` in `services/api-php` before finalizing.
 
-After modifying any `.js` or `.vue` file, always run `npm run lint:fix && npm run format && npm run test:frontend` before finalizing.
-
-After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` before finalizing.
-
-### Build
-```bash
-npm run build             # Production frontend build
-```
+After modifying `contracts/openapi.yaml`, lint it: `docker run --rm -v "$PWD/contracts:/spec:ro" -w /spec redocly/cli:latest lint openapi.yaml --config redocly.yaml`.
 
 ## Architecture
 
@@ -83,11 +81,11 @@ Exercise <-M:N-> Category
 
 ### CI
 
-GitHub Actions: `tests.yml`, `code-style.yml`, `lint.yml`.
+GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `deploy.yml`.
 
 ### Deployment
 
-Docker Compose (nginx + php-fpm + mysql). See `README.md` for local Docker setup and production redeploy steps.
+Docker Compose: `web` (nginx + SPA) and `api` (php-fpm) images built by the deploy workflow, plus `worker`, `mysql`, `alloy`. See `docs/deployment.md`.
 
 ## Documentation
 

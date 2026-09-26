@@ -22,13 +22,15 @@ npm run test:frontend:coverage
 php artisan test --compact
 ```
 
-Inside the Docker `app` container the `.env` values are real environment variables. `phpunit.xml` forces its own values (`force="true"`), but the safest form is `docker compose exec -T app sh -c 'env -i PATH="$PATH" php artisan test --compact'` so the suite can never touch the MySQL dev database.
+Backend commands run in `services/api-php` (inside the `app` container that is `/var/www/html`, so `docker compose exec -T app php artisan test --compact`). Container env values are real environment variables; `phpunit.xml` forces its own values (`force="true"`) and `tests/bootstrap.php` mirrors them into `$_SERVER`, which Laravel reads first, so the suite always uses SQLite in memory and never touches the MySQL dev database.
+
+SPA tests run in `apps/web` (`docker compose exec -T node npm test`).
 
 ## Suite Structure
 
 - `tests/Feature/` covers the full HTTP stack, page rendering, authorization, validation, and database-side outcomes.
 - `tests/Unit/` covers isolated logic such as services, resources, enums, models, and query builders.
-- `resources/js/**/*.test.js` covers frontend utilities, composables, and component behavior with Vitest.
+- `apps/web/src/**/*.test.js` covers SPA utilities, composables, stores, guards, and component behavior with Vitest.
 - `tests/TestCase.php` provides shared setup. The suite disables Vite and CSRF in tests, so feature tests can focus on application behavior.
 
 ## Frontend Tests
@@ -62,7 +64,7 @@ Keep frontend tests focused:
 - Prefer one component or module per file.
 - Assert the behavior that matters, not implementation details.
 - Stub child components when the parent behavior is the thing being tested.
-- Mock Inertia helpers when testing composables that depend on `usePage()` or `router`.
+- Use `apps/web/src/test/utils.js` (`withPinia`, `RouterLinkStub`) and mock `vue-router` when a component navigates.
 
 ## Feature Tests
 

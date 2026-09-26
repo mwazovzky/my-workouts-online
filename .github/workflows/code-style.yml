@@ -12,6 +12,9 @@ jobs:
   lint:
     name: Laravel Pint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-php
 
     steps:
       - name: Checkout code

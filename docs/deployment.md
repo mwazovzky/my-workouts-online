@@ -4,14 +4,20 @@
 
 1. Code lands on `main` through the normal review and CI flow.
 2. Pushing a semantic version tag such as `v1.4.0` triggers GitHub Actions.
-3. GitHub Actions builds the production `web` image, tags it with both the release version and the release commit SHA, and pushes both tags to Docker Hub.
+3. GitHub Actions builds two production images, `api` (php-fpm, from `docker/api/Dockerfile`) and `web` (nginx serving the SPA build and fronting the API, from `docker/web/Dockerfile`), tags each with `api-`/`web-` plus the release version and the commit SHA, and pushes them to Docker Hub.
 4. GitHub Actions SSHes into the droplet, checks out the matching release revision, updates `IMAGE_TAG`, pulls the new image, recreates services, runs migrations, warms caches, and verifies health.
 
 `main` is the integration branch, not the production trigger. Production releases happen only from explicit version tags. Branch protection should still require the validation workflows (`tests`, `lint`, `code style`) before merge so only release-ready code is tagged.
 
 ## Repository Layout
 
-Single `docker/` folder for both local and production. One Nginx config template (`docker/nginx/default.conf.template`), upstream set via env var (`PHP_FPM_UPSTREAM=app:9000` local, `127.0.0.1:9000` production).
+Monorepo: `services/api-php` (Laravel API), `apps/web` (Vue SPA), `contracts/openapi.yaml`, `docker/`. One `docker/` folder serves local and production:
+
+- `docker/api/Dockerfile` — php-fpm image (`api`, `worker`)
+- `docker/web/Dockerfile` — builds `apps/web` and serves it with nginx; `docker/nginx/api-locations.conf` routes `/api/*`, `/health*`, `/up` and `/.well-known/jwks.json` to php-fpm over FastCGI (`PHP_FPM_UPSTREAM=api:9000`), everything else is the SPA with history fallback; `security-headers.conf` sets CSP and friends
+- `docker/nginx/dev.conf.template` — local nginx: same API routing, `/` proxied to the Vite dev server
+
+Swapping the backend implementation later means changing `PHP_FPM_UPSTREAM` (or the proxy in `api-locations.conf`); the web image and clients stay as they are.
 
 ## 0. Configure GitHub automation
 
@@ -166,7 +172,7 @@ Required values (see `.env.production` in repo for full reference):
 - `DB_PASSWORD=...`
 - `DB_ROOT_PASSWORD=...`
 - `SESSION_SECURE_COOKIE=false` (set to `true` after HTTPS is active — see step 11)
-- `FRONTEND_URL=...` (where email links point; same as `APP_URL` while the Inertia frontend is served by Laravel)
+- `FRONTEND_URL=...` (where email links point; same as `APP_URL`, since nginx serves the SPA on the same origin)
 - `JWT_PRIVATE_KEY=...` and `JWT_PUBLIC_KEY=...` (generate once with `php artisan jwt:keys`; rotating them invalidates every issued access token)
 - `JWT_COOKIE_SECURE=false` (set to `true` after HTTPS is active — see step 11)
 - `IMAGE_NAME=YOUR_DOCKERHUB_USER/PROJECT_NAME`
@@ -189,20 +195,19 @@ docker ps
 
 After the droplet, repo checkout, `.env`, and GitHub secrets are configured, push a harmless version tag or run the deploy workflow manually with an existing image tag. GitHub Actions will:
 
-1. Build the `web` image from `docker/php/Dockerfile`
-2. Push it to Docker Hub as `${PRODUCTION_IMAGE_NAME}:vX.Y.Z` and `${PRODUCTION_IMAGE_NAME}:sha-<commit>`
+1. Build the `api` and `web` images from `docker/api/Dockerfile` and `docker/web/Dockerfile`
+2. Push them to Docker Hub as `${PRODUCTION_IMAGE_NAME}:api-vX.Y.Z`, `:web-vX.Y.Z` and the matching `:api-sha-<commit>` / `:web-sha-<commit>` tags
 3. SSH into the droplet
 4. Check out the matching release revision on the droplet
 5. Update `IMAGE_TAG` in `.env`
-6. Ensure MySQL is running, pull the new `web` image, and recreate only the `web` service
-7. Execute migrations and `php artisan optimize`
+6. Ensure MySQL is running, pull the new images, recreate `api`, run migrations and `php artisan optimize` in it, then recreate `web` and `worker`
 
 If you need to start the stack manually before CI/CD is ready, the commands are still:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d mysql
-docker compose -f docker-compose.prod.yml pull web
-docker compose -f docker-compose.prod.yml up -d web
+docker compose -f docker-compose.prod.yml pull api web
+docker compose -f docker-compose.prod.yml up -d api web
 docker compose -f docker-compose.prod.yml ps
 ```
 
@@ -214,10 +219,11 @@ The deploy workflow runs these automatically on every release:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d mysql
-docker compose -f docker-compose.prod.yml pull web
+docker compose -f docker-compose.prod.yml pull api web
+docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate api
+docker compose -f docker-compose.prod.yml exec -T api php artisan migrate --force
+docker compose -f docker-compose.prod.yml exec -T api php artisan optimize
 docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate web
-docker compose -f docker-compose.prod.yml exec -T web php artisan migrate --force
-docker compose -f docker-compose.prod.yml exec -T web php artisan optimize
 ```
 
 Run them manually only for troubleshooting or if you intentionally bypass the workflow.
@@ -256,7 +262,7 @@ To include `www.your-domain.com`, add `-d www.your-domain.com` to the command.
 
 ## 11. Activate HTTPS
 
-Recreate web container so `start.sh` detects certificates and switches to SSL config:
+Recreate the web container so `docker/web/start.sh` detects certificates and switches to the SSL config:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --force-recreate web

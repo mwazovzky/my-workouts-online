@@ -10,7 +10,7 @@ discovery.relabel "containers" {
   // Keep only web and worker containers
   rule {
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
-    regex         = "web|worker"
+    regex         = "api|web|worker"
     action        = "keep"
   }
 

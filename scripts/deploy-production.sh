@@ -52,8 +52,8 @@ mv "${tmp_env_file}" .env
 
 echo "Deploying IMAGE_TAG=${IMAGE_TAG}..."
 docker compose -f "${compose_file}" up -d mysql
-docker compose -f "${compose_file}" pull web worker alloy
-docker compose -f "${compose_file}" up -d --no-deps --force-recreate web
+docker compose -f "${compose_file}" pull api web worker alloy
+docker compose -f "${compose_file}" up -d --no-deps --force-recreate api
 docker compose -f "${compose_file}" up -d --no-deps --force-recreate alloy
 docker compose -f "${compose_file}" stop worker
 
@@ -71,8 +71,9 @@ for attempt in {1..20}; do
   sleep 3
 done
 
-docker compose -f "${compose_file}" exec -T web php artisan migrate --force
-docker compose -f "${compose_file}" exec -T web php artisan optimize
+docker compose -f "${compose_file}" exec -T api php artisan migrate --force
+docker compose -f "${compose_file}" exec -T api php artisan optimize
+docker compose -f "${compose_file}" up -d --no-deps --force-recreate web
 docker compose -f "${compose_file}" up -d --no-deps --force-recreate worker
 
 if [[ -n "${DEPLOY_HEALTHCHECK_URL:-}" ]]; then

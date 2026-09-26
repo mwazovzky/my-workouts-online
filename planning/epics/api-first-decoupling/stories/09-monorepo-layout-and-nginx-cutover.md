@@ -22,7 +22,9 @@ None; the app is served by the SPA container with the API behind `/api`.
 - `apps/web` Dockerfile: build stage plus nginx serving `dist` with SPA fallback
 - `docker/nginx/default.conf.template`: `/` to web, `/api/*`, `/health*`, `/.well-known/*` to php-fpm
 - `docker-compose.yml` and `docker-compose.prod.yml` updated; deploy scripts updated
-- GitHub Actions: path filters per component; `apps/web` job (lint, test, build)
+- GitHub Actions: jobs per component (`services/api-php`, `apps/web`, OpenAPI lint). Path filters were deliberately not used: branch protection requires these checks, and path-filtered workflows leave required checks pending on unrelated changes
+- the api image no longer builds the legacy Inertia assets; that frontend is unreachable behind nginx and is deleted in story 10
+- `.env` stays at the repo root as the single env file for compose interpolation and the containers; Laravel reads it from the environment
 - HSTS and a Content Security Policy header from nginx
 
 ## Non-Goals

@@ -2,7 +2,7 @@
 
 ## Stack
 
-Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwind v3 · MySQL · Vite · Docker Compose
+Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia) · Tailwind v3 · MySQL · Vite · Docker Compose (nginx `web` image + php-fpm `api` image). The legacy Inertia v2 frontend still lives inside `services/api-php` but is not reachable behind nginx.
 
 ## Key Patterns
 
@@ -71,7 +71,8 @@ Only non-obvious locations listed.
 
 | Path                          | Contains                                                                     |
 | ----------------------------- | ---------------------------------------------------------------------------- |
-| `apps/web/`                   | Standalone Vue SPA (vue-router, Pinia) consuming `/api/v1`; replaces `resources/js` at cutover |
+| `apps/web/`                   | The Vue SPA (vue-router, Pinia) consuming `/api/v1`; served by the `web` nginx image |
+| `services/api-php/`           | The Laravel API; `docker/nginx/api-locations.conf` is the only path from the SPA to it |
 | `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |
 | `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`)         |
 | `app/Http/Controllers/Api/Admin/` | Admin catalog CRUD controllers (equipment, categories, exercises)       |
