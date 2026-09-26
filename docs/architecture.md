@@ -71,6 +71,8 @@ Only non-obvious locations listed.
 
 | Path                          | Contains                                                                     |
 | ----------------------------- | ---------------------------------------------------------------------------- |
+| `apps/web/`                   | Standalone Vue SPA (vue-router, Pinia) consuming `/api/v1`; replaces `resources/js` at cutover |
+| `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |
 | `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`)         |
 | `app/Http/Controllers/Api/Admin/` | Admin catalog CRUD controllers (equipment, categories, exercises)       |
 | `app/QueryBuilders/`          | Custom Eloquent builders                                                     |

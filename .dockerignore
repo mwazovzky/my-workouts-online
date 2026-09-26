@@ -22,3 +22,8 @@ tests/
 .github/
 *.md
 docker-compose*.yml
+
+# nested app dependencies and build output
+**/node_modules
+apps/web/dist
+apps/web/coverage

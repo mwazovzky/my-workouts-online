@@ -18,13 +18,14 @@ None yet; the SPA boots on its own, restores the session, and can call the API.
 
 ## Scope
 
-- `apps/web` with Vite, Vue 3, vue-router, pinia, vue-i18n, Tailwind, ESLint, Prettier, Vitest
-- `src/locales/{en,ru}.json` moved from `lang/*.json`; `useTranslation` reimplemented over vue-i18n with the same `t(key, replacements)` signature
+- `apps/web` with Vite, Vue 3, vue-router, pinia, Tailwind, ESLint, Prettier, Vitest
+- `src/i18n/locales/{en,ru}.json` copied from `lang/*.json`; `useTranslation` reimplemented over a small locale store with the same `t(key, replacements)` signature. vue-i18n was dropped: its message syntax (`|`, `@`, `{}`) conflicts with the Laravel-style flat catalogs and adds nothing for key-to-string maps
 - pinia auth store: access token in memory, `login`, `logout`, `refresh`, `bootstrap` (calls `/me`)
 - axios instance with bearer header, `Accept-Language`, `X-Requested-With`, and a refresh-and-retry interceptor on 401 `token_expired`
 - route guards: `guest`, `auth`, `verified`, `admin`
 - meta store loaded from `/meta`
-- theme bootstrap from `localStorage` with a CSP-safe external script
+- theme bootstrap from `localStorage` with a CSP-safe external script (`public/theme.js`)
+- placeholder Welcome, Login, Dashboard and Verify Email pages so the shell is usable end to end; story 7 and 8 replace them with the real pages
 - TypeScript client types generated from `contracts/openapi.yaml` with `openapi-typescript`
 - Vite dev server proxies `/api` to the Laravel server
 

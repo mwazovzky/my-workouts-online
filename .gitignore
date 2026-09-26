@@ -32,3 +32,9 @@ GEMINI.md
 coverage.xml
 *.lcov
 
+
+# Web SPA (apps/web)
+/apps/web/node_modules
+/apps/web/dist
+/apps/web/coverage
+/apps/web/.env

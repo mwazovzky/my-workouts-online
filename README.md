@@ -33,6 +33,15 @@ php artisan serve
 
 This mirrors the production compose topology (nginx + php-fpm + mysql) while keeping code bind-mounted for live edits.
 
+## Web SPA (in progress)
+
+The standalone client that will replace the Inertia frontend lives in [`apps/web`](apps/web/README.md). Run it through the node service:
+
+```
+docker compose exec -w /var/www/html/apps/web node npm install
+docker compose exec -w /var/www/html/apps/web node npm test
+```
+
 ## Documentation
 
 - [Product overview](docs/product.md)
