@@ -80,6 +80,7 @@ Common patterns in this project:
 - Authenticate with `actingAs($user)`.
 - Hit named routes with `route(...)` instead of hard-coded URLs.
 - Assert both the HTTP response and the persisted database state.
+- API validation errors are `errors.<field>.<n>.message` / `.code`; API content translation is driven by `withHeader('Accept-Language', ...)`, not the user's stored locale.
 - For Inertia pages, assert the component name and only the props that matter.
 
 Representative examples:

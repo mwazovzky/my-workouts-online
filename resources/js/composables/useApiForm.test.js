@@ -190,7 +190,13 @@ describe('useApiForm', () => {
       response: {
         status: 422,
         data: {
-          errors: { name: ['Name is required.', 'Name is too short.'], email: ['Invalid email.'] },
+          errors: {
+            name: [
+              { code: 'required', message: 'Name is required.' },
+              { code: 'min', message: 'Name is too short.' },
+            ],
+            email: [{ code: 'email', message: 'Invalid email.' }],
+          },
         },
       },
     });
@@ -205,7 +211,10 @@ describe('useApiForm', () => {
 
   it('calls onFinish on 422 error', async () => {
     mockAxios.patch.mockRejectedValueOnce({
-      response: { status: 422, data: { errors: { name: ['required'] } } },
+      response: {
+        status: 422,
+        data: { errors: { name: [{ code: 'required', message: 'required' }] } },
+      },
     });
     const onFinish = vi.fn();
     const form = useApiForm({ name: '' });
@@ -244,7 +253,10 @@ describe('useApiForm', () => {
 
   it('does not call onFail on 422 errors', async () => {
     mockAxios.patch.mockRejectedValueOnce({
-      response: { status: 422, data: { errors: { name: ['required'] } } },
+      response: {
+        status: 422,
+        data: { errors: { name: [{ code: 'required', message: 'required' }] } },
+      },
     });
     const onFail = vi.fn();
     const form = useApiForm({ name: '' });

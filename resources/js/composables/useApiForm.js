@@ -80,7 +80,8 @@ export function useApiForm(initialData) {
         const rawErrors = error.response.data.errors ?? {};
         const flattened = {};
         for (const key in rawErrors) {
-          flattened[key] = Array.isArray(rawErrors[key]) ? rawErrors[key][0] : rawErrors[key];
+          const first = Array.isArray(rawErrors[key]) ? rawErrors[key][0] : rawErrors[key];
+          flattened[key] = first && typeof first === 'object' ? first.message : first;
         }
         form.errors = flattened;
         options.onError?.(form.errors);

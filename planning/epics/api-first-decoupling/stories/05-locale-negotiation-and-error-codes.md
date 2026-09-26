@@ -18,7 +18,7 @@ Database content (program, exercise, equipment, category names) arrives in the l
 
 ## Scope
 
-- `SetLocale`: `Accept-Language` is authoritative, negotiated against `available_locales`; the session branch is removed; the user's stored locale is no longer applied server-side
+- API group gets `NegotiateApiLocale`: `Accept-Language` is authoritative, negotiated against `available_locales`; the web group keeps `SetLocale` (user, session, header) until story 10; the Inertia app sends `Accept-Language` from the page locale
 - responses set `Content-Language` and `Vary: Accept-Language`
 - error envelope `{ message, code }` for all non-2xx responses via the exception handler
 - validation errors `{ message, code: "validation_failed", errors: { field: [{ code, message }] } }` where `code` is the Laravel rule name

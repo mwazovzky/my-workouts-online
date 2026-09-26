@@ -32,7 +32,7 @@ class TranslatedResourceTest extends TestCase
             'status' => 'in_progress',
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/v1/workouts');
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->getJson('/api/v1/workouts');
 
         $response->assertOk();
 
@@ -55,7 +55,7 @@ class TranslatedResourceTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/v1/workouts');
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->getJson('/api/v1/workouts');
 
         $response->assertOk();
 
@@ -76,7 +76,7 @@ class TranslatedResourceTest extends TestCase
 
         $program->users()->attach($user->id);
 
-        $response = $this->actingAs($user)->getJson("/api/v1/programs/{$program->id}");
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->getJson("/api/v1/programs/{$program->id}");
 
         $response->assertOk();
 
@@ -128,7 +128,7 @@ class TranslatedResourceTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($user)->getJson("/api/v1/workouts/{$workout->id}");
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->getJson("/api/v1/workouts/{$workout->id}");
 
         $response->assertOk();
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\EquipmentStoreRequest;
 use App\Http\Requests\Admin\EquipmentUpdateRequest;
@@ -57,11 +58,9 @@ class EquipmentController extends Controller
     {
         $this->authorize('delete', $equipment);
 
-        abort_if(
-            $equipment->exercises()->withTrashed()->exists(),
-            409,
-            __('Cannot delete equipment that is used by exercises.'),
-        );
+        if ($equipment->exercises()->withTrashed()->exists()) {
+            throw new ApiException(409, 'in_use', __('Cannot delete equipment that is used by exercises.'));
+        }
 
         $this->service->delete($equipment);
 

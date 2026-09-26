@@ -50,7 +50,7 @@ Each catalog resource also has dedicated create and edit pages — `Admin/{Resou
 | Update password             | `PUT`    | `/password`                        | `password.update`     | Auth                      | Auth & Profile  |
 | Logout                      | `POST`   | `/logout`                          | `logout`              | Auth                      | Auth & Profile  |
 | Update profile              | `PATCH`  | `/profile`                         | `profile.update`      | Auth                      | Auth & Profile  |
-| Update guest locale         | `PATCH`  | `/locale`                          | `locale.update`       | Public                    | Landing         |
+| Update guest locale         | `PATCH`  | `/locale`                          | `locale.update`       | Public                    | Landing (deprecated: Inertia only, removed with the SPA cutover) |
 | Update language             | `PATCH`  | `/profile/locale`                  | `profile.locale`      | Auth                      | Auth & Profile  |
 | Update theme                | `PATCH`  | `/profile/theme`                   | `profile.theme`       | Auth                      | Auth & Profile  |
 | Delete account              | `DELETE` | `/profile`                         | `profile.destroy`     | Auth                      | Auth & Profile  |
@@ -59,7 +59,7 @@ Each catalog resource also has dedicated create and edit pages — `Admin/{Resou
 
 ## API
 
-The SPA consumes a versioned REST API under `/api/v1`. Protected routes accept a JWT bearer token (`auth:jwt`) or, during the Inertia transition, the web session. Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
+The SPA consumes a versioned REST API under `/api/v1`. Protected routes accept a JWT bearer token (`auth:jwt`) or, during the Inertia transition, the web session. Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. Clients send `Accept-Language`; responses declare `Content-Language`. Errors use the `{ message, code }` envelope and validation errors `{ errors: { field: [{ code, message }] } }`. The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
 
 | Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |
 | ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |

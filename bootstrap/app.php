@@ -1,12 +1,14 @@
 <?php
 
 use App\Auth\JwtUserResolver;
+use App\Exceptions\Api\ApiErrorResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -29,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->api(append: [
             \App\Http\Middleware\LogContext::class,
-            \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\NegotiateApiLocale::class,
         ]);
 
         $middleware->alias([
@@ -56,11 +58,15 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+        $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json([
-                    'message' => 'Record not found.',
-                ], 404);
+                return ApiErrorResponse::fromValidation($e);
+            }
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if ($request->is('api/*')) {
+                return ApiErrorResponse::fromHttpException($e);
             }
         });
     })->create();

@@ -22,7 +22,7 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->patchJson('/api/v1/profile', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/profile', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
@@ -30,7 +30,7 @@ class ValidationLocaleTest extends TestCase
         $response->assertUnprocessable();
 
         $errors = $response->json('errors');
-        $this->assertStringContainsString('обязательно', $errors['name'][0]);
+        $this->assertStringContainsString('обязательно', $errors['name'][0]['message']);
     }
 
     #[Test]
@@ -38,7 +38,7 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->patchJson('/api/v1/profile', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/profile', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
@@ -46,7 +46,7 @@ class ValidationLocaleTest extends TestCase
         $response->assertUnprocessable();
 
         $errors = $response->json('errors');
-        $this->assertStringContainsString('required', $errors['name'][0]);
+        $this->assertStringContainsString('required', $errors['name'][0]['message']);
     }
 
     // -------------------------------------------------------
@@ -58,13 +58,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->postJson('/api/v1/workouts', []);
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->postJson('/api/v1/workouts', []);
 
         $response->assertUnprocessable();
 
         $this->assertSame(
             'Для начала тренировки необходимо выбрать шаблон.',
-            $response->json('errors.workout_template_id.0'),
+            $response->json('errors.workout_template_id.0.message'),
         );
     }
 
@@ -73,7 +73,7 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->postJson('/api/v1/workouts', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->postJson('/api/v1/workouts', [
             'workout_template_id' => 9999,
         ]);
 
@@ -81,7 +81,7 @@ class ValidationLocaleTest extends TestCase
 
         $this->assertSame(
             'Выбранный шаблон тренировки не найден.',
-            $response->json('errors.workout_template_id.0'),
+            $response->json('errors.workout_template_id.0.message'),
         );
     }
 
@@ -90,13 +90,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->postJson('/api/v1/workouts', []);
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->postJson('/api/v1/workouts', []);
 
         $response->assertUnprocessable();
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            $response->json('errors.workout_template_id.0'),
+            $response->json('errors.workout_template_id.0.message'),
         );
     }
 
@@ -110,13 +110,13 @@ class ValidationLocaleTest extends TestCase
         $user = User::factory()->create(['locale' => 'ru']);
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
-        $response = $this->actingAs($user)->patchJson(
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
             "/api/v1/workouts/{$workout->id}/save",
             ['activities' => []],
         );
 
         $response->assertUnprocessable();
-        $this->assertStringContainsString('обязательно', $response->json('errors.activities.0'));
+        $this->assertStringContainsString('обязательно', $response->json('errors.activities.0.message'));
     }
 
     #[Test]
@@ -126,7 +126,7 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patchJson(
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
             "/api/v1/workouts/{$workout->id}/save",
             [
                 'activities' => [
@@ -141,7 +141,7 @@ class ValidationLocaleTest extends TestCase
 
         $response->assertUnprocessable();
         $errors = $response->json('errors');
-        $this->assertStringContainsString('обязательно', $errors['activities.0.sets'][0]);
+        $this->assertStringContainsString('обязательно', $errors['activities.0.sets'][0]['message']);
     }
 
     // -------------------------------------------------------
@@ -155,7 +155,7 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patchJson(
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
             "/api/v1/workouts/{$workout->id}/save",
             [
                 'activities' => [
@@ -175,7 +175,7 @@ class ValidationLocaleTest extends TestCase
         $errors = $response->json('errors');
         $this->assertSame(
             'Подход не может быть отмечен как выполненный с нулевым усилием.',
-            $errors['activities.0.sets.0.is_completed'][0],
+            $errors['activities.0.sets.0.is_completed'][0]['message'],
         );
     }
 
@@ -186,7 +186,7 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patchJson(
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
             "/api/v1/workouts/{$workout->id}/save",
             [
                 'activities' => [
@@ -206,7 +206,7 @@ class ValidationLocaleTest extends TestCase
         $errors = $response->json('errors');
         $this->assertSame(
             'A set cannot be marked as completed with 0 effort.',
-            $errors['activities.0.sets.0.is_completed'][0],
+            $errors['activities.0.sets.0.is_completed'][0]['message'],
         );
     }
 
@@ -241,13 +241,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->patchJson('/api/v1/profile/locale', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/profile/locale', [
             'locale' => 'fr',
         ]);
 
         $response->assertUnprocessable();
 
         $errors = $response->json('errors');
-        $this->assertStringContainsString('Язык', $errors['locale'][0]);
+        $this->assertStringContainsString('Язык', $errors['locale'][0]['message']);
     }
 }

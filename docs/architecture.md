@@ -12,6 +12,8 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 **Polymorphic Activities** — `Activity` morphs to `WorkoutTemplate` or `Workout`. Morph map in `AppServiceProvider`: `workout_template`, `workout`, `exercise`, `category`, `equipment`, `program`.
 
+**API Error Envelope** — Every non-2xx response under `api/*` is `{ message, code }` (`App\Exceptions\Api\ApiErrorResponse`, wired in `bootstrap/app.php`). Codes: `unauthenticated`, `token_expired`, `forbidden`, `email_unverified`, `not_found`, `conflict`, `too_many_requests`, `validation_failed`, plus explicit ones thrown via `ApiException` (e.g. `in_use` on reference guards). Validation failures add `errors: { field: [{ code, message }] }` where `code` is the failed rule name (`required`, `email`, `unique`, `enum`, custom rule class in snake_case) or `invalid` for manually added messages.
+
 **Eloquent Resources** — All Inertia responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).
 
 **Form Requests** — Validation via dedicated request classes. Authorization via policies separately.
@@ -46,8 +48,9 @@ Laravel 12 · Inertia v2 · Vue 3 (Composition API, `<script setup>`) · Tailwin
 
 - Supported locales: `en`, `ru`
 - User preference is stored in `users.locale`
-- `SetLocale` middleware applies the authenticated user's locale
-- `HandleInertiaRequests` shares `locale`, `availableLocales`, and JSON translations with every page
+- Web (Inertia) requests: `SetLocale` applies the authenticated user's locale, then the guest session locale, then `Accept-Language`
+- API requests: `NegotiateApiLocale` uses only `Accept-Language` (negotiated against `available_locales`, fallback `en`). The stored profile locale is a synced preference the client sends back as the header. Responses carry `Content-Language` and `Vary: Accept-Language`
+- `HandleInertiaRequests` shares `locale`, `availableLocales`, and JSON translations with every page; the Inertia app sets axios' `Accept-Language` from the page locale so API content matches the UI
 
 ### Translation Sources
 
@@ -73,7 +76,7 @@ Only non-obvious locations listed.
 | `app/QueryBuilders/`          | Custom Eloquent builders                                                     |
 | `app/Enums/`                  | `WorkoutStatus` (InProgress, Completed), `EffortType` (Repetitions, Duration), `DifficultyUnit` (Kilograms, Pounds, Plates, HeartRateZone, None), `Weekday` (Monday…Sunday), `ClientKind` (Web, Native) |
 | `app/Policies/`               | `WorkoutPolicy` — owner + status checks; `Equipment`/`Category`/`ExercisePolicy` — admin-only catalog mutations |
-| `app/Http/Middleware/`        | `EnsureUserIsAdmin` (`admin` alias) — 403s non-admins                        |
+| `app/Http/Middleware/`        | `EnsureUserIsAdmin` (`admin` alias), `EnsureEmailIsVerified` (`verified` alias, coded 403 for JSON), `NegotiateApiLocale` (api group), `SetLocale` (web group) |
 | `app/Auth/`                   | `JwtUserResolver` — bearer-token resolver behind the `jwt` guard             |
 | `app/Rules/`                  | Custom validation rules (`CompletedSetRequiresEffort`, `HeartRateZoneWithinRange`) |
 | `resources/js/Components/ui/` | Reusable UI primitives (alert, alert-dialog, avatar, badge, button, card, empty, input, select, separator, sheet, skeleton, sonner, switch, table, textarea, tooltip) |

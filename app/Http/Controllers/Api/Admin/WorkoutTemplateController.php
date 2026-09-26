@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\WorkoutTemplateStoreRequest;
 use App\Http\Requests\Admin\WorkoutTemplateUpdateRequest;
@@ -64,11 +65,9 @@ class WorkoutTemplateController extends Controller
     {
         $this->authorize('delete', $workoutTemplate);
 
-        abort_if(
-            $workoutTemplate->programs()->exists(),
-            409,
-            __('Cannot delete a workout template that is used by a program.'),
-        );
+        if ($workoutTemplate->programs()->exists()) {
+            throw new ApiException(409, 'in_use', __('Cannot delete a workout template that is used by a program.'));
+        }
 
         $this->service->delete($workoutTemplate);
 

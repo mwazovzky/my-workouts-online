@@ -15,7 +15,9 @@ info:
       English fallback, and answers with `Content-Language` and
       `Vary: Accept-Language`.
     - Errors: every non-2xx response uses the `Error` envelope. Validation
-      failures use `ValidationError` with a stable `code` per field entry.
+      failures use `ValidationError` with a stable `code` per field entry:
+      the failed rule name (`required`, `email`, `unique`, `enum`, ...) or
+      `invalid` for messages not tied to a rule.
     - Pagination: list endpoints that paginate return `{ data, links, meta }`.
     - Status: endpoints marked `x-status: target` are not implemented yet.
 

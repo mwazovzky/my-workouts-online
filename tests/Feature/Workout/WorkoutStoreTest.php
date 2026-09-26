@@ -92,7 +92,7 @@ class WorkoutStoreTest extends TestCase
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            $response->json('errors.workout_template_id.0'),
+            $response->json('errors.workout_template_id.0.message'),
         );
     }
 
@@ -110,7 +110,7 @@ class WorkoutStoreTest extends TestCase
 
         $this->assertSame(
             'The selected workout template could not be found.',
-            $response->json('errors.workout_template_id.0'),
+            $response->json('errors.workout_template_id.0.message'),
         );
     }
 }
