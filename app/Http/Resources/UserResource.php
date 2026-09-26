@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'locale' => $this->locale,
             'theme_preference' => $this->theme_preference,
             'is_admin' => $this->isAdmin(),
+            'email_verified' => $this->hasVerifiedEmail(),
         ];
     }
 }

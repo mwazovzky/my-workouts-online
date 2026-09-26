@@ -11,7 +11,8 @@ Authentication and profile management via Laravel Breeze.
 5. **Profile** — update name/email (email change resets verification), change password, switch locale, or delete account (password confirmation required)
 6. **API tokens** — `POST /api/v1/auth/login` (email, password, `client`) issues a 15-minute JWT access token plus a 30-day rotating refresh token; `POST /api/v1/auth/refresh` rotates it; `POST /api/v1/auth/logout` revokes the current device's token family. Web clients keep the refresh token in an httpOnly cookie, native clients in secure storage
 7. **API account flows** — `POST /api/v1/auth/register` creates the account, sends the verification email and returns tokens; `POST /api/v1/auth/password/forgot` and `/reset` drive password reset; `POST /api/v1/auth/email/verify` accepts the emailed link's `id`, `hash`, `expires`, `signature` and `/resend` re-sends it; `POST /api/v1/auth/reauth` re-checks the password and returns an access token with a fresh `auth_time` for step-up checks
-8. **Email links** — verification and reset emails link to `FRONTEND_URL` (`/verify-email/{id}/{hash}?expires&signature`, `/reset-password/{token}?email`). Verification links are signed exactly like the `verification.verify` web route, so the Inertia page and the API accept the same email
+8. **Bootstrap** — `GET /api/v1/me` returns the signed-in user (`id`, `name`, `email`, `locale`, `theme_preference`, `is_admin`, `email_verified`); `GET /api/v1/meta` is public and lists `available_locales` and `theme_preferences`
+9. **Email links** — verification and reset emails link to `FRONTEND_URL` (`/verify-email/{id}/{hash}?expires&signature`, `/reset-password/{token}?email`). Verification links are signed exactly like the `verification.verify` web route, so the Inertia page and the API accept the same email
 
 ## Business Rules
 
@@ -40,7 +41,7 @@ Authentication and profile management via Laravel Breeze.
 ## Surface Area
 
 - Pages: `Register`, `Login`, `Forgot Password`, `Reset Password`, `Verify Email`, `Confirm Password`, `Profile/Edit`
-- API route names: `api.v1.auth.register`, `api.v1.auth.login`, `api.v1.auth.refresh`, `api.v1.auth.logout`, `api.v1.auth.reauth`, `api.v1.auth.password.forgot`, `api.v1.auth.password.reset`, `api.v1.auth.email.verify`, `api.v1.auth.email.resend`, `jwks`
+- API route names: `api.v1.me`, `api.v1.meta`, `api.v1.auth.register`, `api.v1.auth.login`, `api.v1.auth.refresh`, `api.v1.auth.logout`, `api.v1.auth.reauth`, `api.v1.auth.password.forgot`, `api.v1.auth.password.reset`, `api.v1.auth.email.verify`, `api.v1.auth.email.resend`, `jwks`
 - Route names: `register`, `login`, `password.request`, `password.email`, `password.reset`, `password.store`, `verification.notice`, `verification.verify`, `verification.send`, `password.confirm`, `password.update`, `profile.edit`, `profile.update`, `profile.locale`, `profile.destroy`, `logout`
 - Full reference: [Pages & Routes](../pages-and-routes.md)
 

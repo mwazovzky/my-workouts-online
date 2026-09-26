@@ -367,7 +367,6 @@ paths:
       tags: [Me]
       summary: Current user
       operationId: getMe
-      x-status: target
       responses:
         '200':
           description: Current user
@@ -386,7 +385,6 @@ paths:
       tags: [Meta]
       summary: Public application options
       operationId: getMeta
-      x-status: target
       security: []
       responses:
         '200':
@@ -1451,7 +1449,7 @@ components:
     # ------------------------------------------------------------- Users
     User:
       type: object
-      required: [id, name, email, locale, theme_preference, is_admin]
+      required: [id, name, email, locale, theme_preference, is_admin, email_verified]
       properties:
         id: { type: integer }
         name: { type: [string, 'null'] }
@@ -1459,9 +1457,7 @@ components:
         locale: { $ref: '#/components/schemas/Locale' }
         theme_preference: { $ref: '#/components/schemas/ThemePreference' }
         is_admin: { type: boolean }
-        email_verified:
-          type: boolean
-          description: Added in story 4.
+        email_verified: { type: boolean }
 
     # ------------------------------------------------------------- Catalog
     Category:

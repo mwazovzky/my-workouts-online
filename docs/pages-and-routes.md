@@ -73,6 +73,8 @@ The SPA consumes a versioned REST API under `/api/v1`. Protected routes accept a
 | Verify email        | `POST`   | `/api/v1/auth/email/verify`             | `api.v1.auth.email.verify`       | Auth, throttled          | Auth & Profile |
 | Resend verification | `POST`   | `/api/v1/auth/email/resend`             | `api.v1.auth.email.resend`       | Auth, throttled          | Auth & Profile |
 | Signing keys        | `GET`    | `/.well-known/jwks.json`                | `jwks`                           | Public                   | Auth & Profile |
+| Current user        | `GET`    | `/api/v1/me`                            | `api.v1.me`                      | Auth                     | Auth & Profile |
+| App options         | `GET`    | `/api/v1/meta`                          | `api.v1.meta`                    | Public                   | Auth & Profile |
 
 
 | Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |

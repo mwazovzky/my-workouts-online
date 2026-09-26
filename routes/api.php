@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Api\MetaController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ProgramController;
 use App\Http\Controllers\Api\WorkoutController;
@@ -19,6 +21,8 @@ use App\Http\Controllers\Api\WorkoutTemplateController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
+    Route::get('meta', MetaController::class)->name('meta');
+
     Route::post('auth/register', [RegisterController::class, 'store'])->middleware('throttle:10,1')->name('auth.register');
     Route::post('auth/login', [SessionController::class, 'login'])->name('auth.login');
     Route::post('auth/refresh', [SessionController::class, 'refresh'])->name('auth.refresh');
@@ -26,6 +30,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('auth/password/reset', [PasswordResetController::class, 'reset'])->middleware('throttle:6,1')->name('auth.password.reset');
 
     Route::middleware('auth:jwt,web')->group(function () {
+        Route::get('me', MeController::class)->name('me');
+
         Route::post('auth/logout', [SessionController::class, 'logout'])->name('auth.logout');
         Route::post('auth/reauth', ReauthController::class)->middleware('throttle:6,1')->name('auth.reauth');
         Route::post('auth/email/verify', [EmailVerificationController::class, 'verify'])->middleware('throttle:6,1')->name('auth.email.verify');
