@@ -166,6 +166,8 @@ Required values (see `.env.production` in repo for full reference):
 - `DB_PASSWORD=...`
 - `DB_ROOT_PASSWORD=...`
 - `SESSION_SECURE_COOKIE=false` (set to `true` after HTTPS is active — see step 11)
+- `JWT_PRIVATE_KEY=...` and `JWT_PUBLIC_KEY=...` (generate once with `php artisan jwt:keys`; rotating them invalidates every issued access token)
+- `JWT_COOKIE_SECURE=false` (set to `true` after HTTPS is active — see step 11)
 - `IMAGE_NAME=YOUR_DOCKERHUB_USER/PROJECT_NAME`
 - `IMAGE_TAG=initial-tag` (the deploy workflow replaces this on every release)
 - `APP_VERSION=dev` (the deploy script replaces this with the release tag on every release)
@@ -271,6 +273,7 @@ Update `.env`:
 ```ini
 APP_URL=https://your-domain.com
 SESSION_SECURE_COOKIE=true
+JWT_COOKIE_SECURE=true
 ```
 
 Recreate to pick up changes:

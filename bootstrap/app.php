@@ -1,5 +1,7 @@
 <?php
 
+use App\Auth\JwtUserResolver;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -33,12 +35,25 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         ]);
+
+        $middleware->encryptCookies(except: [
+            'refresh_token',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->context(fn (Throwable $e) => array_filter([
             'exception_class' => $e::class,
             'exception_file' => config('app.debug') ? $e->getFile().':'.$e->getLine() : null,
         ]));
+
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'code' => $request->attributes->get(JwtUserResolver::ERROR_ATTRIBUTE, 'unauthenticated'),
+                ], 401);
+            }
+        });
 
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {

@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Auth\JwtUserResolver;
+use App\Services\Auth\TokenService;
+use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,6 +17,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(
+            TokenServiceInterface::class,
+            fn ($app) => new TokenService($app['config']->get('jwt'))
+        );
+
         $this->app->bind(
             \App\Services\Workout\WorkoutServiceInterface::class,
             \App\Services\Workout\WorkoutService::class
@@ -50,6 +59,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        Auth::viaRequest('jwt', fn ($request) => $this->app->make(JwtUserResolver::class)($request));
 
         Relation::morphMap([
             'workout_template' => \App\Models\WorkoutTemplate::class,

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\Api\JwksController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
@@ -74,6 +75,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 Route::get('/about', [AboutController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('about');
+
+Route::get('/.well-known/jwks.json', JwksController::class)->name('jwks');
 
 Route::get('/health', static fn () => response()->json([
     'status' => 'ok',

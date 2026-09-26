@@ -59,7 +59,15 @@ Each catalog resource also has dedicated create and edit pages — `Admin/{Resou
 
 ## API
 
-The SPA consumes a versioned REST API under `/api/v1` (Sanctum, stateful). Key groups: programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`.
+The SPA consumes a versioned REST API under `/api/v1`. Protected routes accept a JWT bearer token (`auth:jwt`) or, during the Inertia transition, the web session. Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
+
+| Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |
+| ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |
+| Login (issue tokens)| `POST`   | `/api/v1/auth/login`                    | `api.v1.auth.login`              | Guest, throttled         | Auth & Profile |
+| Refresh tokens      | `POST`   | `/api/v1/auth/refresh`                  | `api.v1.auth.refresh`            | Refresh token (cookie or body) | Auth & Profile |
+| Logout              | `POST`   | `/api/v1/auth/logout`                   | `api.v1.auth.logout`             | Auth                     | Auth & Profile |
+| Signing keys        | `GET`    | `/.well-known/jwks.json`                | `jwks`                           | Public                   | Auth & Profile |
+
 
 | Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |
 | ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |

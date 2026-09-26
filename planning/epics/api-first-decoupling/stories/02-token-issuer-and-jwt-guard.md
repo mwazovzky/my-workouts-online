@@ -22,9 +22,11 @@ Sessions silently renew while the user is active and expire safely when the refr
 - asymmetric signing key pair loaded from config / env; `GET /.well-known/jwks.json`
 - `app/Services/Auth/TokenService` behind an interface: `issuePair()`, `refresh()`, `revokeFamily()`, `verifyAccessToken()`
 - access token claims: `iss`, `aud`, `sub`, `iat`, `exp`, `jti`, `auth_time`
-- custom `jwt` guard registered in `AuthServiceProvider`; API routes switch from `auth:sanctum` to `auth:jwt`
+- custom `jwt` guard (`Auth::viaRequest`); API routes switch from `auth:sanctum` to `auth:jwt,web` so the Inertia frontend's session keeps working until story 10 removes it
 - refresh rotation: every refresh issues a new refresh token and marks the old one replaced; reuse of a replaced token revokes the whole family
-- test helper `actingAsWithJwt(User)` replacing `actingAs` in API tests
+- `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` (moved here from story 3 because the issuer cannot be exercised over HTTP without them); `client: web | native` decides cookie vs body delivery
+- Sanctum personal access tokens removed (`POST /tokens`, `HasApiTokens`, table dropped); the Sanctum package stays only for `EnsureFrontendRequestsAreStateful` until story 10
+- existing API tests keep using `actingAs` (session guard); JWT-specific tests use `withToken()`
 
 ## Non-Goals
 
@@ -37,19 +39,19 @@ Sessions silently renew while the user is active and expire safely when the refr
 - a refresh returns a new pair and invalidates the old refresh token
 - reusing a rotated refresh token revokes the family and returns 401 `refresh_token_reused`
 - an expired access token returns 401 `token_expired`
-- Sanctum is no longer referenced by any API route
+- no API route authenticates with `auth:sanctum`; Sanctum personal access tokens no longer exist
 
 ## Initial Tasks
 
 - migration and model for refresh tokens
 - key generation command and config keys
 - token service, JWKS controller, guard
+- login / refresh / logout controller
 - swap middleware on `routes/api.php`
-- update existing API tests to the JWT helper
 
 ## Test Cases
 
-- issue pair, verify access token, `/me` succeeds
+- issue pair, verify access token, a protected route succeeds
 - refresh rotates and old token fails
 - reuse detection revokes family
 - expired access token rejected with correct code

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Auth\JwtUserResolver;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileLocaleRequest;
 use App\Http\Requests\ProfileThemeRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\UserResource;
+use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +17,8 @@ use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
+    public function __construct(private readonly TokenServiceInterface $tokens) {}
+
     /**
      * Update the user's profile information.
      */
@@ -45,6 +49,11 @@ class ProfileController extends Controller
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        $this->tokens->revokeAllForUser(
+            $request->user(),
+            JwtUserResolver::claimsFrom($request)?->familyId,
+        );
 
         return response()->noContent();
     }
@@ -81,7 +90,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::guard('web')->logout();
-        $user->tokens()->delete();
+        $this->tokens->revokeAllForUser($user);
         $user->delete();
 
         if ($request->hasSession()) {

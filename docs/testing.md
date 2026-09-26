@@ -22,6 +22,8 @@ npm run test:frontend:coverage
 php artisan test --compact
 ```
 
+Inside the Docker `app` container the `.env` values are real environment variables. `phpunit.xml` forces its own values (`force="true"`), but the safest form is `docker compose exec -T app sh -c 'env -i PATH="$PATH" php artisan test --compact'` so the suite can never touch the MySQL dev database.
+
 ## Suite Structure
 
 - `tests/Feature/` covers the full HTTP stack, page rendering, authorization, validation, and database-side outcomes.

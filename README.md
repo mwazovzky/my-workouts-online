@@ -25,6 +25,7 @@ php artisan serve
    `docker compose up -d --build`
 3. One-time app setup:
    - `docker compose exec -T app php artisan key:generate`
+   - `docker compose exec -T app php artisan jwt:keys` and copy the two printed lines into `.env` (add `JWT_COOKIE_SECURE=false` for plain-http local use)
    - `docker compose exec -T app php artisan migrate --seed`
 4. Open:
    - App: `http://localhost:8080` (from `APP_PORT`)
