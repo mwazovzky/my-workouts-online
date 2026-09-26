@@ -1,0 +1,8 @@
+extends:
+  - recommended
+
+rules:
+  # Public, unauthenticated GETs (JWKS, meta) have no defined failure responses.
+  operation-4xx-response: off
+  # Internal contract; no license metadata required.
+  info-license: off
