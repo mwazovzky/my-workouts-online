@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\JwksController;
+use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -21,17 +22,14 @@ Route::get('/health', static fn () => response()->json([
     'timestamp' => now()->toIso8601String(),
 ]))->name('health');
 
-Route::get('/health/ready', static function () {
+Route::get('/health/ready', static function (TokenServiceInterface $tokens) {
+    $components = [
+        'database' => 'up',
+        'jwt' => $tokens->hasKeys() ? 'up' : 'down',
+    ];
+
     try {
         DB::connection()->getPdo();
-
-        return response()->json([
-            'status' => 'ok',
-            'components' => [
-                'database' => 'up',
-            ],
-            'timestamp' => now()->toIso8601String(),
-        ]);
     } catch (Throwable $e) {
         logger()->warning('Readiness check failed', [
             'component' => 'database',
@@ -39,14 +37,23 @@ Route::get('/health/ready', static function () {
             'message' => $e->getMessage(),
         ]);
 
-        return response()->json([
-            'status' => 'degraded',
-            'components' => [
-                'database' => 'down',
-            ],
-            'timestamp' => now()->toIso8601String(),
-        ], 503);
+        $components['database'] = 'down';
     }
+
+    if ($components['jwt'] === 'down') {
+        logger()->warning('Readiness check failed', [
+            'component' => 'jwt',
+            'message' => 'JWT_PRIVATE_KEY / JWT_PUBLIC_KEY are not configured.',
+        ]);
+    }
+
+    $degraded = in_array('down', $components, true);
+
+    return response()->json([
+        'status' => $degraded ? 'degraded' : 'ok',
+        'components' => $components,
+        'timestamp' => now()->toIso8601String(),
+    ], $degraded ? 503 : 200);
 })->name('health.ready');
 
 /*

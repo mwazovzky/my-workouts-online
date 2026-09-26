@@ -61,7 +61,7 @@ The deploy workflow assumes the standard SSH port `22`.
 ```bash
 git checkout main
 git pull --ff-only origin main
-git tag -a v0.2.11 -m "Release v0.2.11 | Structured logging"
+git tag -a v0.3.0 -m "Release v0.3.0 | Refactor to api/first decoupling"
 git push origin v0.2.11
 ```
 
@@ -361,12 +361,12 @@ Every container writes to its stdout/stderr; Laravel gets there through php-fpm'
 
 The `alloy` service (`docker/alloy/config.alloy`) tails the containers of the compose services `api`, `web` and `worker` and pushes them to Grafana Cloud Loki (`LOKI_URL`, `LOKI_USER_ID`, `LOKI_API_TOKEN`). Labels on every line:
 
-| Label | Value |
-| --- | --- |
-| `app` | `my-workouts` |
-| `env` | `production` |
-| `service` | `api` (Laravel: application log lines and request context), `worker` (queue), `web` (nginx errors only; access logging is off) |
-| `logstream` | `stdout` or `stderr` |
+| Label       | Value                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `app`       | `my-workouts`                                                                                                                  |
+| `env`       | `production`                                                                                                                   |
+| `service`   | `api` (Laravel: application log lines and request context), `worker` (queue), `web` (nginx errors only; access logging is off) |
+| `logstream` | `stdout` or `stderr`                                                                                                           |
 
 Since the SPA cutover, application logs carry `service="api"`; dashboards and alerts written against `service="web"` from the single-image era must be updated.
 
@@ -406,6 +406,20 @@ docker system prune -a --volumes -f
 - **`git checkout --detach` fails on the droplet**: the requested release ref does not exist on the server after fetch, or the working copy has conflicting local changes. Verify the tag or ref name and make sure the droplet checkout is clean.
 - **`IMAGE_TAG entry was not found in .env`**: add `IMAGE_TAG=...` to the droplet `.env`; the deploy script updates that line in place.
 - **Automatic deploy succeeds but app is unhealthy**: inspect the `Deploy Production` job logs first, then run the manual log and curl commands from steps 13 and 14 on the droplet.
+
+### Health check returns 500 or readiness reports `jwt: down`
+
+`/health` is a liveness probe and stays 200 even when the app is misconfigured; `/health/ready` reports each dependency (`database`, `jwt`) and answers 503 with `"status": "degraded"` when one is down. `jwt: down` means `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` are missing from the droplet `.env`. Fix:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T api php artisan jwt:keys   # prints the two lines
+vim .env                                                                     # add them, plus JWT_COOKIE_SECURE=true and FRONTEND_URL
+docker compose -f docker-compose.prod.yml up -d --force-recreate api worker  # containers read .env at creation
+docker compose -f docker-compose.prod.yml exec -T api php artisan optimize
+curl -f https://your-domain.com/health/ready
+```
+
+Then re-run the `deploy` workflow manually with the same `image_tag` so the release is verified end to end. Any other 500: `docker compose -f docker-compose.prod.yml logs --tail=100 api` shows the exception (requires `LOG_CHANNEL=stderr`).
 
 ### Rollback
 

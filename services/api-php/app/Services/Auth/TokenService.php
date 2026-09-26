@@ -29,22 +29,44 @@ class TokenService implements TokenServiceInterface
 {
     private readonly Eddsa $signer;
 
-    private readonly InMemory $privateKey;
+    private ?InMemory $privateKey = null;
 
-    private readonly InMemory $publicKey;
+    private ?InMemory $publicKey = null;
 
     /**
+     * Keys are loaded lazily so that a missing configuration only fails the
+     * operations that need them (signing, verifying, JWKS), never the
+     * construction of the guard on an anonymous request.
+     *
      * @param  array{issuer: string, audience: string, private_key: ?string, public_key: ?string, key_id: ?string, access_ttl: int, refresh_ttl: int, leeway: int}  $config
      */
     public function __construct(private readonly array $config)
     {
-        if (empty($config['private_key']) || empty($config['public_key'])) {
-            throw new \RuntimeException('JWT keys are not configured. Run `php artisan jwt:keys`.');
+        $this->signer = new Eddsa;
+    }
+
+    public function hasKeys(): bool
+    {
+        return ! empty($this->config['private_key']) && ! empty($this->config['public_key']);
+    }
+
+    private function privateKey(): InMemory
+    {
+        return $this->privateKey ??= InMemory::base64Encoded($this->requireKey('private_key'));
+    }
+
+    private function publicKey(): InMemory
+    {
+        return $this->publicKey ??= InMemory::base64Encoded($this->requireKey('public_key'));
+    }
+
+    private function requireKey(string $name): string
+    {
+        if (! $this->hasKeys()) {
+            throw new \RuntimeException('JWT keys are not configured. Run `php artisan jwt:keys` and set JWT_PRIVATE_KEY / JWT_PUBLIC_KEY.');
         }
 
-        $this->signer = new Eddsa;
-        $this->privateKey = InMemory::base64Encoded($config['private_key']);
-        $this->publicKey = InMemory::base64Encoded($config['public_key']);
+        return (string) $this->config[$name];
     }
 
     public function issuePair(User $user, ?string $deviceName = null): TokenPair
@@ -167,7 +189,7 @@ class TokenService implements TokenServiceInterface
         try {
             (new Validator)->assert(
                 $token,
-                new SignedWith($this->signer, $this->publicKey),
+                new SignedWith($this->signer, $this->publicKey()),
                 new IssuedBy($this->config['issuer']),
                 new PermittedFor($this->config['audience']),
             );
@@ -206,7 +228,7 @@ class TokenService implements TokenServiceInterface
                     'alg' => 'EdDSA',
                     'use' => 'sig',
                     'kid' => $this->keyId(),
-                    'x' => rtrim(strtr(base64_encode($this->publicKey->contents()), '+/', '-_'), '='),
+                    'x' => rtrim(strtr(base64_encode($this->publicKey()->contents()), '+/', '-_'), '='),
                 ],
             ],
         ];
@@ -248,11 +270,11 @@ class TokenService implements TokenServiceInterface
             ->withClaim('auth_time', $authenticatedAt->getTimestamp())
             ->withClaim('fam', $familyId);
 
-        return $builder->getToken($this->signer, $this->privateKey)->toString();
+        return $builder->getToken($this->signer, $this->privateKey())->toString();
     }
 
     private function keyId(): string
     {
-        return $this->config['key_id'] ?: substr(hash('sha256', $this->publicKey->contents()), 0, 16);
+        return $this->config['key_id'] ?: substr(hash('sha256', $this->publicKey()->contents()), 0, 16);
     }
 }

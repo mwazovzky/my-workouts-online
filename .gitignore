@@ -20,6 +20,9 @@ GEMINI.md
 coverage.xml
 *.lcov
 
+# Node dependencies anywhere in the tree
+node_modules/
+
 # Web SPA (apps/web)
 /apps/web/node_modules
 /apps/web/dist

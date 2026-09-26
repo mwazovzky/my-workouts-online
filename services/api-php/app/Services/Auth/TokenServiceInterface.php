@@ -45,6 +45,11 @@ interface TokenServiceInterface
     public function parseAccessToken(string $jwt): AccessTokenClaims;
 
     /**
+     * Whether signing keys are configured; a readiness signal, not a validation.
+     */
+    public function hasKeys(): bool;
+
+    /**
      * Public verification key set for /.well-known/jwks.json.
      *
      * @return array{keys: list<array<string, string>>}
