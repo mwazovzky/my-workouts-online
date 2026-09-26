@@ -1,0 +1,117 @@
+<script setup>
+import { useRouter } from 'vue-router';
+import DangerButton from '@/components/DangerButton.vue';
+import InputError from '@/components/InputError.vue';
+import InputLabel from '@/components/InputLabel.vue';
+import Modal from '@/components/Modal.vue';
+import SecondaryButton from '@/components/SecondaryButton.vue';
+import TextInput from '@/components/TextInput.vue';
+import { nextTick, ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useTranslation } from '@/composables/useTranslation';
+import { toast } from 'vue-sonner';
+import { useApiForm } from '@/composables/useApiForm';
+
+const router = useRouter();
+const auth = useAuthStore();
+
+const { t } = useTranslation();
+
+const confirmingUserDeletion = ref(false);
+const passwordInput = ref(null);
+
+const form = useApiForm({
+  password: '',
+});
+
+const confirmUserDeletion = () => {
+  confirmingUserDeletion.value = true;
+
+  nextTick(() => passwordInput.value.focus());
+};
+
+const deleteUser = () => {
+  form.delete('/profile', {
+    onSuccess: () => {
+      closeModal();
+      auth.clear();
+      router.push('/');
+    },
+    onError: () => passwordInput.value.focus(),
+    onFail: () => toast.error(t('Failed to delete account')),
+    onFinish: () => form.reset(),
+  });
+};
+
+const closeModal = () => {
+  confirmingUserDeletion.value = false;
+
+  form.clearErrors();
+  form.reset();
+};
+</script>
+
+<template>
+  <section class="space-y-6">
+    <header>
+      <h2 class="text-lg font-medium text-foreground">
+        {{ t('Delete Account') }}
+      </h2>
+
+      <p class="mt-1 text-sm text-muted-foreground">
+        {{
+          t(
+            'Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.'
+          )
+        }}
+      </p>
+    </header>
+
+    <DangerButton @click="confirmUserDeletion">{{ t('Delete Account') }}</DangerButton>
+
+    <Modal :show="confirmingUserDeletion" @close="closeModal">
+      <div class="p-6">
+        <h2 class="text-lg font-medium text-foreground">
+          {{ t('Are you sure you want to delete your account?') }}
+        </h2>
+
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{
+            t(
+              'Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.'
+            )
+          }}
+        </p>
+
+        <div class="mt-6">
+          <InputLabel for="password" :value="t('Password')" class="sr-only" />
+
+          <TextInput
+            id="password"
+            ref="passwordInput"
+            v-model="form.password"
+            type="password"
+            class="mt-1 block w-3/4"
+            :placeholder="t('Password')"
+            @keyup.enter="deleteUser"
+          />
+
+          <InputError :message="form.errors.password" class="mt-2" />
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <SecondaryButton @click="closeModal"> {{ t('Cancel') }} </SecondaryButton>
+
+          <DangerButton
+            class="ms-3"
+            :class="{ 'opacity-25': form.processing }"
+            :disabled="form.processing"
+            @click="deleteUser"
+          >
+            {{ t('Delete Account') }}
+          </DangerButton>
+        </div>
+      </div>
+    </Modal>
+  </section>
+</template>

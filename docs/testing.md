@@ -22,11 +22,15 @@ npm run test:frontend:coverage
 php artisan test --compact
 ```
 
+Backend commands run in `services/api-php` (inside the `app` container that is `/var/www/html`, so `docker compose exec -T app php artisan test --compact`). Container env values are real environment variables; `phpunit.xml` forces its own values (`force="true"`) and `tests/bootstrap.php` mirrors them into `$_SERVER`, which Laravel reads first, so the suite always uses SQLite in memory and never touches the MySQL dev database.
+
+SPA tests run in `apps/web` (`docker compose exec -T node npm test`).
+
 ## Suite Structure
 
 - `tests/Feature/` covers the full HTTP stack, page rendering, authorization, validation, and database-side outcomes.
 - `tests/Unit/` covers isolated logic such as services, resources, enums, models, and query builders.
-- `resources/js/**/*.test.js` covers frontend utilities, composables, and component behavior with Vitest.
+- `apps/web/src/**/*.test.js` covers SPA utilities, composables, stores, guards, and component behavior with Vitest.
 - `tests/TestCase.php` provides shared setup. The suite disables Vite and CSRF in tests, so feature tests can focus on application behavior.
 
 ## Frontend Tests
@@ -51,16 +55,16 @@ Frontend coverage is generated with Vitest's V8 coverage provider and written to
 
 First-reference examples in this repo:
 
-- [Translation composable](../resources/js/composables/useTranslation.test.js)
-- [Date formatting utility](../resources/js/utils/date.test.js)
-- [Program card component](../resources/js/Components/ProgramCard.test.js)
+- [Auth store](../apps/web/src/stores/auth.test.js)
+- [API client](../apps/web/src/lib/api.test.js)
+- [Program card component](../apps/web/src/components/ProgramCard.test.js)
 
 Keep frontend tests focused:
 
 - Prefer one component or module per file.
 - Assert the behavior that matters, not implementation details.
 - Stub child components when the parent behavior is the thing being tested.
-- Mock Inertia helpers when testing composables that depend on `usePage()` or `router`.
+- Use `apps/web/src/test/utils.js` (`withPinia`, `RouterLinkStub`) and mock `vue-router` when a component navigates.
 
 ## Feature Tests
 
@@ -68,7 +72,7 @@ Use a feature test when the change affects any of the following:
 
 - A page, route, controller, form request, policy, middleware, or redirect
 - Validation behavior or error messages
-- Inertia props or rendered page components
+- API response shapes or error envelopes
 - Database changes triggered through an HTTP request
 
 Common patterns in this project:
@@ -78,7 +82,7 @@ Common patterns in this project:
 - Authenticate with `actingAs($user)`.
 - Hit named routes with `route(...)` instead of hard-coded URLs.
 - Assert both the HTTP response and the persisted database state.
-- For Inertia pages, assert the component name and only the props that matter.
+- API validation errors are `errors.<field>.<n>.message` / `.code`; API content translation is driven by `withHeader('Accept-Language', ...)`, not the user's stored locale.
 
 Representative examples:
 
@@ -129,18 +133,6 @@ Current project pattern:
 Use [WorkoutAuthorizationTest](../tests/Feature/WorkoutAuthorizationTest.php) as the reference pattern.
 
 For role-gated endpoints (e.g. admin catalog management), also cover access by role: assert a non-admin user receives `403`, an admin user succeeds, and a guest receives `401`. Create admins with the `User::factory()->admin()` state. Use [EquipmentAdminTest](../tests/Feature/Admin/EquipmentAdminTest.php) as the reference pattern.
-
-## Inertia Assertions
-
-For Inertia responses:
-
-- Assert the rendered component.
-- Assert only the props relevant to the behavior under test.
-- Prefer `missing(...)` assertions when verifying that sensitive or unnecessary data is not exposed.
-
-Use [ProgramPageTest](../tests/Feature/Pages/ProgramPageTest.php) as the reference pattern.
-
-For client-only behavior inside Vue components, prefer Vitest component tests over expanding PHP page assertions.
 
 ## Database Assertions
 
@@ -204,3 +196,17 @@ This allows separate reporting, PR visibility, and private-repo flag badges once
 - [Architecture](architecture.md)
 - [Programs](features/programs.md)
 - [Workout Logging](features/workout-logging.md)
+
+## Contract Tests
+
+`contracts/openapi.yaml` is enforced against a running API with [Schemathesis](https://schemathesis.io): every documented operation is exercised with generated positive and negative data and every response is checked for a documented status code, content type, and schema. This is the acceptance gate for any backend that claims to implement the contract.
+
+```bash
+scripts/contract-test.sh http://localhost:8080            # dev stack (Docker image of Schemathesis)
+SCHEMATHESIS=schemathesis scripts/contract-test.sh URL     # local binary
+```
+
+The run logs in as the seeded admin (`test@example.com`) and fuzzes writes, so use a disposable database and reseed afterwards (`php artisan migrate:fresh --seed`). Raise `API_RATE_LIMIT_PER_MINUTE` for the run. `.github/workflows/contract.yml` runs it on every push with a fresh MySQL and `php artisan serve`.
+
+Excluded from fuzzing: logout (would revoke the token in use), profile delete/update (would remove or rename the account) and the unimplemented social login endpoint.
+

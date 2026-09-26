@@ -4,14 +4,20 @@
 
 1. Code lands on `main` through the normal review and CI flow.
 2. Pushing a semantic version tag such as `v1.4.0` triggers GitHub Actions.
-3. GitHub Actions builds the production `web` image, tags it with both the release version and the release commit SHA, and pushes both tags to Docker Hub.
+3. GitHub Actions builds two production images, `api` (php-fpm, from `docker/api/Dockerfile`) and `web` (nginx serving the SPA build and fronting the API, from `docker/web/Dockerfile`), tags each with `api-`/`web-` plus the release version and the commit SHA, and pushes them to Docker Hub.
 4. GitHub Actions SSHes into the droplet, checks out the matching release revision, updates `IMAGE_TAG`, pulls the new image, recreates services, runs migrations, warms caches, and verifies health.
 
 `main` is the integration branch, not the production trigger. Production releases happen only from explicit version tags. Branch protection should still require the validation workflows (`tests`, `lint`, `code style`) before merge so only release-ready code is tagged.
 
 ## Repository Layout
 
-Single `docker/` folder for both local and production. One Nginx config template (`docker/nginx/default.conf.template`), upstream set via env var (`PHP_FPM_UPSTREAM=app:9000` local, `127.0.0.1:9000` production).
+Monorepo: `services/api-php` (Laravel API), `apps/web` (Vue SPA), `contracts/openapi.yaml`, `docker/`. One `docker/` folder serves local and production:
+
+- `docker/api/Dockerfile` — php-fpm image (`api`, `worker`)
+- `docker/web/Dockerfile` — builds `apps/web` and serves it with nginx; `docker/nginx/api-locations.conf` routes `/api/*`, `/health*`, `/up` and `/.well-known/jwks.json` to php-fpm over FastCGI (`PHP_FPM_UPSTREAM=api:9000`), everything else is the SPA with history fallback; `security-headers.conf` sets CSP and friends
+- `docker/nginx/dev.conf.template` — local nginx: same API routing, `/` proxied to the Vite dev server
+
+Swapping the backend implementation later means changing `PHP_FPM_UPSTREAM` (or the proxy in `api-locations.conf`); the web image and clients stay as they are.
 
 ## 0. Configure GitHub automation
 
@@ -59,7 +65,7 @@ git tag -a v0.2.11 -m "Release v0.2.11 | Structured logging"
 git push origin v0.2.11
 ```
 
-3. The `deploy` workflow builds `${PRODUCTION_IMAGE_NAME}:v1.4.0` and `${PRODUCTION_IMAGE_NAME}:sha-<commit>`, then deploys `v1.4.0` to production.
+3. The `deploy` workflow builds `${PRODUCTION_IMAGE_NAME}:api-v1.4.0`, `:web-v1.4.0` and the matching `:api-sha-<commit>` / `:web-sha-<commit>` tags, then deploys `v1.4.0` to production (the droplet's `IMAGE_TAG` is the bare version; compose adds the `api-`/`web-` prefixes).
 
 Release tags should be immutable. If you need a new production build, create a new version tag instead of moving an existing one.
 
@@ -92,6 +98,18 @@ Rollback:
 - Run the `deploy` workflow manually.
 - Set `image_tag` to the last known-good release tag, for example `v1.3.2`.
 - Leave `release_ref` blank unless the image tag does not match the Git ref you need.
+
+## Upgrading an existing droplet to the SPA + API release
+
+The first release from the API-first refactor changes the production topology. Do these once, before pushing the release tag:
+
+1. **Update `.env` on the droplet** (see step 6): add `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY` and `JWT_COOKIE_SECURE=true` (HTTPS is already active), and `FRONTEND_URL=https://your-domain.com`. `SESSION_*` values are no longer used and can be removed. `IMAGE_NAME` stays the same; the workflow now pushes `api-` and `web-` prefixed tags to that repository.
+2. **Mail must work.** Email verification is enforced from this release; new registrations must click the emailed link. Existing accounts are marked verified by a migration.
+3. **Branch protection.** The frontend check is now named "Web SPA Tests", the lint workflow has a second job "OpenAPI contract", and there is a new `contract` workflow. Update required checks accordingly.
+4. **Push the tag.** The deploy script pulls `api`, `web`, `worker` and `alloy`, recreates `api`, runs migrations there (this drops the old Sanctum `personal_access_tokens` table and creates `refresh_tokens`), then recreates `web` and `worker`. Old containers named `web` from the single-image era are replaced in place.
+5. **Verify** with step 13. Every user has to sign in again (sessions no longer exist).
+
+Rollback to a pre-cutover tag is not supported by the workflow: those images used the single-image compose layout. Keep the previous droplet checkout's `docker-compose.prod.yml` at hand if you need it.
 
 ## 1. Create the droplet
 
@@ -148,27 +166,31 @@ Before deploying, create a DNS A record pointing your domain to the droplet's IP
 
 ## 6. Create the environment file on the droplet
 
-Create `.env` in the project root. Docker compose auto-loads it for variable interpolation and passes it to the web container via `env_file`.
+Create `.env` in the project root. Docker compose auto-loads it for variable interpolation and passes it to the `api` and `worker` containers via `env_file`; the `web` container (nginx) only needs `DOMAIN_NAME`.
 
 ```bash
 vim .env
 ```
 
-Required values (see `.env.production` in repo for full reference):
+Required values (see `.env.example` in the repo for the full reference):
 
 - `APP_ENV=production`
 - `APP_DEBUG=false`
 - `APP_URL=http://your-domain.com` (use `http://` initially; switch to `https://` after SSL is set up in step 11)
-- `APP_KEY=...` (generate with `php artisan key:generate --show`)
+- `APP_KEY=...` (generate with `docker run --rm ${IMAGE_NAME}:api-<tag> php artisan key:generate --show`, or `php artisan key:generate --show` where PHP is installed)
 - `DOMAIN_NAME=your-domain.com` (your actual domain, used for SSL and Nginx)
 - `DB_DATABASE=...`
 - `DB_USERNAME=...`
 - `DB_PASSWORD=...`
 - `DB_ROOT_PASSWORD=...`
-- `SESSION_SECURE_COOKIE=false` (set to `true` after HTTPS is active — see step 11)
+- `FRONTEND_URL=...` (where email links point; same as `APP_URL`, since nginx serves the SPA on the same origin)
+- `JWT_PRIVATE_KEY=...` and `JWT_PUBLIC_KEY=...` (generate once with `docker run --rm ${IMAGE_NAME}:api-<tag> php artisan jwt:keys`; rotating them invalidates every issued access token and signs every user out)
+- `JWT_COOKIE_SECURE=false` (set to `true` after HTTPS is active — see step 11)
 - `IMAGE_NAME=YOUR_DOCKERHUB_USER/PROJECT_NAME`
 - `IMAGE_TAG=initial-tag` (the deploy workflow replaces this on every release)
 - `APP_VERSION=dev` (the deploy script replaces this with the release tag on every release)
+
+Optional: `API_RATE_LIMIT_PER_MINUTE` (default 60 requests per minute per user or IP on `/api`), `LOKI_*` for the `alloy` log shipper.
 
 ## 7. Verify Docker access on the droplet
 
@@ -186,20 +208,19 @@ docker ps
 
 After the droplet, repo checkout, `.env`, and GitHub secrets are configured, push a harmless version tag or run the deploy workflow manually with an existing image tag. GitHub Actions will:
 
-1. Build the `web` image from `docker/php/Dockerfile`
-2. Push it to Docker Hub as `${PRODUCTION_IMAGE_NAME}:vX.Y.Z` and `${PRODUCTION_IMAGE_NAME}:sha-<commit>`
+1. Build the `api` and `web` images from `docker/api/Dockerfile` and `docker/web/Dockerfile`
+2. Push them to Docker Hub as `${PRODUCTION_IMAGE_NAME}:api-vX.Y.Z`, `:web-vX.Y.Z` and the matching `:api-sha-<commit>` / `:web-sha-<commit>` tags
 3. SSH into the droplet
 4. Check out the matching release revision on the droplet
 5. Update `IMAGE_TAG` in `.env`
-6. Ensure MySQL is running, pull the new `web` image, and recreate only the `web` service
-7. Execute migrations and `php artisan optimize`
+6. Ensure MySQL is running, pull the new images, recreate `api`, run migrations and `php artisan optimize` in it, then recreate `web` and `worker`
 
 If you need to start the stack manually before CI/CD is ready, the commands are still:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d mysql
-docker compose -f docker-compose.prod.yml pull web
-docker compose -f docker-compose.prod.yml up -d web
+docker compose -f docker-compose.prod.yml pull api web
+docker compose -f docker-compose.prod.yml up -d api web
 docker compose -f docker-compose.prod.yml ps
 ```
 
@@ -211,10 +232,11 @@ The deploy workflow runs these automatically on every release:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d mysql
-docker compose -f docker-compose.prod.yml pull web
+docker compose -f docker-compose.prod.yml pull api web
+docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate api
+docker compose -f docker-compose.prod.yml exec -T api php artisan migrate --force
+docker compose -f docker-compose.prod.yml exec -T api php artisan optimize
 docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate web
-docker compose -f docker-compose.prod.yml exec -T web php artisan migrate --force
-docker compose -f docker-compose.prod.yml exec -T web php artisan optimize
 ```
 
 Run them manually only for troubleshooting or if you intentionally bypass the workflow.
@@ -253,7 +275,7 @@ To include `www.your-domain.com`, add `-d www.your-domain.com` to the command.
 
 ## 11. Activate HTTPS
 
-Recreate web container so `start.sh` detects certificates and switches to SSL config:
+Recreate the web container so `docker/web/start.sh` detects certificates and switches to the SSL config:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --force-recreate web
@@ -270,13 +292,14 @@ Update `.env`:
 
 ```ini
 APP_URL=https://your-domain.com
-SESSION_SECURE_COOKIE=true
+FRONTEND_URL=https://your-domain.com
+JWT_COOKIE_SECURE=true
 ```
 
-Recreate to pick up changes:
+Recreate the containers that read `.env` to pick up the changes:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --force-recreate web
+docker compose -f docker-compose.prod.yml up -d --force-recreate api worker
 ```
 
 ## 12. Auto-renewal (every 90 days)
@@ -323,17 +346,37 @@ A healthy outcome on the first run is "Cert not due for renewal" in the log plus
 ## 13. Verify health
 
 ```bash
-docker compose -f docker-compose.prod.yml logs --tail=50 web
+docker compose -f docker-compose.prod.yml logs --tail=50 web api
 curl -f https://your-domain.com/health
 curl -f https://your-domain.com/health/ready
+curl -fI https://your-domain.com/ | head -1        # the SPA
+curl -f https://your-domain.com/api/v1/meta       # the API through nginx
 ```
 
 If `PRODUCTION_HEALTHCHECK_URL` and `PRODUCTION_READYCHECK_URL` are configured in GitHub, the deploy workflow performs these checks automatically and fails the release if they do not pass.
 
-## 14. Logs
+## 14. Logs and Grafana
+
+Every container writes to its stdout/stderr; Laravel gets there through php-fpm's `catch_workers_output` (`docker/api/zz-app.conf`), which requires `LOG_CHANNEL=stderr` in the droplet `.env` (a file channel such as `stack`/`single` stays inside the container and never reaches Grafana).
+
+The `alloy` service (`docker/alloy/config.alloy`) tails the containers of the compose services `api`, `web` and `worker` and pushes them to Grafana Cloud Loki (`LOKI_URL`, `LOKI_USER_ID`, `LOKI_API_TOKEN`). Labels on every line:
+
+| Label | Value |
+| --- | --- |
+| `app` | `my-workouts` |
+| `env` | `production` |
+| `service` | `api` (Laravel: application log lines and request context), `worker` (queue), `web` (nginx errors only; access logging is off) |
+| `logstream` | `stdout` or `stderr` |
+
+Since the SPA cutover, application logs carry `service="api"`; dashboards and alerts written against `service="web"` from the single-image era must be updated.
+
+On the droplet:
 
 ```bash
-docker compose -f docker-compose.prod.yml logs -f --tail=200 web
+docker compose -f docker-compose.prod.yml logs -f --tail=200 api      # Laravel (php-fpm)
+docker compose -f docker-compose.prod.yml logs -f --tail=200 web      # nginx
+docker compose -f docker-compose.prod.yml logs -f --tail=200 worker
+docker compose -f docker-compose.prod.yml logs -f --tail=200 alloy    # shipping problems show up here
 docker compose -f docker-compose.prod.yml logs -f --tail=200 mysql
 ```
 
@@ -372,7 +415,7 @@ Use rollback like this:
 
 1. Open GitHub Actions.
 2. Run the `deploy` workflow manually.
-3. Provide a previously pushed release tag such as `v1.3.2`.
+3. Provide a previously pushed release tag such as `v1.3.2` (both `api-v1.3.2` and `web-v1.3.2` must exist on Docker Hub; every release since the SPA cutover pushes both).
 4. Leave `release_ref` blank unless you need to deploy an image tag that does not directly match the Git ref.
 5. The workflow skips the build job and deploys that exact tag.
 

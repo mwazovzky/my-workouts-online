@@ -1,11 +1,7 @@
 #!/bin/sh
-set -euo pipefail
+set -eu
 
-mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache || true
-
-: "${APP_ROOT:=/var/www/html/public}"
-: "${PHP_FPM_UPSTREAM:=127.0.0.1:9000}"
+: "${PHP_FPM_UPSTREAM:=api:9000}"
 : "${DOMAIN_NAME:=_}"
 
 NGINX_TEMPLATE="/etc/nginx/templates/default.conf.template"
@@ -13,9 +9,6 @@ if [ -f "/etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem" ] && [ -f /etc/ngin
 	NGINX_TEMPLATE="/etc/nginx/templates/default-ssl.conf.template"
 fi
 
-if [ -f "$NGINX_TEMPLATE" ]; then
-	mkdir -p /etc/nginx/http.d
-	envsubst '${PHP_FPM_UPSTREAM} ${APP_ROOT} ${DOMAIN_NAME}' < "$NGINX_TEMPLATE" > /etc/nginx/http.d/default.conf
-fi
+envsubst '${PHP_FPM_UPSTREAM} ${DOMAIN_NAME}' < "$NGINX_TEMPLATE" > /etc/nginx/conf.d/default.conf
 
-exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+exec nginx -g "daemon off;"

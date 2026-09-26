@@ -2,12 +2,12 @@ services:
   app:
     build:
       context: .
-      dockerfile: ./docker/php/Dockerfile
+      dockerfile: ./docker/api/Dockerfile
       target: app-dev
     env_file:
       - .env
     volumes:
-      - ./:/var/www/html
+      - ./services/api-php:/var/www/html
     depends_on:
       mysql:
         condition: service_healthy
@@ -16,16 +16,15 @@ services:
     image: nginx:1.27-alpine
     depends_on:
       - app
+      - node
     ports:
       - "${APP_PORT:-8080}:80"
-    env_file:
-      - .env
     environment:
       PHP_FPM_UPSTREAM: ${PHP_FPM_UPSTREAM:-app:9000}
-      APP_ROOT: /var/www/html/public
+      SPA_UPSTREAM: node:5174
     volumes:
-      - ./:/var/www/html:ro
-      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./docker/nginx/dev.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./docker/nginx/api-locations.conf:/etc/nginx/api-locations.conf:ro
 
   mysql:
     image: mysql:8.0
@@ -47,17 +46,18 @@ services:
 
   node:
     image: node:20-alpine
-    working_dir: /var/www/html
+    working_dir: /var/www/html/apps/web
     ports:
-      - "5173:5173"
+      - "5174:5174"
     environment:
       CHOKIDAR_USEPOLLING: "true"
+      VITE_API_PROXY_TARGET: http://nginx
     volumes:
       - ./:/var/www/html
-      - node_modules:/var/www/html/node_modules
+      - web_node_modules:/var/www/html/apps/web/node_modules
     command: >
-      sh -lc 'if [ ! -d node_modules ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then npm ci; fi; npm run dev -- --host 0.0.0.0 --port 5173'
+      sh -lc 'if [ ! -d node_modules ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then npm ci; fi; npm run dev -- --host 0.0.0.0 --port 5174'
 
 volumes:
   mysql_data:
-  node_modules:
+  web_node_modules:

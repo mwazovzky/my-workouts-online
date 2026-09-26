@@ -22,14 +22,14 @@ flag_management:
   individual_flags:
     - name: backend
       paths:
-        - app/**
-        - bootstrap/**
-        - config/**
-        - database/**
-        - routes/**
+        - services/api-php/app/**
+        - services/api-php/bootstrap/**
+        - services/api-php/config/**
+        - services/api-php/database/**
+        - services/api-php/routes/**
     - name: frontend
       paths:
-        - resources/js/**
+        - apps/web/src/**
 
 comment:
   layout: "header, diff, flags"

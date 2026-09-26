@@ -1,15 +1,11 @@
 services:
   web:
-    image: "${IMAGE_NAME}:${IMAGE_TAG}"
-    env_file:
-      - .env
+    image: "${IMAGE_NAME}:web-${IMAGE_TAG}"
     environment:
-      PHP_FPM_UPSTREAM: "127.0.0.1:9000"
-      APP_ROOT: /var/www/html/public
+      PHP_FPM_UPSTREAM: "api:9000"
       DOMAIN_NAME: "${DOMAIN_NAME}"
     depends_on:
-      mysql:
-        condition: service_healthy
+      - api
     ports:
       - "80:80"
       - "443:443"
@@ -17,10 +13,20 @@ services:
       - certbot_certs:/etc/letsencrypt
       - certbot_webroot:/var/www/certbot
     restart: unless-stopped
-    mem_limit: 256m
+    mem_limit: 64m
+
+  api:
+    image: "${IMAGE_NAME}:api-${IMAGE_TAG}"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 192m
 
   worker:
-    image: "${IMAGE_NAME}:${IMAGE_TAG}"
+    image: "${IMAGE_NAME}:api-${IMAGE_TAG}"
     user: "www-data"
     env_file:
       - .env

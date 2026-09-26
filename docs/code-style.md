@@ -14,7 +14,7 @@
 ## Controllers & Routing
 
 - Validation **must** use dedicated Form Request classes.
-- Web (Inertia) routes **must** use controller methods, not closures.
+- API routes **must** use controller methods, not closures (operational routes in `routes/web.php` are the exception).
 - Route model binding and dependency injection **should** be used where possible.
 - Controllers **must** return appropriate HTTP status codes (201, 204, 403, etc.).
 - Mutating endpoints **must** be protected with Policies and explicit controller authorization.
@@ -34,13 +34,13 @@
 - Complex business logic **must** be extracted to Service classes.
 - Services **must** implement interfaces and controllers **must** depend on interfaces rather than concrete classes.
 
-## Vue & Inertia
+## Vue SPA (`apps/web`)
 
 - Vue 3 Composition API with `<script setup>` **must** be used.
 - Components **should** be organized for reusability.
 - The `route()` helper **must** be used for URL generation.
-- All data **must** flow through Inertia props; direct HTTP requests that bypass Inertia **must not** be used.
-- Inertia’s router and form helpers **must** be used for mutations.
+- All data **must** be fetched through the shared API client (`src/lib/api.js`, via `useApi` / `useApiForm`); components **must not** create their own axios instances.
+- Navigation **must** use vue-router (`router.push`, `RouterLink`) with named routes; forms **must** use `useApiForm` so validation errors render consistently.
 - Pagination **must** be applied to large datasets.
 
 ## API Resources
@@ -50,7 +50,7 @@
 
 ## Configuration & Middleware
 
-- Flash messages and app-wide configuration **should** be shared via Inertia middleware.
+- App-wide state (user, locale, meta) **should** come from the Pinia stores, never be re-fetched ad hoc.
 - User permissions/roles **can** be shared if needed.
 
 ## Database & Migrations

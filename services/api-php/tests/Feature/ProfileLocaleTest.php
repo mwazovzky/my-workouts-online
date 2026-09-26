@@ -1,0 +1,90 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+class ProfileLocaleTest extends TestCase
+{
+    use RefreshDatabase;
+
+    #[Test]
+    public function user_can_update_locale_to_russian(): void
+    {
+        $user = User::factory()->create(['locale' => 'en']);
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/profile/locale', [
+                'locale' => 'ru',
+            ]);
+
+        $response->assertOk();
+        $this->assertSame('ru', $user->refresh()->locale);
+    }
+
+    #[Test]
+    public function user_can_update_locale_to_english(): void
+    {
+        $user = User::factory()->create(['locale' => 'ru']);
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/profile/locale', [
+                'locale' => 'en',
+            ]);
+
+        $response->assertOk();
+        $this->assertSame('en', $user->refresh()->locale);
+    }
+
+    #[Test]
+    public function locale_update_rejects_invalid_locale(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/profile/locale', [
+                'locale' => 'fr',
+            ]);
+
+        $response->assertUnprocessable();
+        $this->assertSame('en', $user->refresh()->locale);
+    }
+
+    #[Test]
+    public function locale_update_rejects_empty_locale(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/profile/locale', [
+                'locale' => '',
+            ]);
+
+        $response->assertUnprocessable();
+    }
+
+    #[Test]
+    public function locale_update_requires_authentication(): void
+    {
+        $response = $this->patchJson('/api/v1/profile/locale', [
+            'locale' => 'ru',
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
+    #[Test]
+    public function new_user_defaults_to_english_locale(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertSame('en', $user->locale);
+    }
+}

@@ -10,8 +10,11 @@ on:
 
 jobs:
   lint-and-format:
-    name: ESLint & Prettier
+    name: ESLint & Prettier (web)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
 
     steps:
       - name: Checkout code
@@ -22,6 +25,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -31,3 +35,14 @@ jobs:
 
       - name: Check Prettier formatting
         run: npm run format:check
+
+  openapi-lint:
+    name: OpenAPI contract
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint contracts/openapi.yaml
+        run: npx --yes @redocly/cli@latest lint contracts/openapi.yaml --config contracts/redocly.yaml
