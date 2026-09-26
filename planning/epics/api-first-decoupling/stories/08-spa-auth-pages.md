@@ -19,9 +19,10 @@ Users complete every auth flow inside the SPA. Email links open SPA routes that 
 ## Scope
 
 - pages rewritten over `useApiForm` and the auth store
-- routes: `/login`, `/register`, `/forgot-password`, `/reset-password/:token`, `/verify-email`, `/verify-email/:id/:hash`, `/reauth`
+- routes: `/login`, `/register`, `/forgot-password`, `/reset-password/:token`, `/verify-email`, `/verify-email/:id/:hash`, `/confirm-password` (step-up via `/auth/reauth`, returns to `?redirect`)
 - `verified` guard redirects to `/verify-email`; resend button calls `/auth/email/resend`
-- step-up: sensitive actions (password change, account delete) call `/auth/reauth` through a dialog when `auth_time` is older than the policy window
+- step-up: `/confirm-password` page calls `/auth/reauth` and records `recentlyAuthenticatedAt` in the auth store; password change and account deletion already re-check the password server-side, so no page requires step-up yet
+- "Remember me" dropped: the 30-day refresh cookie already keeps web sessions alive
 - success and error feedback via toasts and coded messages
 
 ## Non-Goals

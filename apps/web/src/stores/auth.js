@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(null);
   const user = ref(null);
   const ready = ref(false);
+  const recentlyAuthenticatedAt = ref(null);
   let bootstrapPromise = null;
 
   const isAuthenticated = computed(() => user.value !== null);
@@ -22,6 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
   function applySession(payload) {
     accessToken.value = payload.access_token;
     setUser(payload.user);
+    recentlyAuthenticatedAt.value = Date.now();
   }
 
   function setUser(value) {
@@ -37,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clear() {
     accessToken.value = null;
     user.value = null;
+    recentlyAuthenticatedAt.value = null;
   }
 
   async function refresh() {
@@ -106,6 +109,7 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken,
     user,
     ready,
+    recentlyAuthenticatedAt,
     isAuthenticated,
     isVerified,
     isAdmin,

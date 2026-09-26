@@ -22,8 +22,8 @@ const page = path => {
 export const routes = [
   { path: '/', name: 'welcome', component: page('Welcome'), meta: { guest: true } },
 
-  // Auth (placeholders until story 8)
-  { path: '/login', name: 'login', component: page('Login'), meta: { guest: true } },
+  // Auth
+  { path: '/login', name: 'login', component: page('auth/Login'), meta: { guest: true } },
   { path: '/register', name: 'register', component: page('auth/Register'), meta: { guest: true } },
   {
     path: '/forgot-password',
@@ -32,9 +32,27 @@ export const routes = [
     meta: { guest: true },
   },
   {
+    path: '/reset-password/:token',
+    name: 'password.reset',
+    component: page('auth/ResetPassword'),
+    meta: { guest: true },
+  },
+  {
     path: '/verify-email',
     name: 'verification.notice',
-    component: page('VerifyEmail'),
+    component: page('auth/VerifyEmail'),
+    meta: { auth: true },
+  },
+  {
+    path: '/verify-email/:id(\\d+)/:hash',
+    name: 'verification.verify',
+    component: page('auth/VerifyEmailLink'),
+    meta: { auth: true },
+  },
+  {
+    path: '/confirm-password',
+    name: 'password.confirm',
+    component: page('auth/ConfirmPassword'),
     meta: { auth: true },
   },
 

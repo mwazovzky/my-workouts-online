@@ -9,13 +9,11 @@
   "Light": "Light",
   "Dark": "Dark",
   "Match device": "Match device",
-
   "A workout template is required to start a workout.": "A workout template is required to start a workout.",
   "The selected workout template could not be found.": "The selected workout template could not be found.",
   "A workout must have at least one activity.": "A workout must have at least one activity.",
   "Each activity must have at least one set.": "Each activity must have at least one set.",
   "A set cannot be marked as completed with 0 effort.": "A set cannot be marked as completed with 0 effort.",
-
   "in_progress": "In Progress",
   "completed": "Completed",
   "Monday": "Monday",
@@ -25,7 +23,6 @@
   "Friday": "Friday",
   "Saturday": "Saturday",
   "Sunday": "Sunday",
-
   "Dashboard": "Dashboard",
   "Programs": "Programs",
   "Workouts": "Workouts",
@@ -53,7 +50,6 @@
   "A clear next action instead of a generic dashboard": "A clear next action instead of a generic dashboard",
   "Recent workout history with completion status": "Recent workout history with completion status",
   "Built for day-to-day use, not a demo screen": "Built for day-to-day use, not a demo screen",
-
   "You're logged in!": "You're logged in!",
   "Your training home": "Your training home",
   "See what is scheduled next, keep an eye on unfinished work, and review recent sessions.": "See what is scheduled next, keep an eye on unfinished work, and review recent sessions.",
@@ -72,7 +68,6 @@
   "Program": "Program",
   "Scheduled for": "Scheduled for",
   "Open template": "Open template",
-
   "Workout Index": "Workout Index",
   "No workouts yet": "No workouts yet",
   "Start a workout to see it listed here": "Start a workout to see it listed here",
@@ -84,12 +79,10 @@
   "Delete workout?": "Delete workout?",
   "This action cannot be undone.": "This action cannot be undone.",
   "Failed to delete workout": "Failed to delete workout",
-
   "Workout Show": "Workout Show",
   "Repeat workout": "Repeat workout",
   "Starting…": "Starting…",
   "Opening…": "Opening…",
-
   "Workout Edit": "Workout Edit",
   ":completed/:total sets": ":completed/:total sets",
   "Saving…": "Saving…",
@@ -103,7 +96,6 @@
   "Remove": "Remove",
   "Delete activity?": "Delete activity?",
   "This workout cannot be edited": "This workout cannot be edited",
-
   "Program Index": "Program Index",
   "Enrolled programs only": "Enrolled programs only",
   "No programs found": "No programs found",
@@ -113,61 +105,48 @@
   "Enroll": "Enroll",
   "Enroll in Program": "Enroll in Program",
   "Failed to enroll in program": "Failed to enroll in program",
-
   "Program Show": "Program Show",
   "Program Workouts": "Program Workouts",
   "This program doesn't have any workouts configured": "This program doesn't have any workouts configured",
   "Scheduled:": "Scheduled:",
   "Not scheduled": "Not scheduled",
-
   "Workout Template Show": "Workout Template Show",
   "Activities": "Activities",
   "Start Workout": "Start Workout",
-
   "Log in": "Log in",
   "Email": "Email",
   "Password": "Password",
   "Remember me": "Remember me",
   "Forgot your password?": "Forgot your password?",
-
   "Register": "Register",
   "Name": "Name",
   "Confirm Password": "Confirm Password",
   "Already registered?": "Already registered?",
-
   "Forgot Password": "Forgot Password",
   "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.",
   "Email Password Reset Link": "Email Password Reset Link",
-
   "Reset Password": "Reset Password",
-
   "Email Verification": "Email Verification",
   "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
   "A new verification link has been sent to the email address you provided during registration.": "A new verification link has been sent to the email address you provided during registration.",
   "Resend Verification Email": "Resend Verification Email",
-
   "Confirm": "Confirm",
   "This is a secure area of the application. Please confirm your password before continuing.": "This is a secure area of the application. Please confirm your password before continuing.",
-
   "Delete Account": "Delete Account",
   "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.",
   "Are you sure you want to delete your account?": "Are you sure you want to delete your account?",
   "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.": "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.",
   "Cancel": "Cancel",
-
   "Update Password": "Update Password",
   "Ensure your account is using a long, random password to stay secure.": "Ensure your account is using a long, random password to stay secure.",
   "Current Password": "Current Password",
   "New Password": "New Password",
-
   "Profile Information": "Profile Information",
   "Update your account's profile information and email address.": "Update your account's profile information and email address.",
   "Your email address is unverified.": "Your email address is unverified.",
   "Click here to re-send the verification email.": "Click here to re-send the verification email.",
   "A new verification link has been sent to your email address.": "A new verification link has been sent to your email address.",
-
   "Are you sure?": "Are you sure?",
-
   "Reps": "Reps",
   "reps": "reps",
   "Duration": "Duration",
@@ -225,7 +204,6 @@
   "Exercise saved": "Exercise saved",
   "Failed to load equipment": "Failed to load equipment",
   "Failed to load categories": "Failed to load categories",
-  "Failed to load exercises": "Failed to load exercises",
   "Failed to save equipment": "Failed to save equipment",
   "Failed to save category": "Failed to save category",
   "Failed to save exercise": "Failed to save exercise",
@@ -262,7 +240,6 @@
   "Failed to save workout template": "Failed to save workout template",
   "Failed to delete workout template": "Failed to delete workout template",
   "A workout template must have at least one activity.": "A workout template must have at least one activity.",
-  "Each activity must have at least one set.": "Each activity must have at least one set.",
   "Cannot delete a workout template that is used by a program.": "Cannot delete a workout template that is used by a program.",
   "New program": "New program",
   "Edit program": "Edit program",
@@ -281,5 +258,10 @@
   "No workouts scheduled yet": "No workouts scheduled yet",
   "Create a workout template first": "Create a workout template first",
   "Weekday": "Weekday",
-  "Workout template": "Workout template"
+  "Workout template": "Workout template",
+  "Your password has been reset.": "Your password has been reset.",
+  "We have emailed your password reset link.": "We have emailed your password reset link.",
+  "Verifying your email address…": "Verifying your email address…",
+  "This verification link is invalid or has expired.": "This verification link is invalid or has expired.",
+  "Failed to send verification email": "Failed to send verification email"
 }

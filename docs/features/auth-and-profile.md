@@ -14,6 +14,14 @@ Authentication and profile management via Laravel Breeze.
 8. **Bootstrap** — `GET /api/v1/me` returns the signed-in user (`id`, `name`, `email`, `locale`, `theme_preference`, `is_admin`, `email_verified`); `GET /api/v1/meta` is public and lists `available_locales` and `theme_preferences`
 9. **Email links** — verification and reset emails link to `FRONTEND_URL` (`/verify-email/{id}/{hash}?expires&signature`, `/reset-password/{token}?email`). Verification links are signed exactly like the `verification.verify` web route, so the Inertia page and the API accept the same email
 
+## SPA Flows (`apps/web`)
+
+- `/register` posts to `/api/v1/auth/register`, stores the session and lands on `/verify-email`
+- `/verify-email/{id}/{hash}?expires&signature` posts the link parameters to `/api/v1/auth/email/verify`, refreshes `/me` and continues to the dashboard
+- `/forgot-password` and `/reset-password/{token}?email` drive the reset; a successful reset returns to `/login?reset=1`
+- `/confirm-password` performs step-up through `/api/v1/auth/reauth`
+- Route guards: `guest` pages redirect signed-in users to the dashboard; `verified` pages redirect unverified users to `/verify-email`; guests are sent to `/login?redirect=...`
+
 ## Business Rules
 
 - Registration and login pages are guest-only (redirect if already authenticated)
