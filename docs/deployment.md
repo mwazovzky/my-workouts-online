@@ -166,6 +166,7 @@ Required values (see `.env.production` in repo for full reference):
 - `DB_PASSWORD=...`
 - `DB_ROOT_PASSWORD=...`
 - `SESSION_SECURE_COOKIE=false` (set to `true` after HTTPS is active — see step 11)
+- `FRONTEND_URL=...` (where email links point; same as `APP_URL` while the Inertia frontend is served by Laravel)
 - `JWT_PRIVATE_KEY=...` and `JWT_PUBLIC_KEY=...` (generate once with `php artisan jwt:keys`; rotating them invalidates every issued access token)
 - `JWT_COOKIE_SECURE=false` (set to `true` after HTTPS is active — see step 11)
 - `IMAGE_NAME=YOUR_DOCKERHUB_USER/PROJECT_NAME`

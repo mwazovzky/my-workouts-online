@@ -73,7 +73,6 @@ paths:
       tags: [Auth]
       summary: Register and receive a token pair
       operationId: register
-      x-status: target
       security: []
       requestBody:
         required: true
@@ -194,7 +193,6 @@ paths:
       summary: Step-up re-authentication for sensitive actions
       description: Returns a fresh access token with an updated `auth_time` claim.
       operationId: reauth
-      x-status: target
       requestBody:
         required: true
         content:
@@ -219,6 +217,12 @@ paths:
                   expires_in: { type: integer, description: Seconds until expiry }
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          description: Authenticated by session rather than a bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
           $ref: '#/components/responses/ValidationError'
 
@@ -227,7 +231,6 @@ paths:
       tags: [Auth]
       summary: Send a password reset link to the SPA
       operationId: forgotPassword
-      x-status: target
       security: []
       requestBody:
         required: true
@@ -251,7 +254,6 @@ paths:
       tags: [Auth]
       summary: Reset the password with a single-use token
       operationId: resetPassword
-      x-status: target
       security: []
       requestBody:
         required: true
@@ -276,7 +278,6 @@ paths:
       tags: [Auth]
       summary: Verify the email address using the link parameters
       operationId: verifyEmail
-      x-status: target
       requestBody:
         required: true
         content:
@@ -295,21 +296,27 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
-          description: Signature invalid or expired
+          description: Link belongs to another account, or signature invalid or expired
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                wrongAccount:
+                  value: { message: 'This verification link does not belong to the signed-in account.', code: invalid_verification_link }
+                badSignature:
+                  value: { message: 'This verification link is invalid or has expired.', code: invalid_signature }
 
   /api/v1/auth/email/resend:
     post:
       tags: [Auth]
       summary: Resend the verification email
       operationId: resendVerification
-      x-status: target
       responses:
         '202':
-          description: Accepted
+          description: Verification email sent
+        '204':
+          description: Email already verified; nothing sent
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '429':

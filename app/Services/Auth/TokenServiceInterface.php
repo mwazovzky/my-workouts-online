@@ -32,6 +32,12 @@ interface TokenServiceInterface
     public function revokeAllForUser(User $user, ?string $exceptFamilyId = null): void;
 
     /**
+     * Re-authentication: refresh the family's `auth_time` and return a new
+     * access token carrying it, so step-up checks pass.
+     */
+    public function stepUp(User $user, string $familyId): string;
+
+    /**
      * Verify signature, issuer, audience and expiry of an access token.
      *
      * @throws AccessTokenException

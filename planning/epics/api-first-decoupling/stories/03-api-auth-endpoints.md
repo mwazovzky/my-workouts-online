@@ -24,7 +24,8 @@ Users can register, log in, reset their password, verify their email, and re-aut
 - `POST /auth/reauth` returning a fresh access token with updated `auth_time`
 - register accepts `client: web | native` and responds like login
 - controllers in `app/Http/Controllers/Api/Auth/` reuse `LoginRequest`, the password broker, and verification notifications
-- enable `MustVerifyEmail` on `User`; verification and reset links point at `config('app.frontend_url')` and carry single-use tokens
+- enable `MustVerifyEmail` on `User` and backfill existing accounts as verified; verification and reset links point at `config('app.frontend_url')` and carry single-use tokens
+- `verified` alias replaced by `App\Http\Middleware\EnsureEmailIsVerified` so JSON clients get 403 `email_unverified`
 - per-IP and per-account throttles on every auth endpoint
 
 ## Non-Goals

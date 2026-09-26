@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Auth\EmailVerificationLink;
+use App\Auth\JwtGuard;
 use App\Auth\JwtUserResolver;
 use App\Services\Auth\TokenService;
 use App\Services\Auth\TokenServiceInterface;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Vite;
@@ -60,7 +64,26 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        Auth::viaRequest('jwt', fn ($request) => $this->app->make(JwtUserResolver::class)($request));
+        Auth::extend('jwt', function ($app, string $name, array $config): JwtGuard {
+            $guard = new JwtGuard(
+                $app->make(JwtUserResolver::class),
+                $app['request'],
+                Auth::createUserProvider($config['provider'] ?? null),
+            );
+
+            $app->refresh('request', $guard, 'setRequest');
+
+            return $guard;
+        });
+
+        VerifyEmail::createUrlUsing(fn ($notifiable) => EmailVerificationLink::forUser($notifiable));
+
+        ResetPassword::createUrlUsing(fn ($notifiable, string $token) => sprintf(
+            '%s/reset-password/%s?email=%s',
+            rtrim(config('app.frontend_url'), '/'),
+            $token,
+            urlencode($notifiable->getEmailForPasswordReset()),
+        ));
 
         Relation::morphMap([
             'workout_template' => \App\Models\WorkoutTemplate::class,

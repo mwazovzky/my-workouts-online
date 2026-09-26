@@ -139,6 +139,19 @@ class TokenService implements TokenServiceInterface
             ->update(['revoked_at' => CarbonImmutable::now()]);
     }
 
+    public function stepUp(User $user, string $familyId): string
+    {
+        $now = CarbonImmutable::now();
+
+        RefreshToken::query()
+            ->where('family_id', $familyId)
+            ->where('user_id', $user->id)
+            ->whereNull('revoked_at')
+            ->update(['authenticated_at' => $now]);
+
+        return $this->buildAccessToken($user, $familyId, $now, $now);
+    }
+
     public function parseAccessToken(string $jwt): AccessTokenClaims
     {
         try {

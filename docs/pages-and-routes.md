@@ -63,9 +63,15 @@ The SPA consumes a versioned REST API under `/api/v1`. Protected routes accept a
 
 | Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |
 | ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |
+| Register            | `POST`   | `/api/v1/auth/register`                 | `api.v1.auth.register`           | Guest, throttled         | Auth & Profile |
 | Login (issue tokens)| `POST`   | `/api/v1/auth/login`                    | `api.v1.auth.login`              | Guest, throttled         | Auth & Profile |
 | Refresh tokens      | `POST`   | `/api/v1/auth/refresh`                  | `api.v1.auth.refresh`            | Refresh token (cookie or body) | Auth & Profile |
 | Logout              | `POST`   | `/api/v1/auth/logout`                   | `api.v1.auth.logout`             | Auth                     | Auth & Profile |
+| Re-authenticate     | `POST`   | `/api/v1/auth/reauth`                   | `api.v1.auth.reauth`             | Auth (bearer), throttled | Auth & Profile |
+| Forgot password     | `POST`   | `/api/v1/auth/password/forgot`          | `api.v1.auth.password.forgot`    | Guest, throttled         | Auth & Profile |
+| Reset password      | `POST`   | `/api/v1/auth/password/reset`           | `api.v1.auth.password.reset`     | Guest, throttled         | Auth & Profile |
+| Verify email        | `POST`   | `/api/v1/auth/email/verify`             | `api.v1.auth.email.verify`       | Auth, throttled          | Auth & Profile |
+| Resend verification | `POST`   | `/api/v1/auth/email/resend`             | `api.v1.auth.email.resend`       | Auth, throttled          | Auth & Profile |
 | Signing keys        | `GET`    | `/.well-known/jwks.json`                | `jwks`                           | Public                   | Auth & Profile |
 
 
