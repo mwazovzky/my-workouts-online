@@ -6,6 +6,7 @@ const { mockAxios } = vi.hoisted(() => ({
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    put: vi.fn(),
   },
 }));
 
@@ -46,5 +47,11 @@ describe('useApi', () => {
     const { del } = useApi();
     del('/workouts/42');
     expect(mockAxios.delete).toHaveBeenCalledWith('/workouts/42');
+  });
+
+  it('put() calls axios.put with url and data', () => {
+    const { put } = useApi();
+    put('/admin/equipment/1', { name: 'Bar' });
+    expect(mockAxios.put).toHaveBeenCalledWith('/admin/equipment/1', { name: 'Bar' });
   });
 });

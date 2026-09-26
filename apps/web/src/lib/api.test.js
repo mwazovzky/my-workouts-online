@@ -96,3 +96,22 @@ describe('api client', () => {
     expect(isApiError(new Error('plain'))).toBe(false);
   });
 });
+
+describe('api client defaults', () => {
+  it('sends no bearer, English, and gives up on expiry until configured', async () => {
+    vi.resetModules();
+    const fresh = await import('@/lib/api');
+    let calls = 0;
+    fresh.api.defaults.adapter = vi.fn(async config => {
+      calls += 1;
+      return respond(401, { code: 'token_expired' }, config);
+    });
+
+    await expect(fresh.api.get('/me')).rejects.toBeInstanceOf(AxiosError);
+
+    const config = fresh.api.defaults.adapter.mock.calls[0][0];
+    expect(config.headers.Authorization).toBeUndefined();
+    expect(config.headers['Accept-Language']).toBe('en');
+    expect(calls).toBe(1);
+  });
+});

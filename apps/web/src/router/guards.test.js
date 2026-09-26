@@ -48,3 +48,26 @@ describe('route guards', () => {
     expect(resolveRedirect(route({}), admin)).toBeNull();
   });
 });
+
+import { vi } from 'vitest';
+import { installGuards } from '@/router/guards';
+import { withPinia } from '@/test/utils';
+import { useAuthStore } from '@/stores/auth';
+
+describe('installGuards', () => {
+  it('bootstraps the session before every navigation and applies the redirect', async () => {
+    withPinia({ id: 1, email_verified: true, is_admin: false });
+    const auth = useAuthStore();
+    const bootstrap = vi.spyOn(auth, 'bootstrap').mockResolvedValue(undefined);
+    const router = { beforeEach: vi.fn() };
+
+    installGuards(router);
+    const guard = router.beforeEach.mock.calls[0][0];
+
+    expect(await guard({ meta: { guest: true }, fullPath: '/login', name: 'login' })).toEqual({
+      name: 'dashboard',
+    });
+    expect(await guard({ meta: {}, fullPath: '/about', name: 'about' })).toBe(true);
+    expect(bootstrap).toHaveBeenCalledTimes(2);
+  });
+});

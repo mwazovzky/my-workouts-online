@@ -92,3 +92,60 @@ describe('auth store', () => {
     expect(auth.user).toBeNull();
   });
 });
+
+describe('auth store edge cases', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it('bootstrap clears the session when /me fails after a successful refresh', async () => {
+    mockApi.post.mockResolvedValueOnce({ data: { access_token: 'at', user } });
+    mockApi.get.mockRejectedValueOnce(new Error('500'));
+
+    const auth = useAuthStore();
+    await auth.bootstrap();
+
+    expect(auth.user).toBeNull();
+    expect(auth.accessToken).toBeNull();
+    expect(auth.ready).toBe(true);
+  });
+
+  it('register sends the web client kind and stores the session', async () => {
+    mockApi.post.mockResolvedValueOnce({ data: { access_token: 'at', user } });
+
+    const auth = useAuthStore();
+    await auth.register({ name: 'Ann', email: 'a@b.c', password: 'x', password_confirmation: 'x' });
+
+    expect(mockApi.post).toHaveBeenCalledWith('/auth/register', {
+      name: 'Ann',
+      email: 'a@b.c',
+      password: 'x',
+      password_confirmation: 'x',
+      client: 'web',
+    });
+    expect(auth.isAuthenticated).toBe(true);
+  });
+
+  it('logout calls the API and clears the session', async () => {
+    mockApi.post.mockResolvedValueOnce({ data: { access_token: 'at', user } });
+    const auth = useAuthStore();
+    await auth.login({ email: 'a@b.c', password: 'x' });
+
+    mockApi.post.mockResolvedValueOnce({});
+    await auth.logout();
+
+    expect(mockApi.post).toHaveBeenLastCalledWith('/auth/logout');
+    expect(auth.user).toBeNull();
+    expect(auth.recentlyAuthenticatedAt).toBeNull();
+  });
+
+  it('setUser without theme or locale leaves both untouched', () => {
+    const auth = useAuthStore();
+    auth.setUser({ id: 2, name: 'Bob' });
+
+    expect(applyThemePreference).not.toHaveBeenCalled();
+    expect(auth.isVerified).toBe(false);
+    expect(auth.isAdmin).toBe(false);
+  });
+});
