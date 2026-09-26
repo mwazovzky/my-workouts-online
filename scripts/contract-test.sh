@@ -47,7 +47,8 @@ common_args=(
 )
 
 if [[ -n "${SCHEMATHESIS:-}" ]]; then
-  exec "${SCHEMATHESIS}" run "${ROOT}/contracts/openapi.yaml" --url "${BASE_URL}" \
+  exec "${SCHEMATHESIS}" --config-file "${ROOT}/contracts/schemathesis.toml" \
+    run "${ROOT}/contracts/openapi.yaml" --url "${BASE_URL}" \
     "${common_args[@]}" --report-dir "${ROOT}/contracts/.report"
 fi
 
@@ -61,4 +62,5 @@ else
 fi
 
 exec docker run "${docker_args[@]}" schemathesis/schemathesis:stable \
+  --config-file /contracts/schemathesis.toml \
   run /contracts/openapi.yaml --url "${docker_url}" "${common_args[@]}" --report-dir /contracts/.report

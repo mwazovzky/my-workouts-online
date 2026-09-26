@@ -739,8 +739,11 @@ export interface components {
          * @enum {string}
          */
         ClientKind: "web" | "native";
-        /** @enum {string} */
-        Weekday: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+        /**
+         * @description Capitalised English day names, matching the `Weekday` enum backing values.
+         * @enum {string}
+         */
+        Weekday: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
         /** @enum {string} */
         EffortType: "repetitions" | "duration";
         /** @enum {string} */
@@ -957,9 +960,10 @@ export interface components {
             exercise_name: string | null;
             rest_time_seconds?: number | null;
             exercise_equipment_name?: string | null;
-            exercise_effort_type?: components["schemas"]["EffortType"];
+            /** @description Null when the exercise relation is not loaded (e.g. a template embedded in a freshly created workout). */
+            exercise_effort_type?: components["schemas"]["EffortType"] | null;
             exercise_effort_label?: string;
-            exercise_difficulty_unit?: components["schemas"]["DifficultyUnit"];
+            exercise_difficulty_unit?: components["schemas"]["DifficultyUnit"] | null;
             exercise_difficulty_label?: string;
             exercise_category_names?: string[];
             sets: components["schemas"]["Set"][];

@@ -1,0 +1,8 @@
+# Schemathesis configuration for scripts/contract-test.sh.
+#
+# The coverage phase probes every path with unexpected HTTP methods. Limit it
+# to standard methods: behind nginx the API answers unknown methods with 405,
+# but PHP's built-in server (used in CI) answers non-standard ones such as
+# QUERY with a bare 500, which is not a property of the contract.
+[phases.coverage]
+unexpected-methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]

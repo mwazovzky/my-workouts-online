@@ -1399,7 +1399,8 @@ components:
       description: Decides whether the refresh token is delivered as a cookie (web) or in the body (native).
     Weekday:
       type: string
-      enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+      description: Capitalised English day names, matching the `Weekday` enum backing values.
+      enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
     EffortType:
       type: string
       enum: [repetitions, duration]
@@ -1695,9 +1696,16 @@ components:
         exercise_name: { type: [string, 'null'], description: Localized; retired exercises still resolve. }
         rest_time_seconds: { type: [integer, 'null'] }
         exercise_equipment_name: { type: [string, 'null'] }
-        exercise_effort_type: { $ref: '#/components/schemas/EffortType' }
+        exercise_effort_type:
+          description: Null when the exercise relation is not loaded (e.g. a template embedded in a freshly created workout).
+          anyOf:
+            - $ref: '#/components/schemas/EffortType'
+            - type: 'null'
         exercise_effort_label: { type: string }
-        exercise_difficulty_unit: { $ref: '#/components/schemas/DifficultyUnit' }
+        exercise_difficulty_unit:
+          anyOf:
+            - $ref: '#/components/schemas/DifficultyUnit'
+            - type: 'null'
         exercise_difficulty_label: { type: string }
         exercise_category_names:
           type: array
