@@ -1,5 +1,7 @@
 # Epic: API-First Decoupling
 
+**Status: shipped on branch `refactor/api-first-decoupling` (2026-09-26), all eleven stories implemented.** Kept for reference; current truth lives in `docs/`.
+
 Turn the Inertia monolith into an API-only backend plus independent clients, so that the Vue SPA, a future iOS app, and a future Go backend can each be replaced without touching the others.
 
 ## Why This Epic Exists
