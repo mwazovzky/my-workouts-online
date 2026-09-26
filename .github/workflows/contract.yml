@@ -55,7 +55,7 @@ jobs:
 
       - name: Configure environment
         run: |
-          cp ../.env.example .env
+          cp ../../.env.example .env
           {
             echo "APP_ENV=local"
             echo "APP_DEBUG=false"

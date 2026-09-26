@@ -31,7 +31,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest --no-interaction
 
       - name: Setup Environment
-        run: cp ../.env.example .env
+        run: cp ../../.env.example .env
 
       - name: Generate Application Key
         run: php artisan key:generate
