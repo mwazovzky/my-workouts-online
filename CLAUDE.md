@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Workout tracking app: users browse programs, enroll, log workouts, and track sets. Monorepo:
 
-- `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). Also still contains the legacy Inertia v2 frontend, unreachable behind nginx and scheduled for removal.
+- `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
 - `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), dev nginx config.
 
-Full product docs in `docs/` — see `docs/README.md` for index.
+Full product docs in `docs/` — see `docs/README.md` for index. Note: the Laravel Boost guideline sections below that describe Inertia do not apply; this backend renders no pages.
 
 ## Common Commands
 
@@ -49,18 +49,19 @@ After modifying `contracts/openapi.yaml`, lint it: `docker run --rm -v "$PWD/con
 - **Custom Query Builders** — `app/QueryBuilders/` extends Eloquent Builder with composable scopes (e.g., `WorkoutBuilder` with `ownedBy()`, `withTemplate()`, `latestUpdated()`).
 - **Polymorphic Activities** — `Activity` morphs to both `WorkoutTemplate` and `Workout`. Morph map in `AppServiceProvider`: `workout_template`, `workout`.
 - **Two-Axis Measurement** — Sets use `effort_value` (reps/seconds via `Exercise.effort_type`) + `difficulty_value` via `Equipment.difficulty_unit` (kilograms/pounds/plates = weight, `heart_rate_zone` = zone 1–5 validated by `HeartRateZoneWithinRange`, `none` = no difficulty field). All combinations are valid.
-- **Eloquent Resources** — All Inertia responses go through API Resources (`app/Http/Resources/`).
+- **Eloquent Resources** — All API responses go through API Resources (`app/Http/Resources/`).
 - **Form Requests** — Validation in `app/Http/Requests/`. Authorization via policies in `app/Policies/`.
 - **Role-Based Authorization** — `User::hasRole()`/`isAdmin()` back the `admin` middleware alias (`EnsureUserIsAdmin`, registered in `bootstrap/app.php`) plus per-model policies. `UserResource.is_admin` drives admin-only UI. Admin catalog CRUD (equipment, categories, exercises, workout templates, programs) lives in `app/Http/Controllers/Api/Admin/` with logic in `app/Services/Admin/`; `WorkoutTemplateService` syncs nested activities/sets and `ProgramService` syncs weekday template assignments, both transactionally. `Exercise` uses `SoftDeletes` (delete = retire); `Activity::exercise()` is `->withTrashed()` so history resolves retired exercises; templates/programs are hard-deleted with reference guards.
 - **Internationalization** — `SetLocale` middleware reads `User.locale`. `HasTranslations` trait on system models provides polymorphic translations via `createWithTranslations()` (seed/create) and `updateTranslations()` (edit; blank values removed for English fallback). UI strings in `lang/*.json`, accessed via `useTranslation` composable.
 
 ### Frontend Patterns
 
-- **Pages** in `resources/js/Pages/`, **components** in `resources/js/Components/`.
-- **UI primitives** (badge, button, card, skeleton, etc.) in `resources/js/Components/ui/` — check these before creating new ones.
-- **Composables** in `resources/js/composables/` — `useEnrollment`, `useTranslation` (`t()` helper).
-- **Utils** in `resources/js/utils/` — `date` (locale-aware formatting), `navigation` (route helpers).
-- Inertia deferred props used on `ProgramShow` and `WorkoutShow` for lazy-loaded data.
+- **Pages** in `apps/web/src/pages/`, **components** in `apps/web/src/components/`, **layouts** in `apps/web/src/layouts/`.
+- **UI primitives** (badge, button, card, skeleton, etc.) in `apps/web/src/components/ui/` — check these before creating new ones.
+- **Stores** (Pinia) in `apps/web/src/stores/` — `auth` (in-memory access token, user, login/logout/bootstrap), `locale` (client-owned UI catalogs), `meta`.
+- **Composables** in `apps/web/src/composables/` — `useApi`, `useApiForm` (422 errors flattened to `form.errors`), `useEnrollment`, `useTranslation` (`t()`), `usePageTitle`, `useActiveRoute`, `useLogout`.
+- **Routing** in `apps/web/src/router/` — named routes mirror the old Laravel route names; guards read route meta `guest` / `auth` / `verified` / `admin`.
+- **API client** `apps/web/src/lib/api.js` — bearer + `Accept-Language` headers, single-flight refresh-and-retry on 401 `token_expired`.
 
 ### Data Model
 

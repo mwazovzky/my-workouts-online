@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\ReauthRequest;
 use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -26,10 +26,7 @@ class ReauthController extends Controller
 
         $user = $request->user();
 
-        if (! Auth::guard('web')->validate([
-            'email' => $user->email,
-            'password' => $request->validated('password'),
-        ])) {
+        if (! Hash::check($request->validated('password'), $user->password)) {
             throw ValidationException::withMessages([
                 'password' => __('auth.password'),
             ]);

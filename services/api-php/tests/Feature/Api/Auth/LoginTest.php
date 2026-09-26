@@ -100,20 +100,6 @@ class LoginTest extends TestCase
     }
 
     #[Test]
-    public function login_does_not_start_a_session(): void
-    {
-        $user = User::factory()->create(['password' => bcrypt('secret123')]);
-
-        $this->postJson('/api/v1/auth/login', [
-            'email' => $user->email,
-            'password' => 'secret123',
-            'client' => 'web',
-        ])->assertOk();
-
-        $this->assertGuest('web');
-    }
-
-    #[Test]
     public function rate_limits_after_five_failed_attempts(): void
     {
         $user = User::factory()->create(['password' => bcrypt('secret123')]);

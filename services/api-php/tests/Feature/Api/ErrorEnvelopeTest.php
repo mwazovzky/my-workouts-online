@@ -24,6 +24,14 @@ class ErrorEnvelopeTest extends TestCase
     }
 
     #[Test]
+    public function unauthenticated_without_json_accept_header_still_gets_the_envelope(): void
+    {
+        $this->get('/api/v1/workouts')
+            ->assertUnauthorized()
+            ->assertExactJson(['message' => 'Unauthenticated.', 'code' => 'unauthenticated']);
+    }
+
+    #[Test]
     public function forbidden_by_role_and_by_policy(): void
     {
         $user = User::factory()->create();

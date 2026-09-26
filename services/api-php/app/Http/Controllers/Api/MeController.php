@@ -7,7 +7,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
 /**
- * The signed-in user, replacing the Inertia shared `auth.user` prop.
+ * The signed-in user, used by clients to bootstrap their session.
  */
 class MeController extends Controller
 {

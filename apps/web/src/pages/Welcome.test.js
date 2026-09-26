@@ -1,16 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@inertiajs/vue3', () => ({
-  Head: {
-    template: '<div><slot /></div>',
-  },
-  Link: {
-    props: ['href'],
-    template: '<a :href="href"><slot /></a>',
-  },
-}));
-
 vi.mock('@/composables/useTranslation', () => ({
   useTranslation: () => ({
     t: value => `translated:${value}`,

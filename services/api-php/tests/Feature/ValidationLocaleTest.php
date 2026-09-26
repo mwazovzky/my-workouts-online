@@ -214,24 +214,6 @@ class ValidationLocaleTest extends TestCase
     // Auth messages
     // -------------------------------------------------------
 
-    #[Test]
-    public function login_failed_message_uses_app_locale(): void
-    {
-        $response = $this
-            ->withSession(['locale' => 'ru'])
-            ->post('/login', [
-                'email' => 'nonexistent@example.com',
-                'password' => 'wrong-password',
-            ]);
-
-        $response->assertSessionHasErrors(['email']);
-
-        $this->assertSame(
-            'Неверный адрес электронной почты или пароль.',
-            session('errors')->get('email')[0],
-        );
-    }
-
     // -------------------------------------------------------
     // ProfileLocaleRequest attributes translation
     // -------------------------------------------------------

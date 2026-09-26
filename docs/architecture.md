@@ -2,7 +2,7 @@
 
 ## Stack
 
-Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia) · Tailwind v3 · MySQL · Vite · Docker Compose (nginx `web` image + php-fpm `api` image). The legacy Inertia v2 frontend still lives inside `services/api-php` but is not reachable behind nginx.
+Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia) · Tailwind v3 · MySQL · Vite · Docker Compose (nginx `web` image + php-fpm `api` image). The API renders no HTML; every page is the SPA.
 
 ## Key Patterns
 
@@ -14,19 +14,17 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **API Error Envelope** — Every non-2xx response under `api/*` is `{ message, code }` (`App\Exceptions\Api\ApiErrorResponse`, wired in `bootstrap/app.php`). Codes: `unauthenticated`, `token_expired`, `forbidden`, `email_unverified`, `not_found`, `conflict`, `too_many_requests`, `validation_failed`, plus explicit ones thrown via `ApiException` (e.g. `in_use` on reference guards). Validation failures add `errors: { field: [{ code, message }] }` where `code` is the failed rule name (`required`, `email`, `unique`, `enum`, custom rule class in snake_case) or `invalid` for manually added messages.
 
-**Eloquent Resources** — All Inertia responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).
+**Eloquent Resources** — All API responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).
 
 **Form Requests** — Validation via dedicated request classes. Authorization via policies separately.
 
 **Role-Based Authorization** — `User::hasRole()` / `User::isAdmin()` check the `roles` relation. The `admin` middleware alias (`EnsureUserIsAdmin`, registered in `bootstrap/app.php`) gates admin web and API route groups; per-model policies (`EquipmentPolicy`, `CategoryPolicy`, `ExercisePolicy`, `WorkoutTemplatePolicy`, `ProgramPolicy`) provide defense-in-depth. `UserResource` exposes `is_admin`, so the shared `auth.user` prop drives admin-only navigation. Admin write endpoints live under `App\Http\Controllers\Api\Admin` with business logic in `App\Services\Admin` (`WorkoutTemplateService` syncs a template's nested activities and sets; `ProgramService` syncs a program's weekday template assignments — both transactionally).
 
-**Deferred Props** — `ProgramShow` defers `workouts` (templates list); `WorkoutShow` defers `activities` (with sets, exercise, equipment, categories).
+**Client Bootstrap** — Clients restore their session from the refresh cookie (`POST /api/v1/auth/refresh`), then load `GET /api/v1/me` (`UserResource`, includes `is_admin` and `email_verified`) and the public `GET /api/v1/meta` (locales, theme preferences).
 
-**Shared Auth** — `auth.user` shared to all pages via `HandleInertiaRequests` + `AppServiceProvider`. API clients get the same data from `GET /api/v1/me` (`UserResource`, includes `email_verified`) and app options from the public `GET /api/v1/meta` (locales, theme preferences).
+**API Authentication (JWT)** — The API is its own token issuer (`App\Services\Auth\TokenService` behind `TokenServiceInterface`). `POST /api/v1/auth/login` returns a short-lived EdDSA-signed access token (`config('jwt.access_ttl')`, default 15 min) and starts a refresh-token *family* (`refresh_tokens` table, hashed at rest). `POST /api/v1/auth/refresh` rotates the refresh token; presenting an already-rotated token revokes the whole family (reuse detection). Web clients (`client: web`) receive the refresh token only as an httpOnly `SameSite=Strict` cookie scoped to the refresh path and must send `X-Requested-With`; native clients (`client: native`) receive it in the body. Access tokens carry `iss`, `aud`, `sub`, `jti`, `exp`, `auth_time` and `fam` (family id) and are verified by the `jwt` guard (`App\Auth\JwtGuard` + `JwtUserResolver`, the default and only guard) against the public key published at `/.well-known/jwks.json`. Keys come from `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` (`php artisan jwt:keys`). There are no sessions; a 401 on `api/*` carries a `code` (`unauthenticated` or `token_expired`). Password changes and account deletion revoke the user's refresh families. `POST /api/v1/auth/reauth` re-checks the password and reissues an access token with a fresh `auth_time` (step-up). Verification and reset emails link to `config('app.frontend_url')`; `App\Auth\EmailVerificationLink` signs and validates verification links against the named `verification.verify` route, which exists only for URL generation (it forwards to the SPA).
 
-**API Authentication (JWT)** — The API is its own token issuer (`App\Services\Auth\TokenService` behind `TokenServiceInterface`). `POST /api/v1/auth/login` returns a short-lived EdDSA-signed access token (`config('jwt.access_ttl')`, default 15 min) and starts a refresh-token *family* (`refresh_tokens` table, hashed at rest). `POST /api/v1/auth/refresh` rotates the refresh token; presenting an already-rotated token revokes the whole family (reuse detection). Web clients (`client: web`) receive the refresh token only as an httpOnly `SameSite=Strict` cookie scoped to the refresh path and must send `X-Requested-With`; native clients (`client: native`) receive it in the body. Access tokens carry `iss`, `aud`, `sub`, `jti`, `exp`, `auth_time` and `fam` (family id) and are verified by the `jwt` guard (`App\Auth\JwtUserResolver`, registered with `Auth::viaRequest`) against the public key published at `/.well-known/jwks.json`. Keys come from `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` (`php artisan jwt:keys`). During the Inertia-to-SPA transition API routes use `auth:jwt,web`, so the existing session-authenticated frontend keeps working; a 401 on `api/*` carries a `code` (`unauthenticated` or `token_expired`). Password changes and account deletion revoke the user's refresh families. `POST /api/v1/auth/reauth` re-checks the password and reissues an access token with a fresh `auth_time` (step-up). Verification and reset emails link to `config('app.frontend_url')`; `App\Auth\EmailVerificationLink` signs and validates verification links compatibly with the `verification.verify` web route.
-
-**Internationalization** — `SetLocale` middleware sets locale from `User.locale`. `HasTranslations` trait on system models provides polymorphic translations with auto-eager-loading. Translations are purged only on a real/force delete, so a **soft-deleted** record still resolves its name. UI strings in `lang/*.json` are shared through Inertia and consumed via `useTranslation`.
+**Internationalization** — `NegotiateApiLocale` sets the locale from `Accept-Language`. `HasTranslations` trait on system models provides polymorphic translations with auto-eager-loading. Translations are purged only on a real/force delete, so a **soft-deleted** record still resolves its name. `lang/*.json` holds the backend's own translated strings (labels and messages embedded in responses); UI strings live in each client.
 
 **Soft-deleted exercises** — `Exercise` uses `SoftDeletes`: an admin "delete" **retires** it (removed from catalog/pickers via the global scope) without touching workout history. `Activity::exercise()` is `->withTrashed()`, so historical workouts and templates still resolve a retired exercise's name/effort/difficulty. Reference guards that must see retired rows use `withTrashed()` (e.g. the equipment-in-use delete guard). Templates and programs are hard-deleted (a `Workout` copies its own `name` and owns its activities/sets, so no history is lost); a template can't be deleted while a program uses it (409).
 
@@ -48,15 +46,14 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 - Supported locales: `en`, `ru`
 - User preference is stored in `users.locale`
-- Web (Inertia) requests: `SetLocale` applies the authenticated user's locale, then the guest session locale, then `Accept-Language`
 - API requests: `NegotiateApiLocale` uses only `Accept-Language` (negotiated against `available_locales`, fallback `en`). The stored profile locale is a synced preference the client sends back as the header. Responses carry `Content-Language` and `Vary: Accept-Language`
-- `HandleInertiaRequests` shares `locale`, `availableLocales`, and JSON translations with every page; the Inertia app sets axios' `Accept-Language` from the page locale so API content matches the UI
+- `GET /api/v1/meta` lists `available_locales`; the SPA sends its active locale as `Accept-Language`
 
 ### Translation Sources
 
 - System models use the polymorphic `translations` table
 - `HasTranslations::createWithTranslations()` seeds records; `updateTranslations()` applies admin edits and removes blank values so reads fall back to English
-- UI strings live in `lang/en.json` and `lang/ru.json`
+- Backend strings embedded in responses (weekday and status labels, guard messages) live in `lang/en.json` and `lang/ru.json`; UI strings live in `apps/web/src/i18n/locales`
 - Validation and auth messages use Laravel language files under `lang/{locale}`
 
 ### Model Translation Rules
@@ -82,9 +79,11 @@ Only non-obvious locations listed.
 | `app/Http/Middleware/`        | `EnsureUserIsAdmin` (`admin` alias), `EnsureEmailIsVerified` (`verified` alias, coded 403 for JSON), `NegotiateApiLocale` (api group), `SetLocale` (web group) |
 | `app/Auth/`                   | `JwtUserResolver` — bearer-token resolver behind the `jwt` guard             |
 | `app/Rules/`                  | Custom validation rules (`CompletedSetRequiresEffort`, `HeartRateZoneWithinRange`) |
-| `resources/js/Components/ui/` | Reusable UI primitives (alert, alert-dialog, avatar, badge, button, card, empty, input, select, separator, sheet, skeleton, sonner, switch, table, textarea, tooltip) |
-| `resources/js/composables/`   | `useEnrollment` — enrollment state + toggle; `useTranslation` — `t()` helper |
-| `resources/js/utils/`         | `date` (locale-aware formatting), `format` (status display), `navigation` (route helpers) |
+| `apps/web/src/components/ui/` | Reusable UI primitives (shadcn-vue: badge, button, card, empty, input, select, skeleton, sonner, switch, textarea, ...) |
+| `apps/web/src/composables/`   | `useApi`, `useApiForm`, `useEnrollment`, `useTranslation` (`t()`), `usePageTitle`, `useActiveRoute`, `useLogout` |
+| `apps/web/src/stores/`        | Pinia: `auth` (token + user), `locale` (UI catalogs), `meta` |
+| `apps/web/src/router/`        | `routes.js` (named routes mirroring the old Laravel names), `guards.js` (guest/auth/verified/admin) |
+| `apps/web/src/utils/`         | `date` (locale-aware formatting), `format` (status display) |
 | `lang/`                       | JSON translation files (`en.json`, `ru.json`) for UI strings                 |
 
 ## Data Model

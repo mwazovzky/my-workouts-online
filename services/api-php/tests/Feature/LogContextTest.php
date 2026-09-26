@@ -18,7 +18,7 @@ class LogContextTest extends TestCase
             ->once()
             ->withArgs(fn (array $context) => $context['request_id'] === $uuid);
 
-        $this->get('/', ['X-Request-Id' => $uuid]);
+        $this->get('/health', ['X-Request-Id' => $uuid]);
     }
 
     #[Test]
@@ -28,7 +28,7 @@ class LogContextTest extends TestCase
             ->once()
             ->withArgs(fn (array $context) => Str::isUuid($context['request_id']));
 
-        $this->get('/');
+        $this->get('/health');
     }
 
     #[Test]
@@ -38,6 +38,6 @@ class LogContextTest extends TestCase
             ->once()
             ->withArgs(fn (array $context) => Str::isUuid($context['request_id']));
 
-        $this->get('/', ['X-Request-Id' => 'not-a-uuid-'.str_repeat('x', 200)]);
+        $this->get('/health', ['X-Request-Id' => 'not-a-uuid-'.str_repeat('x', 200)]);
     }
 }

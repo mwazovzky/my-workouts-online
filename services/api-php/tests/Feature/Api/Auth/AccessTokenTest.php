@@ -78,12 +78,4 @@ class AccessTokenTest extends TestCase
 
         $this->withToken($pair->accessToken)->getJson('/api/v1/programs')->assertUnauthorized();
     }
-
-    #[Test]
-    public function session_authentication_still_works_for_the_inertia_frontend(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)->getJson('/api/v1/programs')->assertOk();
-    }
 }

@@ -18,7 +18,10 @@ None; the old page routes disappear.
 
 ## Scope
 
-- remove packages: `inertiajs/inertia-laravel`, `tightenco/ziggy`, `laravel/breeze`, `laravel/sanctum`, `laravel-vite-plugin`, `@inertiajs/vue3`
+- remove packages: `inertiajs/inertia-laravel`, `tightenco/ziggy`, `laravel/breeze`, `laravel/sanctum`; the whole legacy Node toolchain in `services/api-php` (package.json, vite, vitest, eslint, tailwind configs)
+- `jwt` becomes the default and only guard; the `web` session guard, session middleware and CSRF are gone (operational routes load without a middleware group)
+- `verification.verify` stays as a named route that forwards to the SPA, so emailed links can still be signed and validated
+- favicons move to `apps/web/public`
 - remove `routes/web.php` page routes (keep health), `routes/auth.php`, page controllers, `HandleInertiaRequests`, `resources/views/app.blade.php`, `resources/js`, `LocaleController`, `PATCH /locale`, web `PUT /password`
 - remove `assertInertia` page tests and Breeze redirect tests; confirm each behaviour is covered by an API test
 - update `CLAUDE.md` and `docs/`

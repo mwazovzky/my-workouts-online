@@ -54,7 +54,6 @@ class RegisterTest extends TestCase
 
         $response->assertCreated()->assertJsonMissingPath('refresh_token');
         $this->assertNotNull($response->getCookie('refresh_token', false));
-        $this->assertGuest('web');
     }
 
     #[Test]

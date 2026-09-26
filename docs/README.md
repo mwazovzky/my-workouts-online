@@ -1,6 +1,6 @@
 # Documentation
 
-Workout tracking application — Laravel 12 / Inertia v2 / Vue 3 / Tailwind v3 / MySQL.
+Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 3 SPA (`apps/web`) / Tailwind v3 / MySQL.
 
 ## Contents
 

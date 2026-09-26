@@ -48,7 +48,7 @@ class ReauthTest extends TestCase
     }
 
     #[Test]
-    public function session_users_cannot_step_up_without_a_bearer_token(): void
+    public function acting_as_without_a_real_bearer_token_cannot_step_up(): void
     {
         $user = User::factory()->create(['password' => bcrypt('secret123')]);
 

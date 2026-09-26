@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\URL;
 /**
  * Builds and validates email-verification links.
  *
- * The link is signed exactly like Laravel's `verification.verify` route so the
- * Inertia page and the API accept the same email; only the host is swapped for
- * the frontend URL so the SPA can own the page.
+ * The link is signed against the named `verification.verify` route (kept for
+ * URL generation only); the host is swapped for the frontend URL so the SPA
+ * owns the page and posts the parameters to the API.
  */
 class EmailVerificationLink
 {

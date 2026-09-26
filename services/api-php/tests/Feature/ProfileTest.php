@@ -12,18 +12,6 @@ class ProfileTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function profile_page_is_displayed(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
-    }
-
-    #[Test]
     public function profile_information_can_be_updated(): void
     {
         $user = User::factory()->create();

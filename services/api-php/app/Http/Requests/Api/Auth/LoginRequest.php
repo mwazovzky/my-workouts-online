@@ -3,26 +3,33 @@
 namespace App\Http\Requests\Api\Auth;
 
 use App\Enums\ClientKind;
-use App\Http\Requests\Auth\LoginRequest as WebLoginRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Credential check for token issuance. Reuses the web request's throttling
- * but never touches the session guard.
+ * Credential check for token issuance, throttled per email + IP.
  */
-class LoginRequest extends WebLoginRequest
+class LoginRequest extends FormRequest
 {
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     /**
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            ...parent::rules(),
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
             'client' => ['required', Rule::enum(ClientKind::class)],
             'device_name' => ['nullable', 'string', 'max:255'],
         ];
@@ -56,5 +63,31 @@ class LoginRequest extends WebLoginRequest
     public function client(): ClientKind
     {
         return ClientKind::from($this->string('client')->toString());
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function ensureIsNotRateLimited(): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            return;
+        }
+
+        event(new Lockout($this));
+
+        $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'email' => trans('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]),
+        ]);
+    }
+
+    public function throttleKey(): string
+    {
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }

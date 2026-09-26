@@ -87,35 +87,4 @@ class ProfileLocaleTest extends TestCase
 
         $this->assertSame('en', $user->locale);
     }
-
-    #[Test]
-    public function set_locale_middleware_sets_app_locale(): void
-    {
-        $user = User::factory()->create(['locale' => 'ru']);
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
-        $this->assertSame('ru', app()->getLocale());
-    }
-
-    #[Test]
-    public function inertia_shares_locale_and_translations(): void
-    {
-        $user = User::factory()->create(['locale' => 'ru']);
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
-        $response->assertInertia(
-            fn ($page) => $page
-                ->where('locale', 'ru')
-                ->where('availableLocales', config('app.available_locales'))
-                ->has('translations')
-        );
-    }
 }

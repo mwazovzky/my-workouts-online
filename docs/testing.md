@@ -55,9 +55,9 @@ Frontend coverage is generated with Vitest's V8 coverage provider and written to
 
 First-reference examples in this repo:
 
-- [Translation composable](../resources/js/composables/useTranslation.test.js)
-- [Date formatting utility](../resources/js/utils/date.test.js)
-- [Program card component](../resources/js/Components/ProgramCard.test.js)
+- [Auth store](../apps/web/src/stores/auth.test.js)
+- [API client](../apps/web/src/lib/api.test.js)
+- [Program card component](../apps/web/src/components/ProgramCard.test.js)
 
 Keep frontend tests focused:
 
@@ -72,7 +72,7 @@ Use a feature test when the change affects any of the following:
 
 - A page, route, controller, form request, policy, middleware, or redirect
 - Validation behavior or error messages
-- Inertia props or rendered page components
+- API response shapes or error envelopes
 - Database changes triggered through an HTTP request
 
 Common patterns in this project:
@@ -83,7 +83,6 @@ Common patterns in this project:
 - Hit named routes with `route(...)` instead of hard-coded URLs.
 - Assert both the HTTP response and the persisted database state.
 - API validation errors are `errors.<field>.<n>.message` / `.code`; API content translation is driven by `withHeader('Accept-Language', ...)`, not the user's stored locale.
-- For Inertia pages, assert the component name and only the props that matter.
 
 Representative examples:
 
@@ -134,18 +133,6 @@ Current project pattern:
 Use [WorkoutAuthorizationTest](../tests/Feature/WorkoutAuthorizationTest.php) as the reference pattern.
 
 For role-gated endpoints (e.g. admin catalog management), also cover access by role: assert a non-admin user receives `403`, an admin user succeeds, and a guest receives `401`. Create admins with the `User::factory()->admin()` state. Use [EquipmentAdminTest](../tests/Feature/Admin/EquipmentAdminTest.php) as the reference pattern.
-
-## Inertia Assertions
-
-For Inertia responses:
-
-- Assert the rendered component.
-- Assert only the props relevant to the behavior under test.
-- Prefer `missing(...)` assertions when verifying that sensitive or unnecessary data is not exposed.
-
-Use [ProgramPageTest](../tests/Feature/Pages/ProgramPageTest.php) as the reference pattern.
-
-For client-only behavior inside Vue components, prefer Vitest component tests over expanding PHP page assertions.
 
 ## Database Assertions
 

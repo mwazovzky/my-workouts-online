@@ -22,6 +22,4 @@ services/api-php/storage/framework/cache
 services/api-php/storage/framework/sessions
 services/api-php/storage/framework/views
 services/api-php/bootstrap/cache/*.php
-services/api-php/public/hot
-services/api-php/public/build
 services/api-php/tests

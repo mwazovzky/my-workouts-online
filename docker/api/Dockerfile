@@ -44,9 +44,9 @@ COPY services/api-php /var/www/html
 COPY --from=composer-deps /app/vendor /var/www/html/vendor
 
 # Runtime directories are excluded from the build context; create them and
-# never bake local caches or dev-server markers into the production image.
+# never bake local caches into the production image.
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/testing storage/framework/views storage/logs bootstrap/cache \
-    && rm -f bootstrap/cache/*.php public/hot \
+    && rm -f bootstrap/cache/*.php \
     && chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 9000

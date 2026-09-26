@@ -88,21 +88,4 @@ class ProfileThemeTest extends TestCase
 
         $this->assertSame('system', $user->theme_preference);
     }
-
-    #[Test]
-    public function inertia_shares_theme_preference_options(): void
-    {
-        $user = User::factory()->create(['theme_preference' => 'dark']);
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
-        $response->assertInertia(
-            fn ($page) => $page
-                ->where('themePreference', 'dark')
-                ->has('availableThemePreferences')
-        );
-    }
 }

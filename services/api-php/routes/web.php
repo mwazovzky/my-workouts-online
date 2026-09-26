@@ -1,80 +1,18 @@
 <?php
 
-use App\Http\Controllers\AboutController;
-use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\Api\JwksController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProgramPageController;
-use App\Http\Controllers\WelcomeController;
-use App\Http\Controllers\WorkoutPageController;
-use App\Http\Controllers\WorkoutTemplatePageController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [WelcomeController::class, 'index']);
-Route::patch('/locale', [LocaleController::class, 'update'])->name('locale.update');
-
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
-Route::get('/programs', [ProgramPageController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('programs.index');
-
-Route::get('/programs/{id}', [ProgramPageController::class, 'show'])
-    ->middleware(['auth', 'verified'])
-    ->name('programs.show');
-
-Route::get('/workout-templates/{id}', [WorkoutTemplatePageController::class, 'show'])
-    ->middleware(['auth', 'verified'])
-    ->name('workout.templates.show');
-
-Route::get('/workouts', [WorkoutPageController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.index');
-
-Route::get('/workouts/{id}', [WorkoutPageController::class, 'show'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.show');
-
-Route::get('/workouts/{id}/edit', [WorkoutPageController::class, 'edit'])
-    ->middleware(['auth', 'verified'])
-    ->name('workouts.edit');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-});
-
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminPageController::class, 'index'])->name('index');
-
-    Route::get('/equipment', [AdminPageController::class, 'equipment'])->name('equipment');
-    Route::get('/equipment/create', [AdminPageController::class, 'createEquipment'])->name('equipment.create');
-    Route::get('/equipment/{id}/edit', [AdminPageController::class, 'editEquipment'])->name('equipment.edit');
-
-    Route::get('/categories', [AdminPageController::class, 'categories'])->name('categories');
-    Route::get('/categories/create', [AdminPageController::class, 'createCategory'])->name('categories.create');
-    Route::get('/categories/{id}/edit', [AdminPageController::class, 'editCategory'])->name('categories.edit');
-
-    Route::get('/exercises', [AdminPageController::class, 'exercises'])->name('exercises');
-    Route::get('/exercises/create', [AdminPageController::class, 'createExercise'])->name('exercises.create');
-    Route::get('/exercises/{id}/edit', [AdminPageController::class, 'editExercise'])->name('exercises.edit');
-
-    Route::get('/workout-templates', [AdminPageController::class, 'workoutTemplates'])->name('workout-templates');
-    Route::get('/workout-templates/create', [AdminPageController::class, 'createWorkoutTemplate'])->name('workout-templates.create');
-    Route::get('/workout-templates/{id}/edit', [AdminPageController::class, 'editWorkoutTemplate'])->name('workout-templates.edit');
-
-    Route::get('/programs', [AdminPageController::class, 'programs'])->name('programs');
-    Route::get('/programs/create', [AdminPageController::class, 'createProgram'])->name('programs.create');
-    Route::get('/programs/{id}/edit', [AdminPageController::class, 'editProgram'])->name('programs.edit');
-});
-
-Route::get('/about', [AboutController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('about');
+/*
+|--------------------------------------------------------------------------
+| Non-API routes
+|--------------------------------------------------------------------------
+|
+| Everything user-facing is the SPA in apps/web, served by nginx. Only the
+| operational endpoints and the signing key set live outside /api.
+|
+*/
 
 Route::get('/.well-known/jwks.json', JwksController::class)->name('jwks');
 
@@ -111,4 +49,11 @@ Route::get('/health/ready', static function () {
     }
 })->name('health.ready');
 
-require __DIR__.'/auth.php';
+/*
+| Named for URL generation and signature validation only: the emailed
+| verification link points at the SPA, which posts the parameters to the API.
+| Reaching it here (php-fpm addressed directly) forwards to the SPA.
+*/
+Route::get('/verify-email/{id}/{hash}', static fn (int $id, string $hash) => redirect()->away(
+    rtrim(config('app.frontend_url'), '/')."/verify-email/{$id}/{$hash}?".request()->getQueryString()
+))->name('verification.verify');

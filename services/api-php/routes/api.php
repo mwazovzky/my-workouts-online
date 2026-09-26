@@ -29,7 +29,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('auth/password/forgot', [PasswordResetController::class, 'forgot'])->middleware('throttle:6,1')->name('auth.password.forgot');
     Route::post('auth/password/reset', [PasswordResetController::class, 'reset'])->middleware('throttle:6,1')->name('auth.password.reset');
 
-    Route::middleware('auth:jwt,web')->group(function () {
+    Route::middleware('auth:jwt')->group(function () {
         Route::get('me', MeController::class)->name('me');
 
         Route::post('auth/logout', [SessionController::class, 'logout'])->name('auth.logout');
@@ -44,7 +44,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
-    Route::middleware(['auth:jwt,web', 'verified'])->group(function () {
+    Route::middleware(['auth:jwt', 'verified'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);

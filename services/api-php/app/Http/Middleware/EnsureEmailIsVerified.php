@@ -3,27 +3,30 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Auth\Middleware\EnsureEmailIsVerified as BaseEnsureEmailIsVerified;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Same as the framework middleware, but JSON clients get a coded 403 so they
- * can route to their verification screen.
+ * API-only variant of the framework middleware: unverified users get a coded
+ * 403 so clients can route to their verification screen.
  */
-class EnsureEmailIsVerified extends BaseEnsureEmailIsVerified
+class EnsureEmailIsVerified
 {
-    public function handle($request, Closure $next, $redirectToRoute = null): Response
+    /**
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if ($request->expectsJson() && $user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+        if (! $user || ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail())) {
             return response()->json([
                 'message' => 'Your email address is not verified.',
                 'code' => 'email_unverified',
             ], 403);
         }
 
-        return parent::handle($request, $next, $redirectToRoute);
+        return $next($request);
     }
 }
