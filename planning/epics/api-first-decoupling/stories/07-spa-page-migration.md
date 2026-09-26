@@ -22,6 +22,9 @@ Every existing page works identically in the SPA.
 - named routes in `src/router/routes.js` mirroring the current URL scheme
 - `router.visit` to `router.push`; `Link` to `RouterLink` inside `NavLink`, `DropdownLink`, `ResponsiveNavLink`; `Head` to route meta titles; `usePage().props` to stores; `route()` to named routes; `route().current()` to `useRoute().name`
 - `WorkoutEdit` unsaved-changes guard via `onBeforeRouteLeave`
+- shadcn `Button as="a"` links render through `:as="RouterLink"` so `:to` navigates client-side
+- pages are lazy-loaded through an `import.meta.glob` map (Vite cannot resolve nested paths in variable dynamic imports)
+- `apps/web/src/test/utils.js` provides `RouterLinkStub` and `withPinia()` for component tests
 - `GuestLocaleSwitcher` writes client state; signed-in switch calls `PATCH /profile/locale` and updates the store
 - `DeleteUserForm` success logs out and navigates home
 - logout via the auth store instead of a POST form link

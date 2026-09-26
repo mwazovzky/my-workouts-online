@@ -4,6 +4,8 @@ Lookup reference for the app surface area. Detailed behavior belongs in feature 
 
 ## Pages
 
+The standalone SPA in `apps/web` mirrors every page below with the same path and route name (`apps/web/src/router/routes.js`); until the cutover the Inertia pages remain the served ones.
+
 | Page                  | Path                      | Access          | Owning Feature  | Notes                                                                    |
 | --------------------- | ------------------------- | --------------- | --------------- | ------------------------------------------------------------------------ |
 | `Welcome`             | `/`                       | Public          | Landing         | Public landing page; authenticated users are redirected to the dashboard |
