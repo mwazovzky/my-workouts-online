@@ -227,6 +227,9 @@ paths:
                 $ref: '#/components/schemas/Error'
         '422':
           $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
 
   /api/v1/auth/password/forgot:
     post:
@@ -274,6 +277,9 @@ paths:
           description: Password reset; all refresh-token families are revoked.
         '422':
           $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
 
   /api/v1/auth/email/verify:
     post:
@@ -308,6 +314,11 @@ paths:
                   value: { message: 'This verification link does not belong to the signed-in account.', code: invalid_verification_link }
                 badSignature:
                   value: { message: 'This verification link is invalid or has expired.', code: invalid_signature }
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
 
   /api/v1/auth/email/resend:
     post:
@@ -659,6 +670,7 @@ paths:
         - $ref: '#/components/parameters/AcceptLanguage'
         - name: page
           in: query
+          description: 1-based page number.
           schema: { type: integer, minimum: 1, default: 1 }
       responses:
         '200':
@@ -673,6 +685,8 @@ paths:
                       data:
                         type: array
                         items: { $ref: '#/components/schemas/Workout' }
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/Unauthenticated'
     post:
@@ -1400,6 +1414,20 @@ components:
       description: Raw per-locale values with no fallback; `null` means no translation stored.
       additionalProperties: { type: [string, 'null'] }
       example: { en: Chest, ru: Грудь }
+    NameTranslationsWrite:
+      type: object
+      description: Per-locale name for resources without a description. Blank values remove that locale's translation so reads fall back to English.
+      required: [en]
+      properties:
+        en:
+          type: object
+          required: [name]
+          properties:
+            name: { type: string, maxLength: 255 }
+        ru:
+          type: object
+          properties:
+            name: { type: [string, 'null'], maxLength: 255 }
     TranslationsWrite:
       type: object
       description: Blank values remove that locale's translation so reads fall back to English.
@@ -1477,7 +1505,7 @@ components:
       type: object
       required: [translations]
       properties:
-        translations: { $ref: '#/components/schemas/TranslationsWrite' }
+        translations: { $ref: '#/components/schemas/NameTranslationsWrite' }
     Equipment:
       type: object
       required: [id, name, difficulty_unit]
@@ -1495,7 +1523,7 @@ components:
       required: [difficulty_unit, translations]
       properties:
         difficulty_unit: { $ref: '#/components/schemas/DifficultyUnit' }
-        translations: { $ref: '#/components/schemas/TranslationsWrite' }
+        translations: { $ref: '#/components/schemas/NameTranslationsWrite' }
     Exercise:
       type: object
       required: [id, name, equipment_id, effort_type, effort_label, rest_time_seconds]

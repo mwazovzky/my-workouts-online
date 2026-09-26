@@ -3,6 +3,7 @@
 ![tests](https://github.com/mwazovzky/my-workouts-online/actions/workflows/tests.yml/badge.svg?branch=main)
 ![code style](https://github.com/mwazovzky/my-workouts-online/actions/workflows/code-style.yml/badge.svg?branch=main)
 ![lint](https://github.com/mwazovzky/my-workouts-online/actions/workflows/lint.yml/badge.svg?branch=main)
+![contract](https://github.com/mwazovzky/my-workouts-online/actions/workflows/contract.yml/badge.svg?branch=main)
 [![backend coverage](https://codecov.io/github/mwazovzky/my-workouts-online/graph/badge.svg?flag=backend)](https://app.codecov.io/github/mwazovzky/my-workouts-online)
 [![frontend coverage](https://codecov.io/github/mwazovzky/my-workouts-online/graph/badge.svg?flag=frontend)](https://app.codecov.io/github/mwazovzky/my-workouts-online)
 

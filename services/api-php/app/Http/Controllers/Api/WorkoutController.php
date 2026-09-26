@@ -19,6 +19,10 @@ class WorkoutController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $request->validate([
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+
         $workouts = Workout::query()
             ->ownedBy($request->user())
             ->withTemplate()

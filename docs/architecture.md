@@ -12,6 +12,8 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **Polymorphic Activities** — `Activity` morphs to `WorkoutTemplate` or `Workout`. Morph map in `AppServiceProvider`: `workout_template`, `workout`, `exercise`, `category`, `equipment`, `program`.
 
+**API Contract** — `contracts/openapi.yaml` (OpenAPI 3.1) is the source of truth for every client and backend. It is linted in CI and enforced by Schemathesis against a live API (`scripts/contract-test.sh`, `.github/workflows/contract.yml`). TypeScript types for the SPA are generated from it.
+
 **API Error Envelope** — Every non-2xx response under `api/*` is `{ message, code }` (`App\Exceptions\Api\ApiErrorResponse`, wired in `bootstrap/app.php`). Codes: `unauthenticated`, `token_expired`, `forbidden`, `email_unverified`, `not_found`, `conflict`, `too_many_requests`, `validation_failed`, plus explicit ones thrown via `ApiException` (e.g. `in_use` on reference guards). Validation failures add `errors: { field: [{ code, message }] }` where `code` is the failed rule name (`required`, `email`, `unique`, `enum`, custom rule class in snake_case) or `invalid` for manually added messages.
 
 **Eloquent Resources** — All API responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).

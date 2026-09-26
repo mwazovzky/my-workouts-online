@@ -38,6 +38,19 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
+    public function index_rejects_an_invalid_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->getJson('/api/v1/workouts?page=0')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['page']);
+
+        $this->actingAs($user)->getJson('/api/v1/workouts?page=abc')
+            ->assertUnprocessable();
+    }
+
+    #[Test]
     public function index_requires_authentication(): void
     {
         $this->getJson('/api/v1/workouts')->assertUnauthorized();

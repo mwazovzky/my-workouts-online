@@ -41,7 +41,7 @@ class ProfileController extends Controller
     public function updatePassword(Request $request): Response
     {
         $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
+            'current_password' => ['bail', 'required', 'string', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
@@ -83,7 +83,7 @@ class ProfileController extends Controller
     public function destroy(Request $request): Response
     {
         $request->validate([
-            'password' => ['required', 'current_password'],
+            'password' => ['bail', 'required', 'string', 'current_password'],
         ]);
 
         $user = $request->user();

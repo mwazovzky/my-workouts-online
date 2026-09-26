@@ -36,6 +36,7 @@ class WorkoutTemplateApiTest extends TestCase
     {
         $user = User::factory()->create();
 
+        $this->actingAs($user)->getJson('/api/v1/workout-templates/null,null')->assertNotFound();
         $this->actingAs($user)->getJson('/api/v1/workout-templates/99999')->assertNotFound();
     }
 

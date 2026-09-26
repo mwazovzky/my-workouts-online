@@ -757,6 +757,15 @@ export interface components {
         TranslationMap: {
             [key: string]: string | null;
         };
+        /** @description Per-locale name for resources without a description. Blank values remove that locale's translation so reads fall back to English. */
+        NameTranslationsWrite: {
+            en: {
+                name: string;
+            };
+            ru?: {
+                name?: string | null;
+            };
+        };
         /** @description Blank values remove that locale's translation so reads fall back to English. */
         TranslationsWrite: {
             en: {
@@ -817,7 +826,7 @@ export interface components {
             };
         };
         CategoryWrite: {
-            translations: components["schemas"]["TranslationsWrite"];
+            translations: components["schemas"]["NameTranslationsWrite"];
         };
         Equipment: {
             id: number;
@@ -831,7 +840,7 @@ export interface components {
         };
         EquipmentWrite: {
             difficulty_unit: components["schemas"]["DifficultyUnit"];
-            translations: components["schemas"]["TranslationsWrite"];
+            translations: components["schemas"]["NameTranslationsWrite"];
         };
         Exercise: {
             id: number;
@@ -1365,6 +1374,7 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationError"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     forgotPassword: {
@@ -1423,6 +1433,7 @@ export interface operations {
                 content?: never;
             };
             422: components["responses"]["ValidationError"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     verifyEmail: {
@@ -1460,6 +1471,8 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     resendVerification: {
@@ -1859,6 +1872,7 @@ export interface operations {
     listWorkouts: {
         parameters: {
             query?: {
+                /** @description 1-based page number. */
                 page?: number;
             };
             header?: {
@@ -1882,6 +1896,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
         };
     };
     createWorkout: {

@@ -1,0 +1,107 @@
+name: contract
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  contract-tests:
+    name: OpenAPI contract (Schemathesis)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-php
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: workouts
+          MYSQL_USER: workouts
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: mbstring, pdo, mysql, dom, sodium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Schemathesis
+        run: pip install --quiet schemathesis
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Configure environment
+        run: |
+          cp ../.env.example .env
+          {
+            echo "APP_ENV=local"
+            echo "APP_DEBUG=false"
+            echo "APP_URL=http://127.0.0.1:8000"
+            echo "FRONTEND_URL=http://127.0.0.1:8000"
+            echo "DB_CONNECTION=mysql"
+            echo "DB_HOST=127.0.0.1"
+            echo "DB_PORT=3306"
+            echo "DB_DATABASE=workouts"
+            echo "DB_USERNAME=workouts"
+            echo "DB_PASSWORD=secret"
+            echo "MAIL_MAILER=log"
+            echo "QUEUE_CONNECTION=sync"
+            echo "CACHE_STORE=file"
+            echo "API_RATE_LIMIT_PER_MINUTE=100000"
+            echo "JWT_COOKIE_SECURE=false"
+          } >> .env
+          php artisan key:generate --force
+          php artisan jwt:keys | grep '^JWT_' >> .env
+
+      - name: Migrate and seed
+        run: php artisan migrate:fresh --seed --force
+
+      - name: Start the API
+        run: |
+          php artisan serve --host 127.0.0.1 --port 8000 > /tmp/serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl --silent --fail http://127.0.0.1:8000/health >/dev/null && break
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:8000/health
+
+      - name: Run contract tests
+        working-directory: .
+        env:
+          SCHEMATHESIS: schemathesis
+        run: scripts/contract-test.sh http://127.0.0.1:8000
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-report
+          path: contracts/.report
+          if-no-files-found: ignore
+
+      - name: Show server log on failure
+        if: failure()
+        run: tail -n 100 /tmp/serve.log

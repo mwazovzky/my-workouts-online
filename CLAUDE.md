@@ -39,7 +39,7 @@ After modifying any `.js` or `.vue` file in `apps/web`, always run `npm run lint
 
 After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` in `services/api-php` before finalizing.
 
-After modifying `contracts/openapi.yaml`, lint it: `docker run --rm -v "$PWD/contracts:/spec:ro" -w /spec redocly/cli:latest lint openapi.yaml --config redocly.yaml`.
+After modifying `contracts/openapi.yaml` or any API response shape, lint the spec and run `scripts/contract-test.sh` against the dev stack (then reseed). Lint: `docker run --rm -v "$PWD/contracts:/spec:ro" -w /spec redocly/cli:latest lint openapi.yaml --config redocly.yaml`.
 
 ## Architecture
 
@@ -82,7 +82,7 @@ Exercise <-M:N-> Category
 
 ### CI
 
-GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `deploy.yml`.
+GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `deploy.yml`.
 
 ### Deployment
 

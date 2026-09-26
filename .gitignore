@@ -26,3 +26,4 @@ coverage.xml
 /apps/web/coverage
 /apps/web/.env
 .phpunit.result.cache
+/contracts/.report

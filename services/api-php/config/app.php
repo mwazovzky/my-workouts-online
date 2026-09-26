@@ -59,6 +59,12 @@ return [
     'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
 
     /*
+    | Requests per minute per user (or IP) on the api middleware group.
+    | Raised to a large value for contract-test runs.
+    */
+    'api_rate_limit' => (int) env('API_RATE_LIMIT_PER_MINUTE', 60),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

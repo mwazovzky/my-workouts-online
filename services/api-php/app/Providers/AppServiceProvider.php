@@ -9,8 +9,11 @@ use App\Services\Auth\TokenService;
 use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -61,6 +64,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute((int) config('app.api_rate_limit'))
+            ->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
+
         Auth::extend('jwt', function ($app, string $name, array $config): JwtGuard {
             $guard = new JwtGuard(
                 $app->make(JwtUserResolver::class),

@@ -18,8 +18,9 @@ None.
 
 ## Scope
 
-- contract job that boots the API with seeded data and runs schema validation of responses (Schemathesis or Spectator)
-- spec lint in CI (Spectral or equivalent)
+- contract job that boots the API with seeded data and runs Schemathesis (`scripts/contract-test.sh`): examples, coverage and fuzzing phases, all checks except `ignored_auth`; logout, profile delete/update and the unimplemented social endpoint are excluded
+- `API_RATE_LIMIT_PER_MINUTE` makes the api throttle configurable so the run is not rate limited
+- spec lint in CI (Redocly, in `lint.yml`)
 - documented command to run the suite against any base URL
 
 ## Non-Goals

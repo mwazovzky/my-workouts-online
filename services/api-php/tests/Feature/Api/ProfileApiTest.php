@@ -117,6 +117,21 @@ class ProfileApiTest extends TestCase
     // -------------------------------------------------------
 
     #[Test]
+    public function password_change_rejects_non_string_current_password(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->putJson('/api/v1/profile/password', [
+            'current_password' => [null, null],
+            'password' => 'new-password-123',
+            'password_confirmation' => 'new-password-123',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['current_password']);
+
+        $this->actingAs($user)->deleteJson('/api/v1/profile', ['password' => ['x']])
+            ->assertUnprocessable()->assertJsonValidationErrors(['password']);
+    }
+
+    #[Test]
     public function authenticated_user_can_update_password(): void
     {
         $user = User::factory()->create([

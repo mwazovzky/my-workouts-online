@@ -196,3 +196,17 @@ This allows separate reporting, PR visibility, and private-repo flag badges once
 - [Architecture](architecture.md)
 - [Programs](features/programs.md)
 - [Workout Logging](features/workout-logging.md)
+
+## Contract Tests
+
+`contracts/openapi.yaml` is enforced against a running API with [Schemathesis](https://schemathesis.io): every documented operation is exercised with generated positive and negative data and every response is checked for a documented status code, content type, and schema. This is the acceptance gate for any backend that claims to implement the contract.
+
+```bash
+scripts/contract-test.sh http://localhost:8080            # dev stack (Docker image of Schemathesis)
+SCHEMATHESIS=schemathesis scripts/contract-test.sh URL     # local binary
+```
+
+The run logs in as the seeded admin (`test@example.com`) and fuzzes writes, so use a disposable database and reseed afterwards (`php artisan migrate:fresh --seed`). Raise `API_RATE_LIMIT_PER_MINUTE` for the run. `.github/workflows/contract.yml` runs it on every push with a fresh MySQL and `php artisan serve`.
+
+Excluded from fuzzing: logout (would revoke the token in use), profile delete/update (would remove or rename the account) and the unimplemented social login endpoint.
+
