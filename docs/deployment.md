@@ -355,12 +355,28 @@ curl -f https://your-domain.com/api/v1/meta       # the API through nginx
 
 If `PRODUCTION_HEALTHCHECK_URL` and `PRODUCTION_READYCHECK_URL` are configured in GitHub, the deploy workflow performs these checks automatically and fails the release if they do not pass.
 
-## 14. Logs
+## 14. Logs and Grafana
+
+Every container writes to its stdout/stderr; Laravel gets there through php-fpm's `catch_workers_output` (`docker/api/zz-app.conf`), which requires `LOG_CHANNEL=stderr` in the droplet `.env` (a file channel such as `stack`/`single` stays inside the container and never reaches Grafana).
+
+The `alloy` service (`docker/alloy/config.alloy`) tails the containers of the compose services `api`, `web` and `worker` and pushes them to Grafana Cloud Loki (`LOKI_URL`, `LOKI_USER_ID`, `LOKI_API_TOKEN`). Labels on every line:
+
+| Label | Value |
+| --- | --- |
+| `app` | `my-workouts` |
+| `env` | `production` |
+| `service` | `api` (Laravel: application log lines and request context), `worker` (queue), `web` (nginx errors only; access logging is off) |
+| `logstream` | `stdout` or `stderr` |
+
+Since the SPA cutover, application logs carry `service="api"`; dashboards and alerts written against `service="web"` from the single-image era must be updated.
+
+On the droplet:
 
 ```bash
 docker compose -f docker-compose.prod.yml logs -f --tail=200 api      # Laravel (php-fpm)
 docker compose -f docker-compose.prod.yml logs -f --tail=200 web      # nginx
 docker compose -f docker-compose.prod.yml logs -f --tail=200 worker
+docker compose -f docker-compose.prod.yml logs -f --tail=200 alloy    # shipping problems show up here
 docker compose -f docker-compose.prod.yml logs -f --tail=200 mysql
 ```
 

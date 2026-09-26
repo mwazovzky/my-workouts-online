@@ -32,6 +32,8 @@ docker/              api + web images, nginx configs, compose support files
    - `docker compose exec -T app php artisan migrate --seed`
 4. Open `http://localhost:8080` (from `APP_PORT`): nginx serves the SPA from the Vite dev server (with HMR) and proxies `/api` to php-fpm.
 
+Logs (including the verification and password-reset emails, which use the `log` mailer locally) appear in `docker compose logs -f app`.
+
 This mirrors the production topology (nginx in front of the SPA and the API) while keeping code bind-mounted for live edits.
 
 Useful commands:
