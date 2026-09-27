@@ -8,17 +8,15 @@ use App\Models\WorkoutTemplate;
 
 class WorkoutTemplateController extends Controller
 {
-    public function show(int $id): WorkoutTemplateResource
+    public function show(WorkoutTemplate $workoutTemplate): WorkoutTemplateResource
     {
-        $workoutTemplate = WorkoutTemplate::query()
-            ->with([
-                'activities' => fn ($query) => $query->orderBy('order'),
-                'activities.sets' => fn ($query) => $query->orderBy('order'),
-                'activities.exercise',
-                'activities.exercise.equipment',
-                'activities.exercise.categories',
-            ])
-            ->findOrFail($id);
+        $workoutTemplate->load([
+            'activities' => fn ($query) => $query->orderBy('order'),
+            'activities.sets' => fn ($query) => $query->orderBy('order'),
+            'activities.exercise',
+            'activities.exercise.equipment',
+            'activities.exercise.categories',
+        ]);
 
         return new WorkoutTemplateResource($workoutTemplate);
     }

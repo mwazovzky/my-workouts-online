@@ -50,7 +50,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
         Route::post('programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
 
-        Route::get('workout-templates/{id}', [WorkoutTemplateController::class, 'show'])->whereNumber('id')->name('workout-templates.show');
+        Route::get('workout-templates/{workoutTemplate}', [WorkoutTemplateController::class, 'show'])->whereNumber('workoutTemplate')->name('workout-templates.show');
 
         Route::get('exercises', [ExerciseController::class, 'index'])->name('exercises.index');
 

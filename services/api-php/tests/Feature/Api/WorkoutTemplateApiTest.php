@@ -41,6 +41,16 @@ class WorkoutTemplateApiTest extends TestCase
     }
 
     #[Test]
+    public function show_returns_404_for_id_larger_than_integer_range(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->getJson('/api/v1/workout-templates/68119702247477897854976')
+            ->assertNotFound();
+    }
+
+    #[Test]
     public function show_requires_authentication(): void
     {
         $template = WorkoutTemplate::factory()->create();
