@@ -18,6 +18,9 @@ COPY docker/web/start.sh /usr/local/bin/start-web
 RUN chmod +x /usr/local/bin/start-web && mkdir -p /var/www/certbot
 
 EXPOSE 80 443
-HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD wget -qO- http://127.0.0.1/index.html >/dev/null 2>&1 || exit 1
+# Port 80 answers 200 in HTTP mode and 301 (to HTTPS) once a certificate is
+# installed, so any 2xx/3xx proves nginx is serving; busybox wget cannot follow
+# the redirect to the public hostname, hence the header grep.
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD wget -S --spider -T 5 http://127.0.0.1/ 2>&1 | grep -q 'HTTP/1.1 [23]' || exit 1
 
 CMD ["/usr/local/bin/start-web"]
