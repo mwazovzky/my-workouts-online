@@ -15,10 +15,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
-      reporter: ['text', 'lcov', 'json-summary'],
-      all: true,
+      reporter: ['text', 'lcov', 'json-summary', 'html'],
       include: ['src/**/*.{js,vue}'],
       exclude: ['src/**/*.test.js', 'src/main.js', 'src/pages/**/*.vue'],
+      // Minimum line coverage (%). CI fails below this; raise as coverage improves.
+      thresholds: { lines: 77 },
     },
   },
 });
