@@ -23,6 +23,7 @@ App admins create, edit, and delete the shared content catalog: equipment, categ
 - **Workout template** carries translatable `name` + `description` and an ordered list of activities, each an exercise with one or more sets (`effort_value`, optional `difficulty_value`). At least one activity, and at least one set per activity, are required. A set's `difficulty_value` is validated against the exercise's difficulty unit — heart-rate-zone exercises accept 1–5 (via `HeartRateZoneWithinRange`). Updating a template replaces its activities and sets wholesale.
 - **Program** carries translatable `name` + `description` and a set of weekday assignments (`{workout_template_id, weekday}`), stored on the `program_workout_template` pivot. Assignments are optional; the same template may be scheduled on multiple weekdays. Updating a program replaces its assignments wholesale. Enrollment (`program_user`) is unaffected by admin edits, but **deleting a program un-enrolls its users** (their logged workouts remain intact). A workout template can't be deleted while a program uses it (409).
 - Write operations run in a database transaction; exercise category sync, template activities/sets, program assignments, and translation writes commit together.
+- **Shipped records are owned by the repository.** Records defined in `database/catalog/` are reset to those files whenever `catalog:sync` runs, so an admin edit to one of them (including retiring a shipped exercise) is overwritten; change the data file instead. Records created in the admin UI are never touched by the sync. See [Architecture](../architecture.md) (Catalog Sync).
 
 ## Known Limitations
 
@@ -42,7 +43,7 @@ App admins create, edit, and delete the shared content catalog: equipment, categ
 
 ## Data Notes
 
-Translatable text is not stored on the base tables; it lives in the polymorphic `translations` table. `HasTranslations::createWithTranslations()` seeds new records and `HasTranslations::updateTranslations()` applies edits (removing blank values for fallback). See [Architecture](../architecture.md) for the translation strategy.
+Translatable text is not stored on the base tables; it lives in the polymorphic `translations` table. `HasTranslations::createWithTranslations()` creates new records and `HasTranslations::updateTranslations()` applies edits (removing blank values for fallback). See [Architecture](../architecture.md) for the translation strategy.
 
 ## Related
 

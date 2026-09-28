@@ -30,6 +30,10 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **Soft-deleted exercises** — `Exercise` uses `SoftDeletes`: an admin "delete" **retires** it (removed from catalog/pickers via the global scope) without touching workout history. `Activity::exercise()` is `->withTrashed()`, so historical workouts and templates still resolve a retired exercise's name/effort/difficulty. Reference guards that must see retired rows use `withTrashed()` (e.g. the equipment-in-use delete guard). Templates and programs are hard-deleted (a `Workout` copies its own `name` and owns its activities/sets, so no history is lost); a template can't be deleted while a program uses it (409).
 
+**Catalog Sync** — The shipped catalog (equipment, categories, exercises, workout templates, programs) is defined in PHP data files under `database/catalog/`, each record keyed by a `slug`. `php artisan catalog:sync` (`App\Services\Catalog\CatalogSyncService`, also run by `CatalogSeeder`) validates all files first (`CatalogValidator`; any violation aborts before a write), then applies them in one transaction through the admin services. Rows are matched by `slug`; a row without a slug is adopted by its English name or one of the record's `previous_names`, so ids and workout history survive. The data files win: a managed record (non-null `slug`) is reset to the files on every run and unchanged records are skipped. Records created in the admin UI have no slug and are never touched. Nothing is deleted by omission: removals are listed in `database/catalog/retired.php`, exercises are soft-deleted, and other types are deleted only when nothing references them (otherwise a warning). `--dry-run` reports without writing; `--strict` writes nothing when there are warnings. `slug` is not fillable and not exposed by any resource.
+
+**Seeders** — `DatabaseSeeder` runs `RoleSeeder` and `CatalogSeeder` everywhere, and `UserSeeder` + `WorkoutSeeder` (demo admin and demo workouts) outside production only; both demo seeders throw in production. All seeders are re-runnable. The `Admin` and `User` roles are also inserted by a migration, so an environment that never seeds still has them.
+
 **Two-Axis Measurement** — Sets use `effort_value` (reps/seconds) + `difficulty_value` (nullable). `Equipment.difficulty_unit` (kilograms, pounds, plates, heart_rate_zone, none) controls the load axis; `Exercise.effort_type` (repetitions, duration) controls work. "Bodyweight" equipment (`difficulty_unit = none`) hides the difficulty field. For `heart_rate_zone`, `difficulty_value` is an integer 1–5 (a heart-rate zone) — validated on save by `App\Rules\HeartRateZoneWithinRange` and entered via a 1–5 picker in the set editor; a blank zone stores null. All unit/effort combinations are valid.
 
 ## Key Decisions
@@ -54,7 +58,8 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 ### Translation Sources
 
 - System models use the polymorphic `translations` table
-- `HasTranslations::createWithTranslations()` seeds records; `updateTranslations()` applies admin edits and removes blank values so reads fall back to English
+- `HasTranslations::createWithTranslations()` creates records; `updateTranslations()` applies edits and removes blank values so reads fall back to English
+- Shipped catalog content carries both locales in the `database/catalog/` data files (see Catalog Sync)
 - Backend strings embedded in responses (weekday and status labels, guard messages) live in `lang/en.json` and `lang/ru.json`; UI strings live in `apps/web/src/i18n/locales`
 - Validation and auth messages use Laravel language files under `lang/{locale}`
 
@@ -73,7 +78,8 @@ Only non-obvious locations listed.
 | `apps/web/`                   | The Vue SPA (vue-router, Pinia) consuming `/api/v1`; served by the `web` nginx image |
 | `services/api-php/`           | The Laravel API; `docker/nginx/api-locations.conf` is the only path from the SPA to it |
 | `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |
-| `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`)         |
+| `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`, `Catalog/`) |
+| `database/catalog/`           | Catalog data files applied by `catalog:sync`; `retired.php` lists removals  |
 | `app/Http/Controllers/Api/Admin/` | Admin catalog CRUD controllers (equipment, categories, exercises)       |
 | `app/QueryBuilders/`          | Custom Eloquent builders                                                     |
 | `app/Enums/`                  | `WorkoutStatus` (InProgress, Completed), `EffortType` (Repetitions, Duration), `DifficultyUnit` (Kilograms, Pounds, Plates, HeartRateZone, None), `Weekday` (Monday…Sunday), `ClientKind` (Web, Native) |

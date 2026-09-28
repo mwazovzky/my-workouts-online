@@ -1,0 +1,16 @@
+<?php
+
+use App\Enums\EffortType;
+
+return [
+    [
+        'slug' => 'easy-ride',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'categories' => ['cardio'],
+        'translations' => [
+            'en' => ['name' => 'Easy Ride', 'description' => 'Ride at an easy, steady pace.'],
+            'ru' => ['name' => 'Лёгкий заезд', 'description' => 'Заезд в лёгком ровном темпе.'],
+        ],
+    ],
+];

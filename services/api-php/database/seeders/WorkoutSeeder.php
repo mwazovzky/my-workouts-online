@@ -6,32 +6,52 @@ use App\Models\User;
 use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 class WorkoutSeeder extends Seeder
 {
+    private const WORKOUT_COUNT = 30;
+
+    private const COMPLETED_COUNT = 25;
+
+    /**
+     * Seed demo workouts for the demo user, rotating through the catalog
+     * templates in a fixed order. Skipped when the user already has workouts.
+     *
+     * @throws RuntimeException
+     */
     public function run(): void
     {
-        // Get the existing test user
+        if (app()->isProduction()) {
+            throw new RuntimeException('WorkoutSeeder creates demo workouts and must not run in production.');
+        }
+
         $user = User::where('email', 'test@example.com')->first();
 
         if (! $user) {
-            $this->command->warn('User test@example.com not found. Please run UserSeeder first.');
+            $this->command?->warn('User test@example.com not found. Please run UserSeeder first.');
 
             return;
         }
 
-        // Get existing workout templates with translations
-        $templates = WorkoutTemplate::all();
+        if (Workout::where('user_id', $user->id)->exists()) {
+            return;
+        }
+
+        $templates = WorkoutTemplate::query()
+            ->whereNotNull('slug')
+            ->orderBy('slug')
+            ->get();
 
         if ($templates->isEmpty()) {
-            $this->command->warn('No workout templates found. Please run WorkoutTemplateSeeder first.');
+            $this->command?->warn('No workout templates found. Please run CatalogSeeder first.');
 
             return;
         }
 
-        for ($i = 0; $i < 30; $i++) {
-            $template = $templates->random();
-            $status = $i < 25 ? 'completed' : 'in_progress';
+        for ($i = 0; $i < self::WORKOUT_COUNT; $i++) {
+            $template = $templates[$i % $templates->count()];
+            $status = $i < self::COMPLETED_COUNT ? 'completed' : 'in_progress';
             $timestamp = now()->subDays($i);
 
             $workout = Workout::create([
@@ -43,7 +63,6 @@ class WorkoutSeeder extends Seeder
                 'updated_at' => $timestamp,
             ]);
 
-            // Copy activities and sets from the template
             foreach ($template->activities()->orderBy('order')->get() as $templateActivity) {
                 $activity = $workout->activities()->create([
                     'exercise_id' => $templateActivity->exercise_id,

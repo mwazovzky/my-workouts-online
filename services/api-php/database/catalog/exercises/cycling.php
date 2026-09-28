@@ -1,0 +1,68 @@
+<?php
+
+use App\Enums\EffortType;
+
+return [
+    [
+        'slug' => 'endurance-ride',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'categories' => ['cycling', 'endurance'],
+        'translations' => [
+            'en' => ['name' => 'Endurance Ride', 'description' => 'Steady aerobic ride at a controlled heart-rate zone.'],
+            'ru' => ['name' => 'Заезд на выносливость', 'description' => 'Ровный аэробный заезд в контролируемой зоне пульса.'],
+        ],
+    ],
+    [
+        'slug' => 'recovery-ride',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'categories' => ['cycling', 'recovery'],
+        'translations' => [
+            'en' => ['name' => 'Recovery Ride', 'description' => 'Easy Zone 1 spin to promote recovery.'],
+            'ru' => ['name' => 'Восстановительный заезд', 'description' => 'Лёгкое вращение в Зоне 1 для восстановления.'],
+        ],
+    ],
+    [
+        'slug' => 'fast-pedal',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'categories' => ['cycling'],
+        'translations' => [
+            'en' => ['name' => 'FastPedal', 'description' => 'High-cadence drill (100+ rpm) to build pedaling efficiency.'],
+            'ru' => ['name' => 'FastPedal', 'description' => 'Высококадансная отработка (100+ об/мин) для эффективности педалирования.'],
+        ],
+    ],
+    [
+        'slug' => 'tempo-ride',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'categories' => ['cycling', 'endurance'],
+        'translations' => [
+            'en' => ['name' => 'Tempo', 'description' => 'Sustained tempo effort at the top of Zone 2.'],
+            'ru' => ['name' => 'Темпо', 'description' => 'Продолжительное темповое усилие в верхней части Зоны 2.'],
+        ],
+    ],
+    [
+        'slug' => 'flat-sprint',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'rest_time_seconds' => 300,
+        'categories' => ['cycling', 'intervals'],
+        'translations' => [
+            'en' => ['name' => 'FlatSprint', 'description' => 'All-out 10-second sprints on flat terrain.'],
+            'ru' => ['name' => 'FlatSprint', 'description' => 'Максимальные 10-секундные ускорения на равнинной местности.'],
+        ],
+    ],
+    [
+        'slug' => 'power-interval',
+        'equipment' => 'indoor-bike',
+        'effort_type' => EffortType::Duration,
+        'rest_time_seconds' => 180,
+        'categories' => ['cycling', 'intervals'],
+        'translations' => [
+            'en' => ['name' => 'PowerInterval', 'description' => 'Hard 3-minute intervals with recovery between efforts.'],
+            'ru' => ['name' => 'PowerInterval', 'description' => 'Жёсткие 3-минутные интервалы с восстановлением между усилиями.'],
+        ],
+    ],
+];
