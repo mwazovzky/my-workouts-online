@@ -43,8 +43,7 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 - No "remember me" persistence option visible in UI
 - No user avatar or profile picture
 - No guest locale switcher — guests always use English
-- Roles exist (`Role` model, `role_user` pivot, seeder) but are not consumed by any gate, policy, or middleware — scaffolding for future RBAC
-- No admin panel or admin role enforcement
+- Roles (`Admin`, `User`) are assigned in the database only; there is no UI or command to grant a role
 
 ## Surface Area
 

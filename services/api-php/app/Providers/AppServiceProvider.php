@@ -57,6 +57,23 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Admin\ProgramServiceInterface::class,
             \App\Services\Admin\ProgramService::class
         );
+
+        $this->app->bind(
+            \App\Services\Catalog\CatalogLoader::class,
+            fn ($app) => new \App\Services\Catalog\CatalogLoader($app['config']->get('catalog.path'))
+        );
+
+        $this->app->bind(
+            \App\Services\Catalog\CatalogValidator::class,
+            fn ($app) => new \App\Services\Catalog\CatalogValidator(
+                array_keys($app['config']->get('app.available_locales'))
+            )
+        );
+
+        $this->app->bind(
+            \App\Services\Catalog\CatalogSyncServiceInterface::class,
+            \App\Services\Catalog\CatalogSyncService::class
+        );
     }
 
     /**

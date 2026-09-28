@@ -1,0 +1,16 @@
+<?php
+
+return [
+    [
+        'slug' => 'full-body',
+        'translations' => [
+            'en' => ['name' => 'Full Body', 'description' => 'Press, squat and push-ups.'],
+            'ru' => ['name' => 'Всё тело', 'description' => 'Жим, приседания и отжимания.'],
+        ],
+        'activities' => [
+            ['exercise' => 'bench-press', 'sets' => 3, 'effort' => 8, 'difficulty' => 40],
+            ['exercise' => 'squat', 'sets' => [['effort' => 10], ['effort' => 8, 'difficulty' => 62.5]]],
+            ['exercise' => 'push-up', 'sets' => 2, 'effort' => 15],
+        ],
+    ],
+];

@@ -29,7 +29,7 @@ docker/              api + web images, nginx configs, compose support files
    - `docker compose exec -T app php artisan key:generate --show` and put the value in `.env` as `APP_KEY`
    - `docker compose exec -T app php artisan jwt:keys` and copy the two printed lines into `.env` (add `JWT_COOKIE_SECURE=false` for plain-http local use)
    - `docker compose up -d --force-recreate app` to pick up the new env values
-   - `docker compose exec -T app php artisan migrate --seed` (empty database only; the seeders are not re-runnable. To reseed later use `migrate:fresh --seed`, which drops every table first)
+   - `docker compose exec -T app php artisan migrate --seed` (roles, the catalog, and a demo admin `test@example.com` / `password` with demo workouts). Seeding is re-runnable; `php artisan catalog:sync` re-applies only the catalog. To start over use `migrate:fresh --seed`, which drops every table first
 4. Open `http://localhost:8080` (from `APP_PORT`): nginx serves the SPA from the Vite dev server (with HMR) and proxies `/api` to php-fpm.
 
 Logs (including the verification and password-reset emails, which use the `log` mailer locally) appear in `docker compose logs -f app`.

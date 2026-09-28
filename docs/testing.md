@@ -31,6 +31,7 @@ SPA tests run in `apps/web` (`docker compose exec -T node npm test`).
 - `tests/Feature/` covers the full HTTP stack, page rendering, authorization, validation, and database-side outcomes.
 - `tests/Unit/` covers isolated logic such as services, resources, enums, models, and query builders.
 - `apps/web/src/**/*.test.js` covers SPA utilities, composables, stores, guards, and component behavior with Vitest.
+- `tests/Unit/Catalog/CatalogDataIntegrityTest.php` validates the shipped `database/catalog/` data files; it fails on any broken slug, reference, or missing translation. Sync behavior is tested against the small catalog in `tests/Fixtures/catalog/`.
 - `tests/TestCase.php` provides shared setup. The suite disables Vite and CSRF in tests, so feature tests can focus on application behavior.
 
 ## Frontend Tests

@@ -8,20 +8,29 @@ use App\Models\Equipment;
 use App\Models\Exercise;
 use App\Models\Program;
 use App\Models\WorkoutTemplate;
-use Database\Seeders\CyclingProgramSeeder;
+use Database\Seeders\CatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
+/**
+ * The cycling program is seeded as part of the catalog.
+ */
 class CyclingProgramSeederTest extends TestCase
 {
     use RefreshDatabase;
 
     private function runSeeder(): Program
     {
-        $this->seed(CyclingProgramSeeder::class);
+        $this->seed(CatalogSeeder::class);
 
         return Program::whereTranslated('name', 'Cycling — Beginner (Week 1)', 'en')->firstOrFail();
+    }
+
+    private function assignmentCount(Program $program): int
+    {
+        return DB::table('program_workout_template')->where('program_id', $program->id)->count();
     }
 
     #[Test]
@@ -30,7 +39,7 @@ class CyclingProgramSeederTest extends TestCase
         $program = $this->runSeeder();
 
         $this->assertSame(6, $program->workoutTemplates()->count());
-        $this->assertDatabaseCount('program_workout_template', 6);
+        $this->assertSame(6, $this->assignmentCount($program));
     }
 
     #[Test]
@@ -49,9 +58,11 @@ class CyclingProgramSeederTest extends TestCase
         $this->runSeeder();
 
         $endurance = Exercise::whereTranslated('name', 'Endurance Ride', 'en')->firstOrFail();
+        $bike = Equipment::whereTranslated('name', 'Indoor Bike', 'en')->firstOrFail();
 
         $this->assertSame(EffortType::Duration, $endurance->effort_type);
-        $this->assertDatabaseCount('exercises', 6);
+        $this->assertSame(6, $bike->exercises()->count());
+        $this->assertSame(6, $bike->exercises()->where('effort_type', EffortType::Duration)->count());
     }
 
     #[Test]
@@ -98,10 +109,12 @@ class CyclingProgramSeederTest extends TestCase
     #[Test]
     public function it_is_idempotent(): void
     {
-        $this->seed(CyclingProgramSeeder::class);
-        $this->seed(CyclingProgramSeeder::class);
+        $this->seed(CatalogSeeder::class);
+        $this->seed(CatalogSeeder::class);
+
+        $program = Program::whereTranslated('name', 'Cycling — Beginner (Week 1)', 'en')->firstOrFail();
 
         $this->assertSame(1, Program::whereTranslated('name', 'Cycling — Beginner (Week 1)', 'en')->count());
-        $this->assertDatabaseCount('program_workout_template', 6);
+        $this->assertSame(6, $this->assignmentCount($program));
     }
 }

@@ -23,6 +23,8 @@ docker compose exec -T app php artisan test --compact                        # A
 docker compose exec -T app php artisan test --compact tests/Feature/Workout/  # A directory
 docker compose exec -T app php artisan test --compact --filter=testMethodName # One test
 docker compose exec -T app vendor/bin/pint --dirty                           # PHP formatting
+docker compose exec -T app php artisan catalog:sync --dry-run                # Preview catalog data file changes
+docker compose exec -T app php artisan catalog:sync                          # Apply database/catalog to the database
 ```
 Backend tests use SQLite in-memory (`phpunit.xml`, values forced so container env cannot leak in). PHPUnit only — no Pest.
 
@@ -52,6 +54,7 @@ After modifying `contracts/openapi.yaml` or any API response shape, lint the spe
 - **Eloquent Resources** — All API responses go through API Resources (`app/Http/Resources/`).
 - **Form Requests** — Validation in `app/Http/Requests/`. Authorization via policies in `app/Policies/`.
 - **Role-Based Authorization** — `User::hasRole()`/`isAdmin()` back the `admin` middleware alias (`EnsureUserIsAdmin`, registered in `bootstrap/app.php`) plus per-model policies. `UserResource.is_admin` drives admin-only UI. Admin catalog CRUD (equipment, categories, exercises, workout templates, programs) lives in `app/Http/Controllers/Api/Admin/` with logic in `app/Services/Admin/`; `WorkoutTemplateService` syncs nested activities/sets and `ProgramService` syncs weekday template assignments, both transactionally. `Exercise` uses `SoftDeletes` (delete = retire); `Activity::exercise()` is `->withTrashed()` so history resolves retired exercises; templates/programs are hard-deleted with reference guards.
+- **Catalog Sync** — The shipped catalog lives in PHP data files under `database/catalog/` (records keyed by `slug`; `exercises/` and `workout-templates/` are directories). `catalog:sync` (`app/Services/Catalog/`, also run by `CatalogSeeder`) validates, then applies them transactionally: rows match by `slug` or are adopted by English name / `previous_names`; the data files win for managed records; admin-created records (null `slug`) are untouched; removals go in `retired.php`. Change shipped content by editing the data files, not seeders. `UserSeeder`/`WorkoutSeeder` are demo-only and throw in production.
 - **Internationalization** — `SetLocale` middleware reads `User.locale`. `HasTranslations` trait on system models provides polymorphic translations via `createWithTranslations()` (seed/create) and `updateTranslations()` (edit; blank values removed for English fallback). UI strings in `lang/*.json`, accessed via `useTranslation` composable.
 
 ### Frontend Patterns
