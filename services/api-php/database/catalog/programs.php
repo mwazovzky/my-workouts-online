@@ -41,5 +41,7 @@ return [
             ['weekday' => Weekday::Saturday, 'template' => 'cycling-endurance-fast-pedal-long'],
             ['weekday' => Weekday::Sunday, 'template' => 'cycling-hill-endurance'],
         ],
+        // Production carries the name with a plain hyphen (or en dash) instead of the em dash.
+        'previous_names' => ['Cycling - Beginner (Week 1)', 'Cycling – Beginner (Week 1)'],
     ],
 ];
