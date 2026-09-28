@@ -57,6 +57,23 @@ class CatalogSyncCommandTest extends TestCase
     }
 
     #[Test]
+    public function it_adopts_the_cycling_program_renamed_with_a_hyphen_in_production(): void
+    {
+        $existing = Program::createWithTranslations([
+            'en' => ['name' => 'Cycling - Beginner (Week 1)', 'description' => 'Edited in the admin UI.'],
+        ]);
+
+        $this->artisan('catalog:sync')
+            ->expectsOutputToContain('programs [cycling-beginner-week-1]: adopted')
+            ->assertSuccessful();
+
+        $this->assertDatabaseCount('programs', count($this->shippedCatalog()['programs']));
+        $this->assertSame('cycling-beginner-week-1', $existing->fresh()->slug);
+        $this->assertSame('Cycling — Beginner (Week 1)', $existing->fresh()->rawTranslation('name', 'en'));
+        $this->assertSame(6, $existing->workoutTemplates()->count());
+    }
+
+    #[Test]
     public function a_dry_run_writes_nothing(): void
     {
         $this->artisan('catalog:sync', ['--dry-run' => true])
