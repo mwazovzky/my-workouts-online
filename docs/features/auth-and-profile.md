@@ -43,7 +43,7 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 - No "remember me" persistence option visible in UI
 - No user avatar or profile picture
 - No guest locale switcher — guests always use English
-- Roles (`Admin`, `User`) are assigned in the database only; there is no UI or command to grant a role
+- Roles are granted from the command line only (`php artisan user:grant-admin {email}`, for a verified user); there is no UI to grant or revoke a role
 
 ## Surface Area
 

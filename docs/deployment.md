@@ -214,6 +214,7 @@ After the droplet, repo checkout, `.env`, and GitHub secrets are configured, pus
 4. Check out the matching release revision on the droplet
 5. Update `IMAGE_TAG` in `.env`
 6. Ensure MySQL is running, pull the new images, recreate `api`, run migrations and `php artisan optimize` in it, then recreate `web` and `worker`
+7. Apply the catalog data files with `php artisan catalog:sync` (see step 9)
 
 If you need to start the stack manually before CI/CD is ready, the commands are still:
 
@@ -237,9 +238,33 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate api
 docker compose -f docker-compose.prod.yml exec -T api php artisan migrate --force
 docker compose -f docker-compose.prod.yml exec -T api php artisan optimize
 docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate web
+docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate worker
+docker compose -f docker-compose.prod.yml exec -T api php artisan catalog:sync
 ```
 
 Run them manually only for troubleshooting or if you intentionally bypass the workflow.
+
+### Catalog
+
+Production is never seeded with `db:seed`. The catalog (equipment, categories, exercises, workout templates, programs) comes from the data files in `services/api-php/database/catalog/`, applied by `catalog:sync` at the end of every deploy. The `Admin` and `User` roles come from a migration.
+
+- The sync resets shipped records to the data files, so an edit made to one of them in the admin UI lasts only until the next deploy. Records created in the admin UI are not touched.
+- The sync runs after all services are recreated. If it fails, the deploy fails, nothing is written, and the stack keeps running on the new release.
+- To preview a release's catalog changes without writing, run it with `--dry-run`. `adopted` means an existing row was matched by name and keeps its id; `created` for a record that already exists in production means its name differs and needs a `previous_names` entry in the data file.
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T api php artisan catalog:sync --dry-run
+```
+
+### First admin
+
+There is no seeded admin account in production. Register through the app, verify the email, then grant the role on the droplet:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T api php artisan user:grant-admin you@example.com
+```
+
+The command refuses an unknown or unverified email and is safe to repeat.
 
 ## 10. Obtain SSL certificate (Let's Encrypt)
 
@@ -405,6 +430,7 @@ docker system prune -a --volumes -f
 - **SSH connection fails**: verify the deploy user, host, SSH key, and `PRODUCTION_SSH_KNOWN_HOSTS` value. If you omit known hosts, the workflow uses `accept-new`.
 - **`git checkout --detach` fails on the droplet**: the requested release ref does not exist on the server after fetch, or the working copy has conflicting local changes. Verify the tag or ref name and make sure the droplet checkout is clean.
 - **`IMAGE_TAG entry was not found in .env`**: add `IMAGE_TAG=...` to the droplet `.env`; the deploy script updates that line in place.
+- **Deploy fails at "Syncing the catalog..."**: the job log lists the reason. `The catalog data is invalid` means a data file in the release is broken (the `CatalogDataIntegrityTest` should have caught it); fix it in a new release. The app itself is already running the new release, with the catalog unchanged.
 - **Automatic deploy succeeds but app is unhealthy**: inspect the `Deploy Production` job logs first, then run the manual log and curl commands from steps 13 and 14 on the droplet.
 
 ### Health check returns 500 or readiness reports `jwt: down`
@@ -432,6 +458,8 @@ Use rollback like this:
 3. Provide a previously pushed release tag such as `v1.3.2` (both `api-v1.3.2` and `web-v1.3.2` must exist on Docker Hub; every release since the SPA cutover pushes both).
 4. Leave `release_ref` blank unless you need to deploy an image tag that does not directly match the Git ref.
 5. The workflow skips the build job and deploys that exact tag.
+
+A rollback also re-applies that release's catalog data files: shipped records return to their older content. Records added by the newer release stay in the database, because the sync never deletes by omission. Database migrations are not rolled back.
 
 ### SSL/HTTPS troubleshooting
 
