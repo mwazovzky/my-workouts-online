@@ -76,6 +76,11 @@ docker compose -f "${compose_file}" exec -T api php artisan optimize
 docker compose -f "${compose_file}" up -d --no-deps --force-recreate web
 docker compose -f "${compose_file}" up -d --no-deps --force-recreate worker
 
+# Runs after every service is back up: a failed sync fails the deploy, but
+# writes nothing and leaves the stack running on the new release.
+echo "Syncing the catalog..."
+docker compose -f "${compose_file}" exec -T api php artisan catalog:sync
+
 if [[ -n "${DEPLOY_HEALTHCHECK_URL:-}" ]]; then
   echo "Checking ${DEPLOY_HEALTHCHECK_URL}..."
   curl --fail --show-error --silent --retry 10 --retry-delay 3 --retry-connrefused "${DEPLOY_HEALTHCHECK_URL}" >/dev/null
