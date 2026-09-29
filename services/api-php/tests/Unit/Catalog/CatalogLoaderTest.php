@@ -53,16 +53,20 @@ class CatalogLoaderTest extends TestCase
     public function it_expands_the_set_count_shorthand(): void
     {
         $templates = array_column($this->load()['workout_templates'], null, 'slug');
-        $activities = $templates['full-body']['activities'];
 
         $this->assertSame([
             'exercise' => 'bench-press',
             'sets' => [
-                ['effort' => 8, 'difficulty' => 40],
-                ['effort' => 8, 'difficulty' => 40],
-                ['effort' => 8, 'difficulty' => 40],
+                ['effort' => 8, 'difficulty' => null],
+                ['effort' => 8, 'difficulty' => null],
+                ['effort' => 8, 'difficulty' => null],
             ],
-        ], $activities[0]);
+        ], $templates['full-body']['activities'][0]);
+
+        $this->assertSame([
+            ['effort' => 600, 'difficulty' => 2],
+            ['effort' => 600, 'difficulty' => 2],
+        ], $templates['easy-spin']['activities'][1]['sets']);
     }
 
     #[Test]
@@ -72,8 +76,13 @@ class CatalogLoaderTest extends TestCase
 
         $this->assertSame([
             ['effort' => 10, 'difficulty' => null],
-            ['effort' => 8, 'difficulty' => 62.5],
+            ['effort' => 8, 'difficulty' => null],
         ], $templates['full-body']['activities'][1]['sets']);
+
+        $this->assertSame(
+            [['effort' => 1800, 'difficulty' => 1]],
+            $templates['easy-spin']['activities'][0]['sets'],
+        );
     }
 
     #[Test]

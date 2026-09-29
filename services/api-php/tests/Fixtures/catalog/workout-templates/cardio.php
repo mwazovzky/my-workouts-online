@@ -4,11 +4,12 @@ return [
     [
         'slug' => 'easy-spin',
         'translations' => [
-            'en' => ['name' => 'Easy Spin', 'description' => 'Thirty easy minutes on the bike.'],
-            'ru' => ['name' => 'Лёгкая езда', 'description' => 'Тридцать лёгких минут на велотренажёре.'],
+            'en' => ['name' => 'Easy Spin', 'description' => 'Thirty easy minutes on the bike, then two short efforts.'],
+            'ru' => ['name' => 'Лёгкая езда', 'description' => 'Тридцать лёгких минут на велотренажёре и два коротких ускорения.'],
         ],
         'activities' => [
             ['exercise' => 'easy-ride', 'sets' => [['effort' => 1800, 'difficulty' => 1]]],
+            ['exercise' => 'easy-ride', 'sets' => 2, 'effort' => 600, 'difficulty' => 2],
         ],
     ],
 ];

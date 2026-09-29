@@ -16,6 +16,8 @@ class CatalogValidator
 
     private const MAX_REST_TIME_SECONDS = 3600;
 
+    private const WEIGHT_UNITS = [DifficultyUnit::Kilograms, DifficultyUnit::Pounds, DifficultyUnit::Plates];
+
     private const TRANSLATABLE_FIELDS = [
         'equipment' => ['name'],
         'categories' => ['name'],
@@ -55,6 +57,7 @@ class CatalogValidator
             $this->slugs($catalog['categories'] ?? []),
         );
 
+        $this->validateUsage($catalog);
         $this->validateWorkoutTemplates($catalog['workout_templates'] ?? [], $exerciseUnits);
         $this->validatePrograms($catalog['programs'] ?? [], $this->slugs($catalog['workout_templates'] ?? []));
         $this->validateRetired($catalog);
@@ -234,6 +237,10 @@ class CatalogValidator
                 $this->violations[] = "{$label}: rest_time_seconds must be null or an integer from 0 to ".self::MAX_REST_TIME_SECONDS.'.';
             }
 
+            if ($restTime === null && ($record['effort_type'] ?? null) === EffortType::Repetitions) {
+                $this->violations[] = "{$label}: rest_time_seconds is required for a repetition-based exercise.";
+            }
+
             $this->validateCategories($label, $record['categories'] ?? null, $categorySlugs);
 
             if (is_string($record['slug'] ?? null)) {
@@ -242,6 +249,45 @@ class CatalogValidator
         }
 
         return $units;
+    }
+
+    /**
+     * Every equipment item and every category must be used by an exercise.
+     *
+     * @param  array<string, mixed>  $catalog
+     */
+    private function validateUsage(array $catalog): void
+    {
+        $usedEquipment = [];
+        $usedCategories = [];
+
+        foreach ($catalog['exercises'] ?? [] as $exercise) {
+            if (! is_array($exercise)) {
+                continue;
+            }
+
+            if (is_string($exercise['equipment'] ?? null)) {
+                $usedEquipment[$exercise['equipment']] = true;
+            }
+
+            foreach (is_array($exercise['categories'] ?? null) ? $exercise['categories'] : [] as $category) {
+                if (is_string($category)) {
+                    $usedCategories[$category] = true;
+                }
+            }
+        }
+
+        foreach ($this->slugs($catalog['equipment'] ?? []) as $slug) {
+            if (! isset($usedEquipment[$slug])) {
+                $this->violations[] = "equipment [{$slug}]: no exercise uses it.";
+            }
+        }
+
+        foreach ($this->slugs($catalog['categories'] ?? []) as $slug) {
+            if (! isset($usedCategories[$slug])) {
+                $this->violations[] = "categories [{$slug}]: no exercise belongs to it.";
+            }
+        }
     }
 
     /**
@@ -330,6 +376,10 @@ class CatalogValidator
 
             if ($unit === DifficultyUnit::None) {
                 $this->violations[] = "{$setLabel}: difficulty must be null because the equipment has no difficulty unit.";
+            }
+
+            if (in_array($unit, self::WEIGHT_UNITS, true)) {
+                $this->violations[] = "{$setLabel}: difficulty must be null because templates do not prescribe a weight.";
             }
 
             if ($unit === DifficultyUnit::HeartRateZone && (! is_int($difficulty) || $difficulty < 1 || $difficulty > 5)) {

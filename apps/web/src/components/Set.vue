@@ -22,9 +22,14 @@ const isZone = computed(() => props.difficultyUnit === 'heart_rate_zone');
 const zoneOptions = [1, 2, 3, 4, 5];
 
 // Resolve the difficulty value to emit. For heart-rate zones, only 1-5 are
-// valid; 0/blank (e.g. a drill with no target zone) becomes null.
+// valid; 0/blank (e.g. a drill with no target zone) becomes null. A weight
+// left blank is null too: "not entered" must not be saved as zero.
 function resolvedDifficulty() {
   if (!hasDifficulty.value) {
+    return null;
+  }
+
+  if (local.difficulty_value === '' || local.difficulty_value == null) {
     return null;
   }
 
@@ -34,14 +39,23 @@ function resolvedDifficulty() {
     return value >= 1 && value <= 5 ? value : null;
   }
 
-  return value;
+  return Number.isNaN(value) ? null : value;
+}
+
+// The zone select uses 0 for its "—" option; a weight input stays empty.
+function initialDifficulty() {
+  if (props.set.difficulty_value != null) {
+    return props.set.difficulty_value;
+  }
+
+  return isZone.value ? 0 : '';
 }
 
 const local = reactive({
   id: props.set.id ?? null,
   order: props.set.order,
   effort_value: props.set.effort_value ?? 0,
-  difficulty_value: props.set.difficulty_value ?? 0,
+  difficulty_value: initialDifficulty(),
   is_completed: props.set.is_completed ?? false,
 });
 
@@ -129,7 +143,7 @@ function remove() {
       type="number"
       min="0"
       step="0.5"
-      placeholder="0"
+      placeholder="—"
       :disabled="inputsDisabled"
       class="h-9 text-right tabular-nums"
     />

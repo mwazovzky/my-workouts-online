@@ -29,6 +29,11 @@ return [
         'translations' => ['en' => ['name' => 'Cable Machine'], 'ru' => ['name' => 'Тросовый тренажёр']],
     ],
     [
+        'slug' => 'pec-deck-machine',
+        'difficulty_unit' => DifficultyUnit::Plates,
+        'translations' => ['en' => ['name' => 'Pec Deck Machine'], 'ru' => ['name' => 'Тренажёр «Бабочка»']],
+    ],
+    [
         'slug' => 'leg-press-machine',
         'difficulty_unit' => DifficultyUnit::Plates,
         'translations' => ['en' => ['name' => 'Leg Press Machine'], 'ru' => ['name' => 'Тренажёр для жима ногами']],
@@ -47,11 +52,6 @@ return [
         'slug' => 'seated-row-machine',
         'difficulty_unit' => DifficultyUnit::Plates,
         'translations' => ['en' => ['name' => 'Seated Row Machine'], 'ru' => ['name' => 'Тренажёр для тяги сидя']],
-    ],
-    [
-        'slug' => 'high-pulley-machine',
-        'difficulty_unit' => DifficultyUnit::Plates,
-        'translations' => ['en' => ['name' => 'High Pulley Machine'], 'ru' => ['name' => 'Тренажёр верхнего блока']],
     ],
     [
         'slug' => 'lat-pulldown-machine',
@@ -74,19 +74,9 @@ return [
         'translations' => ['en' => ['name' => 'Calf Raise Machine'], 'ru' => ['name' => 'Тренажёр для подъёма на носки']],
     ],
     [
-        'slug' => 'bench',
-        'difficulty_unit' => DifficultyUnit::None,
-        'translations' => ['en' => ['name' => 'Bench'], 'ru' => ['name' => 'Скамья']],
-    ],
-    [
         'slug' => 'pull-up-bar',
         'difficulty_unit' => DifficultyUnit::None,
         'translations' => ['en' => ['name' => 'Pull-up Bar'], 'ru' => ['name' => 'Турник']],
-    ],
-    [
-        'slug' => 'treadmill',
-        'difficulty_unit' => DifficultyUnit::None,
-        'translations' => ['en' => ['name' => 'Treadmill'], 'ru' => ['name' => 'Беговая дорожка']],
     ],
     [
         'slug' => 'bodyweight',

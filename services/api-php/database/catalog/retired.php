@@ -6,11 +6,16 @@
  * Other types are deleted only when nothing references them.
  *
  * 'names' are the English names a row without a slug is recognised by.
- *
- * Example: ['slug' => 'bench', 'names' => ['Bench']]
  */
 return [
-    'equipment' => [],
+    'equipment' => [
+        // Its only exercise, the triceps pushdown, moved to the Cable Machine.
+        ['slug' => 'high-pulley-machine', 'names' => ['High Pulley Machine']],
+        // An accessory, not what an exercise is loaded with.
+        ['slug' => 'bench', 'names' => ['Bench']],
+        // Never had an exercise.
+        ['slug' => 'treadmill', 'names' => ['Treadmill']],
+    ],
     'categories' => [],
     'exercises' => [],
     'workout_templates' => [],

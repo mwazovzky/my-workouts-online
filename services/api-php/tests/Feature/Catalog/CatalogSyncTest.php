@@ -63,12 +63,23 @@ class CatalogSyncTest extends TestCase
         return $catalog;
     }
 
+    /**
+     * Equipment that no catalog record can match by name.
+     */
+    private function unmanagedEquipment(): Equipment
+    {
+        return Equipment::createWithTranslations(
+            ['en' => ['name' => 'Garage Rack '.(Equipment::count() + 1)]],
+            ['difficulty_unit' => DifficultyUnit::Kilograms],
+        );
+    }
+
     private function unmanagedExercise(string $name, ?Equipment $equipment = null): Exercise
     {
         return Exercise::createWithTranslations(
             ['en' => ['name' => $name, 'description' => 'Entered by hand.']],
             [
-                'equipment_id' => ($equipment ?? Equipment::factory()->create())->id,
+                'equipment_id' => ($equipment ?? $this->unmanagedEquipment())->id,
                 'effort_type' => EffortType::Repetitions,
                 'rest_time_seconds' => 120,
             ],
@@ -132,8 +143,21 @@ class CatalogSyncTest extends TestCase
         $squatSets = $activities[1]->sets->sortBy('order')->values();
 
         $this->assertSame([10, 8], $squatSets->pluck('effort_value')->all());
-        $this->assertSame([null, 62.5], $squatSets->pluck('difficulty_value')->all());
+        $this->assertSame([null, null], $squatSets->pluck('difficulty_value')->all());
         $this->assertCount(3, $activities[0]->sets);
+    }
+
+    #[Test]
+    public function it_stores_heart_rate_zones_as_the_set_difficulty(): void
+    {
+        $this->sync();
+
+        $template = WorkoutTemplate::where('slug', 'easy-spin')->firstOrFail();
+        $activities = $template->activities()->orderBy('order')->with('sets')->get();
+
+        $this->assertSame([1.0], $activities[0]->sets->pluck('difficulty_value')->all());
+        $this->assertSame([2.0, 2.0], $activities[1]->sets->sortBy('order')->pluck('difficulty_value')->all());
+        $this->assertSame([600, 600], $activities[1]->sets->sortBy('order')->pluck('effort_value')->all());
     }
 
     #[Test]
@@ -270,13 +294,16 @@ class CatalogSyncTest extends TestCase
         $this->sync();
 
         $template = WorkoutTemplate::where('slug', 'easy-spin')->firstOrFail();
-        $template->activities()->firstOrFail()->sets()->firstOrFail()->update(['effort_value' => 900]);
+        $template->activities()->orderBy('order')->firstOrFail()->sets()->firstOrFail()->update(['effort_value' => 900]);
 
         $report = $this->sync();
 
         $this->assertSame(1, $report->count('workout_templates', CatalogSyncReport::UPDATED));
         $this->assertSame(1, $report->count('workout_templates', CatalogSyncReport::UNCHANGED));
-        $this->assertSame(1800, $template->activities()->firstOrFail()->sets()->firstOrFail()->effort_value);
+        $this->assertSame(
+            1800,
+            $template->activities()->orderBy('order')->firstOrFail()->sets()->firstOrFail()->effort_value,
+        );
     }
 
     #[Test]
@@ -330,19 +357,19 @@ class CatalogSyncTest extends TestCase
     {
         $this->sync();
 
-        $exercise = Exercise::where('slug', 'push-up')->firstOrFail();
+        $exercise = Exercise::where('slug', 'bench-press')->firstOrFail();
         $activity = $this->logWorkoutWith($exercise);
 
-        $catalog = $this->removeRecord($this->catalog(), 'exercises', 'push-up');
-        $catalog['workout_templates'][1]['activities'] = array_slice($catalog['workout_templates'][1]['activities'], 0, 2);
-        $catalog['retired']['exercises'][] = ['slug' => 'push-up', 'names' => ['Push-up']];
+        $catalog = $this->removeRecord($this->catalog(), 'exercises', 'bench-press');
+        $catalog['workout_templates'][1]['activities'] = array_slice($catalog['workout_templates'][1]['activities'], 1);
+        $catalog['retired']['exercises'][] = ['slug' => 'bench-press', 'names' => ['Bench Press']];
 
         $report = $this->sync($catalog);
 
         $this->assertSame(1, $report->count('exercises', CatalogSyncReport::RETIRED));
         $this->assertSoftDeleted('exercises', ['id' => $exercise->id]);
         $this->assertDatabaseHas('activities', ['id' => $activity->id, 'exercise_id' => $exercise->id]);
-        $this->assertSame('Push-up', $activity->fresh()->exercise->rawTranslation('name', 'en'));
+        $this->assertSame('Bench Press', $activity->fresh()->exercise->rawTranslation('name', 'en'));
 
         $this->assertFalse($this->sync($catalog)->hasChanges());
     }
@@ -365,12 +392,12 @@ class CatalogSyncTest extends TestCase
     {
         $this->sync();
 
-        $catalog = $this->removeRecord($this->catalog(), 'exercises', 'push-up');
-        $catalog['workout_templates'][1]['activities'] = array_slice($catalog['workout_templates'][1]['activities'], 0, 2);
+        $catalog = $this->removeRecord($this->catalog(), 'exercises', 'bench-press');
+        $catalog['workout_templates'][1]['activities'] = array_slice($catalog['workout_templates'][1]['activities'], 1);
 
         $this->sync($catalog);
 
-        $this->assertNotNull(Exercise::where('slug', 'push-up')->first());
+        $this->assertNotNull(Exercise::where('slug', 'bench-press')->first());
     }
 
     #[Test]
