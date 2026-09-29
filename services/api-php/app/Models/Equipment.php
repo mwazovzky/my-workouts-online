@@ -13,6 +13,7 @@ class Equipment extends Model
     use HasFactory, HasTranslations;
 
     protected $fillable = [
+        'name',
         'difficulty_unit',
     ];
 

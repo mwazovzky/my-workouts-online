@@ -48,7 +48,7 @@ class HasTranslationRulesTest extends TestCase
     #[Test]
     public function only_the_source_locale_name_is_required(): void
     {
-        config(['app.fallback_locale' => 'ru']);
+        config(['app.source_locale' => 'ru']);
 
         $request = new ExerciseStoreRequest;
         $rules = $request->rules();

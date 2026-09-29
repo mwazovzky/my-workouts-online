@@ -16,7 +16,7 @@ App admins create, edit, and delete the shared content catalog: equipment, categ
 ## Business Rules
 
 - All admin actions require the authenticated user to have the `Admin` role. Enforced by the `admin` route middleware and by a per-model policy (`EquipmentPolicy`, `CategoryPolicy`, `ExercisePolicy`, `WorkoutTemplatePolicy`, `ProgramPolicy`); non-admins receive `403`.
-- Content is bilingual. Each translatable field accepts an English value (required) and a Russian value (optional). A blank Russian value is removed so reads fall back to English.
+- Content is bilingual. Each translatable field accepts an English value (required) and a Russian value (optional). A blank Russian value is removed so reads fall back to the English source text.
 - **Equipment** carries a `difficulty_unit` (kilograms, pounds, plates, none) and a translatable `name`. Equipment referenced by any exercise cannot be deleted; the API returns `409`.
 - **Category** carries a translatable `name`. Deleting a category detaches it from its exercises.
 - **Exercise** carries `equipment_id`, `effort_type` (repetitions, duration), optional `rest_time_seconds`, a set of categories, and translatable `name` + `description`. Category membership is synced on every save. Deleting an exercise **retires it (soft delete)**: it leaves the catalog and pickers, but templates and users' logged workouts keep it and still show its name. Equipment referenced by a retired exercise still can't be deleted (409).
@@ -43,7 +43,7 @@ App admins create, edit, and delete the shared content catalog: equipment, categ
 
 ## Data Notes
 
-Translatable text is not stored on the base tables; it lives in the polymorphic `translations` table. `HasTranslations::createWithTranslations()` creates new records and `HasTranslations::updateTranslations()` applies edits (removing blank values for fallback). See [Architecture](../architecture.md) for the translation strategy.
+Admin payloads send and return every locale under `translations.{locale}`; these per-locale values are not part of the public catalog responses. How the values are stored is described in [Architecture](../architecture.md#internationalization).
 
 ## Related
 

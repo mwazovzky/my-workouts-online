@@ -51,6 +51,6 @@ trait HasTranslationRules
 
     private function sourceLocale(): string
     {
-        return config('app.fallback_locale', 'en');
+        return config('app.source_locale', 'en');
     }
 }

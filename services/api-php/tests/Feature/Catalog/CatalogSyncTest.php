@@ -403,7 +403,10 @@ class CatalogSyncTest extends TestCase
     #[Test]
     public function it_deletes_retired_equipment_that_nothing_uses(): void
     {
-        $rack = Equipment::createWithTranslations(['en' => ['name' => 'Old Rack']], ['difficulty_unit' => DifficultyUnit::None]);
+        $rack = Equipment::createWithTranslations(
+            ['en' => ['name' => 'Old Rack'], 'ru' => ['name' => 'Старая стойка']],
+            ['difficulty_unit' => DifficultyUnit::None],
+        );
 
         $report = $this->sync();
 

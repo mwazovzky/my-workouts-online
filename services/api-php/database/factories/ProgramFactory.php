@@ -14,16 +14,9 @@ class ProgramFactory extends Factory
 
     public function definition(): array
     {
-        return [];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function (Program $program) {
-            $program->translations()->createMany([
-                ['locale' => 'en', 'field' => 'name', 'value' => fake()->words(2, true)],
-                ['locale' => 'en', 'field' => 'description', 'value' => fake()->sentence()],
-            ]);
-        });
+        return [
+            'name' => fake()->words(2, true),
+            'description' => fake()->sentence(),
+        ];
     }
 }

@@ -178,9 +178,7 @@ class WorkoutTemplateAdminTest extends TestCase
             ]],
         ])->assertOk();
 
-        $this->assertDatabaseHas('translations', [
-            'translatable_id' => $id, 'locale' => 'en', 'field' => 'name', 'value' => 'Upper Body',
-        ]);
+        $this->assertDatabaseHas('workout_templates', ['id' => $id, 'name' => 'Upper Body']);
         // Old activities replaced: only the new exercise remains, and exactly one set.
         $this->assertDatabaseCount('sets', 1);
         $this->assertDatabaseHas('activities', [

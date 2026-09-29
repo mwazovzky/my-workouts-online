@@ -249,6 +249,8 @@ Run them manually only for troubleshooting or if you intentionally bypass the wo
 Production is never seeded with `db:seed`. The catalog (equipment, categories, exercises, workout templates, programs) comes from the data files in `services/api-php/database/catalog/`, applied by `catalog:sync` at the end of every deploy. The `Admin` and `User` roles come from a migration.
 
 - The sync resets shipped records to the data files, so an edit made to one of them in the admin UI lasts only until the next deploy. Records created in the admin UI are not touched.
+- The new `api` container starts before `migrate` runs. A release whose migration moves data can therefore serve incomplete admin payloads for the few seconds in between; do not edit catalog content in the admin UI during a deploy.
+- A data migration that finds invalid rows stops before writing and names them (for example, a catalog record without an English name). Fix the rows, then re-run the deploy.
 - The sync runs after all services are recreated. If it fails, the deploy fails, nothing is written, and the stack keeps running on the new release.
 - To preview a release's catalog changes without writing, run it with `--dry-run`. `adopted` means an existing row was matched by name and keeps its id; `created` for a record that already exists in production means its name differs and needs a `previous_names` entry in the data file.
 
@@ -460,6 +462,13 @@ Use rollback like this:
 5. The workflow skips the build job and deploys that exact tag.
 
 A rollback also re-applies that release's catalog data files: shipped records return to their older content. Records added by the newer release stay in the database, because the sync never deletes by omission. Database migrations are not rolled back.
+
+**Rolling back past the source-text migrations.** Releases before the `2026_09_29_00000{1,2,3}` migrations read English catalog text from the `translations` table, where it no longer exists. Before deploying such a release, undo those migrations with the current release still running; this restores the English rows and drops the columns:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T api php artisan migrate:status
+docker compose -f docker-compose.prod.yml exec -T api php artisan migrate:rollback --step=3 --force   # only while these are the three latest migrations
+```
 
 ### SSL/HTTPS troubleshooting
 
