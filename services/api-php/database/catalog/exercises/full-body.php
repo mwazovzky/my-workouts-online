@@ -37,4 +37,140 @@ return [
             ],
         ],
     ],
+    [
+        'slug' => 'burpee',
+        'equipment' => 'bodyweight',
+        'effort_type' => EffortType::Repetitions,
+        'rest_time_seconds' => 60,
+        'categories' => ['full-body'],
+        'translations' => [
+            'en' => [
+                'name' => 'Burpee',
+                'description' => 'From standing, squat down and place your hands on the floor, then jump your feet back into a push-up position. Lower your chest to the floor, push up, jump your feet back to your hands and jump straight up.',
+            ],
+            'ru' => [
+                'name' => 'Бёрпи',
+                'description' => 'Из положения стоя присядьте и поставьте ладони на пол, затем прыжком примите упор лёжа. Опустите грудь к полу, отожмитесь, прыжком подтяните стопы к рукам и выпрыгните вверх.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'jumping-jack',
+        'equipment' => 'bodyweight',
+        'effort_type' => EffortType::Duration,
+        'rest_time_seconds' => 30,
+        'categories' => ['full-body'],
+        'translations' => [
+            'en' => [
+                'name' => 'Jumping Jack',
+                'description' => 'Stand with your feet together and your arms at your sides. Jump your feet apart while raising your arms overhead, then jump back to the start. Keep a steady rhythm for the set time.',
+            ],
+            'ru' => [
+                'name' => 'Прыжки «ноги врозь»',
+                'description' => 'Встаньте прямо, ноги вместе, руки вдоль тела. Прыжком расставьте ноги, одновременно поднимая руки над головой, и прыжком вернитесь в исходное положение. Сохраняйте ровный ритм заданное время.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'bear-crawl',
+        'equipment' => 'bodyweight',
+        'effort_type' => EffortType::Duration,
+        'rest_time_seconds' => 60,
+        'categories' => ['full-body', 'core'],
+        'translations' => [
+            'en' => [
+                'name' => 'Bear Crawl',
+                'description' => 'Start on your hands and feet with your knees bent just above the floor. Crawl forward by moving the opposite hand and foot together, keeping your back flat and your hips low.',
+            ],
+            'ru' => [
+                'name' => 'Медвежья походка',
+                'description' => 'Встаньте на руки и стопы, колени согнуты и находятся чуть выше пола. Двигайтесь вперёд, одновременно переставляя противоположные руку и ногу, спина прямая, таз низко.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'dumbbell-thruster',
+        'equipment' => 'dumbbell',
+        'effort_type' => EffortType::Repetitions,
+        'rest_time_seconds' => 90,
+        'categories' => ['full-body', 'legs', 'shoulders'],
+        'translations' => [
+            'en' => [
+                'name' => 'Dumbbell Thruster',
+                'description' => 'Hold the dumbbells at your shoulders and squat until your thighs are parallel to the floor. Stand up fast and use that drive to press the dumbbells overhead in one movement, then lower them to your shoulders.',
+            ],
+            'ru' => [
+                'name' => 'Трастеры с гантелями',
+                'description' => 'Удерживайте гантели у плеч и присядьте до параллели бёдер с полом. Резко встаньте и за счёт этого усилия одним движением выжмите гантели над головой, затем опустите их к плечам.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'kettlebell-deadlift',
+        'equipment' => 'kettlebell',
+        'effort_type' => EffortType::Repetitions,
+        'rest_time_seconds' => 90,
+        'categories' => ['legs', 'glutes', 'back'],
+        'translations' => [
+            'en' => [
+                'name' => 'Kettlebell Deadlift',
+                'description' => 'Stand over the kettlebell with your feet hip-width apart. Push your hips back, grip the handle with both hands and stand up with a flat back, then lower it to the floor the same way.',
+            ],
+            'ru' => [
+                'name' => 'Становая тяга с гирей',
+                'description' => 'Встаньте над гирей, ноги на ширине таза. Отведите таз назад, возьмитесь за ручку обеими руками и выпрямитесь с прямой спиной, затем опустите гирю на пол тем же путём.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'kettlebell-clean-and-press',
+        'equipment' => 'kettlebell',
+        'effort_type' => EffortType::Repetitions,
+        'rest_time_seconds' => 90,
+        'categories' => ['full-body', 'shoulders'],
+        'translations' => [
+            'en' => [
+                'name' => 'Kettlebell Clean and Press',
+                'description' => 'Swing the kettlebell back between your legs, then pull it up close to your body and catch it at your shoulder. Press it overhead until your arm is straight, lower it to your shoulder and let it swing down into the next repetition.',
+            ],
+            'ru' => [
+                'name' => 'Взятие и жим гири',
+                'description' => 'Заведите гирю махом между ног, затем подтяните её вдоль корпуса и примите на плечо. Выжмите гирю над головой до выпрямления руки, опустите к плечу и отпустите вниз в следующий мах.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'kettlebell-turkish-get-up',
+        'equipment' => 'kettlebell',
+        'effort_type' => EffortType::Repetitions,
+        'rest_time_seconds' => 90,
+        'categories' => ['full-body', 'core'],
+        'translations' => [
+            'en' => [
+                'name' => 'Kettlebell Turkish Get-up',
+                'description' => 'Lie on your back holding the kettlebell above your shoulder with a straight arm. Keeping your eyes on it, rise onto your elbow, then your hand, lift your hips, sweep your leg under you and stand up. Reverse the steps to lie back down.',
+            ],
+            'ru' => [
+                'name' => 'Турецкий подъём с гирей',
+                'description' => 'Лягте на спину, удерживая гирю над плечом на прямой руке. Не сводя с неё глаз, поднимитесь на локоть, затем на ладонь, оторвите таз, заведите ногу под себя и встаньте. Вернитесь в положение лёжа, выполняя шаги в обратном порядке.',
+            ],
+        ],
+    ],
+    [
+        'slug' => 'medicine-ball-slam',
+        'equipment' => 'medicine-ball',
+        'effort_type' => EffortType::Repetitions,
+        'rest_time_seconds' => 60,
+        'categories' => ['full-body', 'core'],
+        'translations' => [
+            'en' => [
+                'name' => 'Medicine Ball Slam',
+                'description' => 'Stand holding the ball and raise it overhead, rising onto your toes. Throw it down onto the floor in front of you as hard as you can, bending your hips and knees, then pick it up and repeat. Use a ball that does not bounce.',
+            ],
+            'ru' => [
+                'name' => 'Броски медбола в пол',
+                'description' => 'Встаньте прямо и поднимите мяч над головой, приподнимаясь на носки. С силой бросьте его в пол перед собой, сгибая ноги и наклоняя корпус, затем поднимите и повторите. Используйте мяч, который не отскакивает.',
+            ],
+        ],
+    ],
 ];

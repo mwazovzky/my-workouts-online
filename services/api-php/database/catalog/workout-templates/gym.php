@@ -94,4 +94,294 @@ return [
         ],
         'previous_names' => ['Legs & Abs'],
     ],
+    [
+        'slug' => 'gym-machine-full-body-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Machine Full Body A',
+                'description' => 'Seven exercises on machines that guide the movement for you, so you can learn the effort before the technique. Finish with a plank.',
+            ],
+            'ru' => [
+                'name' => 'Всё тело в тренажёрах А',
+                'description' => 'Семь упражнений в тренажёрах, которые сами задают траекторию движения: можно привыкнуть к нагрузке до освоения техники. В завершение выполните планку.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'machine-chest-press', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'lat-pulldown', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'leg-press', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'machine-shoulder-press', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'leg-curl', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'cable-triceps-pushdown', 'sets' => 2, 'effort' => 15],
+            ['exercise' => 'plank', 'sets' => 3, 'effort' => 30],
+        ],
+    ],
+    [
+        'slug' => 'gym-machine-full-body-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Machine Full Body B',
+                'description' => 'The second machine session, with different exercises for the same muscles. Alternate it with session A.',
+            ],
+            'ru' => [
+                'name' => 'Всё тело в тренажёрах Б',
+                'description' => 'Вторая тренировка в тренажёрах: другие упражнения на те же мышцы. Чередуйте её с тренировкой А.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'hack-squat', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'machine-seated-row', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'pec-deck-fly', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'leg-extension', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'assisted-pull-up', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'cable-curl', 'sets' => 2, 'effort' => 15],
+            ['exercise' => 'back-extension', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-upper-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Upper Body A',
+                'description' => 'Heavy upper-body day built on the bench press and the barbell row, in low repetitions. Rest fully between the first two exercises.',
+            ],
+            'ru' => [
+                'name' => 'Верх тела А',
+                'description' => 'Тяжёлая тренировка верха тела на основе жима лёжа и тяги штанги в наклоне, с малым числом повторений. Между подходами первых двух упражнений отдыхайте полностью.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-bench-press', 'sets' => 4, 'effort' => 6],
+            ['exercise' => 'barbell-row', 'sets' => 4, 'effort' => 6],
+            ['exercise' => 'barbell-overhead-press', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'lat-pulldown', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'barbell-curl', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'cable-triceps-pushdown', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-lower-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Lower Body A',
+                'description' => 'Heavy lower-body day built on the back squat, followed by work for the back of the thighs, the calves and the core.',
+            ],
+            'ru' => [
+                'name' => 'Низ тела А',
+                'description' => 'Тяжёлая тренировка низа тела на основе приседаний со штангой, затем упражнения для задней поверхности бедра, икр и кора.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-back-squat', 'sets' => 4, 'effort' => 6],
+            ['exercise' => 'barbell-romanian-deadlift', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'leg-press', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'leg-curl', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'machine-calf-raise', 'sets' => 4, 'effort' => 12],
+            ['exercise' => 'hanging-knee-raise', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-upper-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Upper Body B',
+                'description' => 'Lighter upper-body day with more repetitions, using dumbbells, cables and pull-ups.',
+            ],
+            'ru' => [
+                'name' => 'Верх тела Б',
+                'description' => 'Более лёгкая тренировка верха тела с большим числом повторений: гантели, блоки и подтягивания.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'incline-dumbbell-press', 'sets' => 4, 'effort' => 10],
+            ['exercise' => 'pull-up', 'sets' => 4, 'effort' => 8],
+            ['exercise' => 'dumbbell-shoulder-press', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'seated-cable-row', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'dumbbell-lateral-raise', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'ez-bar-skull-crusher', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'hammer-curl', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-lower-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Lower Body B',
+                'description' => 'Lower-body day built on the deadlift, with single-leg work and the hip thrust for the glutes.',
+            ],
+            'ru' => [
+                'name' => 'Низ тела Б',
+                'description' => 'Тренировка низа тела на основе становой тяги, с упражнениями на одной ноге и ягодичным мостом.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-deadlift', 'sets' => 3, 'effort' => 5],
+            ['exercise' => 'dumbbell-bulgarian-split-squat', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'leg-extension', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'barbell-hip-thrust', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'machine-calf-raise', 'sets' => 4, 'effort' => 15],
+            ['exercise' => 'cable-crunch', 'sets' => 3, 'effort' => 15],
+        ],
+    ],
+    [
+        'slug' => 'gym-push-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Push A',
+                'description' => 'Everything that pushes: chest, shoulders and triceps, led by the barbell bench press.',
+            ],
+            'ru' => [
+                'name' => 'Жимы А',
+                'description' => 'Все жимовые движения: грудь, плечи и трицепс. Основное упражнение: жим штанги лёжа.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-bench-press', 'sets' => 4, 'effort' => 8],
+            ['exercise' => 'barbell-overhead-press', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'incline-dumbbell-press', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'dumbbell-lateral-raise', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'cable-triceps-pushdown', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'dumbbell-triceps-extension', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-pull-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Pull A',
+                'description' => 'Everything that pulls: back and biceps, led by the deadlift.',
+            ],
+            'ru' => [
+                'name' => 'Тяги А',
+                'description' => 'Все тяговые движения: спина и бицепс. Основное упражнение: становая тяга.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-deadlift', 'sets' => 3, 'effort' => 5],
+            ['exercise' => 'pull-up', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'barbell-row', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'cable-face-pull', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'barbell-curl', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'hammer-curl', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-legs-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Legs A',
+                'description' => 'Leg day led by the back squat, with the Romanian deadlift for the back of the thighs.',
+            ],
+            'ru' => [
+                'name' => 'Ноги А',
+                'description' => 'Тренировка ног на основе приседаний со штангой, с румынской тягой для задней поверхности бедра.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-back-squat', 'sets' => 4, 'effort' => 8],
+            ['exercise' => 'barbell-romanian-deadlift', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'leg-press', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'leg-curl', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'machine-calf-raise', 'sets' => 4, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-push-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Push B',
+                'description' => 'The second pushing day, with dumbbells, cables and dips instead of the barbell.',
+            ],
+            'ru' => [
+                'name' => 'Жимы Б',
+                'description' => 'Вторая жимовая тренировка: гантели, блоки и брусья вместо штанги.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'dumbbell-bench-press', 'sets' => 4, 'effort' => 10],
+            ['exercise' => 'dumbbell-shoulder-press', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'cable-crossover', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'cable-lateral-raise', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'triceps-dip', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'cable-overhead-triceps-extension', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-pull-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Pull B',
+                'description' => 'The second pulling day, with pulldowns and rows in higher repetitions.',
+            ],
+            'ru' => [
+                'name' => 'Тяги Б',
+                'description' => 'Вторая тяговая тренировка: тяги верхнего и нижнего блока с большим числом повторений.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'lat-pulldown', 'sets' => 4, 'effort' => 10],
+            ['exercise' => 'seated-cable-row', 'sets' => 3, 'effort' => 12],
+            ['exercise' => 'dumbbell-row', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'reverse-pec-deck-fly', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'ez-bar-curl', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'incline-dumbbell-curl', 'sets' => 3, 'effort' => 12],
+        ],
+    ],
+    [
+        'slug' => 'gym-legs-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Legs B',
+                'description' => 'The second leg day, led by the front squat, with the hip thrust and lunges.',
+            ],
+            'ru' => [
+                'name' => 'Ноги Б',
+                'description' => 'Вторая тренировка ног на основе фронтальных приседаний, с ягодичным мостом и выпадами.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-front-squat', 'sets' => 4, 'effort' => 8],
+            ['exercise' => 'barbell-hip-thrust', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'dumbbell-lunge', 'sets' => 3, 'effort' => 10],
+            ['exercise' => 'leg-extension', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'leg-curl', 'sets' => 3, 'effort' => 15],
+            ['exercise' => 'machine-calf-raise', 'sets' => 4, 'effort' => 15],
+        ],
+    ],
+    [
+        'slug' => 'gym-strength-a',
+        'translations' => [
+            'en' => [
+                'name' => 'Strength 5x5 A',
+                'description' => 'Three barbell lifts for five sets of five. Add a little weight each session for as long as you complete every repetition.',
+            ],
+            'ru' => [
+                'name' => 'Сила 5×5 А',
+                'description' => 'Три упражнения со штангой по пять подходов из пяти повторений. Понемногу добавляйте вес на каждой тренировке, пока выполняете все повторения.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-back-squat', 'sets' => 5, 'effort' => 5],
+            ['exercise' => 'barbell-bench-press', 'sets' => 5, 'effort' => 5],
+            ['exercise' => 'barbell-row', 'sets' => 5, 'effort' => 5],
+        ],
+    ],
+    [
+        'slug' => 'gym-strength-b',
+        'translations' => [
+            'en' => [
+                'name' => 'Strength 5x5 B',
+                'description' => 'Squat and overhead press for five sets of five, then a single heavy set of five deadlifts.',
+            ],
+            'ru' => [
+                'name' => 'Сила 5×5 Б',
+                'description' => 'Приседания и жим стоя по пять подходов из пяти повторений, затем один тяжёлый подход становой тяги на пять повторений.',
+            ],
+        ],
+        'activities' => [
+            ['exercise' => 'barbell-back-squat', 'sets' => 5, 'effort' => 5],
+            ['exercise' => 'barbell-overhead-press', 'sets' => 5, 'effort' => 5],
+            ['exercise' => 'barbell-deadlift', 'sets' => 1, 'effort' => 5],
+        ],
+    ],
 ];
