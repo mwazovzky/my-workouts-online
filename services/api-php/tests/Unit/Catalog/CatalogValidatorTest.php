@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Catalog;
 
+use App\Enums\DifficultyUnit;
 use App\Services\Catalog\CatalogLoader;
 use App\Services\Catalog\CatalogValidator;
 use PHPUnit\Framework\Attributes\Test;
@@ -211,6 +212,51 @@ class CatalogValidatorTest extends TestCase
     }
 
     #[Test]
+    public function a_repetition_based_exercise_needs_a_rest_time(): void
+    {
+        $catalog = $this->catalog();
+        $catalog['exercises'][self::BENCH_PRESS]['rest_time_seconds'] = null;
+
+        $this->assertViolation('exercises [bench-press]: rest_time_seconds is required for a repetition-based exercise', $catalog);
+    }
+
+    #[Test]
+    public function a_duration_based_exercise_may_omit_the_rest_time(): void
+    {
+        $catalog = $this->catalog();
+
+        $this->assertNull($catalog['exercises'][self::EASY_RIDE]['rest_time_seconds']);
+        $this->assertSame([], $this->validate($catalog));
+    }
+
+    #[Test]
+    public function every_equipment_item_must_be_used_by_an_exercise(): void
+    {
+        $catalog = $this->catalog();
+        $catalog['equipment'][] = [
+            'slug' => 'treadmill',
+            'difficulty_unit' => DifficultyUnit::None,
+            'translations' => ['en' => ['name' => 'Treadmill'], 'ru' => ['name' => 'Беговая дорожка']],
+            'previous_names' => [],
+        ];
+
+        $this->assertSame(['equipment [treadmill]: no exercise uses it.'], $this->validate($catalog));
+    }
+
+    #[Test]
+    public function every_category_must_be_used_by_an_exercise(): void
+    {
+        $catalog = $this->catalog();
+        $catalog['categories'][] = [
+            'slug' => 'forearms',
+            'translations' => ['en' => ['name' => 'Forearms'], 'ru' => ['name' => 'Предплечья']],
+            'previous_names' => [],
+        ];
+
+        $this->assertSame(['categories [forearms]: no exercise belongs to it.'], $this->validate($catalog));
+    }
+
+    #[Test]
     public function a_template_needs_at_least_one_activity(): void
     {
         $catalog = $this->catalog();
@@ -262,6 +308,15 @@ class CatalogValidatorTest extends TestCase
         $catalog['workout_templates'][self::FULL_BODY]['activities'][2]['sets'][0]['difficulty'] = 10;
 
         $this->assertViolation('activity 3 set 1: difficulty must be null because the equipment has no difficulty unit', $catalog);
+    }
+
+    #[Test]
+    public function a_template_must_not_prescribe_a_weight(): void
+    {
+        $catalog = $this->catalog();
+        $catalog['workout_templates'][self::FULL_BODY]['activities'][0]['sets'][0]['difficulty'] = 40;
+
+        $this->assertViolation('activity 1 set 1: difficulty must be null because templates do not prescribe a weight', $catalog);
     }
 
     #[Test]

@@ -8,8 +8,8 @@ return [
             'ru' => ['name' => 'Всё тело', 'description' => 'Жим, приседания и отжимания.'],
         ],
         'activities' => [
-            ['exercise' => 'bench-press', 'sets' => 3, 'effort' => 8, 'difficulty' => 40],
-            ['exercise' => 'squat', 'sets' => [['effort' => 10], ['effort' => 8, 'difficulty' => 62.5]]],
+            ['exercise' => 'bench-press', 'sets' => 3, 'effort' => 8],
+            ['exercise' => 'squat', 'sets' => [['effort' => 10], ['effort' => 8]]],
             ['exercise' => 'push-up', 'sets' => 2, 'effort' => 15],
         ],
     ],

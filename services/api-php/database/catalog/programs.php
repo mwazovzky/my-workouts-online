@@ -6,20 +6,33 @@ return [
     [
         'slug' => 'gym-beginner-full-body',
         'translations' => [
-            'en' => ['name' => 'Beginner', 'description' => 'Beginner program: repeat the same full body workout 3 days a week.'],
-            'ru' => ['name' => 'Начинающий', 'description' => 'Программа для начинающих: повторяйте одну и ту же тренировку на всё тело 3 дня в неделю.'],
+            'en' => [
+                'name' => 'Gym Beginner Full Body',
+                'description' => 'Three identical full-body sessions a week with a rest day between them. A good first program if you are new to the gym.',
+            ],
+            'ru' => [
+                'name' => 'Тренажёрный зал: всё тело для начинающих',
+                'description' => 'Три одинаковые тренировки на всё тело в неделю с днём отдыха между ними. Подходит как первая программа для новичков в тренажёрном зале.',
+            ],
         ],
         'schedule' => [
             ['weekday' => Weekday::Monday, 'template' => 'gym-full-body-beginner'],
             ['weekday' => Weekday::Wednesday, 'template' => 'gym-full-body-beginner'],
             ['weekday' => Weekday::Friday, 'template' => 'gym-full-body-beginner'],
         ],
+        'previous_names' => ['Beginner'],
     ],
     [
         'slug' => 'gym-3-day-split',
         'translations' => [
-            'en' => ['name' => '3 Day Split', 'description' => '3 Day Split: Chest/Shoulders/Triceps, Back/Biceps, Legs/Abs.'],
-            'ru' => ['name' => '3-дневный сплит', 'description' => '3-дневный сплит: грудь/плечи/трицепс, спина/бицепс, ноги/пресс.'],
+            'en' => [
+                'name' => '3 Day Split',
+                'description' => 'Three sessions a week, each for a different part of the body: chest, shoulders and triceps; back and biceps; legs and core.',
+            ],
+            'ru' => [
+                'name' => '3-дневный сплит',
+                'description' => 'Три тренировки в неделю, каждая на свою часть тела: грудь, плечи и трицепс; спина и бицепс; ноги и кор.',
+            ],
         ],
         'schedule' => [
             ['weekday' => Weekday::Monday, 'template' => 'gym-chest-shoulders-triceps'],

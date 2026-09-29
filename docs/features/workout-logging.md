@@ -36,6 +36,7 @@ Start workouts from templates, edit activities and sets, save progress, complete
 - The save response returns persisted IDs, so a subsequent save updates the same rows instead of recreating them.
 - A workout must retain at least one activity, and each activity must retain at least one set.
 - Completed sets must have `effort_value > 0`.
+- A weight may be left blank. Shipped templates prescribe sets and repetitions but no weight, so a workout started from one opens with empty weight fields. A blank weight is stored as `null`, never as zero, and a set can be completed without one; an entered `0` is stored as zero.
 - Start, repeat, save, and delete operations run in database transactions.
 - Workout name is copied from the source template or source workout.
 

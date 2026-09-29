@@ -73,6 +73,81 @@ describe('Set', () => {
     expect(updates.at(-1)[0].difficulty_value).toBeNull();
   });
 
+  function weightInput(wrapper) {
+    return wrapper.find('input[step="0.5"]');
+  }
+
+  function effortInput(wrapper) {
+    return wrapper.findAll('input[type="number"]').find(input => !input.attributes('step'));
+  }
+
+  it('leaves the weight input empty when no weight is set', () => {
+    const wrapper = buildWrapper({ difficultyUnit: 'kilograms' });
+
+    expect(weightInput(wrapper).element.value).toBe('');
+  });
+
+  it('shows a stored weight, including an explicit zero', () => {
+    const withWeight = buildWrapper({
+      difficultyUnit: 'kilograms',
+      set: { id: 1, order: 1, effort_value: 10, difficulty_value: 42.5, is_completed: false },
+    });
+    const withZero = buildWrapper({
+      difficultyUnit: 'kilograms',
+      set: { id: 1, order: 1, effort_value: 10, difficulty_value: 0, is_completed: false },
+    });
+
+    expect(weightInput(withWeight).element.value).toBe('42.5');
+    expect(weightInput(withZero).element.value).toBe('0');
+  });
+
+  it('emits a null weight when the weight is left blank', async () => {
+    const wrapper = buildWrapper({ difficultyUnit: 'kilograms' });
+
+    await effortInput(wrapper).setValue('12');
+
+    expect(wrapper.emitted('update').at(-1)[0]).toMatchObject({
+      effort_value: 12,
+      difficulty_value: null,
+    });
+  });
+
+  it('emits a null weight when a blank set is marked complete', async () => {
+    const wrapper = buildWrapper({ difficultyUnit: 'kilograms' });
+
+    await completeButton(wrapper).trigger('click');
+
+    expect(wrapper.emitted('update').at(-1)[0].difficulty_value).toBeNull();
+    expect(wrapper.emitted('completion-toggled').at(-1)[0].difficulty_value).toBeNull();
+  });
+
+  it('emits the entered weight as a number', async () => {
+    const wrapper = buildWrapper({ difficultyUnit: 'kilograms' });
+
+    await weightInput(wrapper).setValue('42.5');
+
+    expect(wrapper.emitted('update').at(-1)[0].difficulty_value).toBe(42.5);
+  });
+
+  it('emits an explicit zero weight as zero', async () => {
+    const wrapper = buildWrapper({ difficultyUnit: 'kilograms' });
+
+    await weightInput(wrapper).setValue('0');
+
+    expect(wrapper.emitted('update').at(-1)[0].difficulty_value).toBe(0);
+  });
+
+  it('emits a null weight when the weight is cleared', async () => {
+    const wrapper = buildWrapper({
+      difficultyUnit: 'kilograms',
+      set: { id: 1, order: 1, effort_value: 10, difficulty_value: 40, is_completed: false },
+    });
+
+    await weightInput(wrapper).setValue('');
+
+    expect(wrapper.emitted('update').at(-1)[0].difficulty_value).toBeNull();
+  });
+
   function completeButton(wrapper) {
     return wrapper.find('button[aria-label="Mark set :order as complete"]');
   }
