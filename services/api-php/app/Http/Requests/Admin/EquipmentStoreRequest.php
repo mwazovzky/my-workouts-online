@@ -3,11 +3,14 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\DifficultyUnit;
+use App\Http\Requests\Admin\Concerns\HasTranslationRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class EquipmentStoreRequest extends FormRequest
 {
+    use HasTranslationRules;
+
     public function authorize(): bool
     {
         return true;
@@ -20,11 +23,7 @@ class EquipmentStoreRequest extends FormRequest
     {
         return [
             'difficulty_unit' => ['required', Rule::enum(DifficultyUnit::class)],
-            'translations' => ['required', 'array'],
-            'translations.en' => ['required', 'array'],
-            'translations.en.name' => ['required', 'string', 'max:255'],
-            'translations.ru' => ['sometimes', 'array'],
-            'translations.ru.name' => ['nullable', 'string', 'max:255'],
+            ...$this->translationRules(['name']),
         ];
     }
 
@@ -33,8 +32,6 @@ class EquipmentStoreRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'translations.en.name.required' => __('An English name is required.'),
-        ];
+        return $this->translationMessages();
     }
 }

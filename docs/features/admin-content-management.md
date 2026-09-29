@@ -30,7 +30,7 @@ App admins create, edit, and delete the shared content catalog: equipment, categ
 - Programs support only a single weekly schedule — no multi-week periodization.
 - No search, filter, sort, or pagination on the admin list pages.
 - No image or media management for exercises.
-- Admin editing covers English and Russian only, matching the app's supported locales.
+- Admin editing covers English and Russian only, matching the app's supported locales. The API accepts every locale in `available_locales`; the admin forms still list English and Russian explicitly.
 - No audit log of admin changes.
 
 ## Surface Area

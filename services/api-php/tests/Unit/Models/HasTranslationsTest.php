@@ -7,6 +7,7 @@ use App\Models\Equipment;
 use App\Models\Exercise;
 use App\Models\Program;
 use App\Models\WorkoutTemplate;
+use Illuminate\Database\LazyLoadingViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use PHPUnit\Framework\Attributes\Test;
@@ -228,6 +229,19 @@ class HasTranslationsTest extends TestCase
 
         $category = Category::first();
         $this->assertTrue($category->relationLoaded('translations'));
+    }
+
+    #[Test]
+    public function reading_a_field_without_loaded_translations_is_rejected(): void
+    {
+        Category::createWithTranslations(['en' => ['name' => 'Chest']]);
+        Category::createWithTranslations(['en' => ['name' => 'Back']]);
+
+        $categories = Category::query()->without('translations')->get();
+
+        $this->expectException(LazyLoadingViolationException::class);
+
+        $categories->first()->name;
     }
 
     #[Test]

@@ -3,11 +3,14 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\Weekday;
+use App\Http\Requests\Admin\Concerns\HasTranslationRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ProgramStoreRequest extends FormRequest
 {
+    use HasTranslationRules;
+
     public function authorize(): bool
     {
         return true;
@@ -19,13 +22,7 @@ class ProgramStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'translations' => ['required', 'array'],
-            'translations.en' => ['required', 'array'],
-            'translations.en.name' => ['required', 'string', 'max:255'],
-            'translations.en.description' => ['nullable', 'string', 'max:2000'],
-            'translations.ru' => ['sometimes', 'array'],
-            'translations.ru.name' => ['nullable', 'string', 'max:255'],
-            'translations.ru.description' => ['nullable', 'string', 'max:2000'],
+            ...$this->translationRules(['name', 'description']),
 
             'assignments' => ['present', 'array'],
             'assignments.*.workout_template_id' => ['required', 'integer', 'exists:workout_templates,id'],
@@ -38,8 +35,6 @@ class ProgramStoreRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'translations.en.name.required' => __('An English name is required.'),
-        ];
+        return $this->translationMessages();
     }
 }
