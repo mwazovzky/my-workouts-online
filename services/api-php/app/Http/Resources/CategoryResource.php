@@ -14,10 +14,6 @@ class CategoryResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name ?? null,
-            'exercises_count' => $this->whenCounted('exercises'),
-            'translations' => [
-                'name' => $this->translationMap('name'),
-            ],
         ];
     }
 }

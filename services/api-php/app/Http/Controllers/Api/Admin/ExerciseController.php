@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ExerciseStoreRequest;
 use App\Http\Requests\Admin\ExerciseUpdateRequest;
-use App\Http\Resources\ExerciseResource;
+use App\Http\Resources\AdminExerciseResource;
 use App\Models\Exercise;
 use App\Services\Admin\ExerciseServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -25,16 +25,16 @@ class ExerciseController extends Controller
             ->orderBy('id')
             ->get();
 
-        return ExerciseResource::collection($exercises);
+        return AdminExerciseResource::collection($exercises);
     }
 
-    public function show(Exercise $exercise): ExerciseResource
+    public function show(Exercise $exercise): AdminExerciseResource
     {
         $this->authorize('viewAny', Exercise::class);
 
         $exercise->load(['categories', 'equipment']);
 
-        return new ExerciseResource($exercise);
+        return new AdminExerciseResource($exercise);
     }
 
     public function store(ExerciseStoreRequest $request): JsonResponse
@@ -43,16 +43,16 @@ class ExerciseController extends Controller
 
         $exercise = $this->service->create($request->validated());
 
-        return (new ExerciseResource($exercise))->response()->setStatusCode(201);
+        return (new AdminExerciseResource($exercise))->response()->setStatusCode(201);
     }
 
-    public function update(ExerciseUpdateRequest $request, Exercise $exercise): ExerciseResource
+    public function update(ExerciseUpdateRequest $request, Exercise $exercise): AdminExerciseResource
     {
         $this->authorize('update', $exercise);
 
         $exercise = $this->service->update($exercise, $request->validated());
 
-        return new ExerciseResource($exercise);
+        return new AdminExerciseResource($exercise);
     }
 
     public function destroy(Exercise $exercise): Response

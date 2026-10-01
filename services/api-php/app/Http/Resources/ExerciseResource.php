@@ -24,10 +24,6 @@ class ExerciseResource extends JsonResource
             'rest_time_seconds' => $this->rest_time_seconds,
             'category_ids' => $this->whenLoaded('categories', fn () => $this->categories->pluck('id')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
-            'translations' => [
-                'name' => $this->translationMap('name'),
-                'description' => $this->translationMap('description'),
-            ],
         ];
     }
 }

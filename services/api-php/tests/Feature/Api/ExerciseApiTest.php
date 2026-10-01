@@ -46,6 +46,25 @@ class ExerciseApiTest extends TestCase
     }
 
     #[Test]
+    public function index_omits_the_per_locale_translations(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->withTranslation('name', 'Chest')->create();
+
+        $exercise = Exercise::factory()
+            ->withTranslation('name', 'Bench Press')
+            ->withTranslation('name', 'Жим лёжа', 'ru')
+            ->create();
+        $exercise->categories()->attach($category->id);
+
+        $response = $this->actingAs($user)->getJson('/api/v1/exercises');
+
+        $response->assertOk();
+        $this->assertArrayNotHasKey('translations', $response->json('data.0'));
+        $this->assertSame(['id', 'name'], array_keys($response->json('data.0.categories.0')));
+    }
+
+    #[Test]
     public function index_excludes_retired_exercises(): void
     {
         $user = User::factory()->create();

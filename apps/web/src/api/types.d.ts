@@ -823,8 +823,10 @@ export interface components {
             id: number;
             /** @description Localized. */
             name: string | null;
+        };
+        AdminCategory: components["schemas"]["Category"] & {
             exercises_count?: number;
-            translations?: {
+            translations: {
                 name?: components["schemas"]["TranslationMap"];
             };
         };
@@ -860,7 +862,9 @@ export interface components {
             rest_time_seconds: number | null;
             category_ids?: number[];
             categories?: components["schemas"]["Category"][];
-            translations?: {
+        };
+        AdminExercise: components["schemas"]["Exercise"] & {
+            translations: {
                 name?: components["schemas"]["TranslationMap"];
                 description?: components["schemas"]["TranslationMap"];
             };
@@ -1125,25 +1129,25 @@ export interface components {
                 };
             };
         };
-        /** @description Category */
-        CategoryResponse: {
+        /** @description Category (admin view) */
+        AdminCategoryResponse: {
             headers: {
                 [name: string]: unknown;
             };
             content: {
                 "application/json": {
-                    data: components["schemas"]["Category"];
+                    data: components["schemas"]["AdminCategory"];
                 };
             };
         };
-        /** @description Exercise */
-        ExerciseResponse: {
+        /** @description Exercise (admin view) */
+        AdminExerciseResponse: {
             headers: {
                 [name: string]: unknown;
             };
             content: {
                 "application/json": {
-                    data: components["schemas"]["Exercise"];
+                    data: components["schemas"]["AdminExercise"];
                 };
             };
         };
@@ -2146,7 +2150,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: components["schemas"]["Category"][];
+                        data: components["schemas"]["AdminCategory"][];
                     };
                 };
             };
@@ -2167,7 +2171,7 @@ export interface operations {
             };
         };
         responses: {
-            201: components["responses"]["CategoryResponse"];
+            201: components["responses"]["AdminCategoryResponse"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             422: components["responses"]["ValidationError"];
@@ -2184,7 +2188,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["CategoryResponse"];
+            200: components["responses"]["AdminCategoryResponse"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -2205,7 +2209,7 @@ export interface operations {
             };
         };
         responses: {
-            200: components["responses"]["CategoryResponse"];
+            200: components["responses"]["AdminCategoryResponse"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -2251,7 +2255,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: components["schemas"]["Exercise"][];
+                        data: components["schemas"]["AdminExercise"][];
                     };
                 };
             };
@@ -2272,7 +2276,7 @@ export interface operations {
             };
         };
         responses: {
-            201: components["responses"]["ExerciseResponse"];
+            201: components["responses"]["AdminExerciseResponse"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             422: components["responses"]["ValidationError"];
@@ -2289,7 +2293,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["ExerciseResponse"];
+            200: components["responses"]["AdminExerciseResponse"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -2310,7 +2314,7 @@ export interface operations {
             };
         };
         responses: {
-            200: components["responses"]["ExerciseResponse"];
+            200: components["responses"]["AdminExerciseResponse"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];

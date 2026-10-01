@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Http\Requests\Admin\Concerns\HasTranslationRules;
 use App\Rules\HeartRateZoneWithinRange;
 use Illuminate\Foundation\Http\FormRequest;
 
 class WorkoutTemplateStoreRequest extends FormRequest
 {
+    use HasTranslationRules;
+
     public function authorize(): bool
     {
         return true;
@@ -18,13 +21,7 @@ class WorkoutTemplateStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'translations' => ['required', 'array'],
-            'translations.en' => ['required', 'array'],
-            'translations.en.name' => ['required', 'string', 'max:255'],
-            'translations.en.description' => ['nullable', 'string', 'max:2000'],
-            'translations.ru' => ['sometimes', 'array'],
-            'translations.ru.name' => ['nullable', 'string', 'max:255'],
-            'translations.ru.description' => ['nullable', 'string', 'max:2000'],
+            ...$this->translationRules(['name', 'description']),
 
             'activities' => ['required', 'array', 'min:1'],
             'activities.*.exercise_id' => ['required', 'integer', 'exists:exercises,id'],
@@ -42,7 +39,7 @@ class WorkoutTemplateStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'translations.en.name.required' => __('An English name is required.'),
+            ...$this->translationMessages(),
             'activities.min' => __('A workout template must have at least one activity.'),
             'activities.*.sets.min' => __('Each activity must have at least one set.'),
         ];

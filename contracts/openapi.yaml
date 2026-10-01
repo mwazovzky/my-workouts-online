@@ -893,7 +893,7 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/Category' }
+                    items: { $ref: '#/components/schemas/AdminCategory' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
@@ -906,7 +906,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CategoryWrite' }
       responses:
-        '201': { $ref: '#/components/responses/CategoryResponse' }
+        '201': { $ref: '#/components/responses/AdminCategoryResponse' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
@@ -922,7 +922,7 @@ paths:
       summary: Show category
       operationId: adminGetCategory
       responses:
-        '200': { $ref: '#/components/responses/CategoryResponse' }
+        '200': { $ref: '#/components/responses/AdminCategoryResponse' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -936,7 +936,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CategoryWrite' }
       responses:
-        '200': { $ref: '#/components/responses/CategoryResponse' }
+        '200': { $ref: '#/components/responses/AdminCategoryResponse' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -967,7 +967,7 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/Exercise' }
+                    items: { $ref: '#/components/schemas/AdminExercise' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
@@ -980,7 +980,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/ExerciseWrite' }
       responses:
-        '201': { $ref: '#/components/responses/ExerciseResponse' }
+        '201': { $ref: '#/components/responses/AdminExerciseResponse' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
@@ -996,7 +996,7 @@ paths:
       summary: Show exercise
       operationId: adminGetExercise
       responses:
-        '200': { $ref: '#/components/responses/ExerciseResponse' }
+        '200': { $ref: '#/components/responses/AdminExerciseResponse' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -1010,7 +1010,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/ExerciseWrite' }
       responses:
-        '200': { $ref: '#/components/responses/ExerciseResponse' }
+        '200': { $ref: '#/components/responses/AdminExerciseResponse' }
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -1291,24 +1291,24 @@ components:
             required: [data]
             properties:
               data: { $ref: '#/components/schemas/Equipment' }
-    CategoryResponse:
-      description: Category
+    AdminCategoryResponse:
+      description: Category (admin view)
       content:
         application/json:
           schema:
             type: object
             required: [data]
             properties:
-              data: { $ref: '#/components/schemas/Category' }
-    ExerciseResponse:
-      description: Exercise
+              data: { $ref: '#/components/schemas/AdminCategory' }
+    AdminExerciseResponse:
+      description: Exercise (admin view)
       content:
         application/json:
           schema:
             type: object
             required: [data]
             properties:
-              data: { $ref: '#/components/schemas/Exercise' }
+              data: { $ref: '#/components/schemas/AdminExercise' }
     AdminWorkoutTemplateResponse:
       description: Workout template (admin view)
       content:
@@ -1497,11 +1497,17 @@ components:
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
-        exercises_count: { type: integer }
-        translations:
-          type: object
+    AdminCategory:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+        - type: object
+          required: [translations]
           properties:
-            name: { $ref: '#/components/schemas/TranslationMap' }
+            exercises_count: { type: integer }
+            translations:
+              type: object
+              properties:
+                name: { $ref: '#/components/schemas/TranslationMap' }
     CategoryWrite:
       type: object
       required: [translations]
@@ -1545,11 +1551,17 @@ components:
         categories:
           type: array
           items: { $ref: '#/components/schemas/Category' }
-        translations:
-          type: object
+    AdminExercise:
+      allOf:
+        - $ref: '#/components/schemas/Exercise'
+        - type: object
+          required: [translations]
           properties:
-            name: { $ref: '#/components/schemas/TranslationMap' }
-            description: { $ref: '#/components/schemas/TranslationMap' }
+            translations:
+              type: object
+              properties:
+                name: { $ref: '#/components/schemas/TranslationMap' }
+                description: { $ref: '#/components/schemas/TranslationMap' }
     ExerciseWrite:
       type: object
       required: [equipment_id, effort_type, translations]
