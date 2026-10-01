@@ -111,8 +111,9 @@ class CategoryAdminTest extends TestCase
             'translations' => ['en' => ['name' => 'Back'], 'ru' => ['name' => 'Спина']],
         ])->assertOk();
 
+        $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'Back']);
         $this->assertDatabaseHas('translations', [
-            'translatable_id' => $category->id, 'locale' => 'en', 'field' => 'name', 'value' => 'Back',
+            'translatable_id' => $category->id, 'locale' => 'ru', 'field' => 'name', 'value' => 'Спина',
         ]);
     }
 

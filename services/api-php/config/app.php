@@ -101,6 +101,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Source Locale
+    |--------------------------------------------------------------------------
+    |
+    | Translatable models keep their source text in their own columns and only
+    | the other locales in the translations table. This names the locale the
+    | shipped catalog's columns are written in. It describes stored data, so
+    | it is fixed here rather than read from the environment.
+    |
+    */
+
+    'source_locale' => 'en',
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |

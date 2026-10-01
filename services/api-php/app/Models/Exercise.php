@@ -15,6 +15,8 @@ class Exercise extends Model
     use HasFactory, HasTranslations, SoftDeletes;
 
     protected $fillable = [
+        'name',
+        'description',
         'equipment_id',
         'effort_type',
         'rest_time_seconds',

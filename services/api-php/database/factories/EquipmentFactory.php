@@ -16,17 +16,9 @@ class EquipmentFactory extends Factory
     public function definition(): array
     {
         return [
+            'name' => fake()->randomElement(['Barbell', 'Machine', 'Horizontal Bar']),
             'difficulty_unit' => DifficultyUnit::Kilograms,
         ];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function (Equipment $equipment) {
-            $equipment->translations()->createMany([
-                ['locale' => 'en', 'field' => 'name', 'value' => fake()->randomElement(['Barbell', 'Machine', 'Horizontal Bar'])],
-            ]);
-        });
     }
 
     /**

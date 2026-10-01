@@ -51,11 +51,12 @@ After modifying `contracts/openapi.yaml` or any API response shape, lint the spe
 - **Custom Query Builders** — `app/QueryBuilders/` extends Eloquent Builder with composable scopes (e.g., `WorkoutBuilder` with `ownedBy()`, `withTemplate()`, `latestUpdated()`).
 - **Polymorphic Activities** — `Activity` morphs to both `WorkoutTemplate` and `Workout`. Morph map in `AppServiceProvider`: `workout_template`, `workout`.
 - **Two-Axis Measurement** — Sets use `effort_value` (reps/seconds via `Exercise.effort_type`) + `difficulty_value` via `Equipment.difficulty_unit` (kilograms/pounds/plates = weight, `heart_rate_zone` = zone 1–5 validated by `HeartRateZoneWithinRange`, `none` = no difficulty field). All combinations are valid.
-- **Eloquent Resources** — All API responses go through API Resources (`app/Http/Resources/`).
-- **Form Requests** — Validation in `app/Http/Requests/`. Authorization via policies in `app/Policies/`.
+- **Eloquent Resources** — All API responses go through API Resources (`app/Http/Resources/`). Per-locale `translations` are returned only by the `Admin*` resources (and `EquipmentResource`, which is admin-only); public resources return the localized value.
+- **Form Requests** — Validation in `app/Http/Requests/`. Authorization via policies in `app/Policies/`. Admin `translations` rules come from the `HasTranslationRules` trait, built from `config('app.available_locales')`.
+- **Lazy loading** — `Model::preventLazyLoading()` is on outside production; eager load relations instead of reading them per row.
 - **Role-Based Authorization** — `User::hasRole()`/`isAdmin()` back the `admin` middleware alias (`EnsureUserIsAdmin`, registered in `bootstrap/app.php`) plus per-model policies. `UserResource.is_admin` drives admin-only UI. Admin catalog CRUD (equipment, categories, exercises, workout templates, programs) lives in `app/Http/Controllers/Api/Admin/` with logic in `app/Services/Admin/`; `WorkoutTemplateService` syncs nested activities/sets and `ProgramService` syncs weekday template assignments, both transactionally. `Exercise` uses `SoftDeletes` (delete = retire); `Activity::exercise()` is `->withTrashed()` so history resolves retired exercises; templates/programs are hard-deleted with reference guards.
 - **Catalog Sync** — The shipped catalog lives in PHP data files under `database/catalog/` (records keyed by `slug`; `exercises/` and `workout-templates/` are directories). `catalog:sync` (`app/Services/Catalog/`, run by every deploy and by `CatalogSeeder`) validates, then applies them transactionally: rows match by `slug` or are adopted by English name / `previous_names`; the data files win for managed records; admin-created records (null `slug`) are untouched; removals go in `retired.php`. Change shipped content by editing the data files, not seeders. `UserSeeder`/`WorkoutSeeder` are demo-only and throw in production.
-- **Internationalization** — `SetLocale` middleware reads `User.locale`. `HasTranslations` trait on system models provides polymorphic translations via `createWithTranslations()` (seed/create) and `updateTranslations()` (edit; blank values removed for English fallback). UI strings in `lang/*.json`, accessed via `useTranslation` composable.
+- **Internationalization** — `NegotiateApiLocale` middleware sets the locale from `Accept-Language`. Translatable models store their source text (`name`, `description`) in their own columns, in `config('app.source_locale')`; the polymorphic `translations` table holds other locales only. The `HasTranslations` trait reads the requested locale and falls back to the column, and writes through `createWithTranslations()` (seed/create) and `updateTranslations()` (edit; blank values removed for fallback). Backend strings embedded in responses live in `lang/*.json`; UI strings live in `apps/web/src/i18n/locales`, accessed via the `useTranslation` composable.
 
 ### Frontend Patterns
 
@@ -78,7 +79,7 @@ Activity -> Exercise
 Activity <-1:N- Set
 Exercise -> Equipment
 Exercise <-M:N-> Category
-{Exercise,Equipment,Category,Program,WorkoutTemplate} <-morph- Translation
+{Exercise,Equipment,Category,Program,WorkoutTemplate} <-morph- Translation (non-source locales)
 ```
 
 [DB diagram](https://dbdiagram.io/d/workouts-68a1ae421d75ee360ae77ad8)

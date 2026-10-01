@@ -33,7 +33,7 @@ class HasTranslationsTest extends TestCase
     }
 
     #[Test]
-    public function translated_falls_back_to_english_when_locale_missing(): void
+    public function translated_falls_back_to_the_source_text_when_locale_missing(): void
     {
         $category = Category::createWithTranslations([
             'en' => ['name' => 'Chest'],
@@ -44,11 +44,45 @@ class HasTranslationsTest extends TestCase
     }
 
     #[Test]
-    public function translated_returns_null_when_no_translation_exists(): void
+    public function translated_returns_null_when_no_text_exists(): void
     {
-        $category = Category::create();
+        $program = Program::createWithTranslations(['en' => ['name' => 'Strength']]);
 
-        $this->assertNull($category->translated('name'));
+        $this->assertNull($program->translated('description'));
+
+        App::setLocale('ru');
+        $this->assertNull($program->translated('description'));
+    }
+
+    #[Test]
+    public function a_record_without_translations_reads_the_same_in_every_locale(): void
+    {
+        $exercise = Exercise::factory()->create(['name' => 'Жим гири', 'description' => 'Моя версия.']);
+
+        $this->assertDatabaseCount('translations', 0);
+
+        foreach (['en', 'ru'] as $locale) {
+            App::setLocale($locale);
+
+            $this->assertSame('Жим гири', $exercise->fresh()->name);
+            $this->assertSame('Моя версия.', $exercise->fresh()->description);
+        }
+    }
+
+    #[Test]
+    public function assigning_a_translatable_field_writes_the_source_text(): void
+    {
+        $category = Category::createWithTranslations([
+            'en' => ['name' => 'Chest'],
+            'ru' => ['name' => 'Грудь'],
+        ]);
+
+        $category->name = 'Upper Chest';
+        $category->save();
+
+        $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'Upper Chest']);
+        $this->assertSame('Upper Chest', $category->fresh()->translated('name', 'en'));
+        $this->assertSame('Грудь', $category->fresh()->translated('name', 'ru'));
     }
 
     #[Test]
@@ -88,28 +122,30 @@ class HasTranslationsTest extends TestCase
     #[Test]
     public function create_with_translations_creates_model_and_translations(): void
     {
-        $equipment = Equipment::createWithTranslations([
-            'en' => ['name' => 'Barbell', 'unit' => 'kg'],
-            'ru' => ['name' => 'Штанга', 'unit' => 'кг'],
+        $program = Program::createWithTranslations([
+            'en' => ['name' => 'Strength', 'description' => 'Three days a week.'],
+            'ru' => ['name' => 'Сила', 'description' => 'Три дня в неделю.'],
         ]);
 
-        $this->assertDatabaseHas('equipment', ['id' => $equipment->id]);
-        $this->assertDatabaseCount('translations', 4);
+        $this->assertDatabaseHas('programs', [
+            'id' => $program->id,
+            'name' => 'Strength',
+            'description' => 'Three days a week.',
+        ]);
+        $this->assertDatabaseCount('translations', 2);
 
-        $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'equipment',
-            'translatable_id' => $equipment->id,
+        $this->assertDatabaseMissing('translations', [
+            'translatable_type' => 'program',
+            'translatable_id' => $program->id,
             'locale' => 'en',
-            'field' => 'name',
-            'value' => 'Barbell',
         ]);
 
         $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'equipment',
-            'translatable_id' => $equipment->id,
+            'translatable_type' => 'program',
+            'translatable_id' => $program->id,
             'locale' => 'ru',
-            'field' => 'unit',
-            'value' => 'кг',
+            'field' => 'description',
+            'value' => 'Три дня в неделю.',
         ]);
     }
 
@@ -155,7 +191,8 @@ class HasTranslationsTest extends TestCase
 
         $this->assertEquals('Upper Chest', $category->translated('name', 'en'));
         $this->assertEquals('Верхняя грудь', $category->translated('name', 'ru'));
-        $this->assertDatabaseCount('translations', 2);
+        $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'Upper Chest']);
+        $this->assertDatabaseCount('translations', 1);
     }
 
     #[Test]
@@ -170,7 +207,8 @@ class HasTranslationsTest extends TestCase
         ]);
 
         $this->assertEquals('Грудь', $category->translated('name', 'ru'));
-        $this->assertDatabaseCount('translations', 2);
+        $this->assertEquals('Chest', $category->translated('name', 'en'));
+        $this->assertDatabaseCount('translations', 1);
     }
 
     #[Test]
@@ -252,10 +290,21 @@ class HasTranslationsTest extends TestCase
             'ru' => ['name' => 'Грудь'],
         ]);
 
-        $this->assertDatabaseCount('translations', 2);
+        $this->assertDatabaseCount('translations', 1);
 
         $category->delete();
 
+        $this->assertDatabaseCount('translations', 0);
+    }
+
+    #[Test]
+    public function deleting_a_record_without_translations_leaves_nothing_behind(): void
+    {
+        $category = Category::createWithTranslations(['en' => ['name' => 'Chest']]);
+
+        $category->delete();
+
+        $this->assertDatabaseCount('categories', 0);
         $this->assertDatabaseCount('translations', 0);
     }
 
@@ -268,17 +317,34 @@ class HasTranslationsTest extends TestCase
     }
 
     #[Test]
-    public function factory_creates_translations_automatically(): void
+    public function factory_creates_source_text_automatically(): void
     {
         $exercise = Exercise::factory()->create();
 
         $this->assertNotNull($exercise->name);
         $this->assertNotNull($exercise->description);
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'name' => $exercise->name,
+        ]);
+        $this->assertDatabaseCount('translations', 0);
+    }
+
+    #[Test]
+    public function factory_with_translation_in_another_locale_creates_a_row(): void
+    {
+        $exercise = Exercise::factory()
+            ->withTranslation('name', 'Bench Press')
+            ->withTranslation('name', 'Жим лёжа', 'ru')
+            ->create();
+
+        $this->assertDatabaseHas('exercises', ['id' => $exercise->id, 'name' => 'Bench Press']);
         $this->assertDatabaseHas('translations', [
             'translatable_type' => 'exercise',
             'translatable_id' => $exercise->id,
-            'locale' => 'en',
+            'locale' => 'ru',
             'field' => 'name',
+            'value' => 'Жим лёжа',
         ]);
     }
 

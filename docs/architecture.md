@@ -26,7 +26,9 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **API Authentication (JWT)** — The API is its own token issuer (`App\Services\Auth\TokenService` behind `TokenServiceInterface`). `POST /api/v1/auth/login` returns a short-lived EdDSA-signed access token (`config('jwt.access_ttl')`, default 15 min) and starts a refresh-token *family* (`refresh_tokens` table, hashed at rest). `POST /api/v1/auth/refresh` rotates the refresh token; presenting an already-rotated token revokes the whole family (reuse detection). Web clients (`client: web`) receive the refresh token only as an httpOnly `SameSite=Strict` cookie scoped to the refresh path and must send `X-Requested-With`; native clients (`client: native`) receive it in the body. Access tokens carry `iss`, `aud`, `sub`, `jti`, `exp`, `auth_time` and `fam` (family id) and are verified by the `jwt` guard (`App\Auth\JwtGuard` + `JwtUserResolver`, the default and only guard) against the public key published at `/.well-known/jwks.json`. Keys come from `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` (`php artisan jwt:keys`). There are no sessions; a 401 on `api/*` carries a `code` (`unauthenticated` or `token_expired`). Password changes and account deletion revoke the user's refresh families. `POST /api/v1/auth/reauth` re-checks the password and reissues an access token with a fresh `auth_time` (step-up). Verification and reset emails link to `config('app.frontend_url')`; `App\Auth\EmailVerificationLink` signs and validates verification links against the named `verification.verify` route, which exists only for URL generation (it forwards to the SPA).
 
-**Internationalization** — `NegotiateApiLocale` sets the locale from `Accept-Language`. `HasTranslations` trait on system models provides polymorphic translations with auto-eager-loading. Translations are purged only on a real/force delete, so a **soft-deleted** record still resolves its name. Lazy loading is rejected outside production (`Model::preventLazyLoading()`), so a query that drops the eager load fails loudly instead of running one query per row. Per-locale values (`translations`) are returned only by the admin resources (`AdminExerciseResource`, `AdminCategoryResource`, `AdminProgramResource`, `AdminWorkoutTemplateResource`, `EquipmentResource`); public resources carry the localized value alone. Admin validation rules for `translations` are built from `available_locales` by `HasTranslationRules`, with only the fallback locale's name required. `lang/*.json` holds the backend's own translated strings (labels and messages embedded in responses); UI strings live in each client.
+**Internationalization** — `NegotiateApiLocale` sets the locale from `Accept-Language`. Translatable models keep their source text in their own columns and other locales in the polymorphic `translations` table, read through the `HasTranslations` trait. `lang/*.json` holds the backend's own translated strings (labels and messages embedded in responses); UI strings live in each client. Details: [Internationalization](#internationalization).
+
+**Lazy loading is rejected outside production** — `Model::preventLazyLoading()` is enabled in `AppServiceProvider`, so a query that drops an eager load fails loudly instead of running one query per row.
 
 **Soft-deleted exercises** — `Exercise` uses `SoftDeletes`: an admin "delete" **retires** it (removed from catalog/pickers via the global scope) without touching workout history. `Activity::exercise()` is `->withTrashed()`, so historical workouts and templates still resolve a retired exercise's name/effort/difficulty. Reference guards that must see retired rows use `withTrashed()` (e.g. the equipment-in-use delete guard). Templates and programs are hard-deleted (a `Workout` copies its own `name` and owns its activities/sets, so no history is lost); a template can't be deleted while a program uses it (409).
 
@@ -44,7 +46,7 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **Repeat breaks template linkage** — Repeated workouts set `workout_template_id` to `null` so the repeated workout is treated as a user-owned copy, not a live projection of the original template.
 
-**Translation strategy is backend-first** — System content is translated in the database, UI strings are translated from JSON files, and the frontend receives translated values rather than owning a separate i18n data source.
+**Content is translated by the API, UI strings by the client** — Catalog content is stored once in its source language with per-locale overrides, and the API returns the value for the negotiated locale. UI strings belong to each client (`apps/web/src/i18n/locales`).
 
 ## Internationalization
 
@@ -57,8 +59,14 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 ### Translation Sources
 
-- System models use the polymorphic `translations` table
-- `HasTranslations::createWithTranslations()` creates records; `updateTranslations()` applies edits and removes blank values so reads fall back to English
+- Source text lives in the `name` / `description` columns of each translatable table, written in `config('app.source_locale')` (English for the shipped catalog); `name` is required
+- Other locales live in the polymorphic `translations` table, one row per record, locale and field
+- Reads return the requested locale's row and fall back to the source text, so a record with no translation rows reads the same in every locale
+- `HasTranslations::createWithTranslations()` creates records; `updateTranslations()` applies edits and removes blank values so reads fall back. Both route the source locale to the columns
+- Assigning a translatable attribute (`$exercise->name = ...`) writes the source text
+- Translations are auto-eager-loaded, and purged only on a real/force delete, so a soft-deleted record still resolves its name
+- Per-locale values (`translations`) are returned only by the admin resources (`AdminExerciseResource`, `AdminCategoryResource`, `AdminProgramResource`, `AdminWorkoutTemplateResource`, `EquipmentResource`); public resources carry the localized value alone
+- Admin validation rules for `translations` are built from `available_locales` by `HasTranslationRules`; only the source locale's name is required
 - Shipped catalog content carries both locales in the `database/catalog/` data files (see Catalog Sync)
 - Backend strings embedded in responses (weekday and status labels, guard messages) live in `lang/en.json` and `lang/ru.json`; UI strings live in `apps/web/src/i18n/locales`
 - Validation and auth messages use Laravel language files under `lang/{locale}`
@@ -112,5 +120,5 @@ Activity ←1:N— Set
 Exercise → Equipment
 Exercise ←M:N→ Category
 User ←M:N→ Role              (pivot: role_user — `Admin` role gates content management)
-{Exercise,Equipment,Category,Program,WorkoutTemplate} ←morph— Translation
+{Exercise,Equipment,Category,Program,WorkoutTemplate} ←morph— Translation (non-source locales)
 ```

@@ -14,15 +14,8 @@ class CategoryFactory extends Factory
 
     public function definition(): array
     {
-        return [];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function (Category $category) {
-            $category->translations()->createMany([
-                ['locale' => 'en', 'field' => 'name', 'value' => fake()->unique()->word()],
-            ]);
-        });
+        return [
+            'name' => fake()->unique()->word(),
+        ];
     }
 }

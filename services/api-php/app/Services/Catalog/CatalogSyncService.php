@@ -418,7 +418,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
                 continue;
             }
 
-            $name = $this->normaliseName((string) $model->rawTranslation('name', 'en'));
+            $name = $this->normaliseName((string) $model->rawTranslation('name', config('app.source_locale')));
 
             if ($name !== '') {
                 $index['names'][$name][$model->getKey()] = $model;
@@ -633,7 +633,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
      */
     private function englishNames(array $record): array
     {
-        return [$record['translations']['en']['name'], ...$record['previous_names']];
+        return [$record['translations'][config('app.source_locale')]['name'], ...$record['previous_names']];
     }
 
     private function isTrashed(Model $model): bool

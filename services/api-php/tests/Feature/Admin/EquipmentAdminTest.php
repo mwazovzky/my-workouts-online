@@ -88,11 +88,7 @@ class EquipmentAdminTest extends TestCase
         $response->assertJsonPath('data.difficulty_unit', 'kilograms');
 
         $id = $response->json('data.id');
-        $this->assertDatabaseHas('equipment', ['id' => $id, 'difficulty_unit' => 'kilograms']);
-        $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'equipment', 'translatable_id' => $id,
-            'locale' => 'en', 'field' => 'name', 'value' => 'Barbell',
-        ]);
+        $this->assertDatabaseHas('equipment', ['id' => $id, 'name' => 'Barbell', 'difficulty_unit' => 'kilograms']);
         $this->assertDatabaseHas('translations', [
             'translatable_type' => 'equipment', 'translatable_id' => $id,
             'locale' => 'ru', 'field' => 'name', 'value' => 'Штанга',
@@ -150,10 +146,7 @@ class EquipmentAdminTest extends TestCase
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('equipment', ['id' => $equipment->id, 'difficulty_unit' => 'pounds']);
-        $this->assertDatabaseHas('translations', [
-            'translatable_id' => $equipment->id, 'locale' => 'en', 'field' => 'name', 'value' => 'Dumbbell',
-        ]);
+        $this->assertDatabaseHas('equipment', ['id' => $equipment->id, 'name' => 'Dumbbell', 'difficulty_unit' => 'pounds']);
     }
 
     #[Test]

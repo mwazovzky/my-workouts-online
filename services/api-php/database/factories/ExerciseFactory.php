@@ -17,20 +17,12 @@ class ExerciseFactory extends Factory
     public function definition(): array
     {
         return [
+            'name' => fake()->unique()->word(),
+            'description' => fake()->sentence(),
             'equipment_id' => Equipment::factory(),
             'effort_type' => EffortType::Repetitions,
             'rest_time_seconds' => $this->faker->randomElement([30, 45, 60, 90, 120, 180]),
         ];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function (Exercise $exercise) {
-            $exercise->translations()->createMany([
-                ['locale' => 'en', 'field' => 'name', 'value' => fake()->unique()->word()],
-                ['locale' => 'en', 'field' => 'description', 'value' => fake()->sentence()],
-            ]);
-        });
     }
 
     /**

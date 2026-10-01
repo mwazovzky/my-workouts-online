@@ -5,13 +5,19 @@ namespace App\Models\Concerns;
 use App\Models\Translation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 
+/**
+ * Translatable fields keep their source text in the model's own columns. The
+ * translations table holds the other locales, so a record without any
+ * translation still reads the same in every locale.
+ */
 trait HasTranslations
 {
     /**
      * Auto-eager-load translations for every query.
-     * Since original text columns are removed, translations are always needed.
+     * Every read of a translatable field looks for the requested locale first.
      * Can be bypassed per-query with ->without('translations').
      */
     public function initializeHasTranslations(): void
@@ -40,6 +46,14 @@ trait HasTranslations
     abstract public function translatableFields(): array;
 
     /**
+     * Locale the model's own columns are written in.
+     */
+    public static function sourceLocale(): string
+    {
+        return config('app.source_locale', 'en');
+    }
+
+    /**
      * @return MorphMany<Translation, $this>
      */
     public function translations(): MorphMany
@@ -49,25 +63,12 @@ trait HasTranslations
 
     /**
      * Get the translated value for a field.
-     * Falls back to English if the requested locale has no translation.
+     * Falls back to the source text if the requested locale has no translation.
      */
     public function translated(string $field, ?string $locale = null): ?string
     {
-        $locale = $locale ?? App::getLocale();
-
-        $translation = $this->translations
-            ->where('field', $field)
-            ->where('locale', $locale)
-            ->first();
-
-        if (! $translation && $locale !== 'en') {
-            $translation = $this->translations
-                ->where('field', $field)
-                ->where('locale', 'en')
-                ->first();
-        }
-
-        return $translation?->value;
+        return $this->storedTranslation($field, $locale ?? App::getLocale())
+            ?? $this->sourceText($field);
     }
 
     /**
@@ -99,17 +100,20 @@ trait HasTranslations
     /**
      * Create a model with translations in multiple locales.
      *
-     * Blank values (null or empty string) are skipped so reads fall back to
-     * English rather than storing an empty translation.
+     * The source locale is written to the model's columns, the others to the
+     * translations table. Blank values (null or empty string) are skipped so
+     * reads fall back to the source text rather than an empty translation.
      *
      * @param  array<string, array<string, ?string>>  $translations  e.g. ['en' => ['name' => 'Chest'], 'ru' => ['name' => 'Грудь']]
      * @param  array<string, mixed>  $attributes  Non-translatable model attributes
      */
     public static function createWithTranslations(array $translations, array $attributes = []): static
     {
-        $model = static::create($attributes);
+        $model = new static($attributes);
+        $model->fillSourceText($translations[static::sourceLocale()] ?? []);
+        $model->save();
 
-        foreach ($translations as $locale => $fields) {
+        foreach (Arr::except($translations, static::sourceLocale()) as $locale => $fields) {
             foreach ($fields as $field => $value) {
                 if ($value === null || $value === '') {
                     continue;
@@ -132,10 +136,9 @@ trait HasTranslations
      */
     public function rawTranslation(string $field, string $locale): ?string
     {
-        return $this->translations
-            ->where('field', $field)
-            ->where('locale', $locale)
-            ->first()?->value;
+        return $locale === static::sourceLocale()
+            ? $this->sourceText($field)
+            : $this->storedTranslation($field, $locale);
     }
 
     /**
@@ -159,13 +162,16 @@ trait HasTranslations
      * Update (or create) translations for the given locales and fields.
      *
      * A blank value removes that locale's translation so lookups fall back to
-     * English. Only the locales/fields present in the payload are touched.
+     * the source text. Only the locales/fields present in the payload are touched.
      *
      * @param  array<string, array<string, ?string>>  $translations  e.g. ['en' => ['name' => 'Chest'], 'ru' => ['name' => '']]
      */
     public function updateTranslations(array $translations): static
     {
-        foreach ($translations as $locale => $fields) {
+        $this->fillSourceText($translations[static::sourceLocale()] ?? []);
+        $this->save();
+
+        foreach (Arr::except($translations, static::sourceLocale()) as $locale => $fields) {
             foreach ($fields as $field => $value) {
                 if ($value === null || $value === '') {
                     $this->translations()
@@ -193,13 +199,7 @@ trait HasTranslations
      */
     public function scopeWhereTranslated(Builder $query, string $field, string $value, ?string $locale = null): Builder
     {
-        $locale = $locale ?? App::getLocale();
-
-        return $query->whereHas('translations', function (Builder $q) use ($field, $value, $locale) {
-            $q->where('field', $field)
-                ->where('value', $value)
-                ->where('locale', $locale);
-        });
+        return $this->scopeWhereTranslatedIn($query, $field, [$value], $locale);
     }
 
     /**
@@ -208,6 +208,10 @@ trait HasTranslations
     public function scopeWhereTranslatedIn(Builder $query, string $field, array $values, ?string $locale = null): Builder
     {
         $locale = $locale ?? App::getLocale();
+
+        if ($locale === static::sourceLocale()) {
+            return $query->whereIn($this->qualifyColumn($field), $values);
+        }
 
         return $query->whereHas('translations', function (Builder $q) use ($field, $values, $locale) {
             $q->where('field', $field)
@@ -219,5 +223,28 @@ trait HasTranslations
     public function __toString(): string
     {
         return $this->translated('name') ?? '';
+    }
+
+    /**
+     * @param  array<string, ?string>  $fields
+     */
+    private function fillSourceText(array $fields): void
+    {
+        foreach (Arr::only($fields, $this->translatableFields()) as $field => $value) {
+            $this->setAttribute($field, $value === '' ? null : $value);
+        }
+    }
+
+    private function sourceText(string $field): ?string
+    {
+        return $this->attributes[$field] ?? null;
+    }
+
+    private function storedTranslation(string $field, string $locale): ?string
+    {
+        return $this->translations
+            ->where('field', $field)
+            ->where('locale', $locale)
+            ->first()?->value;
     }
 }
