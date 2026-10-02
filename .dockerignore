@@ -3,6 +3,7 @@
 .github
 docs
 planning
+apps/ios
 contracts
 scripts
 *.md

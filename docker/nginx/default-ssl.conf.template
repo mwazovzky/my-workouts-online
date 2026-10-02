@@ -32,5 +32,6 @@ server {
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     include /etc/nginx/security-headers.conf;
     include /etc/nginx/api-locations.conf;
+    include /etc/nginx/well-known-locations.conf;
     include /etc/nginx/spa-locations.conf;
 }

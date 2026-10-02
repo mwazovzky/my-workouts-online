@@ -4,6 +4,7 @@ services:
     environment:
       PHP_FPM_UPSTREAM: "api:9000"
       DOMAIN_NAME: "${DOMAIN_NAME}"
+      APPLE_APP_ID: "${APPLE_APP_ID:-}"
     depends_on:
       - api
     ports:

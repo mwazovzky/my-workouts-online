@@ -28,5 +28,14 @@ node_modules/
 /apps/web/dist
 /apps/web/coverage
 /apps/web/.env
+
+# iOS app (apps/ios)
+/apps/ios/*.xcodeproj
+/apps/ios/Config/Local.xcconfig
+xcuserdata/
+DerivedData/
+*.xcresult
+.build/
+.swiftpm/
 .phpunit.result.cache
 /contracts/.report

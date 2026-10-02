@@ -13,5 +13,6 @@ server {
 
     include /etc/nginx/security-headers.conf;
     include /etc/nginx/api-locations.conf;
+    include /etc/nginx/well-known-locations.conf;
     include /etc/nginx/spa-locations.conf;
 }

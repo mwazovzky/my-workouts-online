@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["${APPLE_APP_ID}"],
+        "components": [
+          { "/": "/verify-email/*", "comment": "Email verification link" },
+          { "/": "/reset-password/*", "comment": "Password reset link" }
+        ]
+      }
+    ]
+  }
+}
