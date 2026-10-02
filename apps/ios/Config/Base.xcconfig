@@ -1,0 +1,27 @@
+// Shared build settings for the MyWorkouts app target.
+// Per-configuration values (API_BASE_URL) live in Debug.xcconfig / Release.xcconfig.
+// Developer-specific overrides (DEVELOPMENT_TEAM, a LAN API host) go in the
+// git-ignored Local.xcconfig, included last so it wins.
+
+#include "Versions.xcconfig"
+
+// Recorded in planning/epics/ios-app/README.md; APPLE_APP_ID for the AASA file is TEAMID.<this value>.
+PRODUCT_BUNDLE_IDENTIFIER = online.my-workouts.app
+PRODUCT_NAME = MyWorkouts
+INFOPLIST_FILE = App/Info.plist
+GENERATE_INFOPLIST_FILE = NO
+
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = complete
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+TARGETED_DEVICE_FAMILY = 1
+SUPPORTS_MACCATALYST = NO
+
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"

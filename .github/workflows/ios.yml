@@ -1,0 +1,99 @@
+name: ios
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  # Cheap Linux job that decides whether the macOS job runs. A job skipped through
+  # `if:` still satisfies branch protection, so `ios / build-and-test` can be a
+  # required check without spending macOS minutes on unrelated changes.
+  changes:
+    name: Detect iOS changes
+    runs-on: ubuntu-latest
+    outputs:
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ios:
+              - 'apps/ios/**'
+              - 'contracts/openapi.yaml'
+              - '.github/workflows/ios.yml'
+
+  build-and-test:
+    name: Build and test
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: macos-26
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen and xcbeautify
+        run: brew install xcodegen xcbeautify
+
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/ios/Packages/*/.build
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('apps/ios/Packages/*/Package.swift', 'apps/ios/Packages/*/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Lint
+        run: swift format lint --strict --recursive apps/ios
+
+      - name: Package tests
+        run: |
+          (cd apps/ios/Packages/WorkoutsCore && swift test)
+          (cd apps/ios/Packages/WorkoutsAPI && swift test)
+
+      - name: Generate project
+        working-directory: apps/ios
+        run: xcodegen generate
+
+      - name: Pick a simulator
+        id: simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = [d for runtime, ds in json.load(sys.stdin)["devices"].items() if "iOS" in runtime for d in ds if d["name"].startswith("iPhone")]
+          print(devices[-1]["udid"])')
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      - name: App tests
+        run: |
+          xcodebuild test \
+            -project apps/ios/MyWorkouts.xcodeproj \
+            -scheme MyWorkouts \
+            -destination "id=${{ steps.simulator.outputs.udid }}" \
+            -skip-testing:MyWorkoutsUITests \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO | xcbeautify --quiet || exit ${PIPESTATUS[0]}
+
+      - name: Upload results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: TestResults.xcresult

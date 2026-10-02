@@ -1,0 +1,4 @@
+#include "Base.xcconfig"
+
+// Production, same origin as the web app. `$()` keeps `//` from starting a comment.
+API_BASE_URL = https:/$()/my-workouts.online
