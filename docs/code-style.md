@@ -15,7 +15,7 @@
 
 - Validation **must** use dedicated Form Request classes.
 - API routes **must** use controller methods, not closures (operational routes in `routes/web.php` are the exception).
-- Route model binding and dependency injection **should** be used where possible.
+- Route model binding and dependency injection **should** be used where possible. Every id route parameter is constrained to digits by the global `Route::pattern` list in `AppServiceProvider::boot`, so a non-numeric id is a 404 before the database is queried; add new parameter names to that list instead of calling `whereNumber` per route.
 - Controllers **must** return appropriate HTTP status codes (201, 204, 403, etc.).
 - Mutating endpoints **must** be protected with Policies and explicit controller authorization.
 

@@ -160,6 +160,26 @@ class WorkoutTemplateAdminTest extends TestCase
     }
 
     #[Test]
+    public function create_rejects_numeric_values_beyond_column_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $exercise = Exercise::factory()->create();
+
+        $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
+            'activities' => [[
+                'exercise_id' => $exercise->id,
+                'order' => 1001,
+                'sets' => [['order' => 58601485020608, 'effort_value' => 100001, 'difficulty_value' => 123456.5]],
+            ]],
+        ]))->assertUnprocessable()->assertJsonValidationErrors([
+            'activities.0.order',
+            'activities.0.sets.0.order',
+            'activities.0.sets.0.effort_value',
+            'activities.0.sets.0.difficulty_value',
+        ]);
+    }
+
+    #[Test]
     public function admin_can_update_template_replacing_activities(): void
     {
         $admin = User::factory()->admin()->create();

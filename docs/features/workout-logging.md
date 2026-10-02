@@ -35,6 +35,7 @@ Start workouts from templates, edit activities and sets, save progress, complete
 - Frontend normalizes activity and set order before sending the payload.
 - The save response returns persisted IDs, so a subsequent save updates the same rows instead of recreating them.
 - A workout must retain at least one activity, and each activity must retain at least one set.
+- Orders are 1–1000, `effort_value` is 0–100000 and `difficulty_value` is 0–10000 (heart-rate zones additionally 1–5); larger values are rejected with 422 rather than overflowing the database columns.
 - Completed sets must have `effort_value > 0`.
 - A weight may be left blank. Shipped templates prescribe sets and repetitions but no weight, so a workout started from one opens with empty weight fields. A blank weight is stored as `null`, never as zero, and a set can be completed without one; an entered `0` is stored as zero.
 - Start, repeat, save, and delete operations run in database transactions.
