@@ -34,13 +34,13 @@ class WorkoutSaveRequest extends FormRequest
                     ->where('workout_id', $workoutId),
             ],
             'activities.*.exercise_id' => ['required', 'integer', Rule::exists('exercises', 'id')],
-            'activities.*.order' => ['required', 'integer', 'min:1', 'distinct'],
+            'activities.*.order' => ['required', 'integer', 'min:1', 'max:1000', 'distinct'],
 
             'activities.*.sets' => ['required', 'array', 'min:1'],
             'activities.*.sets.*.id' => ['nullable', 'integer', 'distinct'],
-            'activities.*.sets.*.order' => ['required', 'integer', 'min:1'],
-            'activities.*.sets.*.effort_value' => ['required', 'integer', 'min:0'],
-            'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0', new HeartRateZoneWithinRange],
+            'activities.*.sets.*.order' => ['required', 'integer', 'min:1', 'max:1000'],
+            'activities.*.sets.*.effort_value' => ['required', 'integer', 'min:0', 'max:100000'],
+            'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0', 'max:10000', new HeartRateZoneWithinRange],
             'activities.*.sets.*.is_completed' => ['sometimes', 'boolean', new CompletedSetRequiresEffort],
         ];
     }

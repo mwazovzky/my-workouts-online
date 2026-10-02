@@ -883,6 +883,36 @@ class WorkoutSaveTest extends TestCase
         $response->assertOk();
     }
 
+    #[Test]
+    public function save_rejects_numeric_values_beyond_column_range(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $exercise = Exercise::factory()->create();
+
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
+            [
+                'activities' => [
+                    [
+                        'exercise_id' => $exercise->id,
+                        'order' => 1001,
+                        'sets' => [
+                            ['order' => 58601485020608, 'effort_value' => 100001, 'difficulty_value' => 123456.5],
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $response->assertUnprocessable()->assertJsonValidationErrors([
+            'activities.0.order',
+            'activities.0.sets.0.order',
+            'activities.0.sets.0.effort_value',
+            'activities.0.sets.0.difficulty_value',
+        ]);
+    }
+
     // -------------------------------------------------------
     // Edge cases
     // -------------------------------------------------------

@@ -25,11 +25,11 @@ class WorkoutTemplateStoreRequest extends FormRequest
 
             'activities' => ['required', 'array', 'min:1'],
             'activities.*.exercise_id' => ['required', 'integer', 'exists:exercises,id'],
-            'activities.*.order' => ['required', 'integer', 'min:1'],
+            'activities.*.order' => ['required', 'integer', 'min:1', 'max:1000'],
             'activities.*.sets' => ['required', 'array', 'min:1'],
-            'activities.*.sets.*.order' => ['required', 'integer', 'min:1'],
-            'activities.*.sets.*.effort_value' => ['required', 'integer', 'min:0'],
-            'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0', new HeartRateZoneWithinRange],
+            'activities.*.sets.*.order' => ['required', 'integer', 'min:1', 'max:1000'],
+            'activities.*.sets.*.effort_value' => ['required', 'integer', 'min:0', 'max:100000'],
+            'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0', 'max:10000', new HeartRateZoneWithinRange],
         ];
     }
 
