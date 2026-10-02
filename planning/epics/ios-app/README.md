@@ -1,6 +1,6 @@
 # Epic: iOS App
 
-**Status: in progress (story 1 started 2026-10-02).**
+**Status: in progress (story 1 shipped 2026-10-03, story 2 in review).**
 
 Ship a native iOS client for the existing `/api/v1` contract so a user can register, enroll, log workouts and manage their profile from an iPhone, with the web SPA untouched and the API as the single source of truth.
 
@@ -82,8 +82,8 @@ RootView:                    splash           auth flow     verify-email gate  M
 
 | # | Story | Primary feature | State |
 | --- | --- | --- | --- |
-| 1 | [Backend and Repo Prerequisites](stories/01-backend-and-repo-prerequisites.md) | Platform | in progress |
-| 2 | [Xcode Project Scaffold, Tooling and CI](stories/02-xcode-project-scaffold-and-ci.md) | Platform | planned |
+| 1 | [Backend and Repo Prerequisites](stories/01-backend-and-repo-prerequisites.md) | Platform | shipped (#31) |
+| 2 | [Xcode Project Scaffold, Tooling and CI](stories/02-xcode-project-scaffold-and-ci.md) | Platform | in progress |
 | 3 | [Generated API Client](stories/03-generated-api-client.md) | Platform | planned |
 | 4 | [Session, Keychain and Auth Middleware](stories/04-session-keychain-and-auth-middleware.md) | Auth & Profile | planned |
 | 5 | [Auth Screens](stories/05-auth-screens.md) | Auth & Profile | planned |

@@ -8,6 +8,7 @@ Workout tracking app: users browse programs, enroll, log workouts, and track set
 
 - `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
+- `apps/ios/` — native SwiftUI iOS app (Swift 6, iOS 17+, XcodeGen `project.yml`, local packages `WorkoutsCore` and `WorkoutsAPI`) consuming the same API; see `apps/ios/README.md`. Planned in `planning/epics/ios-app/`.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
 - `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), dev nginx config.
 
@@ -38,6 +39,19 @@ docker compose exec -T node npm run api:types # Regenerate TS types from contrac
 ```
 
 After modifying any `.js` or `.vue` file in `apps/web`, always run `npm run lint:fix && npm run format && npm test` there before finalizing.
+
+### iOS app (`apps/ios`)
+Runs on the host (Xcode + `brew install xcodegen`), not in Docker.
+```bash
+swift format --in-place --recursive apps/ios                               # Swift formatting
+swift format lint --strict --recursive apps/ios                            # Swift lint (CI runs this)
+(cd apps/ios/Packages/WorkoutsCore && swift test)                          # package tests, no simulator
+(cd apps/ios && xcodegen generate)                                         # regenerate MyWorkouts.xcodeproj after editing project.yml
+xcodebuild test -project apps/ios/MyWorkouts.xcodeproj -scheme MyWorkouts -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -skip-testing:MyWorkoutsUITests
+swift apps/ios/scripts/seed-string-catalog.swift                           # merge web UI strings into Localizable.xcstrings
+```
+
+After modifying any `.swift` file, always run `swift format --in-place` on it and the affected package or app tests before finalizing. Views live in the app target; anything testable without UIKit goes in `Packages/`.
 
 After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` in `services/api-php` before finalizing.
 
@@ -86,7 +100,7 @@ Exercise <-M:N-> Category
 
 ### CI
 
-GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `deploy.yml`.
+GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `deploy.yml`.
 
 ### Deployment
 

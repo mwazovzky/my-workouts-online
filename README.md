@@ -12,7 +12,8 @@
 ## Repository layout
 
 ```
-apps/web/            Vue 3 SPA (vue-router, Pinia) — the user-facing client
+apps/web/            Vue 3 SPA (vue-router, Pinia) — the user-facing web client
+apps/ios/            SwiftUI iOS app (XcodeGen project, local Swift packages) — the native client
 services/api-php/    Laravel 12 JSON API (php-fpm)
 contracts/           OpenAPI contract shared by every client and backend
 docker/              api + web images, nginx configs, compose support files
@@ -36,6 +37,8 @@ Logs (including the verification and password-reset emails, which use the `log` 
 
 This mirrors the production topology (nginx in front of the SPA and the API) while keeping code bind-mounted for live edits.
 
+**iOS app:** needs Xcode and XcodeGen on the Mac (`brew install xcodegen`). `cd apps/ios && xcodegen generate && open MyWorkouts.xcodeproj`; the Debug build talks to the dev stack above. Details in [apps/ios/README.md](apps/ios/README.md).
+
 Useful commands:
 
 ```bash
@@ -43,6 +46,7 @@ docker compose exec -T app php artisan test --compact   # backend tests
 docker compose exec -T app vendor/bin/pint --dirty       # PHP formatting
 docker compose exec -T node npm test                     # SPA tests (apps/web)
 docker compose exec -T node npm run lint:fix             # SPA lint
+swift format lint --strict --recursive apps/ios          # iOS lint (host Xcode toolchain)
 ```
 
 ## Documentation

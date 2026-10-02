@@ -1,6 +1,6 @@
 # Documentation
 
-Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 3 SPA (`apps/web`) / Tailwind v3 / MySQL.
+Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 3 SPA (`apps/web`) + SwiftUI iOS app (`apps/ios`) / Tailwind v3 / MySQL.
 
 ## Contents
 
@@ -26,3 +26,4 @@ Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 
 ## Related
 
 - [Local development & deployment](../README.md)
+- [iOS app setup](../apps/ios/README.md)

@@ -213,6 +213,17 @@ The dev `app` container has no coverage driver, so `--coverage` only works in CI
 - [Programs](features/programs.md)
 - [Workout Logging](features/workout-logging.md)
 
+## iOS Tests
+
+The iOS app (`apps/ios`) is tested on the host with the Xcode toolchain, not in Docker.
+
+- **Package tests** (`Packages/WorkoutsCore`, `Packages/WorkoutsAPI`): Swift Testing suites run with `swift test` inside the package directory. They need no simulator because the packages are Foundation-only; anything that needs UIKit stays in the app target.
+- **App tests** (`Tests/MyWorkoutsTests`): Swift Testing against the app target, run with `xcodebuild test` on a simulator (see `apps/ios/README.md` for the command).
+- **UI tests** (`UITests/MyWorkoutsUITests`): a small XCUITest smoke suite. Skipped in the per-PR CI job (`-skip-testing:MyWorkoutsUITests`) to keep macOS minutes low; run them locally before a release.
+- **Lint**: `swift format lint --strict --recursive apps/ios` is enforced by CI.
+
+`.github/workflows/ios.yml` runs lint, package tests and app tests on a macOS runner only when `apps/ios/**`, `contracts/openapi.yaml` or the workflow itself changed; otherwise the job is skipped, which still satisfies branch protection.
+
 ## Contract Tests
 
 `contracts/openapi.yaml` is enforced against a running API with [Schemathesis](https://schemathesis.io): every documented operation is exercised with generated positive and negative data and every response is checked for a documented status code, content type, and schema. This is the acceptance gate for any backend that claims to implement the contract.
