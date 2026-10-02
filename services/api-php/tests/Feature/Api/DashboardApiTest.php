@@ -41,7 +41,6 @@ class DashboardApiTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'upcoming_schedule',
-                'in_progress_workout',
                 'recent_workouts',
                 'summary' => [
                     'enrolled_programs_count',
@@ -66,14 +65,14 @@ class DashboardApiTest extends TestCase
     }
 
     #[Test]
-    public function index_in_progress_workout_is_null_when_none_exists(): void
+    public function index_omits_in_progress_workout_when_none_exists(): void
     {
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->getJson('/api/v1/dashboard');
 
         $response->assertOk();
-        $response->assertJsonPath('data.in_progress_workout', null);
+        $response->assertJsonMissingPath('data.in_progress_workout');
     }
 
     #[Test]

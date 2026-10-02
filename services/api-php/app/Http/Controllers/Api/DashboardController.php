@@ -44,7 +44,7 @@ class DashboardController extends Controller
         return response()->json([
             'data' => [
                 'upcoming_schedule' => $upcomingSchedule,
-                'in_progress_workout' => $inProgressWorkout ? (new WorkoutResource($inProgressWorkout))->resolve() : null,
+                ...($inProgressWorkout ? ['in_progress_workout' => (new WorkoutResource($inProgressWorkout))->resolve()] : []),
                 'recent_workouts' => WorkoutResource::collection($recentWorkouts)->resolve(),
                 'summary' => [
                     'enrolled_programs_count' => $enrolledPrograms->count(),

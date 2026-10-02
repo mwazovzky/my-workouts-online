@@ -112,16 +112,16 @@ class WorkoutResourceTest extends TestCase
         // Without eager loading
         $workoutWithoutTemplate = Workout::find($workout->id);
         $resourceWithout = new WorkoutResource($workoutWithoutTemplate);
-        $arrayWithout = $resourceWithout->toArray(request());
+        $arrayWithout = $resourceWithout->resolve();
 
-        $this->assertNull($arrayWithout['workout_template']);
+        $this->assertArrayNotHasKey('workout_template', $arrayWithout);
 
         // With eager loading
         $workoutWithTemplate = Workout::with('workoutTemplate.translations')->find($workout->id);
         $resourceWith = new WorkoutResource($workoutWithTemplate);
-        $arrayWith = $resourceWith->toArray(request());
+        $arrayWith = $resourceWith->resolve();
 
-        $this->assertNotNull($arrayWith['workout_template']);
+        $this->assertArrayHasKey('workout_template', $arrayWith);
         $this->assertEquals('Test Template', $arrayWith['workout_template']['name']);
     }
 

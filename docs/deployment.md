@@ -14,7 +14,7 @@
 Monorepo: `services/api-php` (Laravel API), `apps/web` (Vue SPA), `contracts/openapi.yaml`, `docker/`. One `docker/` folder serves local and production:
 
 - `docker/api/Dockerfile` — php-fpm image (`api`, `worker`)
-- `docker/web/Dockerfile` — builds `apps/web` and serves it with nginx; `docker/nginx/api-locations.conf` routes `/api/*`, `/health*`, `/up` and `/.well-known/jwks.json` to php-fpm over FastCGI (`PHP_FPM_UPSTREAM=api:9000`), everything else is the SPA with history fallback; `security-headers.conf` sets CSP and friends
+- `docker/web/Dockerfile` — builds `apps/web` and serves it with nginx; `docker/nginx/api-locations.conf` routes `/api/*`, `/health*`, `/up` and `/.well-known/jwks.json` to php-fpm over FastCGI (`PHP_FPM_UPSTREAM=api:9000`), everything else is the SPA with history fallback; `well-known-locations.conf` serves the Apple App Site Association file rendered by `docker/web/start.sh` from `APPLE_APP_ID`; `security-headers.conf` sets CSP and friends
 - `docker/nginx/dev.conf.template` — local nginx: same API routing, `/` proxied to the Vite dev server
 
 Swapping the backend implementation later means changing `PHP_FPM_UPSTREAM` (or the proxy in `api-locations.conf`); the web image and clients stay as they are.
@@ -179,6 +179,7 @@ Required values (see `.env.example` in the repo for the full reference):
 - `APP_URL=http://your-domain.com` (use `http://` initially; switch to `https://` after SSL is set up in step 11)
 - `APP_KEY=...` (generate with `docker run --rm ${IMAGE_NAME}:api-<tag> php artisan key:generate --show`, or `php artisan key:generate --show` where PHP is installed)
 - `DOMAIN_NAME=your-domain.com` (your actual domain, used for SSL and Nginx)
+- `APPLE_APP_ID=TEAMID.bundle.id` (optional; the iOS app's Apple Team ID and bundle identifier. nginx serves `/.well-known/apple-app-site-association` from it so email links open the app. Leave it empty until the app is published, and change it here when the Team ID or bundle id changes; the next release re-renders the file)
 - `DB_DATABASE=...`
 - `DB_USERNAME=...`
 - `DB_PASSWORD=...`
@@ -378,6 +379,7 @@ curl -f https://your-domain.com/health
 curl -f https://your-domain.com/health/ready
 curl -fI https://your-domain.com/ | head -1        # the SPA
 curl -f https://your-domain.com/api/v1/meta       # the API through nginx
+curl -fsI https://your-domain.com/.well-known/apple-app-site-association | grep -i content-type   # application/json, no redirect
 ```
 
 If `PRODUCTION_HEALTHCHECK_URL` and `PRODUCTION_READYCHECK_URL` are configured in GitHub, the deploy workflow performs these checks automatically and fails the release if they do not pass.

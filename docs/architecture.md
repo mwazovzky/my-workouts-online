@@ -16,7 +16,7 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **API Error Envelope** — Every non-2xx response under `api/*` is `{ message, code }` (`App\Exceptions\Api\ApiErrorResponse`, wired in `bootstrap/app.php`). Codes: `unauthenticated`, `token_expired`, `forbidden`, `email_unverified`, `not_found`, `conflict`, `too_many_requests`, `validation_failed`, plus explicit ones thrown via `ApiException` (e.g. `in_use` on reference guards). Validation failures add `errors: { field: [{ code, message }] }` where `code` is the failed rule name (`required`, `email`, `unique`, `enum`, custom rule class in snake_case) or `invalid` for manually added messages.
 
-**Eloquent Resources** — All API responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`).
+**Eloquent Resources** — All API responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`). Optional object fields (`workout_template`, `in_progress_workout`) are omitted when there is nothing to return, never set to `null`, so generated clients keep them as optional typed fields.
 
 **Form Requests** — Validation via dedicated request classes. Authorization via policies separately.
 
@@ -85,6 +85,7 @@ Only non-obvious locations listed.
 | ----------------------------- | ---------------------------------------------------------------------------- |
 | `apps/web/`                   | The Vue SPA (vue-router, Pinia) consuming `/api/v1`; served by the `web` nginx image |
 | `services/api-php/`           | The Laravel API; `docker/nginx/api-locations.conf` is the only path from the SPA to it |
+| `docker/nginx/`               | nginx snippets shared by dev and production: API routes, SPA fallback, `/.well-known/apple-app-site-association` for iOS Universal Links (rendered from `APPLE_APP_ID`), security headers |
 | `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |
 | `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`, `Catalog/`) |
 | `database/catalog/`           | Catalog data files applied by `catalog:sync`; `retired.php` lists removals  |

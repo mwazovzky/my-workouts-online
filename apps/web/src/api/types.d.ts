@@ -702,7 +702,7 @@ export interface components {
             code: string;
         };
         ValidationError: components["schemas"]["Error"] & {
-            /** @constant */
+            /** @enum {string} */
             code?: "validation_failed";
             /** @description Keyed by dot-notation field path, e.g. `activities.0.sets.1.effort_value`. */
             errors: {
@@ -801,7 +801,7 @@ export interface components {
         };
         AuthResponse: {
             access_token: string;
-            /** @constant */
+            /** @enum {string} */
             token_type: "Bearer";
             /** @description Access token lifetime in seconds. */
             expires_in: number;
@@ -964,10 +964,17 @@ export interface components {
             exercise_name: string | null;
             rest_time_seconds?: number | null;
             exercise_equipment_name?: string | null;
-            /** @description Null when the exercise relation is not loaded (e.g. a template embedded in a freshly created workout). */
-            exercise_effort_type?: components["schemas"]["EffortType"] | null;
+            /**
+             * @description Same values as `EffortType`, inlined because code generators drop nullable `$ref`s. Null when the exercise relation is not loaded (e.g. a template embedded in a freshly created workout).
+             * @enum {string|null}
+             */
+            exercise_effort_type?: "repetitions" | "duration" | null;
             exercise_effort_label?: string;
-            exercise_difficulty_unit?: components["schemas"]["DifficultyUnit"] | null;
+            /**
+             * @description Same values as `DifficultyUnit`, inlined because code generators drop nullable `$ref`s.
+             * @enum {string|null}
+             */
+            exercise_difficulty_unit?: "kilograms" | "pounds" | "plates" | "heart_rate_zone" | "none" | null;
             exercise_difficulty_label?: string;
             exercise_category_names?: string[];
             sets: components["schemas"]["Set"][];
@@ -984,7 +991,8 @@ export interface components {
             /** Format: date-time */
             updated_at?: string | null;
             activities_count?: number | null;
-            workout_template?: components["schemas"]["WorkoutTemplate"] | null;
+            /** @description Absent when the workout's template is not loaded or no longer exists. Omitted rather than null because code generators drop nullable `$ref`s. */
+            workout_template?: components["schemas"]["WorkoutTemplate"];
             activities: components["schemas"]["Activity"][];
         };
         WorkoutSaveRequest: {
@@ -1011,7 +1019,8 @@ export interface components {
                 /** Format: date */
                 scheduled_for: string;
             }[];
-            in_progress_workout: components["schemas"]["Workout"] | null;
+            /** @description The most recent in-progress workout. Absent when there is none; omitted rather than null because code generators drop nullable `$ref`s. */
+            in_progress_workout?: components["schemas"]["Workout"];
             recent_workouts: components["schemas"]["Workout"][];
             summary: {
                 enrolled_programs_count: number;

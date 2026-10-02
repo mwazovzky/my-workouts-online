@@ -25,6 +25,8 @@ services:
     volumes:
       - ./docker/nginx/dev.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./docker/nginx/api-locations.conf:/etc/nginx/api-locations.conf:ro
+      - ./docker/nginx/well-known-locations.conf:/etc/nginx/well-known-locations.conf:ro
+      - ./docker/web/apple-app-site-association.empty:/etc/nginx/apple-app-site-association:ro
 
   mysql:
     image: mysql:8.0

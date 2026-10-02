@@ -18,7 +18,7 @@ None. The web SPA and the API behave identically.
 
 ## Scope
 
-- Reshape the four nullable `$ref` properties to a generator-compatible form. Preferred: a `$ref` with a sibling `type: [..., 'null']` (legal in OpenAPI 3.1). Fallback for the two enums: inline `type: [string, 'null']` with the enum values plus `null`; for the two objects: a named nullable wrapper schema. Replace the two `const`s with single-value `enum`s.
+- Reshape the four nullable `$ref` properties to a generator-compatible form. Spike result (generator 1.13.1): every union of a `$ref` with `null` is dropped, inline or named, and a `$ref` with a sibling nullable `type` compiles but fails Schemathesis response validation on real nulls. So: the two enums become inline `type: [string, 'null']` enums; the two objects become plain optional `$ref`s that the API omits instead of sending `null` (`WorkoutResource`, `DashboardController`). Replace the two `const`s with single-value `enum`s.
 - Spike: run the generator once against the edited spec in a throwaway package outside the repo and confirm zero "skipping" diagnostics for non-admin schemas, before story 2 commits to it.
 - Regenerate `apps/web/src/api/types.d.ts` with `npm run api:types` and confirm the diff is representation-only.
 - `docker/nginx/well-known-locations.conf`: an exact-match `location = /.well-known/apple-app-site-association` with `default_type application/json`, `expires 1h`, `try_files $uri =404`, included by `default.conf.template`, `default-ssl.conf.template` and `dev.conf.template` next to the existing snippets.
@@ -30,7 +30,7 @@ None. The web SPA and the API behave identically.
 ## Non-Goals
 
 - any Swift code or Xcode project
-- PHP changes; responses do not change
+- PHP changes beyond omitting the two optional object keys
 - the Associated Domains entitlement on the app side (story 6)
 
 ## Acceptance Criteria
