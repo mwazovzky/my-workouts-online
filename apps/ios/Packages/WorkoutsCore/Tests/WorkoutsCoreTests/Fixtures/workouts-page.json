@@ -1,0 +1,385 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "user_id": 1,
+            "name": "Endurance + FastPedal (long)",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-10-02T18:06:30.000000Z",
+            "updated_at": "2026-10-02T18:06:30.000000Z",
+            "activities_count": 2,
+            "workout_template": {
+                "id": 4,
+                "name": "Endurance + FastPedal (long)",
+                "description": "1 hour in Zone 2 with a 10-minute FastPedal drill on flat terrain.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 2,
+            "user_id": 1,
+            "name": "Endurance + FastPedal (short)",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-10-01T18:06:30.000000Z",
+            "updated_at": "2026-10-01T18:06:30.000000Z",
+            "activities_count": 2,
+            "workout_template": {
+                "id": 2,
+                "name": "Endurance + FastPedal (short)",
+                "description": "45 minutes in Zone 2 with a 5-minute FastPedal drill on flat terrain.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 3,
+            "user_id": 1,
+            "name": "Hill Endurance",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-30T18:06:30.000000Z",
+            "updated_at": "2026-09-30T18:06:30.000000Z",
+            "activities_count": 1,
+            "workout_template": {
+                "id": 5,
+                "name": "Hill Endurance",
+                "description": "1.5 hours in Zone 2 on hilly terrain; try to stay seated on the climbs.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 4,
+            "user_id": 1,
+            "name": "Recovery Spin",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-29T18:06:30.000000Z",
+            "updated_at": "2026-09-29T18:06:30.000000Z",
+            "activities_count": 1,
+            "workout_template": {
+                "id": 1,
+                "name": "Recovery Spin",
+                "description": "30 minutes in Zone 1 on flat terrain at an easy, steady pace.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 5,
+            "user_id": 1,
+            "name": "Steady Endurance",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-28T18:06:30.000000Z",
+            "updated_at": "2026-09-28T18:06:30.000000Z",
+            "activities_count": 1,
+            "workout_template": {
+                "id": 3,
+                "name": "Steady Endurance",
+                "description": "1 hour in Zone 2 on flat terrain; hold 80\u201385 rpm throughout.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 6,
+            "user_id": 1,
+            "name": "Back & Biceps",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-27T18:06:30.000000Z",
+            "updated_at": "2026-09-27T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 8,
+                "name": "Back & Biceps",
+                "description": "Pulling day: the deadlift first, then pulldowns, rows and pull-ups for the back, and curls to finish.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 7,
+            "user_id": 1,
+            "name": "Chest, Shoulders & Triceps",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-26T18:06:30.000000Z",
+            "updated_at": "2026-09-26T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 7,
+                "name": "Chest, Shoulders & Triceps",
+                "description": "Pressing day: chest first, then shoulders and triceps. Start with the bench press while you are fresh.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 8,
+            "user_id": 1,
+            "name": "Beginner Full Body",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-25T18:06:30.000000Z",
+            "updated_at": "2026-09-25T18:06:30.000000Z",
+            "activities_count": 8,
+            "workout_template": {
+                "id": 6,
+                "name": "Beginner Full Body",
+                "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 9,
+            "user_id": 1,
+            "name": "Legs A",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-24T18:06:30.000000Z",
+            "updated_at": "2026-09-24T18:06:30.000000Z",
+            "activities_count": 5,
+            "workout_template": {
+                "id": 18,
+                "name": "Legs A",
+                "description": "Leg day led by the back squat, with the Romanian deadlift for the back of the thighs.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 10,
+            "user_id": 1,
+            "name": "Legs B",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-23T18:06:30.000000Z",
+            "updated_at": "2026-09-23T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 21,
+                "name": "Legs B",
+                "description": "The second leg day, led by the front squat, with the hip thrust and lunges.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 11,
+            "user_id": 1,
+            "name": "Legs & Core",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-22T18:06:30.000000Z",
+            "updated_at": "2026-09-22T18:06:30.000000Z",
+            "activities_count": 7,
+            "workout_template": {
+                "id": 9,
+                "name": "Legs & Core",
+                "description": "Squat and leg press first, then isolation work for the thighs and calves, and two core exercises to finish.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 12,
+            "user_id": 1,
+            "name": "Lower Body A",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-21T18:06:30.000000Z",
+            "updated_at": "2026-09-21T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 13,
+                "name": "Lower Body A",
+                "description": "Heavy lower-body day built on the back squat, followed by work for the back of the thighs, the calves and the core.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 13,
+            "user_id": 1,
+            "name": "Lower Body B",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-20T18:06:30.000000Z",
+            "updated_at": "2026-09-20T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 15,
+                "name": "Lower Body B",
+                "description": "Lower-body day built on the deadlift, with single-leg work and the hip thrust for the glutes.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 14,
+            "user_id": 1,
+            "name": "Machine Full Body A",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-19T18:06:30.000000Z",
+            "updated_at": "2026-09-19T18:06:30.000000Z",
+            "activities_count": 7,
+            "workout_template": {
+                "id": 10,
+                "name": "Machine Full Body A",
+                "description": "Seven exercises on machines that guide the movement for you, so you can learn the effort before the technique. Finish with a plank.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 15,
+            "user_id": 1,
+            "name": "Machine Full Body B",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-18T18:06:30.000000Z",
+            "updated_at": "2026-09-18T18:06:30.000000Z",
+            "activities_count": 7,
+            "workout_template": {
+                "id": 11,
+                "name": "Machine Full Body B",
+                "description": "The second machine session, with different exercises for the same muscles. Alternate it with session A.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 16,
+            "user_id": 1,
+            "name": "Pull A",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-17T18:06:30.000000Z",
+            "updated_at": "2026-09-17T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 17,
+                "name": "Pull A",
+                "description": "Everything that pulls: back and biceps, led by the deadlift.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 17,
+            "user_id": 1,
+            "name": "Pull B",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-16T18:06:30.000000Z",
+            "updated_at": "2026-09-16T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 20,
+                "name": "Pull B",
+                "description": "The second pulling day, with pulldowns and rows in higher repetitions.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 18,
+            "user_id": 1,
+            "name": "Push A",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-15T18:06:30.000000Z",
+            "updated_at": "2026-09-15T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 16,
+                "name": "Push A",
+                "description": "Everything that pushes: chest, shoulders and triceps, led by the barbell bench press.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 19,
+            "user_id": 1,
+            "name": "Push B",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-14T18:06:30.000000Z",
+            "updated_at": "2026-09-14T18:06:30.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 19,
+                "name": "Push B",
+                "description": "The second pushing day, with dumbbells, cables and dips instead of the barbell.",
+                "activities": []
+            },
+            "activities": []
+        },
+        {
+            "id": 20,
+            "user_id": 1,
+            "name": "Strength 5x5 A",
+            "status": "completed",
+            "status_label": "Completed",
+            "created_at": "2026-09-13T18:06:30.000000Z",
+            "updated_at": "2026-09-13T18:06:30.000000Z",
+            "activities_count": 3,
+            "workout_template": {
+                "id": 22,
+                "name": "Strength 5x5 A",
+                "description": "Three barbell lifts for five sets of five. Add a little weight each session for as long as you complete every repetition.",
+                "activities": []
+            },
+            "activities": []
+        }
+    ],
+    "links": {
+        "first": "http://localhost:8080/api/v1/workouts?page=1",
+        "last": "http://localhost:8080/api/v1/workouts?page=2",
+        "prev": null,
+        "next": "http://localhost:8080/api/v1/workouts?page=2"
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 2,
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://localhost:8080/api/v1/workouts?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": "http://localhost:8080/api/v1/workouts?page=2",
+                "label": "2",
+                "page": 2,
+                "active": false
+            },
+            {
+                "url": "http://localhost:8080/api/v1/workouts?page=2",
+                "label": "Next &raquo;",
+                "page": 2,
+                "active": false
+            }
+        ],
+        "path": "http://localhost:8080/api/v1/workouts",
+        "per_page": 20,
+        "to": 20,
+        "total": 30
+    }
+}

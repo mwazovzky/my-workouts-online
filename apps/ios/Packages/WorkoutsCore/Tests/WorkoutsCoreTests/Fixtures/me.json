@@ -1,0 +1,11 @@
+{
+    "data": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "test@example.com",
+        "locale": "en",
+        "theme_preference": "system",
+        "is_admin": true,
+        "email_verified": true
+    }
+}

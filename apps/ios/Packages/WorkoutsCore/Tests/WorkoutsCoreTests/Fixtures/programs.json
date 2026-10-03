@@ -1,0 +1,88 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Gym Beginner Full Body",
+            "description": "Three identical full-body sessions a week with a rest day between them. A good first program if you are new to the gym.",
+            "is_enrolled": true
+        },
+        {
+            "id": 2,
+            "name": "3 Day Split",
+            "description": "Three sessions a week, each for a different part of the body: chest, shoulders and triceps; back and biceps; legs and core.",
+            "is_enrolled": false
+        },
+        {
+            "id": 3,
+            "name": "Cycling \u2014 Beginner (Week 1)",
+            "description": "A seven-day beginner cycling week built around heart-rate zones.",
+            "is_enrolled": false
+        },
+        {
+            "id": 4,
+            "name": "Gym Machines Beginner",
+            "description": "Three sessions a week on machines only, alternating two sessions. A gentle way into the gym before you move on to free weights.",
+            "is_enrolled": false
+        },
+        {
+            "id": 5,
+            "name": "Gym Upper / Lower",
+            "description": "Four sessions a week: two for the upper body and two for the lower, one heavy and one lighter of each. For people with a few months of training behind them.",
+            "is_enrolled": false
+        },
+        {
+            "id": 6,
+            "name": "Gym Push / Pull / Legs",
+            "description": "Three sessions a week, split by movement: pushing, pulling and legs. Each muscle is trained once a week.",
+            "is_enrolled": false
+        },
+        {
+            "id": 7,
+            "name": "Gym Push / Pull / Legs 6 Day",
+            "description": "Six sessions a week with one rest day: pushing, pulling and legs, each done twice with different exercises. For experienced lifters who recover well.",
+            "is_enrolled": false
+        },
+        {
+            "id": 8,
+            "name": "Gym Strength 5x5",
+            "description": "Three short barbell sessions a week built on five sets of five. Session A is done on Monday and Friday, session B on Wednesday.",
+            "is_enrolled": false
+        },
+        {
+            "id": 9,
+            "name": "Bodyweight Beginner",
+            "description": "Three sessions a week at home with no equipment at all. A good start if you have not trained before.",
+            "is_enrolled": false
+        },
+        {
+            "id": 10,
+            "name": "Bodyweight Intermediate",
+            "description": "Four sessions a week: two for the upper body, one for the lower body and one for conditioning. You need a pull-up bar.",
+            "is_enrolled": false
+        },
+        {
+            "id": 11,
+            "name": "Dumbbell Full Body",
+            "description": "Three whole-body sessions a week with one pair of dumbbells, alternating two sessions.",
+            "is_enrolled": false
+        },
+        {
+            "id": 12,
+            "name": "Dumbbell Upper / Lower",
+            "description": "Four sessions a week with one pair of dumbbells: upper body and lower body, each done twice.",
+            "is_enrolled": false
+        },
+        {
+            "id": 13,
+            "name": "Resistance Band Full Body",
+            "description": "Three whole-body sessions a week with a resistance band. Easy on the joints and easy to take with you when you travel.",
+            "is_enrolled": false
+        },
+        {
+            "id": 14,
+            "name": "Kettlebell Basics",
+            "description": "Three sessions a week with a single kettlebell, alternating the slow lifts with the fast ones.",
+            "is_enrolled": false
+        }
+    ]
+}

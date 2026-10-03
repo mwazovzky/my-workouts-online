@@ -1,5 +1,4 @@
-#!/usr/bin/env swift  // Seeds App/Localizable.xcstrings from the web UI catalogs so both clients share one
-// set of English keys and Russian translations.
+#!/usr/bin/env swift  // Seeds App/Localizable.xcstrings from the web UI catalogs so both clients share one  // set of English keys and Russian translations.
 //
 //   swift apps/ios/scripts/seed-string-catalog.swift        (from the repo root)
 //

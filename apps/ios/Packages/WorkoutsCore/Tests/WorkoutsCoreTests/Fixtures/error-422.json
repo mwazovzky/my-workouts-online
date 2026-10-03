@@ -1,0 +1,12 @@
+{
+    "message": "A workout template is required to start a workout.",
+    "code": "validation_failed",
+    "errors": {
+        "workout_template_id": [
+            {
+                "code": "required",
+                "message": "A workout template is required to start a workout."
+            }
+        ]
+    }
+}

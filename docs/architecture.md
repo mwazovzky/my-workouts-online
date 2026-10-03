@@ -16,6 +16,8 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **API Error Envelope** — Every non-2xx response under `api/*` is `{ message, code }` (`App\Exceptions\Api\ApiErrorResponse`, wired in `bootstrap/app.php`). Codes: `unauthenticated`, `token_expired`, `forbidden`, `email_unverified`, `not_found`, `conflict`, `too_many_requests`, `validation_failed`, plus explicit ones thrown via `ApiException` (e.g. `in_use` on reference guards). Validation failures add `errors: { field: [{ code, message }] }` where `code` is the failed rule name (`required`, `email`, `unique`, `enum`, custom rule class in snake_case) or `invalid` for manually added messages.
 
+**iOS client generation** — `apps/ios/Packages/WorkoutsAPI` generates a Swift client from `contracts/openapi.yaml` at build time (`swift-openapi-generator` build plugin; the contract is symlinked into the package and nothing generated is committed). `WorkoutsCore` maps the generated types to domain models and references every field the app uses, so removing or renaming a field in the contract breaks the iOS build in CI. Two contract conventions exist for this generator: nullable enums are inlined (`type: [string, 'null']` with the values) and optional object fields are omitted rather than `null`.
+
 **Eloquent Resources** — All API responses go through API Resources (`ProgramResource`, `WorkoutResource`, `ActivityResource`, `SetResource`, `WorkoutTemplateResource`, `UserResource`). Optional object fields (`workout_template`, `in_progress_workout`) are omitted when there is nothing to return, never set to `null`, so generated clients keep them as optional typed fields.
 
 **Form Requests** — Validation via dedicated request classes. Authorization via policies separately.

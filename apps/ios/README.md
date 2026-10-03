@@ -38,9 +38,18 @@ swift format --in-place --recursive apps/ios             # format
 (cd apps/ios/Packages/WorkoutsCore && swift test)        # package tests, no simulator needed
 (cd apps/ios/Packages/WorkoutsAPI && swift test)
 xcodebuild test -project apps/ios/MyWorkouts.xcodeproj -scheme MyWorkouts \
-  -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -skip-testing:MyWorkoutsUITests
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -skip-testing:MyWorkoutsUITests \
+  -skipPackagePluginValidation            # the OpenAPI generator is a build plugin
 swift apps/ios/scripts/seed-string-catalog.swift         # merge web UI strings into the String Catalog
 ```
+
+## API client
+
+`Packages/WorkoutsAPI` generates its client at build time with Apple's `swift-openapi-generator` from `contracts/openapi.yaml`, which is symlinked into the package as `Sources/WorkoutsAPI/openapi.yaml`. Nothing generated is committed. `openapi-generator-config.yaml` limits generation to the non-admin tags. The first time Xcode builds the project it asks to trust the plugin; choose "Trust & Enable". On the command line pass `-skipPackagePluginValidation`.
+
+`Packages/WorkoutsCore/Sources/WorkoutsCore/Mapping` converts the generated `Components.Schemas.*` types into domain models and references every field the app uses, so a contract change that removes a field fails the build. `APIError` (in `WorkoutsAPI`) is the one error type views handle: `.validation` with per-field messages, `.api` with the server's `code`, `.network`, `.decoding`.
+
+Tests in `WorkoutsCore` replay JSON captured from the seeded dev API (`Tests/WorkoutsCoreTests/Fixtures`) through the real client. Refresh a fixture by running the same request against `http://localhost:8080` as the demo admin and saving the body.
 
 ## Localization
 
