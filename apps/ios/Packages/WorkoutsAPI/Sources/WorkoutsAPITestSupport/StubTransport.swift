@@ -44,6 +44,7 @@ public actor StubTransport: ClientTransport {
     }
 
     private var queue: [StubResponse]
+    private var perOperation: [String: [StubResponse]] = [:]
     private var failures: [any Error] = []
     public private(set) var requests: [RecordedRequest] = []
 
@@ -53,6 +54,16 @@ public actor StubTransport: ClientTransport {
 
     public func enqueue(_ response: StubResponse) {
         queue.append(response)
+    }
+
+    /// Answers only requests for `operationID`, ahead of the shared queue. Lets concurrent
+    /// tests script e.g. three `getMe` 401s and one `refresh` 200 deterministically.
+    public func enqueue(_ response: StubResponse, for operationID: String) {
+        perOperation[operationID, default: []].append(response)
+    }
+
+    public func requests(for operationID: String) -> [RecordedRequest] {
+        requests.filter { $0.operationID == operationID }
     }
 
     /// The next `send` throws this error instead of answering (simulates the network failing).
@@ -73,10 +84,15 @@ public actor StubTransport: ClientTransport {
         if !failures.isEmpty {
             throw failures.removeFirst()
         }
-        guard !queue.isEmpty else {
+        let stub: StubResponse
+        if var scoped = perOperation[operationID], !scoped.isEmpty {
+            stub = scoped.removeFirst()
+            perOperation[operationID] = scoped
+        } else if !queue.isEmpty {
+            stub = queue.removeFirst()
+        } else {
             throw StubError.noResponseQueued(operationID: operationID)
         }
-        let stub = queue.removeFirst()
         var response = HTTPResponse(status: .init(code: stub.status))
         if let responseBody = stub.body {
             response.headerFields[.contentType] = stub.contentType

@@ -14,6 +14,14 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 8. **Bootstrap** — `GET /api/v1/me` returns the signed-in user (`id`, `name`, `email`, `locale`, `theme_preference`, `is_admin`, `email_verified`); `GET /api/v1/meta` is public and lists `available_locales` and `theme_preferences`
 9. **Email links** — verification and reset emails link to `FRONTEND_URL` (`/verify-email/{id}/{hash}?expires&signature`, `/reset-password/{token}?email`). Verification links are signed against the named `verification.verify` route, which only forwards to the SPA
 
+## iOS Session (`apps/ios`)
+
+- Logs in with `client: native` and a `device_name` (`iPhone · iOS 27.0`); both tokens are kept in the Keychain (`KeychainTokenStore`, after-first-unlock, this device only), the access token also in memory
+- `AuthSession` (actor) rotates the pair through `POST /api/v1/auth/refresh` with the refresh token in the body; concurrent callers share one refresh. A 401/403 with a `refresh_token_*` code clears the Keychain and the app returns to the login screen with a "session expired" notice; a network failure keeps the tokens for a later retry
+- `AuthMiddleware` adds the bearer to every request and, on a 401 `token_expired` (never on `unauthenticated`), refreshes once and replays the request; the auth endpoints themselves are excluded so a failed refresh cannot loop
+- Launch (`AppSession.bootstrap`): no stored pair → signed out; fresh access token → `GET /me`; stale → refresh, then `/me`. The state (`signedOut`, `unverified`, `ready`) drives the root view like the SPA's route guards; an unverified user only sees the verify gate
+- Logout posts `/auth/logout` with the current access token (best effort) and clears the Keychain even if the call fails
+
 ## SPA Flows (`apps/web`)
 
 - `/register` posts to `/api/v1/auth/register`, stores the session and lands on `/verify-email`
