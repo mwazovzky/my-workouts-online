@@ -90,6 +90,7 @@ jobs:
             -destination "id=${{ steps.simulator.outputs.udid }}" \
             -skip-testing:MyWorkoutsUITests \
             -resultBundlePath TestResults.xcresult \
+            -skipPackagePluginValidation -skipMacroValidation \
             CODE_SIGNING_ALLOWED=NO | xcbeautify --quiet || exit ${PIPESTATUS[0]}
 
       - name: Upload results

@@ -1,0 +1,40 @@
+{
+    "data": {
+        "id": 1,
+        "name": "Gym Beginner Full Body",
+        "description": "Three identical full-body sessions a week with a rest day between them. A good first program if you are new to the gym.",
+        "is_enrolled": false,
+        "workout_templates": [
+            {
+                "id": 6,
+                "name": "Beginner Full Body",
+                "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
+                "activities": [],
+                "pivot": {
+                    "weekday": "Monday",
+                    "weekday_label": "Monday"
+                }
+            },
+            {
+                "id": 6,
+                "name": "Beginner Full Body",
+                "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
+                "activities": [],
+                "pivot": {
+                    "weekday": "Wednesday",
+                    "weekday_label": "Wednesday"
+                }
+            },
+            {
+                "id": 6,
+                "name": "Beginner Full Body",
+                "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
+                "activities": [],
+                "pivot": {
+                    "weekday": "Friday",
+                    "weekday_label": "Friday"
+                }
+            }
+        ]
+    }
+}

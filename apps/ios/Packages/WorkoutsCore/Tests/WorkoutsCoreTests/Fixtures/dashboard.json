@@ -1,0 +1,149 @@
+{
+    "data": {
+        "upcoming_schedule": [
+            {
+                "id": "1-6-2026-10-02",
+                "program_id": 1,
+                "program_name": "Gym Beginner Full Body",
+                "workout_template_id": 6,
+                "workout_name": "Beginner Full Body",
+                "weekday": "Friday",
+                "weekday_label": "Friday",
+                "scheduled_at": "2026-10-02T00:00:00+00:00",
+                "scheduled_for": "2026-10-02"
+            },
+            {
+                "id": "1-6-2026-10-05",
+                "program_id": 1,
+                "program_name": "Gym Beginner Full Body",
+                "workout_template_id": 6,
+                "workout_name": "Beginner Full Body",
+                "weekday": "Monday",
+                "weekday_label": "Monday",
+                "scheduled_at": "2026-10-05T00:00:00+00:00",
+                "scheduled_for": "2026-10-05"
+            },
+            {
+                "id": "1-6-2026-10-07",
+                "program_id": 1,
+                "program_name": "Gym Beginner Full Body",
+                "workout_template_id": 6,
+                "workout_name": "Beginner Full Body",
+                "weekday": "Wednesday",
+                "weekday_label": "Wednesday",
+                "scheduled_at": "2026-10-07T00:00:00+00:00",
+                "scheduled_for": "2026-10-07"
+            }
+        ],
+        "in_progress_workout": {
+            "id": 26,
+            "user_id": 1,
+            "name": "Bodyweight Conditioning",
+            "status": "in_progress",
+            "status_label": "In Progress",
+            "created_at": "2026-09-07T18:06:31.000000Z",
+            "updated_at": "2026-09-07T18:06:31.000000Z",
+            "activities_count": 6,
+            "workout_template": {
+                "id": 28,
+                "name": "Bodyweight Conditioning",
+                "description": "Fast whole-body movements with short rests to raise your heart rate. Keep moving at a pace you can hold.",
+                "activities": []
+            },
+            "activities": []
+        },
+        "recent_workouts": [
+            {
+                "id": 1,
+                "user_id": 1,
+                "name": "Endurance + FastPedal (long)",
+                "status": "completed",
+                "status_label": "Completed",
+                "created_at": "2026-10-02T18:06:30.000000Z",
+                "updated_at": "2026-10-02T18:06:30.000000Z",
+                "activities_count": 2,
+                "workout_template": {
+                    "id": 4,
+                    "name": "Endurance + FastPedal (long)",
+                    "description": "1 hour in Zone 2 with a 10-minute FastPedal drill on flat terrain.",
+                    "activities": []
+                },
+                "activities": []
+            },
+            {
+                "id": 2,
+                "user_id": 1,
+                "name": "Endurance + FastPedal (short)",
+                "status": "completed",
+                "status_label": "Completed",
+                "created_at": "2026-10-01T18:06:30.000000Z",
+                "updated_at": "2026-10-01T18:06:30.000000Z",
+                "activities_count": 2,
+                "workout_template": {
+                    "id": 2,
+                    "name": "Endurance + FastPedal (short)",
+                    "description": "45 minutes in Zone 2 with a 5-minute FastPedal drill on flat terrain.",
+                    "activities": []
+                },
+                "activities": []
+            },
+            {
+                "id": 3,
+                "user_id": 1,
+                "name": "Hill Endurance",
+                "status": "completed",
+                "status_label": "Completed",
+                "created_at": "2026-09-30T18:06:30.000000Z",
+                "updated_at": "2026-09-30T18:06:30.000000Z",
+                "activities_count": 1,
+                "workout_template": {
+                    "id": 5,
+                    "name": "Hill Endurance",
+                    "description": "1.5 hours in Zone 2 on hilly terrain; try to stay seated on the climbs.",
+                    "activities": []
+                },
+                "activities": []
+            },
+            {
+                "id": 4,
+                "user_id": 1,
+                "name": "Recovery Spin",
+                "status": "completed",
+                "status_label": "Completed",
+                "created_at": "2026-09-29T18:06:30.000000Z",
+                "updated_at": "2026-09-29T18:06:30.000000Z",
+                "activities_count": 1,
+                "workout_template": {
+                    "id": 1,
+                    "name": "Recovery Spin",
+                    "description": "30 minutes in Zone 1 on flat terrain at an easy, steady pace.",
+                    "activities": []
+                },
+                "activities": []
+            },
+            {
+                "id": 5,
+                "user_id": 1,
+                "name": "Steady Endurance",
+                "status": "completed",
+                "status_label": "Completed",
+                "created_at": "2026-09-28T18:06:30.000000Z",
+                "updated_at": "2026-09-28T18:06:30.000000Z",
+                "activities_count": 1,
+                "workout_template": {
+                    "id": 3,
+                    "name": "Steady Endurance",
+                    "description": "1 hour in Zone 2 on flat terrain; hold 80\u201385 rpm throughout.",
+                    "activities": []
+                },
+                "activities": []
+            }
+        ],
+        "summary": {
+            "enrolled_programs_count": 1,
+            "completed_workouts_count": 25,
+            "completed_last_7_days_count": 7,
+            "upcoming_workouts_count": 3
+        }
+    }
+}

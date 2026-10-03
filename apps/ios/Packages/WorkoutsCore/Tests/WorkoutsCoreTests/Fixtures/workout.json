@@ -1,0 +1,67 @@
+{
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "name": "Endurance + FastPedal (long)",
+        "status": "completed",
+        "status_label": "Completed",
+        "created_at": "2026-10-02T18:06:30.000000Z",
+        "updated_at": "2026-10-02T18:06:30.000000Z",
+        "activities_count": 2,
+        "workout_template": {
+            "id": 4,
+            "name": "Endurance + FastPedal (long)",
+            "description": "1 hour in Zone 2 with a 10-minute FastPedal drill on flat terrain.",
+            "activities": []
+        },
+        "activities": [
+            {
+                "id": 189,
+                "exercise_id": 76,
+                "exercise_name": "Endurance Ride",
+                "rest_time_seconds": null,
+                "exercise_equipment_name": "Indoor Bike",
+                "exercise_effort_type": "duration",
+                "exercise_effort_label": "Duration",
+                "exercise_difficulty_unit": "heart_rate_zone",
+                "exercise_difficulty_label": "Heart-rate zone",
+                "exercise_category_names": [
+                    "Cycling",
+                    "Endurance"
+                ],
+                "sets": [
+                    {
+                        "id": 585,
+                        "order": 1,
+                        "effort_value": 3600,
+                        "difficulty_value": 2,
+                        "is_completed": false
+                    }
+                ]
+            },
+            {
+                "id": 190,
+                "exercise_id": 78,
+                "exercise_name": "FastPedal",
+                "rest_time_seconds": null,
+                "exercise_equipment_name": "Indoor Bike",
+                "exercise_effort_type": "duration",
+                "exercise_effort_label": "Duration",
+                "exercise_difficulty_unit": "heart_rate_zone",
+                "exercise_difficulty_label": "Heart-rate zone",
+                "exercise_category_names": [
+                    "Cycling"
+                ],
+                "sets": [
+                    {
+                        "id": 586,
+                        "order": 1,
+                        "effort_value": 600,
+                        "difficulty_value": null,
+                        "is_completed": false
+                    }
+                ]
+            }
+        ]
+    }
+}
