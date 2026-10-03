@@ -51,6 +51,10 @@ swift apps/ios/scripts/seed-string-catalog.swift         # merge web UI strings 
 
 Tests in `WorkoutsCore` replay JSON captured from the seeded dev API (`Tests/WorkoutsCoreTests/Fixtures`) through the real client. Refresh a fixture by running the same request against `http://localhost:8080` as the demo admin and saving the body.
 
+## Session
+
+`AppDependencies.make` (WorkoutsCore) builds the clients, `AuthSession` and repositories; `MyWorkoutsApp` creates it once with the Keychain store and hands `AppSession` to the view tree through the environment. Tests build the same graph with `InMemoryTokenStore` and `StubTransport` (see `Tests/WorkoutsCoreTests/AuthMiddlewareTests.swift`). Refresh is single-flight; a rejected refresh signs the user out with `.sessionExpired`.
+
 ## Localization
 
 `App/Localizable.xcstrings` holds `en` and `ru`, keyed by the English sentence exactly like `apps/web/src/i18n/locales`. The seeding script adds missing keys and never overwrites an edited translation. The UI language follows the iOS per-app language setting; `LocaleResolver` derives the `Accept-Language` value from the same preference.
