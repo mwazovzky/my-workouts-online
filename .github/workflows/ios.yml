@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'ios-v*' # iOS releases; deploy.yml only listens to v*, so these never deploy the web and API
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,6 +21,8 @@ jobs:
   # required check without spending macOS minutes on unrelated changes.
   changes:
     name: Detect iOS changes
+    # Only PRs and branch pushes are filtered; tags and manual runs always build.
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/'))
     runs-on: ubuntu-latest
     outputs:
       ios: ${{ steps.filter.outputs.ios }}
@@ -29,6 +34,7 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v3
         with:
+          base: main # for branch pushes; PRs compare against their base automatically
           filters: |
             ios:
               - 'apps/ios/**'
@@ -38,8 +44,12 @@ jobs:
   build-and-test:
     name: Build and test
     needs: changes
-    if: needs.changes.outputs.ios == 'true'
+    # Runs for iOS-related changes, and always for release tags and manual dispatch.
+    if: always() && (needs.changes.outputs.ios == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/ios-v'))
     runs-on: macos-26
+    env:
+      # Release tags and manual runs also run the XCUITest smoke suite; PRs skip it to save macOS minutes.
+      SKIP_UI_TESTS: ${{ (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/ios-v')) && '' || '-skip-testing:MyWorkoutsUITests' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -88,7 +98,7 @@ jobs:
             -project apps/ios/MyWorkouts.xcodeproj \
             -scheme MyWorkouts \
             -destination "id=${{ steps.simulator.outputs.udid }}" \
-            -skip-testing:MyWorkoutsUITests \
+            $SKIP_UI_TESTS \
             -resultBundlePath TestResults.xcresult \
             -skipPackagePluginValidation -skipMacroValidation \
             CODE_SIGNING_ALLOWED=NO | xcbeautify --quiet || exit ${PIPESTATUS[0]}

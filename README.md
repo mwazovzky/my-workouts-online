@@ -61,6 +61,10 @@ swift format lint --strict --recursive apps/ios          # iOS lint (host Xcode 
 
 Deployment and redeploy instructions live in [docs/deployment.md](docs/deployment.md).
 
+## Releases
+
+Web and API: tag `vX.Y.Z` on `main`; the `deploy` workflow builds and deploys. iOS: tag `ios-vX.Y.Z`; it runs the iOS suite and the build is archived and uploaded from Xcode. Both are described in [docs/deployment.md](docs/deployment.md).
+
 ## Database diagram
 
 https://dbdiagram.io/d/workouts-68a1ae421d75ee360ae77ad8

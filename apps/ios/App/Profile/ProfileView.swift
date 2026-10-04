@@ -145,6 +145,22 @@ struct ProfileView: View {
                     Text(verbatim: "v\(AppConfig.version)").foregroundStyle(.secondary)
                 }
                 Text(AppConfig.apiBaseURL.absoluteString).font(.footnote.monospaced()).foregroundStyle(.tertiary)
+                Link(destination: AppConfig.apiBaseURL.appending(path: "privacy")) {
+                    HStack {
+                        Text("Privacy Policy")
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.app").foregroundStyle(.tertiary)
+                    }
+                }
+                .accessibilityIdentifier("profile.privacy")
+                Link(destination: AppConfig.apiBaseURL.appending(path: "support")) {
+                    HStack {
+                        Text("Support")
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.app").foregroundStyle(.tertiary)
+                    }
+                }
+                .accessibilityIdentifier("profile.support")
             }
         }
         .onChange(of: model.notice) { _, notice in
