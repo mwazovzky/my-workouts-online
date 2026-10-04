@@ -135,5 +135,9 @@ export const routes = [
     ];
   }),
 
+  { path: '/privacy', name: 'privacy', component: page('Privacy') },
+
+  { path: '/support', name: 'support', component: page('Support') },
+
   { path: '/:pathMatch(.*)*', name: 'not-found', component: page('NotFound') },
 ];

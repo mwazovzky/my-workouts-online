@@ -1,5 +1,9 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/composables/useTranslation', () => ({
+  useTranslation: () => ({ t: value => value }),
+}));
 
 import { RouterLinkStub } from '@/test/utils';
 
@@ -33,6 +37,12 @@ describe('GuestLayout', () => {
   it('renders the locale switcher', () => {
     const wrapper = buildWrapper();
     expect(wrapper.find('[data-testid="locale-switcher"]').exists()).toBe(true);
+  });
+
+  it('links to the privacy policy and support pages', () => {
+    const wrapper = buildWrapper();
+    expect(wrapper.text()).toContain('Privacy Policy');
+    expect(wrapper.text()).toContain('Support');
   });
 
   it('renders slot content', () => {

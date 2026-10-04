@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
+import { RouterLinkStub } from '@/test/utils';
+
 vi.mock('@/composables/useTranslation', () => ({
   useTranslation: () => ({
     t: value => `translated:${value}`,
@@ -10,13 +12,8 @@ vi.mock('@/composables/useTranslation', () => ({
 import Welcome from '@/pages/Welcome.vue';
 
 describe('Welcome', () => {
-  function buildWrapper(props = {}) {
+  function buildWrapper() {
     return mount(Welcome, {
-      props: {
-        canLogin: true,
-        canRegister: true,
-        ...props,
-      },
       global: {
         config: {
           globalProperties: {
@@ -24,6 +21,7 @@ describe('Welcome', () => {
           },
         },
         stubs: {
+          RouterLink: RouterLinkStub,
           ApplicationLogo: {
             template: '<div />',
           },
@@ -34,6 +32,15 @@ describe('Welcome', () => {
       },
     });
   }
+
+  it('always offers login and registration', () => {
+    const wrapper = buildWrapper();
+
+    expect(wrapper.text()).toContain('translated:Log in');
+    expect(wrapper.text()).toContain('translated:Create account');
+    expect(wrapper.text()).toContain('translated:Privacy Policy');
+    expect(wrapper.text()).toContain('translated:Support');
+  });
 
   it('translates the upcoming workout preview labels', () => {
     const wrapper = buildWrapper();

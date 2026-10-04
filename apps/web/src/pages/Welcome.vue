@@ -1,6 +1,7 @@
 <script setup>
 import ApplicationLogo from '@/components/ApplicationLogo.vue';
 import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
+import LegalLinks from '@/components/LegalLinks.vue';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
 
@@ -57,7 +58,7 @@ const appHighlights = [
           </div>
         </div>
 
-        <nav v-if="canLogin" class="flex items-center gap-2">
+        <nav class="flex items-center gap-2">
           <GuestLocaleSwitcher class="hidden sm:flex" />
           <RouterLink
             :to="{ name: 'login' }"
@@ -66,7 +67,6 @@ const appHighlights = [
             {{ t('Log in') }}
           </RouterLink>
           <RouterLink
-            v-if="canRegister"
             :to="{ name: 'register' }"
             class="hidden sm:inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
@@ -99,7 +99,6 @@ const appHighlights = [
                 button-class="w-full py-3 text-sm justify-center"
               />
               <RouterLink
-                v-if="canRegister"
                 :to="{ name: 'register' }"
                 class="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
@@ -193,6 +192,8 @@ const appHighlights = [
           </section>
         </div>
       </main>
+
+      <LegalLinks class="pb-2" />
     </div>
   </div>
 </template>
