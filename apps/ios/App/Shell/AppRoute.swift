@@ -21,7 +21,7 @@ struct RouteDestinationView: View {
         case .workoutTemplate(let id):
             WorkoutTemplateDetailView(path: path, templateId: id)
         case .workout(let id):
-            ComingSoonView(title: "Workout", detail: "#\(id)")
+            WorkoutDetailView(workoutId: id)
         case .workoutEdit(let id):
             WorkoutEditorView(workoutId: id)
         }

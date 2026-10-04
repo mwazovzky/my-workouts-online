@@ -50,7 +50,9 @@ Each catalog resource also has `/admin/{resource}/create` (`admin.{resource}.cre
 | Program detail | verified | `GET /api/v1/programs/{program}`, `POST /api/v1/programs/{program}/enroll` |
 | Workout template detail | verified | `GET /api/v1/workout-templates/{id}`, `POST /api/v1/workouts` (Start Workout) |
 | Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workout}`, `PATCH /api/v1/workouts/{workout}/save`, `POST /api/v1/workouts/{workout}/complete`, `GET /api/v1/exercises` (Add activity) |
-| Workouts, Profile tabs | verified | placeholders until stories 11 and 12; Profile offers log out |
+| Workouts tab | verified | `GET /api/v1/workouts?page=N`, `DELETE /api/v1/workouts/{workout}` |
+| Workout detail | verified | `GET /api/v1/workouts/{workout}`, `POST /api/v1/workouts/{workout}/repeat` |
+| Profile tab | verified | placeholder until story 12; offers log out |
 
 The root view picks the screen from the session state (`signedOut`, `unverified`, `ready`), mirroring the SPA's `guest` / `auth` / `verified` guards. Signed in, a four-tab shell (Dashboard, Programs, Workouts, Profile) mirrors the web bottom navigation; each tab keeps its own navigation stack, and admins see the same four tabs.
 

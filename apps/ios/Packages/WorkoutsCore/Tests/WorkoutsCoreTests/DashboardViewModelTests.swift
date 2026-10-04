@@ -65,6 +65,27 @@ actor FakeWorkoutRepository: WorkoutRepository {
             activities: stored.activities)
     }
 
+    var pages: [Int: Page<Workout>] = [:]
+    var listError: APIError?
+    private(set) var listCalls: [Int] = []
+    var deleteError: APIError?
+    private(set) var deleteCalls: [Int] = []
+    func set(pages: [Int: Page<Workout>]) { self.pages = pages }
+    func set(listError: APIError?) { self.listError = listError }
+    func set(deleteError: APIError?) { self.deleteError = deleteError }
+
+    func list(page: Int) async throws -> Page<Workout> {
+        listCalls.append(page)
+        if let listError { throw listError }
+        guard let result = pages[page] else { throw APIError.api(status: 404, code: "not_found", message: "No page") }
+        return result
+    }
+
+    func delete(id: Int) async throws {
+        deleteCalls.append(id)
+        if let deleteError { throw deleteError }
+    }
+
     func `repeat`(id: Int) async throws -> Workout {
         repeatCalls += 1
         guard let stored else { throw APIError.unexpected(status: 500) }
