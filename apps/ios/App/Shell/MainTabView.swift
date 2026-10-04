@@ -22,7 +22,7 @@ struct MainTabView: View {
             WorkoutsTab()
                 .tabItem { Label("Workouts", systemImage: "figure.strengthtraining.traditional") }
                 .tag(AppTab.workouts)
-            ProfilePlaceholderTab()
+            ProfileTab()
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(AppTab.profile)
         }
@@ -38,47 +38,5 @@ private struct DashboardTab: View {
                 .navigationDestination(for: AppRoute.self) { RouteDestinationView(route: $0) }
         }
         .environment(\.navigationPath, $path)
-    }
-}
-
-private struct PlaceholderTab: View {
-    let title: LocalizedStringKey
-    let identifier: String
-    @State private var path: [AppRoute] = []
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            VStack(spacing: 12) {
-                Text(title)
-                    .font(.largeTitle.bold())
-                    .accessibilityIdentifier(identifier)
-                Text("Coming soon").foregroundStyle(.tertiary)
-            }
-            .navigationTitle(title)
-            .navigationDestination(for: AppRoute.self) { RouteDestinationView(route: $0) }
-        }
-    }
-}
-
-private struct ProfilePlaceholderTab: View {
-    @Environment(AppSession.self) private var session
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                if let user = session.user {
-                    Text(verbatim: user.name ?? user.email)
-                        .font(.title2.bold())
-                        .accessibilityIdentifier("tab.profile.title")
-                    Text(verbatim: user.email).foregroundStyle(.secondary)
-                }
-                Button("Log out", role: .destructive) { Task { await session.signOut() } }
-                    .accessibilityIdentifier("main.logout")
-                Spacer()
-                RootFooter()
-            }
-            .padding()
-            .navigationTitle("Profile")
-        }
     }
 }

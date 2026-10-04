@@ -91,8 +91,16 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["detail.status"].waitForExistence(timeout: 10))
 
         app.tabBars.buttons["Profile"].tap()
-        XCTAssertTrue(app.buttons["main.logout"].waitForExistence(timeout: 5))
-        app.buttons["main.logout"].tap()
+        XCTAssertTrue(app.textFields["profile.email"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.textFields["profile.email"].value as? String, "test@example.com")
+        let logout = app.buttons["main.logout"]
+        var swipes = 0
+        while !logout.exists, swipes < 6 {
+            app.swipeUp()
+            swipes += 1
+        }
+        XCTAssertTrue(logout.waitForExistence(timeout: 5), "Log Out is reachable by scrolling the profile form")
+        logout.tap()
         XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
     }
 
