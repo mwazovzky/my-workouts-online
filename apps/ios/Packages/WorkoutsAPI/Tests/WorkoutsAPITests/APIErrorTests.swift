@@ -101,5 +101,11 @@ struct APIErrorTests {
         }
 
         #expect(APIError.from(APIError.unexpected(status: 418)) == .unexpected(status: 418))
+
+        struct KeychainFailure: Error {}
+        guard case .local = APIError.from(KeychainFailure()) else {
+            Issue.record("a non-transport error must map to .local, not .network")
+            return
+        }
     }
 }

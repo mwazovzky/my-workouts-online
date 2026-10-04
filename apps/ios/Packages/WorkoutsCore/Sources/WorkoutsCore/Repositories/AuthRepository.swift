@@ -5,6 +5,8 @@ import WorkoutsAPI
 public protocol AuthRepository: TokenRefreshing {
     func login(email: String, password: String) async throws -> AuthGrant
     func register(name: String, email: String, password: String, passwordConfirmation: String) async throws -> AuthGrant
+    /// Always succeeds for a well-formed email; the API never reveals whether the account exists.
+    func forgotPassword(email: String) async throws
 }
 
 /// Talks to the auth endpoints with a client that carries no session (login, register and
@@ -47,6 +49,16 @@ public struct APIAuthRepository: AuthRepository {
                     client: .native, deviceName: deviceName)))
         switch output {
         case .created(let response): return try AuthGrant(api: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
+        }
+    }
+
+    public func forgotPassword(email: String) async throws {
+        let output = try await client.forgotPassword(body: .json(.init(email: email)))
+        switch output {
+        case .accepted: return
         case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
         case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)

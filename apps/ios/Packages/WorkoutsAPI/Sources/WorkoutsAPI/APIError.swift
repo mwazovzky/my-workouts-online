@@ -26,12 +26,14 @@ public enum APIError: Error, Sendable, Equatable {
     case network(description: String)
     /// The response did not match the contract.
     case decoding(description: String)
+    /// Something failed on the device around the call (Keychain, file storage, mapping), not the API.
+    case local(description: String)
 
     public var code: String? {
         switch self {
         case .validation: "validation_failed"
         case .api(_, let code, _): code
-        case .unexpected, .network, .decoding: nil
+        case .unexpected, .network, .decoding, .local: nil
         }
     }
 
@@ -39,7 +41,7 @@ public enum APIError: Error, Sendable, Equatable {
         switch self {
         case .validation: 422
         case .api(let status, _, _), .unexpected(let status): status
-        case .network, .decoding: nil
+        case .network, .decoding, .local: nil
         }
     }
 
@@ -93,9 +95,9 @@ extension APIError {
         if let urlError = underlying as? URLError {
             return .network(description: urlError.localizedDescription)
         }
-        if (error as? ClientError)?.underlyingError is DecodingError {
-            return .decoding(description: String(describing: error))
+        if error is ClientError {
+            return .network(description: String(describing: underlying))
         }
-        return .network(description: String(describing: underlying))
+        return .local(description: String(describing: error))
     }
 }

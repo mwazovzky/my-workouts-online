@@ -233,6 +233,16 @@
         }
       }
     },
+    "Back to log in" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назад ко входу"
+          }
+        }
+      }
+    },
     "Browse programs" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -398,23 +408,6 @@
         }
       }
     },
-    "completed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completed"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Завершена"
-          }
-        }
-      }
-    },
     "Completed in last 7 days" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -488,6 +481,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сначала продолжите с того места, где остановились, а потом запускайте новую тренировку."
+          }
+        }
+      }
+    },
+    "Could not reach the server." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось связаться с сервером."
           }
         }
       }
@@ -734,6 +737,16 @@
         }
       }
     },
+    "Don't have an account?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет аккаунта?"
+          }
+        }
+      }
+    },
     "Done" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -741,23 +754,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Готово"
-          }
-        }
-      }
-    },
-    "duration" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duration"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Длительность"
           }
         }
       }
@@ -927,17 +923,6 @@
         }
       }
     },
-    "Enroll in a program to build your upcoming schedule." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Запишитесь в программу, чтобы сформировать ближайшее расписание."
-          }
-        }
-      }
-    },
     "Enroll in Program" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -945,6 +930,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Записаться в программу"
+          }
+        }
+      }
+    },
+    "Enroll in a program to build your upcoming schedule." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запишитесь в программу, чтобы сформировать ближайшее расписание."
           }
         }
       }
@@ -1044,17 +1040,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Упражнение сохранено"
-          }
-        }
-      }
-    },
-    "exercises" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "упражнений"
           }
         }
       }
@@ -1345,23 +1330,6 @@
         }
       }
     },
-    "heart_rate_zone" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heart-rate zone"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Зона пульса"
-          }
-        }
-      }
-    },
     "Heart-rate zone" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1384,19 +1352,12 @@
         }
       }
     },
-    "in_progress" : {
-      "extractionState" : "stale",
+    "I have verified my email" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In Progress"
-          }
-        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "В процессе"
+            "value" : "Я подтвердил(а) почту"
           }
         }
       }
@@ -1408,34 +1369,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Внутри приложения"
-          }
-        }
-      }
-    },
-    "kg" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "кг"
-          }
-        }
-      }
-    },
-    "kilograms" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kilograms"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Килограммы"
           }
         }
       }
@@ -1473,17 +1406,6 @@
         }
       }
     },
-    "lbs" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "фунты"
-          }
-        }
-      }
-    },
     "Legs & Conditioning" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1506,6 +1428,17 @@
         }
       }
     },
+    "Log Out" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти"
+          }
+        }
+      }
+    },
     "Log in" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1517,8 +1450,7 @@
         }
       }
     },
-    "Log Out" : {
-      "extractionState" : "stale",
+    "Log out" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1628,6 +1560,17 @@
         }
       }
     },
+    "New Password" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый пароль"
+          }
+        }
+      }
+    },
     "New category" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1657,17 +1600,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Новое упражнение"
-          }
-        }
-      }
-    },
-    "New Password" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Новый пароль"
           }
         }
       }
@@ -1826,23 +1758,6 @@
         }
       }
     },
-    "none" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "None"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет"
-          }
-        }
-      }
-    },
     "None" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1920,17 +1835,6 @@
         }
       }
     },
-    "optional" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "необязательно"
-          }
-        }
-      }
-    },
     "Password" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1938,40 +1842,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пароль"
-          }
-        }
-      }
-    },
-    "plates" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plates"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Плиты"
-          }
-        }
-      }
-    },
-    "pounds" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pounds"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Фунты"
           }
         }
       }
@@ -2009,17 +1879,6 @@
         }
       }
     },
-    "Program deleted" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Программа удалена"
-          }
-        }
-      }
-    },
     "Program Index" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2027,17 +1886,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Список программ"
-          }
-        }
-      }
-    },
-    "Program saved" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Программа сохранена"
           }
         }
       }
@@ -2060,6 +1908,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тренировки программы"
+          }
+        }
+      }
+    },
+    "Program deleted" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Программа удалена"
+          }
+        }
+      }
+    },
+    "Program saved" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Программа сохранена"
           }
         }
       }
@@ -2212,34 +2082,6 @@
         }
       }
     },
-    "repetitions" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repetitions"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Повторения"
-          }
-        }
-      }
-    },
-    "reps" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "повт."
-          }
-        }
-      }
-    },
     "Reps" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2383,17 +2225,6 @@
         }
       }
     },
-    "sec" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "сек."
-          }
-        }
-      }
-    },
     "See what is scheduled next, keep an eye on unfinished work, and review recent sessions." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2444,6 +2275,37 @@
         }
       }
     },
+    "Signed in as %1$@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы вошли как %1$@"
+          }
+        }
+      }
+    },
+    "Something went wrong. Please try again." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Что-то пошло не так. Попробуйте снова."
+          }
+        }
+      }
+    },
+    "Start Workout" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Начать тренировку"
+          }
+        }
+      }
+    },
     "Start a workout to see it listed here" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2462,17 +2324,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Начните запланированную тренировку"
-          }
-        }
-      }
-    },
-    "Start Workout" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Начать тренировку"
           }
         }
       }
@@ -2620,6 +2471,36 @@
         }
       }
     },
+    "Too many attempts. Please try again later." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слишком много попыток. Попробуйте позже."
+          }
+        }
+      }
+    },
+    "Track your programs and log every set." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Следите за программами и записывайте каждый подход."
+          }
+        }
+      }
+    },
+    "Try again" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попробовать снова"
+          }
+        }
+      }
+    },
     "Tuesday" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2682,6 +2563,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "История тренировок показывает, что уже завершено, что ещё в процессе и что идёт следующим."
+          }
+        }
+      }
+    },
+    "Verify your email" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтвердите почту"
           }
         }
       }
@@ -2807,6 +2698,28 @@
         }
       }
     },
+    "Workout Show" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Просмотр тренировки"
+          }
+        }
+      }
+    },
+    "Workout Template Show" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Просмотр шаблона"
+          }
+        }
+      }
+    },
     "Workout planning and logging" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2825,17 +2738,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тренировка сохранена"
-          }
-        }
-      }
-    },
-    "Workout Show" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Просмотр тренировки"
           }
         }
       }
@@ -2873,17 +2775,6 @@
         }
       }
     },
-    "Workout Template Show" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Просмотр шаблона"
-          }
-        }
-      }
-    },
     "Workout templates" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2901,17 +2792,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тренировки"
-          }
-        }
-      }
-    },
-    "workouts scheduled" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "тренировок запланировано"
           }
         }
       }
@@ -2960,6 +2840,16 @@
         }
       }
     },
+    "Your session has expired. Please log in again." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сессия истекла. Войдите снова."
+          }
+        }
+      }
+    },
     "Your training home" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2971,17 +2861,6 @@
         }
       }
     },
-    "zone" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "зона"
-          }
-        }
-      }
-    },
     "Zone" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2989,6 +2868,247 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Зона"
+          }
+        }
+      }
+    },
+    "completed" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершена"
+          }
+        }
+      }
+    },
+    "duration" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Длительность"
+          }
+        }
+      }
+    },
+    "exercises" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "упражнений"
+          }
+        }
+      }
+    },
+    "heart_rate_zone" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heart-rate zone"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зона пульса"
+          }
+        }
+      }
+    },
+    "in_progress" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Progress"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В процессе"
+          }
+        }
+      }
+    },
+    "kg" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "кг"
+          }
+        }
+      }
+    },
+    "kilograms" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kilograms"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Килограммы"
+          }
+        }
+      }
+    },
+    "lbs" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "фунты"
+          }
+        }
+      }
+    },
+    "none" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет"
+          }
+        }
+      }
+    },
+    "optional" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "необязательно"
+          }
+        }
+      }
+    },
+    "plates" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plates"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Плиты"
+          }
+        }
+      }
+    },
+    "pounds" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pounds"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фунты"
+          }
+        }
+      }
+    },
+    "repetitions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetitions"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторения"
+          }
+        }
+      }
+    },
+    "reps" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "повт."
+          }
+        }
+      }
+    },
+    "sec" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "сек."
+          }
+        }
+      }
+    },
+    "workouts scheduled" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "тренировок запланировано"
+          }
+        }
+      }
+    },
+    "zone" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "зона"
           }
         }
       }

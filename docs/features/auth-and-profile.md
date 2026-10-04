@@ -22,6 +22,14 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 - Launch (`AppSession.bootstrap`): no stored pair → signed out; fresh access token → `GET /me`; stale → refresh, then `/me`. The state (`signedOut`, `unverified`, `ready`) drives the root view like the SPA's route guards; an unverified user only sees the verify gate
 - Logout posts `/auth/logout` with the current access token (best effort) and clears the Keychain even if the call fails
 
+## iOS Flows (`apps/ios`)
+
+- **Welcome** → Log in / Register. **Log in** posts `/auth/login`; a wrong password shows the API message under the password field and the lockout (a 422 on `email`) under the email field. "Remember me" stores only the email in `UserDefaults`
+- **Register** posts `/auth/register`; field errors (`name`, `email`, `password`, `password_confirmation`) appear under their fields; success lands on the verify gate
+- **Forgot password** posts `/auth/password/forgot` and always shows the neutral "We have emailed your password reset link."; the emailed link opens the web app until story 6 adds Universal Links
+- **Verify email gate** (shown while `email_verified` is false): "I have verified my email" re-fetches `/me` and continues when verified; "Resend" posts `/auth/email/resend` (202 → sent notice, 204 → already verified, so `/me` is refreshed; 429 → throttle message); Log out
+- A 429 on any form shows a throttle banner, a network failure an offline banner; everything else shows the server's message
+
 ## SPA Flows (`apps/web`)
 
 - `/register` posts to `/api/v1/auth/register`, stores the session and lands on `/verify-email`
