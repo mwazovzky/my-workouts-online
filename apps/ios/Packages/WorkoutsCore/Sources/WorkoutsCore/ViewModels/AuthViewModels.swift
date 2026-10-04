@@ -170,3 +170,41 @@ public final class VerifyEmailViewModel {
         await session.signOut()
     }
 }
+
+@MainActor
+@Observable
+public final class ResetPasswordViewModel {
+    public var email: String
+    public var password = ""
+    public var passwordConfirmation = ""
+    public private(set) var errors = FormErrors()
+    public private(set) var isSubmitting = false
+
+    private let auth: any AuthRepository
+    private let token: String
+
+    public init(auth: any AuthRepository, link: ResetPasswordLink) {
+        self.auth = auth
+        token = link.token
+        email = link.email
+    }
+
+    public var canSubmit: Bool { !email.isEmpty && !password.isEmpty && !passwordConfirmation.isEmpty && !isSubmitting }
+
+    /// Returns true when the password was reset; the caller then signs the session out.
+    public func submit() async -> Bool {
+        guard canSubmit else { return false }
+        isSubmitting = true
+        errors.clear()
+        defer { isSubmitting = false }
+        do {
+            try await auth.resetPassword(
+                token: token, email: email.trimmingCharacters(in: .whitespaces), password: password,
+                passwordConfirmation: passwordConfirmation)
+            return true
+        } catch {
+            errors.apply(error)
+            return false
+        }
+    }
+}

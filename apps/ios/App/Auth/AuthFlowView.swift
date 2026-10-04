@@ -13,6 +13,7 @@ struct AuthFlowView: View {
 }
 
 struct WelcomeView: View {
+    @Environment(DeepLinkCoordinator.self) private var deepLinks
     let reason: AppSession.SignOutReason?
 
     var body: some View {
@@ -33,6 +34,16 @@ struct WelcomeView: View {
                     .font(.footnote)
                     .foregroundStyle(.orange)
                     .multilineTextAlignment(.center)
+            }
+            if deepLinks.notice == .signInToVerify || reason == .passwordReset || deepLinks.notice == .passwordReset {
+                Text(
+                    deepLinks.notice == .signInToVerify
+                        ? "Sign in to finish verifying your email." : "Your password has been reset. Please log in."
+                )
+                .font(.footnote)
+                .foregroundStyle(.green)
+                .multilineTextAlignment(.center)
+                .accessibilityIdentifier("welcome.notice")
             }
             Spacer()
             NavigationLink("Log in") { LoginView() }

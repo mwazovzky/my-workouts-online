@@ -6,6 +6,7 @@ import WorkoutsCore
 @main
 struct MyWorkoutsApp: App {
     @State private var session: AppSession
+    @State private var deepLinks: DeepLinkCoordinator
     private let dependencies: AppDependencies
 
     init() {
@@ -17,16 +18,20 @@ struct MyWorkoutsApp: App {
             tokenStore: KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "online.my-workouts.app")
         )
         self.dependencies = dependencies
-        _session = State(
-            initialValue: AppSession(authSession: dependencies.authSession, meRepository: dependencies.meRepository))
+        let session = AppSession(authSession: dependencies.authSession, meRepository: dependencies.meRepository)
+        _session = State(initialValue: session)
+        _deepLinks = State(initialValue: DeepLinkCoordinator(session: session, me: dependencies.meRepository))
     }
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(session)
+                .environment(deepLinks)
                 .environment(\.dependencies, dependencies)
                 .task { await session.bootstrap() }
+                .onOpenURL { url in deepLinks.handle(url) }
+                .onChange(of: session.state) { Task { await deepLinks.sessionStateChanged() } }
         }
     }
 }

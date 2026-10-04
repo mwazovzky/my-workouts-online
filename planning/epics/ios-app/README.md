@@ -1,6 +1,6 @@
 # Epic: iOS App
 
-**Status: in progress (stories 1–4 shipped 2026-10-03, story 5 started).**
+**Status: in progress (stories 1–5 shipped, story 6 started 2026-10-04).**
 
 Ship a native iOS client for the existing `/api/v1` contract so a user can register, enroll, log workouts and manage their profile from an iPhone, with the web SPA untouched and the API as the single source of truth.
 
@@ -86,8 +86,8 @@ RootView:                    splash           auth flow     verify-email gate  M
 | 2 | [Xcode Project Scaffold, Tooling and CI](stories/02-xcode-project-scaffold-and-ci.md) | Platform | shipped (#32) |
 | 3 | [Generated API Client](stories/03-generated-api-client.md) | Platform | shipped (#33) |
 | 4 | [Session, Keychain and Auth Middleware](stories/04-session-keychain-and-auth-middleware.md) | Auth & Profile | shipped (#34) |
-| 5 | [Auth Screens](stories/05-auth-screens.md) | Auth & Profile | in progress |
-| 6 | [Universal Links: Verify Email and Reset Password](stories/06-universal-links-verify-and-reset.md) | Auth & Profile | planned |
+| 5 | [Auth Screens](stories/05-auth-screens.md) | Auth & Profile | shipped (#35) |
+| 6 | [Universal Links: Verify Email and Reset Password](stories/06-universal-links-verify-and-reset.md) | Auth & Profile | in progress |
 | 7 | [App Shell and Dashboard](stories/07-app-shell-and-dashboard.md) | Workout Logging | planned |
 | 8 | [Programs and Workout Templates](stories/08-programs-and-workout-templates.md) | Programs | planned |
 | 9 | [Workout Editor: Sets and Save](stories/09-workout-editor-sets-and-save.md) | Workout Logging | planned |

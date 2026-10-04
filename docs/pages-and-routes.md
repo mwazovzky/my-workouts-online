@@ -43,6 +43,8 @@ Each catalog resource also has `/admin/{resource}/create` (`admin.{resource}.cre
 | Register | guest | `POST /api/v1/auth/register` |
 | Forgot password | guest | `POST /api/v1/auth/password/forgot` |
 | Verify email gate | auth, unverified | `GET /api/v1/me`, `POST /api/v1/auth/email/resend` |
+| Verification link (Universal Link `/verify-email/{id}/{hash}`) | auth, same user | `POST /api/v1/auth/email/verify`, `GET /api/v1/me` |
+| Reset password sheet (Universal Link `/reset-password/{token}`) | any | `POST /api/v1/auth/password/reset` |
 | Main (placeholder until the tab shell ships) | verified | `GET /api/v1/me` |
 
 The root view picks the screen from the session state (`signedOut`, `unverified`, `ready`), mirroring the SPA's `guest` / `auth` / `verified` guards.

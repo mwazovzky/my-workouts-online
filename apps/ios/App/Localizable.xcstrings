@@ -2115,6 +2115,16 @@
         }
       }
     },
+    "Reset your password" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сброс пароля"
+          }
+        }
+      }
+    },
     "Rest time (seconds)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2275,6 +2285,16 @@
         }
       }
     },
+    "Sign in to finish verifying your email." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Войдите, чтобы завершить подтверждение почты."
+          }
+        }
+      }
+    },
     "Signed in as %1$@" : {
       "localizations" : {
         "ru" : {
@@ -2423,6 +2443,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Это защищённая область приложения. Пожалуйста, подтвердите пароль, чтобы продолжить."
+          }
+        }
+      }
+    },
+    "This link belongs to a different account. Log out and open it again." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта ссылка относится к другому аккаунту. Выйдите и откройте её снова."
           }
         }
       }
@@ -2829,6 +2859,16 @@
         }
       }
     },
+    "Your email has been verified." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почта подтверждена."
+          }
+        }
+      }
+    },
     "Your password has been reset." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2836,6 +2876,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваш пароль был сброшен."
+          }
+        }
+      }
+    },
+    "Your password has been reset. Please log in." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пароль сброшен. Войдите снова."
           }
         }
       }

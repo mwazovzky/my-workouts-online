@@ -7,6 +7,8 @@ public protocol AuthRepository: TokenRefreshing {
     func register(name: String, email: String, password: String, passwordConfirmation: String) async throws -> AuthGrant
     /// Always succeeds for a well-formed email; the API never reveals whether the account exists.
     func forgotPassword(email: String) async throws
+    /// Consumes the emailed token; on success the server revokes every refresh family.
+    func resetPassword(token: String, email: String, password: String, passwordConfirmation: String) async throws
 }
 
 /// Talks to the auth endpoints with a client that carries no session (login, register and
@@ -59,6 +61,19 @@ public struct APIAuthRepository: AuthRepository {
         let output = try await client.forgotPassword(body: .json(.init(email: email)))
         switch output {
         case .accepted: return
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
+        }
+    }
+
+    public func resetPassword(token: String, email: String, password: String, passwordConfirmation: String) async throws
+    {
+        let output = try await client.resetPassword(
+            body: .json(
+                .init(token: token, email: email, password: password, passwordConfirmation: passwordConfirmation)))
+        switch output {
+        case .noContent: return
         case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
         case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)

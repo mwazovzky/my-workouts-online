@@ -41,4 +41,45 @@ final class LaunchTests: XCTestCase {
         app.buttons["main.logout"].tap()
         XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
     }
+
+    /// Opens a `myworkouts://` URL from the system and accepts the "Open in My Workouts?" prompt.
+    @MainActor
+    private func open(_ url: String, into app: XCUIApplication) throws {
+        XCUIDevice.shared.system.open(try XCTUnwrap(URL(string: url)))
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let openButton = springboard.buttons["Open"]
+        if openButton.waitForExistence(timeout: 5) {
+            openButton.tap()
+        }
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
+    }
+
+    @MainActor
+    func testResetPasswordLinkOpensTheResetSheet() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
+
+        try open("myworkouts://reset-password/tok123?email=test%40example.com", into: app)
+
+        let email = app.textFields["reset.email"]
+        XCTAssertTrue(email.waitForExistence(timeout: 10))
+        XCTAssertEqual(email.value as? String, "test@example.com")
+        XCTAssertTrue(app.buttons["reset.submit"].exists)
+        app.buttons["reset.cancel"].tap()
+        XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testVerificationLinkWhileSignedOutAsksToSignIn() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
+
+        try open("myworkouts://verify-email/1/abc?expires=1&signature=s", into: app)
+
+        let notice = app.staticTexts["welcome.notice"]
+        XCTAssertTrue(notice.waitForExistence(timeout: 10))
+        XCTAssertEqual(notice.label, "Sign in to finish verifying your email.")
+    }
 }

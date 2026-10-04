@@ -382,6 +382,8 @@ curl -f https://your-domain.com/api/v1/meta       # the API through nginx
 curl -fsI https://your-domain.com/.well-known/apple-app-site-association | grep -i content-type   # application/json, no redirect
 ```
 
+For iOS Universal Links the `APPLE_APP_ID` in `.env` must be `<Team ID>.online.my-workouts.app` and must match the team that signs the app; the app's Associated Domains entitlement names `applinks:your-domain.com`. Apple's CDN caches the file for up to a day, so after changing it install a fresh build and allow time, or validate with Apple's AASA validator. Verification and reset emails keep linking to the web paths; the app intercepts them only where it is installed.
+
 If `PRODUCTION_HEALTHCHECK_URL` and `PRODUCTION_READYCHECK_URL` are configured in GitHub, the deploy workflow performs these checks automatically and fails the release if they do not pass.
 
 ## 14. Logs and Grafana
