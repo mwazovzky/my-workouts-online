@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin\Concerns;
 
+use App\Rules\AssociativeArray;
+
 trait HasTranslationRules
 {
     /**
@@ -16,16 +18,16 @@ trait HasTranslationRules
      * a blank one removes that translation and reads fall back.
      *
      * @param  array<int, string>  $fields  Translatable fields, e.g. ['name', 'description']
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, string|\Illuminate\Contracts\Validation\ValidationRule>>
      */
     protected function translationRules(array $fields): array
     {
-        $rules = ['translations' => ['required', 'array']];
+        $rules = ['translations' => ['required', 'array', new AssociativeArray]];
 
         foreach (array_keys(config('app.available_locales', [])) as $locale) {
             $isSource = $locale === $this->sourceLocale();
 
-            $rules["translations.{$locale}"] = [$isSource ? 'required' : 'sometimes', 'array'];
+            $rules["translations.{$locale}"] = [$isSource ? 'required' : 'sometimes', 'array', new AssociativeArray];
 
             foreach ($fields as $field) {
                 $rules["translations.{$locale}.{$field}"] = [
