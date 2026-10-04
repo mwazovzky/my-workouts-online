@@ -79,9 +79,16 @@ final class LaunchTests: XCTestCase {
             XCTAssertTrue(confirm.waitForExistence(timeout: 5))
             confirm.tap()
             XCTAssertTrue(
-                app.staticTexts.matching(identifier: "route.placeholder").firstMatch.waitForExistence(timeout: 15),
-                "completing shows the workout detail route")
+                app.buttons["detail.repeat"].waitForExistence(timeout: 15),
+                "completing shows the workout detail with Repeat")
+            XCTAssertFalse(app.buttons["detail.edit"].exists, "a completed workout is not editable")
         }
+
+        app.tabBars.buttons["Workouts"].tap()
+        let firstRow = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'workouts.row.'")).firstMatch
+        XCTAssertTrue(firstRow.waitForExistence(timeout: 10), "history loads from the API")
+        firstRow.tap()
+        XCTAssertTrue(app.staticTexts["detail.status"].waitForExistence(timeout: 10))
 
         app.tabBars.buttons["Profile"].tap()
         XCTAssertTrue(app.buttons["main.logout"].waitForExistence(timeout: 5))

@@ -11,6 +11,9 @@ public protocol WorkoutRepository: Sendable {
     func complete(id: Int) async throws -> Workout
     /// Clones a workout into a new in-progress one.
     func `repeat`(id: Int) async throws -> Workout
+    /// Newest first, Laravel-paginated.
+    func list(page: Int) async throws -> Page<Workout>
+    func delete(id: Int) async throws
 }
 
 public struct APIWorkoutRepository: WorkoutRepository {
@@ -67,6 +70,27 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.completeWorkout(path: .init(workout: id))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
+        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
+        }
+    }
+
+    public func list(page: Int) async throws -> Page<Workout> {
+        let output = try await client.listWorkouts(query: .init(page: page))
+        switch output {
+        case .ok(let response): return try Page<Workout>(api: try response.body.json)
+        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
+        }
+    }
+
+    public func delete(id: Int) async throws {
+        let output = try await client.deleteWorkout(path: .init(workout: id))
+        switch output {
+        case .noContent: return
         case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
         case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
         case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)

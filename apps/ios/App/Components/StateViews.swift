@@ -88,8 +88,9 @@ struct ToastOverlay: ViewModifier {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(.regularMaterial, in: Capsule())
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 72)  // above the tab bar
                     .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .allowsHitTesting(false)  // a toast must never swallow taps meant for what is under it
                     .accessibilityIdentifier("toast")
             }
         }

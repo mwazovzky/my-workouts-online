@@ -19,7 +19,7 @@ struct MainTabView: View {
             ProgramsTab()
                 .tabItem { Label("Programs", systemImage: "list.bullet.rectangle") }
                 .tag(AppTab.programs)
-            PlaceholderTab(title: "Workouts", identifier: "tab.workouts.title")
+            WorkoutsTab()
                 .tabItem { Label("Workouts", systemImage: "figure.strengthtraining.traditional") }
                 .tag(AppTab.workouts)
             ProfilePlaceholderTab()
