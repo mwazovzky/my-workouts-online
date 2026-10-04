@@ -1,8 +1,7 @@
 import SwiftUI
 import WorkoutsCore
 
-/// Switches on the session state the way the web router guards do. The signed-in branch is a
-/// placeholder until story 7 adds the tab shell.
+/// Switches on the session state the way the web router guards do.
 struct RootView: View {
     @Environment(AppSession.self) private var session
     @Environment(DeepLinkCoordinator.self) private var deepLinks
@@ -36,8 +35,8 @@ struct RootView: View {
             AuthFlowView(reason: reason)
         case .unverified(let user):
             VerifyEmailGateView(user: user)
-        case .ready(let user):
-            MainPlaceholderView(user: user)
+        case .ready:
+            MainTabView()
         }
     }
 }
@@ -60,27 +59,6 @@ private struct BootstrapView: View {
             }
         }
         .padding()
-    }
-}
-
-private struct MainPlaceholderView: View {
-    @Environment(AppSession.self) private var session
-    let user: User
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("Dashboard")
-                .font(.largeTitle.bold())
-                .accessibilityIdentifier("root.title")
-            Text(verbatim: user.name ?? user.email)
-                .foregroundStyle(.secondary)
-            Button("Log out") { Task { await session.signOut() } }
-                .accessibilityIdentifier("main.logout")
-            Spacer()
-            RootFooter()
-        }
-        .padding()
-        .padding(.top, 64)
     }
 }
 
