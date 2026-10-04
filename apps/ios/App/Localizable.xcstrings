@@ -386,6 +386,16 @@
         }
       }
     },
+    "Coming soon" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скоро"
+          }
+        }
+      }
+    },
     "Coming up" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2542,6 +2552,16 @@
         }
       }
     },
+    "Upcoming workouts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Предстоящие тренировки"
+          }
+        }
+      }
+    },
     "Upcoming workouts for the next 7 days" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2768,6 +2788,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тренировка сохранена"
+          }
+        }
+      }
+    },
+    "Workout started" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренировка начата"
           }
         }
       }

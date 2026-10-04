@@ -34,10 +34,16 @@ final class LaunchTests: XCTestCase {
         password.typeText("password")
         app.buttons["login.submit"].tap()
 
-        let dashboard = app.staticTexts["root.title"]
-        XCTAssertTrue(dashboard.waitForExistence(timeout: 15))
-        XCTAssertEqual(dashboard.label, "Dashboard")
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
+        XCTAssertTrue(
+            app.staticTexts["summary.completed"].waitForExistence(timeout: 15), "summary tiles load from the API")
+        for tab in ["Programs", "Workouts", "Profile", "Dashboard"] {
+            app.tabBars.buttons[tab].tap()
+            XCTAssertTrue(app.navigationBars[tab].waitForExistence(timeout: 5), "\(tab) tab renders")
+        }
 
+        app.tabBars.buttons["Profile"].tap()
+        XCTAssertTrue(app.buttons["main.logout"].waitForExistence(timeout: 5))
         app.buttons["main.logout"].tap()
         XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
     }

@@ -7,7 +7,10 @@ import WorkoutsCore
 struct MyWorkoutsApp: App {
     @State private var session: AppSession
     @State private var deepLinks: DeepLinkCoordinator
+    @State private var toaster = Toaster()
+    @State private var theme: ThemePreference
     private let dependencies: AppDependencies
+    private let themeMemory = UserDefaultsThemeMemory()
 
     init() {
         let dependencies = AppDependencies.make(
@@ -21,14 +24,23 @@ struct MyWorkoutsApp: App {
         let session = AppSession(authSession: dependencies.authSession, meRepository: dependencies.meRepository)
         _session = State(initialValue: session)
         _deepLinks = State(initialValue: DeepLinkCoordinator(session: session, me: dependencies.meRepository))
+        _theme = State(initialValue: themeMemory.rememberedTheme() ?? .system)
     }
 
     var body: some Scene {
         WindowGroup {
             RootView()
+                .toastOverlay()  // reads Toaster, so it sits inside the environment modifiers below
                 .environment(session)
                 .environment(deepLinks)
+                .environment(toaster)
                 .environment(\.dependencies, dependencies)
+                .preferredColorScheme(theme.colorScheme)
+                .onChange(of: session.user?.themePreference, initial: true) { _, preference in
+                    guard let preference else { return }
+                    theme = preference
+                    themeMemory.remember(preference)
+                }
                 .task { await session.bootstrap() }
                 .onOpenURL { url in deepLinks.handle(url) }
                 .onChange(of: session.state) { Task { await deepLinks.sessionStateChanged() } }
@@ -45,5 +57,16 @@ extension EnvironmentValues {
     var dependencies: AppDependencies? {
         get { self[DependenciesKey.self] }
         set { self[DependenciesKey.self] = newValue }
+    }
+}
+
+extension ThemePreference {
+    /// `nil` follows the device setting.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .light: .light
+        case .dark: .dark
+        case .system: nil
+        }
     }
 }

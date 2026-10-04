@@ -14,6 +14,11 @@ Start workouts from templates, edit activities and sets, save progress, complete
 8. User can repeat a completed workout, which creates a fresh `in_progress` copy.
 9. User can delete a workout, which removes its activities and sets in the same transaction.
 
+## iOS (`apps/ios`)
+
+- **Dashboard tab**: the in-progress workout card (Continue), four summary tiles, the next-7-days schedule with Start Workout per slot (`POST /api/v1/workouts`, then the editor), and recent workouts. Pull to refresh; it reloads when returning from a pushed screen. A failed load shows a retry; a failed start shows a banner and stays on the dashboard
+- The user's theme preference is applied app-wide and cached so the login screens use it on the next launch
+
 ## Business Rules
 
 - Workout creation requires a valid `workout_template_id`.

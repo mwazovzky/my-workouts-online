@@ -1,5 +1,4 @@
-#!/usr/bin/env swift  // Seeds App/Localizable.xcstrings from the web UI catalogs so both clients share one  // set of English keys and Russian translations.  //  //   swift apps/ios/scripts/seed-string-catalog.swift        (from the repo root)  //  // Merge rules: a key missing from the catalog is added; an existing translation is never  // overwritten; Laravel-style `:name` placeholders become positional `%1$@` and are listed
-// for review, because Swift interpolation decides the real format specifier per call site.
+#!/usr/bin/env swift  // Seeds App/Localizable.xcstrings from the web UI catalogs so both clients share one  // set of English keys and Russian translations.  //  //   swift apps/ios/scripts/seed-string-catalog.swift        (from the repo root)  //  // Merge rules: a key missing from the catalog is added; an existing translation is never  // overwritten; Laravel-style `:name` placeholders become positional `%1$@` and are listed  // for review, because Swift interpolation decides the real format specifier per call site.
 import Foundation
 
 let scriptDirectory = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent()
