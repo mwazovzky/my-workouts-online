@@ -71,6 +71,16 @@ final class LaunchTests: XCTestCase {
             XCTAssertTrue(app.buttons["editor.save"].isEnabled, "adding a set makes the draft dirty")
             app.buttons["editor.save"].tap()
             XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 15), "save confirms with a toast")
+
+            app.buttons["editor.menu"].tap()
+            XCTAssertTrue(app.buttons["editor.complete"].waitForExistence(timeout: 5))
+            app.buttons["editor.complete"].tap()
+            let confirm = app.buttons.matching(identifier: "editor.complete.confirm").firstMatch
+            XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+            confirm.tap()
+            XCTAssertTrue(
+                app.staticTexts.matching(identifier: "route.placeholder").firstMatch.waitForExistence(timeout: 15),
+                "completing shows the workout detail route")
         }
 
         app.tabBars.buttons["Profile"].tap()

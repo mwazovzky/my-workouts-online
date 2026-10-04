@@ -26,7 +26,9 @@ struct MyWorkoutsApp: App {
             tokenStore: tokenStore
         )
         self.dependencies = dependencies
-        let session = AppSession(authSession: dependencies.authSession, meRepository: dependencies.meRepository)
+        let session = AppSession(
+            authSession: dependencies.authSession, meRepository: dependencies.meRepository,
+            draftStore: dependencies.draftStore)
         _session = State(initialValue: session)
         _deepLinks = State(initialValue: DeepLinkCoordinator(session: session, me: dependencies.meRepository))
         _theme = State(initialValue: themeMemory.rememberedTheme() ?? .system)

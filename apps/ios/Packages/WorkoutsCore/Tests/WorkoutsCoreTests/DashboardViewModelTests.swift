@@ -49,6 +49,32 @@ actor FakeWorkoutRepository: WorkoutRepository {
         return stored
     }
 
+    var completeError: APIError?
+    private(set) var completeCalls = 0
+    private(set) var repeatCalls = 0
+    func set(completeError: APIError?) { self.completeError = completeError }
+
+    func complete(id: Int) async throws -> Workout {
+        completeCalls += 1
+        if let completeError { throw completeError }
+        guard let stored else { throw APIError.unexpected(status: 500) }
+        return Workout(
+            id: stored.id, userId: stored.userId, name: stored.name, status: .completed, statusLabel: "Completed",
+            createdAt: stored.createdAt, updatedAt: Date(), activitiesCount: stored.activitiesCount,
+            template: stored.template,
+            activities: stored.activities)
+    }
+
+    func `repeat`(id: Int) async throws -> Workout {
+        repeatCalls += 1
+        guard let stored else { throw APIError.unexpected(status: 500) }
+        return Workout(
+            id: stored.id + 1000, userId: stored.userId, name: stored.name, status: .inProgress,
+            statusLabel: "In progress",
+            createdAt: nil, updatedAt: nil, activitiesCount: stored.activitiesCount, template: stored.template,
+            activities: stored.activities)
+    }
+
     func create(templateId: Int) async throws -> Workout {
         createdTemplateIds.append(templateId)
         if let createError { throw createError }
