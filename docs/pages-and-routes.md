@@ -17,6 +17,8 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `WorkoutShow`         | `/workouts/{id}`          | Verified        | Workout Logging | Owner-scoped workout details                                             |
 | `WorkoutEdit`         | `/workouts/{id}/edit`     | Verified        | Workout Logging | Edit an in-progress workout (unsaved-changes guard)                      |
 | `About`               | `/about`                  | Verified        | Landing         | App version (`VITE_APP_VERSION`)                                         |
+| `Privacy`             | `/privacy`                | Public          | Landing         | Privacy policy; linked from the guest layout footer, Welcome and the iOS Profile tab |
+| `Support`             | `/support`                | Public          | Landing         | Support contact (`support@my-workouts.online`); linked like Privacy       |
 | `auth/Register`       | `/register`               | Guest           | Auth & Profile  | Registration, then the verify-email notice                               |
 | `auth/Login`          | `/login`                  | Guest           | Auth & Profile  | Honours `?redirect=`; shows a banner after `?reset=1`                    |
 | `auth/ForgotPassword` | `/forgot-password`        | Guest           | Auth & Profile  | Request password reset link                                              |
@@ -33,6 +35,8 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `Admin/ProgramIndex`  | `/admin/programs`         | Admin           | Admin           | Assemble programs and schedule templates by weekday                      |
 
 Each catalog resource also has `/admin/{resource}/create` (`admin.{resource}.create`) and `/admin/{resource}/{id}/edit` (`admin.{resource}.edit`) pages hosting the shared `components/Admin/*Form` component. Edit pages load the record from the admin API on mount.
+
+Access values: Guest (signed-in users are redirected), Auth, Verified, Admin, and Public (reachable signed in or out).
 
 ## iOS Screens (`apps/ios`)
 

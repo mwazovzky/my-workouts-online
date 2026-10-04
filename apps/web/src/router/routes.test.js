@@ -47,6 +47,8 @@ describe('route table', () => {
       'workouts.edit',
       'profile.edit',
       'about',
+      'privacy',
+      'support',
       'admin.index',
       'admin.equipment',
       'admin.equipment.create',
