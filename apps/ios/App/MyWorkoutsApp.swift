@@ -13,12 +13,17 @@ struct MyWorkoutsApp: App {
     private let themeMemory = UserDefaultsThemeMemory()
 
     init() {
+        let tokenStore = KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "online.my-workouts.app")
+        // UI tests start signed out regardless of what an earlier run left in the Keychain.
+        if ProcessInfo.processInfo.arguments.contains("--reset-session") {
+            try? tokenStore.clear()
+        }
         let dependencies = AppDependencies.make(
             environment: APIEnvironment(baseURL: AppConfig.apiBaseURL),
             deviceName: "\(UIDevice.current.model) · iOS \(UIDevice.current.systemVersion)",
             appVersion: AppConfig.marketingVersion,
             build: AppConfig.buildNumber,
-            tokenStore: KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "online.my-workouts.app")
+            tokenStore: tokenStore
         )
         self.dependencies = dependencies
         let session = AppSession(authSession: dependencies.authSession, meRepository: dependencies.meRepository)

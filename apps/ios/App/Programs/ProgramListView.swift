@@ -8,8 +8,9 @@ struct ProgramsTab: View {
         NavigationStack(path: $path) {
             ProgramListView(path: $path)
                 .navigationDestination(for: AppRoute.self) { RouteDestinationView(route: $0) }
-                .environment(\.navigationPath, $path)
         }
+        // On the stack, not its root: pushed destinations inherit from here, not from the root view.
+        .environment(\.navigationPath, $path)
     }
 }
 
