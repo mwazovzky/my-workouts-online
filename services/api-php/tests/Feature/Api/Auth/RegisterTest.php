@@ -88,6 +88,14 @@ class RegisterTest extends TestCase
     }
 
     #[Test]
+    public function rejects_a_non_string_email_with_a_validation_error_not_a_crash(): void
+    {
+        $this->postJson('/api/v1/auth/register', $this->payload(['email' => [['nested' => 1]]]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrorFor('email');
+    }
+
+    #[Test]
     public function rejects_duplicate_email(): void
     {
         User::factory()->create(['email' => 'new@example.com']);
