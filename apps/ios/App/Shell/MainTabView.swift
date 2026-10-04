@@ -16,7 +16,7 @@ struct MainTabView: View {
             DashboardTab()
                 .tabItem { Label("Dashboard", systemImage: "square.grid.2x2") }
                 .tag(AppTab.dashboard)
-            PlaceholderTab(title: "Programs", identifier: "tab.programs.title")
+            ProgramsTab()
                 .tabItem { Label("Programs", systemImage: "list.bullet.rectangle") }
                 .tag(AppTab.programs)
             PlaceholderTab(title: "Workouts", identifier: "tab.workouts.title")
@@ -36,6 +36,7 @@ private struct DashboardTab: View {
         NavigationStack(path: $path) {
             DashboardView(path: $path)
                 .navigationDestination(for: AppRoute.self) { RouteDestinationView(route: $0) }
+                .environment(\.navigationPath, $path)
         }
     }
 }

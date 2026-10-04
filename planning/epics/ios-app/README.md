@@ -1,6 +1,6 @@
 # Epic: iOS App
 
-**Status: in progress (stories 1–6 shipped, story 7 started 2026-10-04).**
+**Status: in progress (stories 1–7 shipped, story 8 started 2026-10-04).**
 
 Ship a native iOS client for the existing `/api/v1` contract so a user can register, enroll, log workouts and manage their profile from an iPhone, with the web SPA untouched and the API as the single source of truth.
 
@@ -88,8 +88,8 @@ RootView:                    splash           auth flow     verify-email gate  M
 | 4 | [Session, Keychain and Auth Middleware](stories/04-session-keychain-and-auth-middleware.md) | Auth & Profile | shipped (#34) |
 | 5 | [Auth Screens](stories/05-auth-screens.md) | Auth & Profile | shipped (#35) |
 | 6 | [Universal Links: Verify Email and Reset Password](stories/06-universal-links-verify-and-reset.md) | Auth & Profile | shipped (#36) |
-| 7 | [App Shell and Dashboard](stories/07-app-shell-and-dashboard.md) | Workout Logging | in progress |
-| 8 | [Programs and Workout Templates](stories/08-programs-and-workout-templates.md) | Programs | planned |
+| 7 | [App Shell and Dashboard](stories/07-app-shell-and-dashboard.md) | Workout Logging | shipped (#37) |
+| 8 | [Programs and Workout Templates](stories/08-programs-and-workout-templates.md) | Programs | in progress |
 | 9 | [Workout Editor: Sets and Save](stories/09-workout-editor-sets-and-save.md) | Workout Logging | planned |
 | 10 | [Workout Editor: Activities, Complete and Local Draft](stories/10-workout-editor-activities-complete-and-draft.md) | Workout Logging | planned |
 | 11 | [Workout History and Detail](stories/11-workout-history-and-detail.md) | Workout Logging | planned |

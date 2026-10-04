@@ -35,6 +35,16 @@
         }
       }
     },
+    "%lld activities" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld упражнений"
+          }
+        }
+      }
+    },
     "A clear next action instead of a generic dashboard" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2142,6 +2152,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Время отдыха (секунды)"
+          }
+        }
+      }
+    },
+    "Rest: %lld s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отдых: %lld с"
           }
         }
       }
