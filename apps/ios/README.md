@@ -43,7 +43,7 @@ xcodebuild test -project apps/ios/MyWorkouts.xcodeproj -scheme MyWorkouts \
 swift apps/ios/scripts/seed-string-catalog.swift         # merge web UI strings into the String Catalog
 ```
 
-UI tests: the launch test always runs; the login flow talks to the dev stack as the demo admin and only runs when `TEST_RUNNER_UITEST_LIVE_BACKEND=1` is set on the `xcodebuild test` command (drop `-skip-testing:MyWorkoutsUITests`). Do not pass `CODE_SIGNING_ALLOWED=NO` for UI runs: an unsigned simulator app cannot use the Keychain, so login fails after the server accepts it.
+UI tests: the launch test always runs; the login flow talks to the dev stack as the demo admin and only runs when `TEST_RUNNER_UITEST_LIVE_BACKEND=1` is set on the `xcodebuild test` command (drop `-skip-testing:MyWorkoutsUITests`). Do not pass `CODE_SIGNING_ALLOWED=NO` for UI runs: an unsigned simulator app cannot use the Keychain, so login fails after the server accepts it. Add `TEST_RUNNER_UITEST_CONTENT_SIZE=UICTContentSizeCategoryAccessibilityXXXL` to run the flows at the largest Dynamic Type size; the editor switches to a stacked set layout at accessibility sizes.
 
 ## API client
 

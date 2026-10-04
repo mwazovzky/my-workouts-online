@@ -45,6 +45,16 @@
         }
       }
     },
+    "%lld of %lld sets completed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выполнено %lld из %lld подходов"
+          }
+        }
+      }
+    },
     "%lld/%lld sets" : {
       "localizations" : {
         "ru" : {
@@ -1423,6 +1433,16 @@
         }
       }
     },
+    "Keyboard done" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готово"
+          }
+        }
+      }
+    },
     "Know what to train next" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1587,6 +1607,26 @@
         }
       }
     },
+    "Mark set %lld as complete" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отметить подход %lld выполненным"
+          }
+        }
+      }
+    },
+    "Mark set %lld as incomplete" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снять отметку с подхода %lld"
+          }
+        }
+      }
+    },
     "Match device" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1693,6 +1733,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ближайшие 7 дней"
+          }
+        }
+      }
+    },
+    "No activities yet" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пока нет упражнений"
           }
         }
       }
@@ -2129,6 +2179,16 @@
         }
       }
     },
+    "Remove set %lld" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить подход %lld"
+          }
+        }
+      }
+    },
     "Remove set?" : {
       "localizations" : {
         "ru" : {
@@ -2380,6 +2440,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подход %1$@"
+          }
+        }
+      }
+    },
+    "Set %lld" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подход %lld"
           }
         }
       }

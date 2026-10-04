@@ -101,6 +101,9 @@ struct WorkoutDetailView: View {
                             .accessibilityIdentifier("detail.continue")
                     }
                     SectionHeader(title: "Activities", subtitle: nil)
+                    if workout.activities.isEmpty {
+                        EmptyStateView(systemImage: "list.bullet", title: "No activities yet")
+                    }
                     ForEach(workout.activities) { activity in
                         ActivitySummaryCard(activity: activity)
                     }

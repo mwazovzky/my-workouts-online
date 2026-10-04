@@ -81,6 +81,12 @@ After modifying `contracts/openapi.yaml` or any API response shape, lint the spe
 - **Routing** in `apps/web/src/router/` — named routes mirror the old Laravel route names; guards read route meta `guest` / `auth` / `verified` / `admin`.
 - **API client** `apps/web/src/lib/api.js` — bearer + `Accept-Language` headers, single-flight refresh-and-retry on 401 `token_expired`.
 
+### iOS Patterns
+
+- **Layers** — views in `apps/ios/App/`, everything else in `apps/ios/Packages/`: `WorkoutsAPI` (generated client from the symlinked contract, middlewares, `APIError`), `WorkoutsCore` (domain models + mappers, `AuthSession`/`AppSession`, repository protocols with `API*Repository` implementations, `@Observable` view models, `WorkoutEditorModel` + `DraftStore`, `DeepLinkCoordinator`, `LocaleSync`). Views get `AppDependencies` via the `dependencies` environment key and `AppSession`, `DeepLinkCoordinator`, `Toaster` as environment objects.
+- **Adding a screen** — repository protocol + API implementation in Core (map every generated output case), an `@Observable` view model with `LoadState`, a view using `LoadingStateView` / `EmptyStateView` / `ErrorStateView`, a fake repository and Swift Testing suite, an `AppRoute` case if pushable, and strings in `Localizable.xcstrings` (en + ru).
+- **Gotchas** — set `.environment(\.navigationPath, $path)` on the `NavigationStack`, not its root view; a modifier reading an `@Environment` object must sit inside the `.environment(...)` that provides it; overlays need `.allowsHitTesting(false)`; `.accessibilityIdentifier` on a container propagates to its texts (query `staticTexts` in UI tests); confirmation-dialog buttons need `.firstMatch`; UI tests launch with `--reset-session`; never pass `CODE_SIGNING_ALLOWED=NO` for UI runs (Keychain).
+
 ### Data Model
 
 ```

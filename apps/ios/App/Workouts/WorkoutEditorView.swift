@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import WorkoutsAPI
 import WorkoutsCore
 
@@ -40,6 +41,14 @@ struct WorkoutEditorView: View {
                     }
                     .accessibilityIdentifier("editor.back")
                 }
+            }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+                .accessibilityIdentifier("keyboard.done")
             }
             if let model, model.isEditable {
                 ToolbarItem(placement: .primaryAction) {
@@ -91,6 +100,7 @@ struct WorkoutEditorView: View {
             Button("Complete") {
                 Task {
                     guard let model, let completed = await model.complete() else { return }
+                    Haptics.workoutCompleted()
                     toaster.show(String(localized: "Workout completed"))
                     var newPath = path.wrappedValue
                     if !newPath.isEmpty { newPath.removeLast() }
@@ -220,6 +230,8 @@ struct ProgressHeader: View {
                 .accessibilityIdentifier("editor.progress")
             ProgressView(value: total == 0 ? 0 : Double(completed) / Double(total))
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(completed) of \(total) sets completed"))
     }
 }
 
@@ -246,6 +258,7 @@ struct NoticeBanner: View {
 }
 
 struct ActivityEditorCard: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     let model: WorkoutEditorModel
     let activity: DraftActivity
     let activityIndex: Int
@@ -281,21 +294,37 @@ struct ActivityEditorCard: View {
                             .tertiary)
                     }
                 }
-                Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 8) {
-                    GridRow {
-                        Text(verbatim: "#")
-                        if activity.hasDifficulty { Text(verbatim: activity.difficultyLabel ?? "") }
-                        Text(verbatim: activity.effortLabel)
-                        Text("Done")
-                        if model.isEditable { Text(verbatim: "") }
-                    }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                if typeSize.isAccessibilitySize {
+                    // Large text: one stacked block per set instead of a grid that would truncate.
                     ForEach(Array(activity.sets.enumerated()), id: \.element.id) { setIndex, set in
-                        SetRowView(
-                            model: model, activity: activity, set: set, activityIndex: activityIndex, setIndex: setIndex
+                        SetStackView(
+                            controls: SetControls(
+                                model: model, activity: activity, set: set, activityIndex: activityIndex,
+                                setIndex: setIndex)
                         ) {
                             requestDeletion(set.localId)
+                        }
+                    }
+                } else {
+                    Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 8) {
+                        GridRow {
+                            Text(verbatim: "#")
+                            if activity.hasDifficulty { Text(verbatim: activity.difficultyLabel ?? "") }
+                            Text(verbatim: activity.effortLabel)
+                            Text("Done")
+                            if model.isEditable { Text(verbatim: "") }
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                        ForEach(Array(activity.sets.enumerated()), id: \.element.id) { setIndex, set in
+                            SetRowView(
+                                controls: SetControls(
+                                    model: model, activity: activity, set: set, activityIndex: activityIndex,
+                                    setIndex: setIndex)
+                            ) {
+                                requestDeletion(set.localId)
+                            }
                         }
                     }
                 }
@@ -314,58 +343,28 @@ struct ActivityEditorCard: View {
     }
 }
 
-/// One set: order, difficulty (hidden for `none`, a 1–5 picker for zones, decimal otherwise),
-/// effort, and the done toggle. Completed sets are locked.
-struct SetRowView: View {
+/// The controls of one set, shared by the grid and the stacked layouts, each with a VoiceOver
+/// label that names the set and the quantity it edits.
+@MainActor
+struct SetControls {
     let model: WorkoutEditorModel
     let activity: DraftActivity
     let set: DraftSet
     let activityIndex: Int
     let setIndex: Int
-    let remove: () -> Void
 
-    private var locked: Bool { !model.isEditable || set.isCompleted }
-
-    var body: some View {
-        GridRow {
-            Text(verbatim: "\(setIndex + 1)")
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-            if activity.hasDifficulty {
-                difficultyField
-            }
-            effortField
-            Toggle(
-                "",
-                isOn: Binding(
-                    get: { set.isCompleted },
-                    set: { model.setCompleted($0, activity: activity.localId, set: set.localId) })
-            )
-            .labelsHidden()
-            .disabled(!model.isEditable || !set.canComplete)
-            .accessibilityIdentifier("set.\(activityIndex).\(setIndex).done")
-            if model.isEditable {
-                Button(role: .destructive, action: remove) { Image(systemName: "xmark.circle") }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel(Text("Remove"))
-                    .accessibilityIdentifier("set.\(activityIndex).\(setIndex).remove")
-            }
-        }
-        .opacity(set.isCompleted ? 0.7 : 1)
-        if let message = model.fieldError(activity: activityIndex, set: setIndex, field: "effort_value")
+    var number: Int { setIndex + 1 }
+    var locked: Bool { !model.isEditable || set.isCompleted }
+    var identifier: String { "set.\(activityIndex).\(setIndex)" }
+    var fieldError: String? {
+        model.fieldError(activity: activityIndex, set: setIndex, field: "effort_value")
             ?? model.fieldError(activity: activityIndex, set: setIndex, field: "difficulty_value")
-        {
-            GridRow {
-                Text(verbatim: message)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .gridCellColumns((activity.hasDifficulty ? 4 : 3) + (model.isEditable ? 1 : 0))
-            }
-        }
     }
 
+    private var setName: String { String(localized: "Set \(number)") }
+
     @ViewBuilder
-    private var difficultyField: some View {
+    var difficultyField: some View {
         if activity.isZone {
             Picker(
                 "",
@@ -379,7 +378,8 @@ struct SetRowView: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .disabled(locked)
-            .accessibilityIdentifier("set.\(activityIndex).\(setIndex).zone")
+            .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.difficultyLabel ?? "")"))
+            .accessibilityIdentifier("\(identifier).zone")
         } else {
             TextField(
                 "",
@@ -390,13 +390,13 @@ struct SetRowView: View {
             )
             .keyboardType(.decimalPad)
             .textFieldStyle(.roundedBorder)
-            .frame(width: 80)
             .disabled(locked)
-            .accessibilityIdentifier("set.\(activityIndex).\(setIndex).difficulty")
+            .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.difficultyLabel ?? "")"))
+            .accessibilityIdentifier("\(identifier).difficulty")
         }
     }
 
-    private var effortField: some View {
+    var effortField: some View {
         TextField(
             "",
             value: Binding(
@@ -406,8 +406,103 @@ struct SetRowView: View {
         )
         .keyboardType(.numberPad)
         .textFieldStyle(.roundedBorder)
-        .frame(width: 72)
         .disabled(locked)
-        .accessibilityIdentifier("set.\(activityIndex).\(setIndex).effort")
+        .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.effortLabel)"))
+        .accessibilityIdentifier("\(identifier).effort")
+    }
+
+    var doneToggle: some View {
+        Toggle(
+            "",
+            isOn: Binding(
+                get: { set.isCompleted },
+                set: { completed in
+                    model.setCompleted(completed, activity: activity.localId, set: set.localId)
+                    if completed, set.canComplete { Haptics.setCompleted() }
+                })
+        )
+        .labelsHidden()
+        .disabled(!model.isEditable || !set.canComplete)
+        .accessibilityLabel(
+            set.isCompleted ? Text("Mark set \(number) as incomplete") : Text("Mark set \(number) as complete")
+        )
+        .accessibilityIdentifier("\(identifier).done")
+    }
+
+    func removeButton(_ remove: @escaping () -> Void) -> some View {
+        Button(role: .destructive, action: remove) { Image(systemName: "xmark.circle") }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(Text("Remove set \(number)"))
+            .accessibilityIdentifier("\(identifier).remove")
+    }
+}
+
+/// Grid layout for regular text sizes: order, difficulty, effort, done, remove.
+struct SetRowView: View {
+    let controls: SetControls
+    let remove: () -> Void
+
+    var body: some View {
+        GridRow {
+            Text(verbatim: "\(controls.number)")
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            if controls.activity.hasDifficulty {
+                controls.difficultyField.frame(width: 80)
+            }
+            controls.effortField.frame(width: 72)
+            controls.doneToggle
+            if controls.model.isEditable {
+                controls.removeButton(remove)
+            }
+        }
+        .opacity(controls.set.isCompleted ? 0.7 : 1)
+        if let message = controls.fieldError {
+            GridRow {
+                Text(verbatim: message)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .gridCellColumns((controls.activity.hasDifficulty ? 4 : 3) + (controls.model.isEditable ? 1 : 0))
+            }
+        }
+    }
+}
+
+/// Stacked layout for accessibility text sizes: every field on its own labelled line.
+struct SetStackView: View {
+    let controls: SetControls
+    let remove: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Set \(controls.number)").font(.subheadline.weight(.semibold))
+                Spacer()
+                if controls.model.isEditable { controls.removeButton(remove) }
+            }
+            if controls.activity.hasDifficulty {
+                LabeledContent {
+                    controls.difficultyField
+                } label: {
+                    Text(verbatim: controls.activity.difficultyLabel ?? "")
+                }
+            }
+            LabeledContent {
+                controls.effortField
+            } label: {
+                Text(verbatim: controls.activity.effortLabel)
+            }
+            LabeledContent {
+                controls.doneToggle
+            } label: {
+                Text("Done")
+            }
+            if let message = controls.fieldError {
+                Text(verbatim: message).font(.caption).foregroundStyle(.red)
+            }
+        }
+        .padding(.vertical, 6)
+        .opacity(controls.set.isCompleted ? 0.7 : 1)
     }
 }

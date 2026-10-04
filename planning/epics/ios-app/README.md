@@ -1,6 +1,6 @@
 # Epic: iOS App
 
-**Status: in progress (stories 1–11 shipped, story 12 started 2026-10-04).**
+**Status: in progress (stories 1–12 shipped, story 13 started 2026-10-04).**
 
 Ship a native iOS client for the existing `/api/v1` contract so a user can register, enroll, log workouts and manage their profile from an iPhone, with the web SPA untouched and the API as the single source of truth.
 
@@ -93,8 +93,8 @@ RootView:                    splash           auth flow     verify-email gate  M
 | 9 | [Workout Editor: Sets and Save](stories/09-workout-editor-sets-and-save.md) | Workout Logging | shipped |
 | 10 | [Workout Editor: Activities, Complete and Local Draft](stories/10-workout-editor-activities-complete-and-draft.md) | Workout Logging | shipped |
 | 11 | [Workout History and Detail](stories/11-workout-history-and-detail.md) | Workout Logging | shipped |
-| 12 | [Profile](stories/12-profile.md) | Auth & Profile | in progress |
-| 13 | [Polish, Accessibility and Current-State Docs](stories/13-polish-accessibility-and-docs.md) | Platform | planned |
+| 12 | [Profile](stories/12-profile.md) | Auth & Profile | shipped |
+| 13 | [Polish, Accessibility and Current-State Docs](stories/13-polish-accessibility-and-docs.md) | Platform | in progress |
 | 14 | [TestFlight and App Store Release](stories/14-testflight-and-app-store-release.md) | Platform | planned |
 
 States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a story's PR opens and when it merges; archive or delete the story file after it ships, per `planning/README.md`.
