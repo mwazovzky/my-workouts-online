@@ -92,6 +92,20 @@ class CategoryAdminTest extends TestCase
     }
 
     #[Test]
+    public function create_rejects_a_locale_block_that_is_a_list_instead_of_an_object(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->postJson('/api/v1/admin/categories', $this->validPayload([
+            'translations' => ['en' => ['name' => 'Chest'], 'ru' => [['name' => 'Грудь']]],
+        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations.ru');
+
+        $this->actingAs($admin)->postJson('/api/v1/admin/categories', $this->validPayload([
+            'translations' => [['name' => 'Chest']],
+        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations');
+    }
+
+    #[Test]
     public function create_requires_english_name(): void
     {
         $admin = User::factory()->admin()->create();

@@ -281,5 +281,6 @@
   "No workouts scheduled yet": "Тренировки ещё не запланированы",
   "Create a workout template first": "Сначала создайте шаблон тренировки",
   "Weekday": "День недели",
-  "Workout template": "Шаблон тренировки"
+  "Workout template": "Шаблон тренировки",
+  "The :attribute field must be an object.": "Поле :attribute должно быть объектом."
 }

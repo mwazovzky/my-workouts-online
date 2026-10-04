@@ -4,6 +4,7 @@ namespace Tests\Unit\Requests;
 
 use App\Http\Requests\Admin\CategoryStoreRequest;
 use App\Http\Requests\Admin\ExerciseStoreRequest;
+use App\Rules\AssociativeArray;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -14,11 +15,11 @@ class HasTranslationRulesTest extends TestCase
     {
         $rules = (new ExerciseStoreRequest)->rules();
 
-        $this->assertSame(['required', 'array'], $rules['translations']);
-        $this->assertSame(['required', 'array'], $rules['translations.en']);
+        $this->assertEquals(['required', 'array', new AssociativeArray], $rules['translations']);
+        $this->assertEquals(['required', 'array', new AssociativeArray], $rules['translations.en']);
         $this->assertSame(['required', 'string', 'max:255'], $rules['translations.en.name']);
         $this->assertSame(['nullable', 'string', 'max:2000'], $rules['translations.en.description']);
-        $this->assertSame(['sometimes', 'array'], $rules['translations.ru']);
+        $this->assertEquals(['sometimes', 'array', new AssociativeArray], $rules['translations.ru']);
         $this->assertSame(['nullable', 'string', 'max:255'], $rules['translations.ru.name']);
         $this->assertSame(['nullable', 'string', 'max:2000'], $rules['translations.ru.description']);
     }
@@ -40,7 +41,7 @@ class HasTranslationRulesTest extends TestCase
 
         $rules = (new ExerciseStoreRequest)->rules();
 
-        $this->assertSame(['sometimes', 'array'], $rules['translations.de']);
+        $this->assertEquals(['sometimes', 'array', new AssociativeArray], $rules['translations.de']);
         $this->assertSame(['nullable', 'string', 'max:255'], $rules['translations.de.name']);
         $this->assertSame(['nullable', 'string', 'max:2000'], $rules['translations.de.description']);
     }

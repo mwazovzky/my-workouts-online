@@ -281,5 +281,6 @@
   "No workouts scheduled yet": "No workouts scheduled yet",
   "Create a workout template first": "Create a workout template first",
   "Weekday": "Weekday",
-  "Workout template": "Workout template"
+  "Workout template": "Workout template",
+  "The :attribute field must be an object.": "The :attribute field must be an object."
 }
