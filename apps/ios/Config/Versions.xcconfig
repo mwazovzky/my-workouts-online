@@ -1,3 +1,6 @@
-// Bumped per release; tags are ios-vX.Y.Z (never v*, which deploys the web and API).
+// Release identity. Bump MARKETING_VERSION for every TestFlight/App Store release and
+// CURRENT_PROJECT_VERSION for every upload of the same version (App Store Connect rejects
+// a build number it has already seen). Tag the commit ios-vX.Y.Z; never v*, which deploys
+// the web and API.
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1

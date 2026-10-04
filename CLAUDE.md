@@ -110,7 +110,7 @@ GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml`
 
 ### Deployment
 
-Docker Compose: `web` (nginx + SPA) and `api` (php-fpm) images built by the deploy workflow, plus `worker`, `mysql`, `alloy`. Every deploy runs `migrate` and then `catalog:sync`; production is never seeded with `db:seed`. The first admin is granted with `php artisan user:grant-admin {email}`. See `docs/deployment.md`.
+Docker Compose: `web` (nginx + SPA) and `api` (php-fpm) images built by the deploy workflow, plus `worker`, `mysql`, `alloy`. Every deploy runs `migrate` and then `catalog:sync`; production is never seeded with `db:seed`. The first admin is granted with `php artisan user:grant-admin {email}`. See `docs/deployment.md`. iOS releases are tagged `ios-v*` (never `v*`), run the `ios` workflow with UI tests, and are archived and uploaded from Xcode; see the iOS section of `docs/deployment.md`.
 
 ## Documentation
 

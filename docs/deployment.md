@@ -61,8 +61,8 @@ The deploy workflow assumes the standard SSH port `22`.
 ```bash
 git checkout main
 git pull --ff-only origin main
-git tag -a v0.3.0 -m "Release v0.3.0 | Refactor to api/first decoupling"
-git push origin v0.2.11
+git tag -a v0.3.9 -m "Release v0.3.9 | Short summary"
+git push origin v0.3.9
 ```
 
 3. The `deploy` workflow builds `${PRODUCTION_IMAGE_NAME}:api-v1.4.0`, `:web-v1.4.0` and the matching `:api-sha-<commit>` / `:web-sha-<commit>` tags, then deploys `v1.4.0` to production (the droplet's `IMAGE_TAG` is the bare version; compose adds the `api-`/`web-` prefixes).
@@ -98,6 +98,46 @@ Rollback:
 - Run the `deploy` workflow manually.
 - Set `image_tag` to the last known-good release tag, for example `v1.3.2`.
 - Leave `release_ref` blank unless the image tag does not match the Git ref you need.
+
+## iOS release (TestFlight / App Store)
+
+The iOS app ships independently of the web and API. Its tags are `ios-vX.Y.Z`; the `deploy` workflow listens only to `v*`, so an iOS tag never deploys the web and API, and a web release never ships the app.
+
+### Prerequisites (one-time)
+
+- An Apple Developer Program membership. Note the **Team ID** (developer.apple.com → Membership details).
+- The bundle identifier `online.my-workouts.app` registered under Identifiers with the **Associated Domains** capability, and an app record in App Store Connect with the same identifier. The identifier cannot change after the first upload.
+- `DEVELOPMENT_TEAM = <Team ID>` in `apps/ios/Config/Base.xcconfig` (not a secret; committing it lets everyone sign with the same team).
+- On the droplet, `APPLE_APP_ID=<Team ID>.online.my-workouts.app` in `.env`, then a web release so nginx serves the Apple App Site Association file with it; verify with the curl in "Verify health". Universal Links only work once this matches the signed app.
+- A demo account for App Review on production, created without the email round-trip:
+  `docker compose -f docker-compose.prod.yml exec -T api php artisan user:create "App Review" review@example.com '<password>' --verified`.
+  Put the credentials in the review notes of every submission.
+
+### Per release
+
+1. Merge to `main`. Bump `MARKETING_VERSION` in `apps/ios/Config/Versions.xcconfig` (and reset `CURRENT_PROJECT_VERSION` to 1); every further upload of the same version increments `CURRENT_PROJECT_VERSION`, because App Store Connect rejects a build number it has seen.
+2. Tag and push:
+   ```bash
+   git tag -a ios-v1.0.0 -m "iOS release 1.0.0 | Short summary"
+   git push origin ios-v1.0.0
+   ```
+   The `ios` workflow runs the full suite including the XCUITest smoke flows for this tag; `deploy` must not run.
+3. In Xcode on the tagged commit: `xcodegen generate`, open the project, select "Any iOS Device", Product → Archive, then Distribute → App Store Connect → Upload (automatic signing with the team above).
+4. In App Store Connect, add the build to the internal TestFlight group, install it on a device, and complete the acceptance flow against production: register, verify through the emailed link (it must open the app), enroll, log and complete a workout, log out.
+5. Submit for review: attach the build, fill the "What's new" text in English and Russian, keep the demo account in the review notes.
+
+### Store listing checklist
+
+- Support URL `https://my-workouts.online/support`, privacy policy URL `https://my-workouts.online/privacy` (both public SPA pages; the app also links to them from the Profile tab).
+- App Privacy answers mirror `apps/ios/App/PrivacyInfo.xcprivacy`: name, email and fitness data collected, linked to the user, used for app functionality, no tracking.
+- Export compliance is declared in `Info.plist` (`ITSAppUsesNonExemptEncryption` false: HTTPS only).
+- Account deletion is available in the app (Profile → Delete Account), as guideline 5.1.1 requires.
+- Sign in with Apple is not required while the only login is email and password.
+- Screenshots: 6.7" and 6.1" iPhone sizes at minimum; the simulator screenshots from `xcrun simctl io booted screenshot` are acceptable.
+
+### Rollback
+
+TestFlight and App Store builds cannot be withdrawn once users have them; ship a fixed build with a higher version. A release can be removed from sale in App Store Connect while a fix is prepared.
 
 ## Upgrading an existing droplet to the SPA + API release
 
@@ -262,6 +302,8 @@ docker compose -f docker-compose.prod.yml exec -T api php artisan catalog:sync -
 ### First admin
 
 There is no seeded admin account in production. Register through the app, verify the email, then grant the role on the droplet:
+
+`php artisan user:create {name} {email} {password} [--verified]` creates an account without the email round-trip, for example the App Review demo account or a first admin before `user:grant-admin`.
 
 ```bash
 docker compose -f docker-compose.prod.yml exec -T api php artisan user:grant-admin you@example.com

@@ -3,7 +3,7 @@ name: deploy
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*' # web + API releases only; iOS releases are tagged ios-v* and never match this
   workflow_dispatch:
     inputs:
       image_tag:

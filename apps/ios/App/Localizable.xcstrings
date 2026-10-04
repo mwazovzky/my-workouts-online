@@ -1976,6 +1976,16 @@
         }
       }
     },
+    "Privacy Policy" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Политика конфиденциальности"
+          }
+        }
+      }
+    },
     "Profile" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2567,6 +2577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Воскресенье"
+          }
+        }
+      }
+    },
+    "Support" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддержка"
           }
         }
       }

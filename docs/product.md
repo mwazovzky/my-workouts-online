@@ -2,6 +2,8 @@
 
 Workout tracking app for browsing training programs, starting workouts from templates, logging sets, and reviewing workout history.
 
+Clients: the web app at the site's root and a native iOS app (`apps/ios`) against the same API.
+
 ## Domain Glossary
 
 | Term | Definition |
