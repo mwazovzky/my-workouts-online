@@ -63,6 +63,9 @@ struct WorkoutTemplateDetailView: View {
                     .disabled(model.isStarting)
                     .accessibilityIdentifier("template.start")
                     SectionHeader(title: "Activities", subtitle: nil)
+                    if template.activities.isEmpty {
+                        EmptyStateView(systemImage: "list.bullet", title: "No activities yet")
+                    }
                     ForEach(template.activities) { activity in
                         ActivitySummaryCard(activity: activity)
                     }

@@ -52,6 +52,16 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **Content is translated by the API, UI strings by the client** — Catalog content is stored once in its source language with per-locale overrides, and the API returns the value for the negotiated locale. UI strings belong to each client (`apps/web/src/i18n/locales`).
 
+## iOS Client
+
+`apps/ios` is a native SwiftUI app (Swift 6, iOS 17+) generated from `project.yml` by XcodeGen; the `.xcodeproj` is never committed. One app target holds the views; two local Swift packages hold everything testable without UIKit: `WorkoutsAPI` (the client generated from the contract, middlewares, `APIError`, the date transcoder) and `WorkoutsCore` (domain models and mappers, `AuthSession`, `AppSession`, repositories, `@Observable` view models, the editor model and draft store, deep links, locale sync).
+
+- **Layers** — View → `@Observable` view model → repository protocol → generated `Client`. Repositories map every generated output case to a domain value or an `APIError`; views never see generated types. Fakes implement the repository protocols in tests.
+- **Navigation** — a `TabView` with one `NavigationStack` per tab; `AppRoute` enumerates every pushable destination and `RouteDestinationView` resolves it. Pushed screens reach their tab's path through the `navigationPath` environment value, which must be set on the `NavigationStack` itself so destinations inherit it.
+- **Screen state** — `LoadState<Value>` (`idle`, `loading`, `loaded`, `failed`) drives shared loading, empty and error views; a reload keeps content visible; forms use `FormErrors` (first message per field, one general banner).
+- **Editor** — `WorkoutDraft` is the editable copy with device-side identities; `WorkoutEditorModel` holds the web editor's rules; the `DraftStore` persists unsaved edits and restores them while the server `updated_at` is unchanged.
+- **Testing** — Swift Testing in the packages against `StubTransport` and fakes; XCUITest smoke flows in the app, including a live flow against the dev stack gated by `TEST_RUNNER_UITEST_LIVE_BACKEND=1` and started signed out via the `--reset-session` launch argument. Details in `apps/ios/README.md` and `docs/testing.md`.
+
 ## Internationalization
 
 ### Locale Resolution
@@ -88,6 +98,7 @@ Only non-obvious locations listed.
 | Path                          | Contains                                                                     |
 | ----------------------------- | ---------------------------------------------------------------------------- |
 | `apps/web/`                   | The Vue SPA (vue-router, Pinia) consuming `/api/v1`; served by the `web` nginx image |
+| `apps/ios/`                   | The SwiftUI app: `project.yml`, `App/` (views, `Localizable.xcstrings`, assets), `Config/*.xcconfig`, `Packages/WorkoutsAPI`, `Packages/WorkoutsCore`, `UITests/`, `scripts/` |
 | `services/api-php/`           | The Laravel API; `docker/nginx/api-locations.conf` is the only path from the SPA to it |
 | `docker/nginx/`               | nginx snippets shared by dev and production: API routes, SPA fallback, `/.well-known/apple-app-site-association` for iOS Universal Links (rendered from `APPLE_APP_ID`), security headers |
 | `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |

@@ -9,6 +9,10 @@ final class LaunchTests: XCTestCase {
     static func launchSignedOut() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--reset-session"]
+        // UITEST_CONTENT_SIZE=UICTContentSizeCategoryAccessibilityXXXL runs the flows at the largest text size.
+        if let size = ProcessInfo.processInfo.environment["UITEST_CONTENT_SIZE"], !size.isEmpty {
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName", size]
+        }
         app.launch()
         return app
     }
