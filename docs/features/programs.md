@@ -9,6 +9,12 @@ Browse workout programs, inspect their templates, and enroll.
 3. User clicks **Enroll** and is enrolled without leaving the page.
 4. User opens **WorkoutTemplateShow** to inspect a single template with its activities and sets.
 
+## iOS (`apps/ios`)
+
+- **Programs tab**: all programs with an Enrolled badge and an "Enrolled programs only" switch (client-side filter, like the web); Enroll flips the badge immediately and reverts with an error banner if the API refuses. The list reloads when returning from a detail screen
+- **Program detail**: description, Enroll, and the templates grouped by weekday in calendar order with the API's `weekday_label`; templates without a slot sit under "Not scheduled"
+- **Template detail**: read-only activities with equipment, rest time, categories and the planned sets in the two-axis layout (`exercise_difficulty_label` column hidden when the unit is `none`, `exercise_effort_label` for reps or seconds); Start Workout creates the workout and opens the editor
+
 ## Business Rules
 
 - Programs are global catalog data. All authenticated and verified users see the same list.

@@ -42,6 +42,20 @@ final class LaunchTests: XCTestCase {
             XCTAssertTrue(app.navigationBars[tab].waitForExistence(timeout: 5), "\(tab) tab renders")
         }
 
+        app.tabBars.buttons["Programs"].tap()
+        let firstProgram = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'program.' AND NOT identifier ENDSWITH '.enroll'")
+        ).firstMatch
+        XCTAssertTrue(firstProgram.waitForExistence(timeout: 10), "programs load from the API")
+        firstProgram.tap()
+        XCTAssertTrue(app.staticTexts["Program Workouts"].waitForExistence(timeout: 10))
+        let firstTemplate = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'template.'")).firstMatch
+        if firstTemplate.waitForExistence(timeout: 5) {
+            firstTemplate.tap()
+            XCTAssertTrue(app.buttons["template.start"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.staticTexts["Activities"].exists)
+        }
+
         app.tabBars.buttons["Profile"].tap()
         XCTAssertTrue(app.buttons["main.logout"].waitForExistence(timeout: 5))
         app.buttons["main.logout"].tap()

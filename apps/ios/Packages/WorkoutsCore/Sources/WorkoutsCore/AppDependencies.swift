@@ -11,17 +11,22 @@ public struct AppDependencies: Sendable {
     public let meRepository: any MeRepository
     public let dashboardRepository: any DashboardRepository
     public let workoutRepository: any WorkoutRepository
+    public let programRepository: any ProgramRepository
+    public let templateRepository: any TemplateRepository
     public let apiClient: Client
 
     public init(
         authSession: AuthSession, authRepository: any AuthRepository, meRepository: any MeRepository,
-        dashboardRepository: any DashboardRepository, workoutRepository: any WorkoutRepository, apiClient: Client
+        dashboardRepository: any DashboardRepository, workoutRepository: any WorkoutRepository,
+        programRepository: any ProgramRepository, templateRepository: any TemplateRepository, apiClient: Client
     ) {
         self.authSession = authSession
         self.authRepository = authRepository
         self.meRepository = meRepository
         self.dashboardRepository = dashboardRepository
         self.workoutRepository = workoutRepository
+        self.programRepository = programRepository
+        self.templateRepository = templateRepository
         self.apiClient = apiClient
     }
 
@@ -67,6 +72,8 @@ public struct AppDependencies: Sendable {
             meRepository: APIMeRepository(client: apiClient),
             dashboardRepository: APIDashboardRepository(client: apiClient),
             workoutRepository: APIWorkoutRepository(client: apiClient),
+            programRepository: APIProgramRepository(client: apiClient),
+            templateRepository: APITemplateRepository(client: apiClient),
             apiClient: apiClient
         )
     }

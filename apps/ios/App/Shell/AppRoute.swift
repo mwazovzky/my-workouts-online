@@ -11,14 +11,15 @@ enum AppRoute: Hashable {
 
 /// Resolves a route to its screen. Stories 8–11 replace the placeholders.
 struct RouteDestinationView: View {
+    @Environment(\.navigationPath) private var path
     let route: AppRoute
 
     var body: some View {
         switch route {
         case .program(let id):
-            ComingSoonView(title: "Program", detail: "#\(id)")
+            ProgramDetailView(programId: id)
         case .workoutTemplate(let id):
-            ComingSoonView(title: "Open template", detail: "#\(id)")
+            WorkoutTemplateDetailView(path: path, templateId: id)
         case .workout(let id):
             ComingSoonView(title: "Workout", detail: "#\(id)")
         case .workoutEdit(let id):
@@ -39,5 +40,18 @@ struct ComingSoonView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityIdentifier("route.placeholder")
+    }
+}
+
+/// The owning tab's navigation path, so pushed screens can push further (e.g. Start Workout
+/// from a template pushes the editor) without threading a binding through every view.
+private struct NavigationPathKey: EnvironmentKey {
+    static let defaultValue: Binding<[AppRoute]> = .constant([])
+}
+
+extension EnvironmentValues {
+    var navigationPath: Binding<[AppRoute]> {
+        get { self[NavigationPathKey.self] }
+        set { self[NavigationPathKey.self] = newValue }
     }
 }
