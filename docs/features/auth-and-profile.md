@@ -29,6 +29,7 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 - **Forgot password** posts `/auth/password/forgot` and always shows the neutral "We have emailed your password reset link."; the emailed link opens the web app until story 6 adds Universal Links
 - **Verify email gate** (shown while `email_verified` is false): "I have verified my email" re-fetches `/me` and continues when verified; "Resend" posts `/auth/email/resend` (202 → sent notice, 204 → already verified, so `/me` is refreshed; 429 → throttle message); Log out
 - A 429 on any form shows a throttle banner, a network failure an offline banner; everything else shows the server's message
+- **Emailed links** open the app on a phone that has it (Universal Links on the production domain; the AASA file is served by nginx, see Deployment) and keep opening the web app everywhere else. A verification link verifies immediately when the linked user is signed in; when signed out it is kept and completes after login ("Sign in to finish verifying your email."); for another signed-in account the app explains and offers to log out. A reset link opens the reset form as a sheet in any state; success signs out locally, since the server revoked every session, and the welcome screen says "Your password has been reset.". The `myworkouts://` scheme mirrors both paths for simulator testing (`xcrun simctl openurl`)
 
 ## SPA Flows (`apps/web`)
 

@@ -39,6 +39,15 @@ actor FakeAuthRepository: AuthRepository {
         if let forgotScript { throw forgotScript }
     }
 
+    var resetError: APIError?
+    private(set) var resetCalls: [(token: String, email: String)] = []
+    func setReset(_ error: APIError?) { resetError = error }
+
+    func resetPassword(token: String, email: String, password: String, passwordConfirmation: String) async throws {
+        resetCalls.append((token, email))
+        if let resetError { throw resetError }
+    }
+
     func refresh(refreshToken: String) async throws -> AuthGrant { .fixture }
     func logout(accessToken: String) async throws {}
 }
@@ -63,6 +72,18 @@ actor FakeMeRepository: MeRepository {
         resendCalls += 1
         if let resendError { throw resendError }
         return resendResult
+    }
+
+    var verifyError: APIError?
+    private(set) var verifyCalls: [(id: Int, hash: String)] = []
+    func set(verifyError: APIError?) { self.verifyError = verifyError }
+
+    func verifyEmail(id: Int, hash: String, expires: Int, signature: String) async throws {
+        verifyCalls.append((id, hash))
+        if let verifyError { throw verifyError }
+        user = User(
+            id: user.id, name: user.name, email: user.email, locale: user.locale, themePreference: user.themePreference,
+            isAdmin: user.isAdmin, emailVerified: true)
     }
 }
 

@@ -25,6 +25,17 @@
 		<string>en</string>
 		<string>ru</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>online.my-workouts.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>myworkouts</string>
+			</array>
+		</dict>
+	</array>
 	<key>APIBaseURL</key>
 	<string>$(API_BASE_URL)</string>
 	<key>NSAppTransportSecurity</key>

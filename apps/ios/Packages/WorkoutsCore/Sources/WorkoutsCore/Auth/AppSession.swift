@@ -12,6 +12,8 @@ public final class AppSession {
         /// The server revoked the refresh family (expired, reused, or revoked elsewhere).
         case sessionExpired
         case accountDeleted
+        /// A password reset succeeded; the server already revoked every refresh family.
+        case passwordReset
     }
 
     public enum State: Sendable, Equatable {
@@ -90,7 +92,7 @@ public final class AppSession {
     }
 
     public func signOut(reason: SignOutReason = .userInitiated) async {
-        await authSession.signOut(revoke: reason != .accountDeleted)
+        await authSession.signOut(revoke: reason == .userInitiated)
         state = .signedOut(reason: reason)
     }
 }
