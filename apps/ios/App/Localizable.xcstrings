@@ -45,6 +45,16 @@
         }
       }
     },
+    "%lld/%lld sets" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/%lld подходов"
+          }
+        }
+      }
+    },
     "A clear next action instead of a generic dashboard" : {
       "extractionState" : "stale",
       "localizations" : {

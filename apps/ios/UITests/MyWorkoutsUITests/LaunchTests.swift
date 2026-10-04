@@ -4,10 +4,18 @@ import XCTest
 /// `API_BASE_URL` (docker compose up -d) with the seeded demo admin, so it is skipped
 /// unless `UITEST_LIVE_BACKEND=1` is set in the environment.
 final class LaunchTests: XCTestCase {
+    /// Launches with the stored session cleared so every test starts on the welcome screen.
+    @MainActor
+    static func launchSignedOut() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["--reset-session"]
+        app.launch()
+        return app
+    }
+
     @MainActor
     func testWelcomeScreenLaunches() {
-        let app = XCUIApplication()
-        app.launch()
+        let app = Self.launchSignedOut()
 
         XCTAssertTrue(app.staticTexts["root.title"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["welcome.login"].exists)
@@ -20,8 +28,7 @@ final class LaunchTests: XCTestCase {
             ProcessInfo.processInfo.environment["UITEST_LIVE_BACKEND"] == "1",
             "needs the dev stack; run with UITEST_LIVE_BACKEND=1")
 
-        let app = XCUIApplication()
-        app.launch()
+        let app = Self.launchSignedOut()
         XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
         app.buttons["welcome.login"].tap()
 
@@ -54,6 +61,16 @@ final class LaunchTests: XCTestCase {
             firstTemplate.tap()
             XCTAssertTrue(app.buttons["template.start"].waitForExistence(timeout: 10))
             XCTAssertTrue(app.staticTexts["Activities"].exists)
+
+            app.buttons["template.start"].tap()
+            XCTAssertTrue(
+                app.staticTexts["editor.progress"].waitForExistence(timeout: 15), "starting a workout opens the editor")
+            XCTAssertTrue(app.buttons["editor.save"].exists)
+            XCTAssertFalse(app.buttons["editor.save"].isEnabled, "nothing to save yet")
+            app.buttons["activity.0.addSet"].tap()
+            XCTAssertTrue(app.buttons["editor.save"].isEnabled, "adding a set makes the draft dirty")
+            app.buttons["editor.save"].tap()
+            XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 15), "save confirms with a toast")
         }
 
         app.tabBars.buttons["Profile"].tap()
@@ -76,8 +93,7 @@ final class LaunchTests: XCTestCase {
 
     @MainActor
     func testResetPasswordLinkOpensTheResetSheet() throws {
-        let app = XCUIApplication()
-        app.launch()
+        let app = Self.launchSignedOut()
         XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
 
         try open("myworkouts://reset-password/tok123?email=test%40example.com", into: app)
@@ -92,8 +108,7 @@ final class LaunchTests: XCTestCase {
 
     @MainActor
     func testVerificationLinkWhileSignedOutAsksToSignIn() throws {
-        let app = XCUIApplication()
-        app.launch()
+        let app = Self.launchSignedOut()
         XCTAssertTrue(app.buttons["welcome.login"].waitForExistence(timeout: 10))
 
         try open("myworkouts://verify-email/1/abc?expires=1&signature=s", into: app)

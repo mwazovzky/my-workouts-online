@@ -23,7 +23,7 @@ struct RouteDestinationView: View {
         case .workout(let id):
             ComingSoonView(title: "Workout", detail: "#\(id)")
         case .workoutEdit(let id):
-            ComingSoonView(title: "Workout", detail: "#\(id)")
+            WorkoutEditorView(workoutId: id)
         }
     }
 }

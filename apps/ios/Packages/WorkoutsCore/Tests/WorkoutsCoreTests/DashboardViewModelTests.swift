@@ -23,8 +23,31 @@ actor FakeDashboardRepository: DashboardRepository {
 actor FakeWorkoutRepository: WorkoutRepository {
     var createError: APIError?
     private(set) var createdTemplateIds: [Int] = []
+    var stored: Workout?
+    var saveError: APIError?
+    private(set) var savedPayloads: [WorkoutSavePayload] = []
+    /// What `save` returns; defaults to the stored workout with ids assigned positionally.
+    var saveResult: Workout?
 
     func set(createError: APIError?) { self.createError = createError }
+    func set(stored: Workout?) { self.stored = stored }
+    func set(saveError: APIError?) { self.saveError = saveError }
+    func set(saveResult: Workout?) { self.saveResult = saveResult }
+
+    func get(id: Int) async throws -> Workout {
+        guard let stored, stored.id == id else {
+            throw APIError.api(status: 404, code: "not_found", message: "Record not found.")
+        }
+        return stored
+    }
+
+    func save(id: Int, payload: WorkoutSavePayload) async throws -> Workout {
+        savedPayloads.append(payload)
+        if let saveError { throw saveError }
+        if let saveResult { return saveResult }
+        guard let stored else { throw APIError.unexpected(status: 500) }
+        return stored
+    }
 
     func create(templateId: Int) async throws -> Workout {
         createdTemplateIds.append(templateId)

@@ -36,8 +36,8 @@ private struct DashboardTab: View {
         NavigationStack(path: $path) {
             DashboardView(path: $path)
                 .navigationDestination(for: AppRoute.self) { RouteDestinationView(route: $0) }
-                .environment(\.navigationPath, $path)
         }
+        .environment(\.navigationPath, $path)
     }
 }
 

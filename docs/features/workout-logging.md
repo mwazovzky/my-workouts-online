@@ -18,6 +18,7 @@ Start workouts from templates, edit activities and sets, save progress, complete
 
 - **Dashboard tab**: the in-progress workout card (Continue), four summary tiles, the next-7-days schedule with Start Workout per slot (`POST /api/v1/workouts`, then the editor), and recent workouts. Pull to refresh; it reloads when returning from a pushed screen. A failed load shows a retry; a failed start shows a banner and stays on the dashboard
 - The user's theme preference is applied app-wide and cached so the login screens use it on the next launch
+- **Editor** (own in-progress workouts; anything else opens read-only): one card per activity with exercise, equipment, rest time and categories, and a set grid with the same rules as the web — the difficulty column is hidden for the `none` unit, a 1–5 picker (or none) for heart-rate zones, a decimal field otherwise; effort is an integer (reps or seconds per the exercise); Done needs effort above zero and effort back to zero un-checks it; a completed set is locked until un-checked; Add set copies the previous set's values. A progress bar shows completed over total sets. Save sends the whole workout in one `PATCH /workouts/{id}/save` with orders renumbered from 1, adopts the returned ids so the next save updates rows, and shows 422 messages under the offending set
 
 ## Business Rules
 
