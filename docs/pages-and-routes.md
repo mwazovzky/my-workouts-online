@@ -34,6 +34,19 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 
 Each catalog resource also has `/admin/{resource}/create` (`admin.{resource}.create`) and `/admin/{resource}/{id}/edit` (`admin.{resource}.edit`) pages hosting the shared `components/Admin/*Form` component. Edit pages load the record from the admin API on mount.
 
+## iOS Screens (`apps/ios`)
+
+| Screen | Access | Backed by |
+| --- | --- | --- |
+| Welcome | guest | — |
+| Log in | guest | `POST /api/v1/auth/login` |
+| Register | guest | `POST /api/v1/auth/register` |
+| Forgot password | guest | `POST /api/v1/auth/password/forgot` |
+| Verify email gate | auth, unverified | `GET /api/v1/me`, `POST /api/v1/auth/email/resend` |
+| Main (placeholder until the tab shell ships) | verified | `GET /api/v1/me` |
+
+The root view picks the screen from the session state (`signedOut`, `unverified`, `ready`), mirroring the SPA's `guest` / `auth` / `verified` guards.
+
 ## Non-API endpoints (Laravel, outside `/api`)
 
 | Action                      | Method   | Path                               | Route Name            | Access  | Owning Feature |

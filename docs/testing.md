@@ -219,7 +219,7 @@ The iOS app (`apps/ios`) is tested on the host with the Xcode toolchain, not in 
 
 - **Package tests** (`Packages/WorkoutsCore`, `Packages/WorkoutsAPI`): Swift Testing suites run with `swift test` inside the package directory. They need no simulator because the packages are Foundation-only; anything that needs UIKit stays in the app target.
 - **App tests** (`Tests/MyWorkoutsTests`): Swift Testing against the app target, run with `xcodebuild test` on a simulator (see `apps/ios/README.md` for the command).
-- **UI tests** (`UITests/MyWorkoutsUITests`): a small XCUITest smoke suite. Skipped in the per-PR CI job (`-skip-testing:MyWorkoutsUITests`) to keep macOS minutes low; run them locally before a release.
+- **UI tests** (`UITests/MyWorkoutsUITests`): a small XCUITest smoke suite. The launch test is self-contained; the login flow needs the dev stack, runs only with `TEST_RUNNER_UITEST_LIVE_BACKEND=1`, and needs a signed simulator build (no `CODE_SIGNING_ALLOWED=NO`) because the session lives in the Keychain. Skipped in the per-PR CI job (`-skip-testing:MyWorkoutsUITests`) to keep macOS minutes low; run them locally before a release.
 - **Lint**: `swift format lint --strict --recursive apps/ios` is enforced by CI.
 
 `.github/workflows/ios.yml` runs lint, package tests and app tests on a macOS runner only when `apps/ios/**`, `contracts/openapi.yaml` or the workflow itself changed; otherwise the job is skipped, which still satisfies branch protection.
