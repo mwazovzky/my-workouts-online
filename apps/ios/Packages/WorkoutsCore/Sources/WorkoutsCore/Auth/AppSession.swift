@@ -30,10 +30,12 @@ public final class AppSession {
 
     private let authSession: AuthSession
     private let meRepository: any MeRepository
+    private let draftStore: (any DraftStore)?
 
-    public init(authSession: AuthSession, meRepository: any MeRepository) {
+    public init(authSession: AuthSession, meRepository: any MeRepository, draftStore: (any DraftStore)? = nil) {
         self.authSession = authSession
         self.meRepository = meRepository
+        self.draftStore = draftStore
     }
 
     public var user: User? {
@@ -93,6 +95,7 @@ public final class AppSession {
 
     public func signOut(reason: SignOutReason = .userInitiated) async {
         await authSession.signOut(revoke: reason == .userInitiated)
+        try? await draftStore?.deleteAll()
         state = .signedOut(reason: reason)
     }
 }

@@ -24,15 +24,29 @@ public final class WorkoutEditorModel {
     /// 422 messages keyed by `activities.{a}.sets.{s}.{field}` and `activities.{a}.{field}`.
     public private(set) var fieldErrors: [String: String] = [:]
     public private(set) var lastSavedAt: Date?
+    public private(set) var isCompleting = false
+    public private(set) var completeError: APIError?
+    /// A persisted draft was applied on load; the banner offers Discard.
+    public private(set) var restoredDraft = false
+    /// A persisted draft was dropped because the server copy had changed since it was taken.
+    public private(set) var staleDraftDiscarded = false
 
     private let workouts: any WorkoutRepository
+    private let drafts: (any DraftStore)?
     private let currentUserId: Int
+    private let persistDelay: Duration
+    private var persistTask: Task<Void, Never>?
     public let workoutId: Int
 
-    public init(workouts: any WorkoutRepository, workoutId: Int, currentUserId: Int) {
+    public init(
+        workouts: any WorkoutRepository, workoutId: Int, currentUserId: Int, drafts: (any DraftStore)? = nil,
+        persistDelay: Duration = .milliseconds(500)
+    ) {
         self.workouts = workouts
         self.workoutId = workoutId
         self.currentUserId = currentUserId
+        self.drafts = drafts
+        self.persistDelay = persistDelay
     }
 
     public var draft: WorkoutDraft? { state.value }
@@ -48,9 +62,124 @@ public final class WorkoutEditorModel {
         do {
             let workout = try await workouts.get(id: workoutId)
             apply(workout)
+            await restoreDraftIfAny(for: workout)
         } catch {
             state = .failed(APIError.from(error))
         }
+    }
+
+    // MARK: Activities
+
+    /// Appends the picked exercise with one blank set, like the web picker.
+    public func addActivity(exercise: Exercise) {
+        replaceDraft { $0.activities.append(DraftActivity(exercise: exercise)) }
+    }
+
+    /// Removing the last set removes the whole activity; the view confirms first using this.
+    public func removingSetWouldDeleteActivity(_ activity: UUID) -> Bool {
+        draft?.activities.first { $0.localId == activity }?.sets.count == 1
+    }
+
+    /// The only remaining activity cannot be deleted.
+    public func canDeleteActivity(_ activity: UUID) -> Bool {
+        (draft?.activities.count ?? 0) > 1
+    }
+
+    public func removeSet(activity: UUID, set: UUID) {
+        guard let activityIndex = draft?.activities.firstIndex(where: { $0.localId == activity }) else { return }
+        if draft?.activities[activityIndex].sets.count == 1 {
+            deleteActivity(activity)
+            return
+        }
+        mutateActivity(activity) { $0.sets.removeAll { $0.localId == set } }
+    }
+
+    public func deleteActivity(_ activity: UUID) {
+        guard canDeleteActivity(activity) else { return }
+        replaceDraft { $0.activities.removeAll { $0.localId == activity } }
+    }
+
+    public func moveActivities(fromOffsets source: IndexSet, toOffset destination: Int) {
+        replaceDraft { $0.activities.moveElements(fromOffsets: source, toOffset: destination) }
+    }
+
+    // MARK: Complete
+
+    /// Saves first when dirty, then completes. Returns the completed workout for navigation.
+    public func complete() async -> Workout? {
+        guard isEditable, !isCompleting else { return nil }
+        isCompleting = true
+        completeError = nil
+        defer { isCompleting = false }
+        if isDirty, await !save() {
+            completeError = saveError
+            return nil
+        }
+        do {
+            let completed = try await workouts.complete(id: workoutId)
+            workout = completed
+            mode = .readOnly
+            state = .loaded(WorkoutDraft(workout: completed))
+            isDirty = false
+            await deletePersistedDraft()
+            return completed
+        } catch {
+            completeError = APIError.from(error)
+            return nil
+        }
+    }
+
+    public func dismissCompleteError() {
+        completeError = nil
+    }
+
+    // MARK: Persisted draft
+
+    /// Writes the current draft immediately (call when the app goes to the background).
+    public func persistNow() async {
+        persistTask?.cancel()
+        guard isDirty, let draft, let drafts else { return }
+        try? await drafts.save(draft)
+    }
+
+    /// Reloads the server copy, dropping the restored draft.
+    public func discardRestoredDraft() async {
+        restoredDraft = false
+        await deletePersistedDraft()
+        state = .idle
+        await load()
+    }
+
+    public func dismissStaleDraftNotice() {
+        staleDraftDiscarded = false
+    }
+
+    private func restoreDraftIfAny(for workout: Workout) async {
+        guard isEditable, let drafts, let saved = try? await drafts.load(workoutId: workoutId) else { return }
+        if saved.baseUpdatedAt == workout.updatedAt {
+            state = .loaded(saved)
+            isDirty = true
+            restoredDraft = true
+        } else {
+            try? await drafts.delete(workoutId: workoutId)
+            staleDraftDiscarded = true
+        }
+    }
+
+    private func schedulePersist() {
+        guard let drafts else { return }
+        persistTask?.cancel()
+        let delay = persistDelay
+        persistTask = Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled, let self, self.isDirty, let draft = self.draft else { return }
+            try? await drafts.save(draft)
+        }
+    }
+
+    private func deletePersistedDraft() async {
+        persistTask?.cancel()
+        try? await drafts?.delete(workoutId: workoutId)
     }
 
     // MARK: Set rules
@@ -118,6 +247,7 @@ public final class WorkoutEditorModel {
             adoptIds(from: saved, into: draft)
             isDirty = false
             lastSavedAt = Date()
+            await deletePersistedDraft()
             return true
         } catch {
             let apiError = APIError.from(error)
@@ -195,6 +325,7 @@ public final class WorkoutEditorModel {
         guard draft.activities[index] != before else { return }
         state = .loaded(draft)
         isDirty = true
+        schedulePersist()
     }
 
     func replaceDraft(_ transform: (inout WorkoutDraft) -> Void) {
@@ -204,6 +335,7 @@ public final class WorkoutEditorModel {
         guard draft != before else { return }
         state = .loaded(draft)
         isDirty = true
+        schedulePersist()
     }
 }
 
@@ -244,5 +376,17 @@ public struct WorkoutSavePayload: Sendable, Equatable {
 
     public init(activities: [Activity]) {
         self.activities = activities
+    }
+}
+
+extension Array {
+    /// Foundation-only equivalent of SwiftUI's `move(fromOffsets:toOffset:)`, with the same
+    /// semantics: `destination` is an index in the array before removal.
+    mutating func moveElements(fromOffsets source: IndexSet, toOffset destination: Int) {
+        let moving = source.map { self[$0] }
+        let removedBefore = source.filter { $0 < destination }.count
+        for index in source.sorted(by: >) { remove(at: index) }
+        let target = Swift.min(Swift.max(destination - removedBefore, 0), count)
+        insert(contentsOf: moving, at: target)
     }
 }

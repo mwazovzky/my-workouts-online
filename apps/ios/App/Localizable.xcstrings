@@ -253,6 +253,16 @@
         }
       }
     },
+    "Back" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назад"
+          }
+        }
+      }
+    },
     "Back to log in" : {
       "localizations" : {
         "ru" : {
@@ -763,6 +773,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Единица нагрузки"
+          }
+        }
+      }
+    },
+    "Discard" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить изменения"
           }
         }
       }
@@ -1436,6 +1456,16 @@
         }
       }
     },
+    "Leave" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уйти"
+          }
+        }
+      }
+    },
     "Legs & Conditioning" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1810,6 +1840,16 @@
         }
       }
     },
+    "OK" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ОК"
+          }
+        }
+      }
+    },
     "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2079,6 +2119,16 @@
         }
       }
     },
+    "Remove set?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить подход?"
+          }
+        }
+      }
+    },
     "Removing the last set will delete this activity." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2086,6 +2136,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удаление последнего подхода удалит это упражнение."
+          }
+        }
+      }
+    },
+    "Reorder activities" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить порядок упражнений"
           }
         }
       }
@@ -2399,6 +2459,16 @@
         }
       }
     },
+    "Stay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остаться"
+          }
+        }
+      }
+    },
     "Strength program" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2530,6 +2600,16 @@
         }
       }
     },
+    "This workout was changed elsewhere; your unsaved edits were discarded." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренировка была изменена в другом месте; несохранённые правки отброшены."
+          }
+        }
+      }
+    },
     "Thursday" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2578,6 +2658,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вторник"
+          }
+        }
+      }
+    },
+    "Unsaved changes restored" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Несохранённые изменения восстановлены"
           }
         }
       }
@@ -2796,6 +2886,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Просмотр шаблона"
+          }
+        }
+      }
+    },
+    "Workout completed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тренировка завершена"
           }
         }
       }

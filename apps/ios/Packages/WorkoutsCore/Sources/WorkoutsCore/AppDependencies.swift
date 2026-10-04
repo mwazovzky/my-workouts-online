@@ -13,12 +13,15 @@ public struct AppDependencies: Sendable {
     public let workoutRepository: any WorkoutRepository
     public let programRepository: any ProgramRepository
     public let templateRepository: any TemplateRepository
+    public let exerciseRepository: any ExerciseRepository
+    public let draftStore: any DraftStore
     public let apiClient: Client
 
     public init(
         authSession: AuthSession, authRepository: any AuthRepository, meRepository: any MeRepository,
         dashboardRepository: any DashboardRepository, workoutRepository: any WorkoutRepository,
-        programRepository: any ProgramRepository, templateRepository: any TemplateRepository, apiClient: Client
+        programRepository: any ProgramRepository, templateRepository: any TemplateRepository,
+        exerciseRepository: any ExerciseRepository, draftStore: any DraftStore, apiClient: Client
     ) {
         self.authSession = authSession
         self.authRepository = authRepository
@@ -27,6 +30,8 @@ public struct AppDependencies: Sendable {
         self.workoutRepository = workoutRepository
         self.programRepository = programRepository
         self.templateRepository = templateRepository
+        self.exerciseRepository = exerciseRepository
+        self.draftStore = draftStore
         self.apiClient = apiClient
     }
 
@@ -44,6 +49,7 @@ public struct AppDependencies: Sendable {
         build: String,
         availableLocales: @escaping @Sendable () -> [String] = { ["en", "ru"] },
         tokenStore: any TokenStore,
+        draftStore: any DraftStore = FileDraftStore(),
         transport: any ClientTransport = URLSessionTransport()
     ) -> AppDependencies {
         let common: [any ClientMiddleware] = [
@@ -74,6 +80,8 @@ public struct AppDependencies: Sendable {
             workoutRepository: APIWorkoutRepository(client: apiClient),
             programRepository: APIProgramRepository(client: apiClient),
             templateRepository: APITemplateRepository(client: apiClient),
+            exerciseRepository: APIExerciseRepository(client: apiClient),
+            draftStore: draftStore,
             apiClient: apiClient
         )
     }
