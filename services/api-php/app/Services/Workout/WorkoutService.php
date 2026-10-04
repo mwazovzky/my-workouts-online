@@ -218,7 +218,7 @@ class WorkoutService implements WorkoutServiceInterface
             'id' => isset($set['id']) && $set['id'] !== null ? (int) $set['id'] : null,
             'order' => (int) $set['order'],
             'effort_value' => (int) $set['effort_value'],
-            'difficulty_value' => $set['difficulty_value'],
+            'difficulty_value' => $set['difficulty_value'] ?? null,
             'is_completed' => (bool) ($set['is_completed'] ?? false),
         ]);
 

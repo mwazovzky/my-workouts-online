@@ -696,6 +696,33 @@ class WorkoutSaveTest extends TestCase
     }
 
     #[Test]
+    public function save_accepts_sets_that_omit_optional_keys(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $exercise = Exercise::factory()->create();
+
+        $response = $this->actingAs($user)->patchJson(
+            '/api/v1/workouts/'.$workout->id.'/save',
+            [
+                'activities' => [
+                    [
+                        'exercise_id' => $exercise->id,
+                        'order' => 1,
+                        'sets' => [
+                            ['order' => 1, 'effort_value' => 10],
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $response->assertOk();
+        $response->assertJsonPath('data.activities.0.sets.0.difficulty_value', null);
+        $response->assertJsonPath('data.activities.0.sets.0.is_completed', false);
+    }
+
+    #[Test]
     public function save_rejects_set_with_missing_required_fields(): void
     {
         $user = User::factory()->create();
