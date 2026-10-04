@@ -1916,6 +1916,16 @@
         }
       }
     },
+    "Password updated." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пароль обновлён."
+          }
+        }
+      }
+    },
     "Profile" : {
       "extractionState" : "stale",
       "localizations" : {

@@ -78,6 +78,54 @@ actor FakeMeRepository: MeRepository {
     private(set) var verifyCalls: [(id: Int, hash: String)] = []
     func set(verifyError: APIError?) { self.verifyError = verifyError }
 
+    var updateError: APIError?
+    private(set) var profileUpdates: [(name: String, email: String)] = []
+    private(set) var passwordUpdates: [(current: String, new: String)] = []
+    private(set) var localeUpdates: [String] = []
+    private(set) var themeUpdates: [ThemePreference] = []
+    private(set) var deletePasswords: [String] = []
+    func set(updateError: APIError?) { self.updateError = updateError }
+
+    private func mutated(_ change: (inout User) -> Void) -> User {
+        var copy = user
+        change(&copy)
+        user = copy
+        return copy
+    }
+
+    func updateProfile(name: String, email: String) async throws -> User {
+        profileUpdates.append((name, email))
+        if let updateError { throw updateError }
+        let emailChanged = email != user.email
+        return mutated {
+            $0 = User(
+                id: $0.id, name: name, email: email, locale: $0.locale, themePreference: $0.themePreference,
+                isAdmin: $0.isAdmin, emailVerified: emailChanged ? false : $0.emailVerified)
+        }
+    }
+
+    func updatePassword(current: String, new: String, confirmation: String) async throws {
+        passwordUpdates.append((current, new))
+        if let updateError { throw updateError }
+    }
+
+    func updateLocale(_ locale: String) async throws -> User {
+        localeUpdates.append(locale)
+        if let updateError { throw updateError }
+        return mutated { $0.locale = locale }
+    }
+
+    func updateTheme(_ theme: ThemePreference) async throws -> User {
+        themeUpdates.append(theme)
+        if let updateError { throw updateError }
+        return mutated { $0.themePreference = theme }
+    }
+
+    func deleteProfile(password: String) async throws {
+        deletePasswords.append(password)
+        if let updateError { throw updateError }
+    }
+
     func verifyEmail(id: Int, hash: String, expires: Int, signature: String) async throws {
         verifyCalls.append((id, hash))
         if let verifyError { throw verifyError }

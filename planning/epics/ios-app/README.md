@@ -1,6 +1,6 @@
 # Epic: iOS App
 
-**Status: in progress (stories 1–10 shipped, story 11 started 2026-10-04).**
+**Status: in progress (stories 1–11 shipped, story 12 started 2026-10-04).**
 
 Ship a native iOS client for the existing `/api/v1` contract so a user can register, enroll, log workouts and manage their profile from an iPhone, with the web SPA untouched and the API as the single source of truth.
 
@@ -92,8 +92,8 @@ RootView:                    splash           auth flow     verify-email gate  M
 | 8 | [Programs and Workout Templates](stories/08-programs-and-workout-templates.md) | Programs | shipped (#38) |
 | 9 | [Workout Editor: Sets and Save](stories/09-workout-editor-sets-and-save.md) | Workout Logging | shipped |
 | 10 | [Workout Editor: Activities, Complete and Local Draft](stories/10-workout-editor-activities-complete-and-draft.md) | Workout Logging | shipped |
-| 11 | [Workout History and Detail](stories/11-workout-history-and-detail.md) | Workout Logging | in progress |
-| 12 | [Profile](stories/12-profile.md) | Auth & Profile | planned |
+| 11 | [Workout History and Detail](stories/11-workout-history-and-detail.md) | Workout Logging | shipped |
+| 12 | [Profile](stories/12-profile.md) | Auth & Profile | in progress |
 | 13 | [Polish, Accessibility and Current-State Docs](stories/13-polish-accessibility-and-docs.md) | Platform | planned |
 | 14 | [TestFlight and App Store Release](stories/14-testflight-and-app-store-release.md) | Platform | planned |
 

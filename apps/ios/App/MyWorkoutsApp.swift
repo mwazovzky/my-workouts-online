@@ -9,6 +9,7 @@ struct MyWorkoutsApp: App {
     @State private var deepLinks: DeepLinkCoordinator
     @State private var toaster = Toaster()
     @State private var theme: ThemePreference
+    @Environment(\.scenePhase) private var scenePhase
     private let dependencies: AppDependencies
     private let themeMemory = UserDefaultsThemeMemory()
 
@@ -43,6 +44,12 @@ struct MyWorkoutsApp: App {
                 .environment(toaster)
                 .environment(\.dependencies, dependencies)
                 .preferredColorScheme(theme.colorScheme)
+                .onChange(of: session.isSignedIn, initial: true) { _, signedIn in
+                    if signedIn { Task { await syncLocale() } }
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { Task { await syncLocale() } }
+                }
                 .onChange(of: session.user?.themePreference, initial: true) { _, preference in
                     guard let preference else { return }
                     theme = preference
@@ -64,6 +71,14 @@ extension EnvironmentValues {
     var dependencies: AppDependencies? {
         get { self[DependenciesKey.self] }
         set { self[DependenciesKey.self] = newValue }
+    }
+}
+
+extension MyWorkoutsApp {
+    /// Pushes the device's app language to the profile when it differs, so the web follows.
+    fileprivate func syncLocale() async {
+        let resolved = LocaleResolver.apiLocale(available: ["en", "ru"])
+        await LocaleSync(me: dependencies.meRepository, session: session).syncIfNeeded(resolved: resolved)
     }
 }
 
