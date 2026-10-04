@@ -17,6 +17,16 @@ class ProfileApiTest extends TestCase
     // -------------------------------------------------------
 
     #[Test]
+    public function profile_update_rejects_a_non_string_email_with_a_validation_error(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patchJson('/api/v1/profile', ['name' => 'Tess', 'email' => [['nested' => 1]]])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrorFor('email');
+    }
+
+    #[Test]
     public function authenticated_user_can_update_profile(): void
     {
         $user = User::factory()->create([
