@@ -231,7 +231,7 @@ Required values (see `.env.example` in the repo for the full reference):
 - `IMAGE_TAG=initial-tag` (the deploy workflow replaces this on every release)
 - `APP_VERSION=dev` (the deploy script replaces this with the release tag on every release)
 
-Optional: `API_RATE_LIMIT_PER_MINUTE` (default 60 requests per minute per user or IP on `/api`), `LOKI_*` for the `alloy` log shipper.
+Optional: `API_RATE_LIMIT_PER_MINUTE` (default 60 requests per minute per user or IP on `/api`), `LOKI_*` for the `alloy` log shipper, `RESEND_WEBHOOK_SECRET` and `MAIL_INBOUND_FORWARD_TO` for the support inbox (see step 9).
 
 ## 7. Verify Docker access on the droplet
 
@@ -310,6 +310,16 @@ docker compose -f docker-compose.prod.yml exec -T api php artisan user:grant-adm
 ```
 
 The command refuses an unknown or unverified email and is safe to repeat.
+
+### Support inbox
+
+Mail sent to any address on the domain (for example `support@`) is received by Resend and relayed to a personal inbox by the API:
+
+1. In Resend, enable receiving on the domain and add the `MX @` record it shows to the DNS provider (DigitalOcean).
+2. In Resend → Webhooks, add `https://your-domain.com/api/webhooks/resend` with the `email.received` event and copy its signing secret.
+3. In the droplet `.env`, set `RESEND_WEBHOOK_SECRET=whsec_...` and `MAIL_INBOUND_FORWARD_TO=you@example.com`, then recreate `api` and `worker`.
+
+The endpoint rejects every request while `RESEND_WEBHOOK_SECRET` is empty and queues a job per email; the `worker` fetches the body and attachments from Resend and sends them on from `MAIL_FROM_ADDRESS` with `Reply-To` set to the original sender. Forwarding failures retry and are logged by the `worker` service. Received emails stay visible in the Resend dashboard either way.
 
 ## 10. Obtain SSL certificate (Let's Encrypt)
 

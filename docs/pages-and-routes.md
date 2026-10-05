@@ -72,6 +72,14 @@ The root view picks the screen from the session state (`signedOut`, `unverified`
 
 nginx routes only these paths and `/api/*` to php-fpm; everything else is served as the SPA.
 
+## Webhooks (outside the client contract)
+
+| Action                 | Method | Path                   | Route Name            | Access                  | Owning Feature |
+| ---------------------- | ------ | ---------------------- | --------------------- | ----------------------- | -------------- |
+| Resend events          | `POST` | `/api/webhooks/resend` | `api.webhooks.resend` | Resend signature (Svix) | Operations     |
+
+Only `email.received` is acted on: it queues `ForwardInboundEmail`, which relays the email to `MAIL_INBOUND_FORWARD_TO`. Setup is in [deployment](deployment.md#support-inbox).
+
 ## API
 
 The SPA consumes a versioned REST API under `/api/v1`. Protected routes require a JWT bearer token (`auth:jwt`). Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. Clients send `Accept-Language`; responses declare `Content-Language`. Errors use the `{ message, code }` envelope and validation errors `{ errors: { field: [{ code, message }] } }`. The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
