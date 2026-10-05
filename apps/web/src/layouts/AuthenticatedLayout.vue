@@ -3,6 +3,7 @@ import ApplicationLogo from '@/components/ApplicationLogo.vue';
 import BottomNav from '@/components/BottomNav.vue';
 import Dropdown from '@/components/Dropdown.vue';
 import DropdownLink from '@/components/DropdownLink.vue';
+import LegalLinks from '@/components/LegalLinks.vue';
 import Navigation from '@/components/Navigation.vue';
 import { Toaster } from '@/components/ui/sonner';
 import { useLogout } from '@/composables/useLogout';
@@ -98,6 +99,8 @@ const { logout } = useLogout();
       <!-- Page Content -->
       <main class="pb-20">
         <slot />
+
+        <LegalLinks class="py-6" />
       </main>
 
       <Toaster position="top-right" :duration="3000" />

@@ -1,5 +1,5 @@
 <script setup>
-import GuestLayout from '@/layouts/GuestLayout.vue';
+import PublicPageLayout from '@/layouts/PublicPageLayout.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SUPPORT_EMAIL } from '@/lib/contact';
 import { usePageTitle } from '@/composables/usePageTitle';
@@ -54,7 +54,7 @@ const sections = [
 </script>
 
 <template>
-  <GuestLayout wide>
+  <PublicPageLayout>
     <Card class="border-0 shadow-none">
       <CardHeader>
         <CardTitle>{{ t('Privacy Policy') }}</CardTitle>
@@ -90,5 +90,5 @@ const sections = [
         </section>
       </CardContent>
     </Card>
-  </GuestLayout>
+  </PublicPageLayout>
 </template>

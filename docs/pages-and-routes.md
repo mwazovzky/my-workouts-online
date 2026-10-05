@@ -17,7 +17,7 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `WorkoutShow`         | `/workouts/{id}`          | Verified        | Workout Logging | Owner-scoped workout details                                             |
 | `WorkoutEdit`         | `/workouts/{id}/edit`     | Verified        | Workout Logging | Edit an in-progress workout (unsaved-changes guard)                      |
 | `About`               | `/about`                  | Verified        | Landing         | App version (`VITE_APP_VERSION`)                                         |
-| `Privacy`             | `/privacy`                | Public          | Landing         | Privacy policy; linked from the guest layout footer, Welcome and the iOS Profile tab |
+| `Privacy`             | `/privacy`                | Public          | Landing         | Privacy policy; linked from the guest and authenticated layout footers, Welcome and the iOS Profile tab; signed-in users keep the app navigation |
 | `Support`             | `/support`                | Public          | Landing         | Support contact (`support@my-workouts.online`); linked like Privacy       |
 | `auth/Register`       | `/register`               | Guest           | Auth & Profile  | Registration, then the verify-email notice                               |
 | `auth/Login`          | `/login`                  | Guest           | Auth & Profile  | Honours `?redirect=`; shows a banner after `?reset=1`                    |
