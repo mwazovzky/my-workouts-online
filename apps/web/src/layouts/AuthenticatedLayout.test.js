@@ -78,4 +78,11 @@ describe('AuthenticatedLayout', () => {
     expect(wrapper.find('header').exists()).toBe(true);
     expect(wrapper.text()).toContain('Page Title');
   });
+
+  it('links to the privacy policy and support pages', () => {
+    const wrapper = buildWrapper();
+
+    expect(wrapper.find('main a[href="/privacy"]').text()).toBe('Privacy Policy');
+    expect(wrapper.find('main a[href="/support"]').text()).toBe('Support');
+  });
 });
