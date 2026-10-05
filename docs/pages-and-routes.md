@@ -78,7 +78,7 @@ nginx routes only these paths and `/api/*` to php-fpm; everything else is served
 | ---------------------- | ------ | ---------------------- | --------------------- | ----------------------- | -------------- |
 | Resend events          | `POST` | `/api/webhooks/resend` | `api.webhooks.resend` | Resend signature (Svix) | Operations     |
 
-Only `email.received` is acted on: it queues `ForwardInboundEmail`, which relays the email to `INBOUND_EMAIL_FORWARD_TO`. Setup is in [deployment](deployment.md#support-inbox).
+Only `email.received` is acted on: it queues `ForwardInboundEmail`, which relays the email to `MAIL_INBOUND_FORWARD_TO`. Setup is in [deployment](deployment.md#support-inbox).
 
 ## API
 

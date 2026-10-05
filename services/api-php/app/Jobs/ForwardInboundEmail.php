@@ -29,10 +29,10 @@ class ForwardInboundEmail implements ShouldQueue
 
     public function handle(InboundEmailSourceInterface $source): void
     {
-        $forwardTo = config('services.inbound_email.forward_to');
+        $forwardTo = config('mail.inbound.forward_to');
 
         if (blank($forwardTo)) {
-            Log::warning('Inbound email not forwarded: INBOUND_EMAIL_FORWARD_TO is not set.', ['email_id' => $this->emailId]);
+            Log::warning('Inbound email not forwarded: MAIL_INBOUND_FORWARD_TO is not set.', ['email_id' => $this->emailId]);
 
             return;
         }

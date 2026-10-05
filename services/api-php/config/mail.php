@@ -115,4 +115,18 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Inbound Mail Forwarding
+    |--------------------------------------------------------------------------
+    |
+    | Email received on the domain (via the Resend webhook) is relayed to
+    | this address. Nothing is forwarded while it is empty.
+    |
+    */
+
+    'inbound' => [
+        'forward_to' => env('MAIL_INBOUND_FORWARD_TO'),
+    ],
+
 ];

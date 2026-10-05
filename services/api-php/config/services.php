@@ -22,10 +22,6 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
-    'inbound_email' => [
-        'forward_to' => env('INBOUND_EMAIL_FORWARD_TO'),
-    ],
-
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

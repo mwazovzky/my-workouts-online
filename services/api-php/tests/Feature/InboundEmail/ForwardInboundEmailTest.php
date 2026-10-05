@@ -24,7 +24,7 @@ final class ForwardInboundEmailTest extends TestCase
         config([
             'app.name' => 'My Workouts',
             'mail.from.address' => 'noreply@my-workouts.online',
-            'services.inbound_email.forward_to' => 'owner@example.com',
+            'mail.inbound.forward_to' => 'owner@example.com',
         ]);
 
         $this->source = new FakeInboundEmailSource;
@@ -110,7 +110,7 @@ final class ForwardInboundEmailTest extends TestCase
     #[Test]
     public function it_does_nothing_when_no_forwarding_address_is_configured(): void
     {
-        config(['services.inbound_email.forward_to' => null]);
+        config(['mail.inbound.forward_to' => null]);
         $this->source->emails['email-1'] = $this->email();
 
         ForwardInboundEmail::dispatchSync('email-1');
