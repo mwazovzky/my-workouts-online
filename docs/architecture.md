@@ -102,7 +102,7 @@ Only non-obvious locations listed.
 | `services/api-php/`           | The Laravel API; `docker/nginx/api-locations.conf` is the only path from the SPA to it |
 | `docker/nginx/`               | nginx snippets shared by dev and production: API routes, SPA fallback, `/.well-known/apple-app-site-association` for iOS Universal Links (rendered from `APPLE_APP_ID`), security headers |
 | `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |
-| `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`, `Catalog/`) |
+| `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`, `Catalog/`, `InboundEmail/`) |
 | `database/catalog/`           | Catalog data files applied by `catalog:sync`; `retired.php` lists removals  |
 | `app/Http/Controllers/Api/Admin/` | Admin catalog CRUD controllers (equipment, categories, exercises)       |
 | `app/QueryBuilders/`          | Custom Eloquent builders                                                     |

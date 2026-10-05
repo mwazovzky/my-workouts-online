@@ -73,6 +73,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Services\InboundEmail\InboundEmailSourceInterface::class,
+            \App\Services\InboundEmail\ResendInboundEmailSource::class
+        );
+
+        $this->app->bind(
             \App\Services\Catalog\CatalogSyncServiceInterface::class,
             \App\Services\Catalog\CatalogSyncService::class
         );

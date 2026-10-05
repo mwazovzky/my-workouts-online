@@ -16,9 +16,15 @@ use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\MetaController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ProgramController;
+use App\Http\Controllers\Api\Webhooks\ResendWebhookController;
 use App\Http\Controllers\Api\WorkoutController;
 use App\Http\Controllers\Api\WorkoutTemplateController;
+use App\Http\Middleware\VerifyResendWebhookSignature;
 use Illuminate\Support\Facades\Route;
+
+Route::post('webhooks/resend', ResendWebhookController::class)
+    ->middleware(VerifyResendWebhookSignature::class)
+    ->name('api.webhooks.resend');
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('meta', MetaController::class)->name('meta');
