@@ -28,7 +28,7 @@ const { logout } = useLogout();
               <!-- Logo -->
               <div class="flex shrink-0 items-center">
                 <RouterLink :to="{ name: 'dashboard' }">
-                  <ApplicationLogo class="block h-11 w-11 fill-current text-foreground" />
+                  <ApplicationLogo class="block h-11 w-11 fill-current text-primary" />
                 </RouterLink>
               </div>
 
