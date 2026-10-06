@@ -14,7 +14,7 @@
 Monorepo: `services/api-php` (Laravel API), `apps/web` (Vue SPA), `contracts/openapi.yaml`, `docker/`. One `docker/` folder serves local and production:
 
 - `docker/api/Dockerfile` — php-fpm image (`api`, `worker`)
-- `docker/web/Dockerfile` — builds `apps/web` and serves it with nginx; `docker/nginx/api-locations.conf` routes `/api/*`, `/health*`, `/up` and `/.well-known/jwks.json` to php-fpm over FastCGI (`PHP_FPM_UPSTREAM=api:9000`), everything else is the SPA with history fallback; `well-known-locations.conf` serves the Apple App Site Association file rendered by `docker/web/start.sh` from `APPLE_APP_ID`; `security-headers.conf` sets CSP and friends
+- `docker/web/Dockerfile` — builds `apps/web` and serves it with nginx; `docker/nginx/api-locations.conf` routes `/api/*`, `/health*`, `/up` and `/.well-known/jwks.json` to php-fpm over FastCGI (`PHP_FPM_UPSTREAM=api:9000`, re-resolved through Docker DNS every 5 s, so recreating `api` alone never leaves `web` pointing at a stale IP), everything else is the SPA with history fallback; `well-known-locations.conf` serves the Apple App Site Association file rendered by `docker/web/start.sh` from `APPLE_APP_ID`; `security-headers.conf` sets CSP and friends
 - `docker/nginx/dev.conf.template` — local nginx: same API routing, `/` proxied to the Vite dev server
 
 Swapping the backend implementation later means changing `PHP_FPM_UPSTREAM` (or the proxy in `api-locations.conf`); the web image and clients stay as they are.
