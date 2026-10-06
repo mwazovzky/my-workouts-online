@@ -2,8 +2,14 @@
 # websockets) and the API by php-fpm, both behind one origin.
 access_log off;
 
+# Re-resolve the API host through Docker's DNS instead of pinning the IP it had
+# when nginx started, so recreating the api container never leaves a stale
+# upstream (502) behind.
+resolver 127.0.0.11 valid=5s ipv6=off;
+
 upstream php_api {
-    server ${PHP_FPM_UPSTREAM};
+    zone php_api 64k;
+    server ${PHP_FPM_UPSTREAM} resolve;
 }
 
 map $http_upgrade $connection_upgrade {
