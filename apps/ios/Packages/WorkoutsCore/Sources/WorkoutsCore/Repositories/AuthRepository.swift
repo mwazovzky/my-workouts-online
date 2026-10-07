@@ -89,6 +89,7 @@ public struct APIAuthRepository: AuthRepository {
         case .ok(let response): return try AuthGrant(api: try response.body.json)
         case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
         case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
