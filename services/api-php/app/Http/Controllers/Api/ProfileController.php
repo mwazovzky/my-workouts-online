@@ -4,15 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Auth\JwtUserResolver;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProfileDeleteRequest;
 use App\Http\Requests\ProfileLocaleRequest;
+use App\Http\Requests\ProfilePasswordRequest;
 use App\Http\Requests\ProfileThemeRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Services\Auth\TokenServiceInterface;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
@@ -38,15 +38,10 @@ class ProfileController extends Controller
     /**
      * Update the user's password.
      */
-    public function updatePassword(Request $request): Response
+    public function updatePassword(ProfilePasswordRequest $request): Response
     {
-        $validated = $request->validate([
-            'current_password' => ['bail', 'required', 'string', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
-
         $request->user()->update([
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make($request->validated()['password']),
         ]);
 
         $this->tokens->revokeAllForUser(
@@ -80,12 +75,8 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): Response
+    public function destroy(ProfileDeleteRequest $request): Response
     {
-        $request->validate([
-            'password' => ['bail', 'required', 'string', 'current_password'],
-        ]);
-
         $user = $request->user();
 
         $this->tokens->revokeAllForUser($user);

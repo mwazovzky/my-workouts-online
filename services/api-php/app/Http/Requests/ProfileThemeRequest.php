@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class ProfileThemeRequest extends FormRequest
+class ProfileThemeRequest extends ApiFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

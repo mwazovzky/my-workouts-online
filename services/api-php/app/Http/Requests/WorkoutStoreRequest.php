@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class WorkoutStoreRequest extends FormRequest
+class WorkoutStoreRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

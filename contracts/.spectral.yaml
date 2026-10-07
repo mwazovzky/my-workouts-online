@@ -1,0 +1,241 @@
+# Contract lint rules for contracts/openapi.yaml.
+#
+# Three layers, in order: Spectral's OpenAPI rules, the Zalando RESTful API
+# Guidelines (Baloise ruleset, pinned to a commit), then house rules. The written
+# rulebook is docs/api-design.md; this file is its executable half.
+#
+# A rule may be turned off only with a comment that is one of:
+#   - a permanent house deviation, with the reason (mirrored in docs/api-design.md)
+#   - TODO(contract-hardening/NN): the story that turns it back on
+#
+# Run: npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset contracts/.spectral.yaml --fail-severity warn
+extends:
+  - spectral:oas
+  - https://raw.githubusercontent.com/baloise-incubator/spectral-ruleset/e1ad7a01cd0ce4aec68b04d02c3f3c20c82016c7/zalando.yml
+
+rules:
+  # ------------------------------------------------------------ permanent deviations
+  # The API lives at /api/v1 because nginx routes /api/* to the API upstream on the
+  # same origin as the SPA; the semantic version is info.version.
+  must-not-use-uri-versioning: off
+  should-not-use-api-as-base-path: off
+  # Enums are closed and lowercase snake_case: the clients generate exhaustive
+  # enums from them and the PHP, web and iOS enums share these backing values.
+  should-use-x-extensible-enum: off
+  should-declare-enum-values-using-upper-snake-case-format: off
+  # Integers are unformatted so generated clients use their native Int/number;
+  # difficulty_value is a plain number with one decimal.
+  must-define-a-format-for-integer-types: off
+  must-define-a-format-for-number-types: off
+  # Zalando-internal API registry metadata; info.contact carries name and url only.
+  must-have-info-x-api-id: off
+  must-provide-api-identifiers: off
+  must-provide-api-audience: off
+  must-have-info-contact-email: off
+  # The /admin namespace doubles the resource count by design, and the /api/v1
+  # prefix adds two segments to every path, so the sub-resource count is inflated.
+  should-limit-number-of-resource-types: off
+  should-limit-number-of-sub-resource-levels: off
+  # House status-code table (docs/api-design.md) differs from Zalando on two
+  # points: validation failures are 422, and a POST action with nothing to
+  # return answers 204. The standard-codes rule below is redefined with 422.
+  should-use-well-understood-http-status-codes: off
+  must-use-standard-http-status-codes:
+    message: "{{property}} is not a standardized response code"
+    description: MUST use standard HTTP status codes [150]
+    documentationUrl: https://opensource.zalando.com/restful-api-guidelines/#150
+    severity: error
+    given: "$.paths.*.*.responses.*~"
+    then:
+      function: enumeration
+      functionOptions:
+        values:
+          - '100'
+          - '101'
+          - '200'
+          - '201'
+          - '202'
+          - '203'
+          - '204'
+          - '205'
+          - '206'
+          - '207'
+          - '300'
+          - '301'
+          - '302'
+          - '303'
+          - '304'
+          - '305'
+          - '307'
+          - '400'
+          - '401'
+          - '402'
+          - '403'
+          - '404'
+          - '405'
+          - '406'
+          - '407'
+          - '408'
+          - '409'
+          - '410'
+          - '411'
+          - '412'
+          - '413'
+          - '414'
+          - '415'
+          - '416'
+          - '417'
+          - '422'
+          - '423'
+          - '426'
+          - '428'
+          - '429'
+          - '431'
+          - '500'
+          - '501'
+          - '502'
+          - '503'
+          - '504'
+          - '505'
+          - '511'
+          - default
+
+  # Redefined verbatim from the Zalando ruleset with a null guard: the upstream
+  # `given` dereferences every node under paths and crashes on the `null` entries
+  # of nullable enums (`enum: [..., null]`).
+  must-use-standard-formats-for-date-and-time-properties-example:
+    message: "You should provide an example for {{property}}"
+    description: MUST use standard formats for date and time properties [169]
+    documentationUrl: https://opensource.zalando.com/restful-api-guidelines/#169
+    severity: warn
+    given: "$.paths..[?(@ && @.type === 'string' && (@.format === 'date-time' || @.format === 'date' || @.format === 'time' || @.format === 'duration' || @.format === 'period'))]"
+    then:
+      field: example
+      function: truthy
+  must-use-standard-formats-for-date-and-time-properties-utc:
+    message: "You should use UTC for {{property}}"
+    description: MUST use standard formats for date and time properties [169]
+    documentationUrl: https://opensource.zalando.com/restful-api-guidelines/#169
+    severity: warn
+    given: "$.paths..[?(@ && @.type === 'string' && @.format === 'date-time')]"
+    then:
+      field: example
+      function: pattern
+      functionOptions:
+        match: "Z$"
+
+  # ------------------------------------------------------------ story-scoped
+  # TODO(contract-hardening/02): errors become RFC 9457 Problem Details.
+  must-use-problem-json-as-default-response: off
+  must-use-problem-json-for-errors: off
+  must-use-valid-problem-json-schema: off
+  must-specify-default-response: off
+
+  # ------------------------------------------------------------ house rules
+  house-data-envelope:
+    description: Every 2xx JSON response wraps its payload in a top-level `data` key. Exceptions are JWKS, health, and the auth token endpoints, which keep the OAuth 2.0 token response shape (RFC 6749).
+    message: "2xx JSON responses must wrap the payload in `data`"
+    severity: error
+    given: "$.paths[?(@property != '/.well-known/jwks.json' && !@property.match(/^\\/health/) && !@property.match(/^\\/api\\/v1\\/auth\\//))][*].responses[?(@property.match(/^2/))].content['application/json'].schema"
+    then:
+      field: properties.data
+      function: truthy
+
+  house-strict-request-bodies:
+    description: Request-body objects declare `additionalProperties: false`; the API rejects undeclared keys with 422.
+    message: "Request body objects must set `additionalProperties: false`"
+    severity: error
+    given:
+      - "$.paths[*][*].requestBody.content['application/json'].schema"
+      - "$.paths[*][*].requestBody.content['application/json'].schema..[?(@ && @.type == 'object' && @.properties)]"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required: [additionalProperties]
+          properties:
+            additionalProperties:
+              const: false
+
+  house-response-examples:
+    description: Every 2xx JSON response carries an example, at content level or on its schema (or on the `data` payload schema).
+    message: "2xx JSON responses need an example"
+    severity: warn
+    given: "$.paths[*][*].responses[?(@property.match(/^2/))].content['application/json']"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          anyOf:
+            - required: [example]
+            - required: [examples]
+            - required: [schema]
+              properties:
+                schema:
+                  anyOf:
+                    - required: [example]
+                    - required: [properties]
+                      properties:
+                        properties:
+                          required: [data]
+                          properties:
+                            data:
+                              anyOf:
+                                - required: [example]
+                                - required: [items]
+                                  properties:
+                                    items:
+                                      required: [example]
+
+  house-operation-id-camel-case:
+    description: operationIds are lowerCamelCase; generators turn them into method names.
+    message: "operationId `{{value}}` must be lowerCamelCase"
+    severity: error
+    given: "$.paths[*][*].operationId"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][A-Za-z0-9]*$"
+
+  # TODO(contract-hardening/05): path parameters become `{programId}`-style.
+  house-path-parameter-names:
+    description: Path parameters are lowerCamelCase and end in `Id`.
+    message: "Path parameter `{{value}}` must be lowerCamelCase ending in `Id`"
+    severity: error
+    recommended: false
+    given: "$.paths[*]..parameters[?(@ && @.in == 'path')].name"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z]+([A-Z][a-z0-9]+)*Id$"
+
+  # TODO(contract-hardening/05): `Weekday` becomes lowercase.
+  house-enum-lowercase-snake-case:
+    description: Named enum schemas use lowercase snake_case values.
+    message: "Enum value `{{value}}` must be lowercase snake_case"
+    severity: error
+    recommended: false
+    given: "$.components.schemas[*].enum[?(@ !== null)]"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-z0-9_]*$"
+
+  # TODO(contract-hardening/04): PATCH bodies become RFC 7386 merge patches.
+  house-patch-merge-patch:
+    description: PATCH request bodies have no required fields (RFC 7386 JSON Merge Patch).
+    message: "PATCH bodies must not declare required fields"
+    severity: error
+    recommended: false
+    given: "$.paths[*].patch.requestBody.content['application/json'].schema"
+    then:
+      field: required
+      function: undefined
+
+overrides:
+  # RFC 8615 fixes the well-known path; its segments are not ours to rename.
+  - files:
+      - "openapi.yaml#/paths/~1.well-known~1jwks.json"
+    rules:
+      must-use-lowercase-with-hypens-for-path-segements: off

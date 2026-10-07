@@ -4,10 +4,10 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\Weekday;
 use App\Http\Requests\Admin\Concerns\HasTranslationRules;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\ApiFormRequest;
 use Illuminate\Validation\Rule;
 
-class ProgramStoreRequest extends FormRequest
+class ProgramStoreRequest extends ApiFormRequest
 {
     use HasTranslationRules;
 

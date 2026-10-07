@@ -12,22 +12,23 @@ final class HealthCheckTest extends TestCase
     #[Test]
     public function it_returns_ok_for_health_check(): void
     {
-        $this->getJson('/health')
+        $response = $this->getJson('/health')
             ->assertOk()
-            ->assertJsonStructure(['status', 'timestamp'])
             ->assertJson(['status' => 'ok']);
+
+        $this->assertSame(['status', 'timestamp'], array_keys($response->json()));
     }
 
     #[Test]
-    public function it_returns_ok_for_readiness_check_when_database_is_up(): void
+    public function it_returns_ok_for_readiness_check_when_every_component_is_up(): void
     {
-        $this->getJson('/health/ready')
+        $response = $this->getJson('/health/ready')
             ->assertOk()
-            ->assertJson(['status' => 'ok'])
-            ->assertJsonStructure([
-                'status',
-                'timestamp',
-                'components' => ['database'],
-            ]);
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('components.database', 'up')
+            ->assertJsonPath('components.jwt', 'up');
+
+        $this->assertSame(['status', 'components', 'timestamp'], array_keys($response->json()));
+        $this->assertSame(['database', 'jwt'], array_keys($response->json('components')));
     }
 }

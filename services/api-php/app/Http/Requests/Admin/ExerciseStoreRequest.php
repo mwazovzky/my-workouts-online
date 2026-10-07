@@ -4,10 +4,10 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\EffortType;
 use App\Http\Requests\Admin\Concerns\HasTranslationRules;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\ApiFormRequest;
 use Illuminate\Validation\Rule;
 
-class ExerciseStoreRequest extends FormRequest
+class ExerciseStoreRequest extends ApiFormRequest
 {
     use HasTranslationRules;
 

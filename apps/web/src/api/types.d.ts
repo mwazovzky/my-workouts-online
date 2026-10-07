@@ -21,6 +21,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liveness probe */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Readiness probe
+         * @description 200 when every component is up, 503 with `status: degraded` otherwise.
+         */
+        get: operations["getReadiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/register": {
         parameters: {
             query?: never;
@@ -416,7 +453,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Caller's workout history, newest updated first, 20 per page */
+        /** Caller's workout history, newest updated first */
         get: operations["listWorkouts"];
         put?: never;
         /** Start a workout from a template */
@@ -713,22 +750,74 @@ export interface components {
                 }[];
             };
         };
-        Paginated: {
-            data: unknown[];
-            links: {
-                first?: string | null;
-                last?: string | null;
-                prev?: string | null;
-                next?: string | null;
+        Readiness: {
+            /** @enum {string} */
+            status: "ok" | "degraded";
+            /** @description One entry per checked dependency. */
+            components: {
+                [key: string]: "up" | "down";
             };
-            meta: {
-                current_page?: number;
-                from?: number | null;
-                last_page?: number;
-                per_page?: number;
-                to?: number | null;
-                total?: number;
-            };
+            /**
+             * Format: date-time
+             * @example 2026-10-07T09:30:00Z
+             */
+            timestamp: string;
+        };
+        PageLinks: {
+            /** Format: uri */
+            first: string | null;
+            /** Format: uri */
+            last: string | null;
+            /** Format: uri */
+            prev: string | null;
+            /** Format: uri */
+            next: string | null;
+        };
+        PageMeta: {
+            current_page: number;
+            /** @description 1-based index of the first item on this page; null when the page is empty. */
+            from: number | null;
+            last_page: number;
+            per_page: number;
+            /** @description 1-based index of the last item on this page; null when the page is empty. */
+            to: number | null;
+            total: number;
+        };
+        /**
+         * @example {
+         *       "data": [
+         *         {
+         *           "id": 42,
+         *           "user_id": 7,
+         *           "name": "Push A",
+         *           "status": "completed",
+         *           "status_label": "Completed",
+         *           "created_at": "2026-10-05T18:06:30Z",
+         *           "updated_at": "2026-10-05T19:02:11Z",
+         *           "activities_count": 6,
+         *           "activities": []
+         *         }
+         *       ],
+         *       "links": {
+         *         "first": "https://my-workouts.example/api/v1/workouts?page=1&per_page=20",
+         *         "last": "https://my-workouts.example/api/v1/workouts?page=3&per_page=20",
+         *         "prev": null,
+         *         "next": "https://my-workouts.example/api/v1/workouts?page=2&per_page=20"
+         *       },
+         *       "meta": {
+         *         "current_page": 1,
+         *         "from": 1,
+         *         "last_page": 3,
+         *         "per_page": 20,
+         *         "to": 20,
+         *         "total": 47
+         *       }
+         *     }
+         */
+        WorkoutPage: {
+            data: components["schemas"]["Workout"][];
+            links: components["schemas"]["PageLinks"];
+            meta: components["schemas"]["PageMeta"];
         };
         /** @enum {string} */
         Locale: "en" | "ru";
@@ -799,6 +888,22 @@ export interface components {
             client: components["schemas"]["ClientKind"];
             device_name?: string;
         };
+        /**
+         * @example {
+         *       "access_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IjFmMmUzZDRjNWI2YTc5ODAifQ.e30.sig",
+         *       "token_type": "Bearer",
+         *       "expires_in": 900,
+         *       "user": {
+         *         "id": 7,
+         *         "name": "Ada",
+         *         "email": "ada@example.com",
+         *         "locale": "en",
+         *         "theme_preference": "system",
+         *         "is_admin": false,
+         *         "email_verified": true
+         *       }
+         *     }
+         */
         AuthResponse: {
             access_token: string;
             /** @enum {string} */
@@ -809,6 +914,17 @@ export interface components {
             refresh_token?: string;
             user: components["schemas"]["User"];
         };
+        /**
+         * @example {
+         *       "id": 7,
+         *       "name": "Ada",
+         *       "email": "ada@example.com",
+         *       "locale": "en",
+         *       "theme_preference": "system",
+         *       "is_admin": false,
+         *       "email_verified": true
+         *     }
+         */
         User: {
             id: number;
             name: string | null;
@@ -819,11 +935,30 @@ export interface components {
             is_admin: boolean;
             email_verified: boolean;
         };
+        /**
+         * @example {
+         *       "id": 3,
+         *       "name": "Chest"
+         *     }
+         */
         Category: {
             id: number;
             /** @description Localized. */
             name: string | null;
         };
+        /**
+         * @example {
+         *       "id": 3,
+         *       "name": "Chest",
+         *       "exercises_count": 12,
+         *       "translations": {
+         *         "name": {
+         *           "en": "Chest",
+         *           "ru": "Грудь"
+         *         }
+         *       }
+         *     }
+         */
         AdminCategory: components["schemas"]["Category"] & {
             exercises_count?: number;
             translations: {
@@ -833,6 +968,20 @@ export interface components {
         CategoryWrite: {
             translations: components["schemas"]["NameTranslationsWrite"];
         };
+        /**
+         * @example {
+         *       "id": 2,
+         *       "name": "Barbell",
+         *       "difficulty_unit": "kilograms",
+         *       "exercises_count": 9,
+         *       "translations": {
+         *         "name": {
+         *           "en": "Barbell",
+         *           "ru": "Штанга"
+         *         }
+         *       }
+         *     }
+         */
         Equipment: {
             id: number;
             /** @description Localized. */
@@ -847,6 +996,29 @@ export interface components {
             difficulty_unit: components["schemas"]["DifficultyUnit"];
             translations: components["schemas"]["NameTranslationsWrite"];
         };
+        /**
+         * @example {
+         *       "id": 15,
+         *       "name": "Bench press",
+         *       "description": "Lie on the bench, lower the bar to the chest, press up.",
+         *       "equipment_id": 2,
+         *       "equipment_name": "Barbell",
+         *       "effort_type": "repetitions",
+         *       "effort_label": "Reps",
+         *       "difficulty_unit": "kilograms",
+         *       "difficulty_label": "kg",
+         *       "rest_time_seconds": 120,
+         *       "category_ids": [
+         *         3
+         *       ],
+         *       "categories": [
+         *         {
+         *           "id": 3,
+         *           "name": "Chest"
+         *         }
+         *       ]
+         *     }
+         */
         Exercise: {
             id: number;
             /** @description Localized. */
@@ -863,6 +1035,39 @@ export interface components {
             category_ids?: number[];
             categories?: components["schemas"]["Category"][];
         };
+        /**
+         * @example {
+         *       "id": 15,
+         *       "name": "Bench press",
+         *       "description": "Lie on the bench, lower the bar to the chest, press up.",
+         *       "equipment_id": 2,
+         *       "equipment_name": "Barbell",
+         *       "effort_type": "repetitions",
+         *       "effort_label": "Reps",
+         *       "difficulty_unit": "kilograms",
+         *       "difficulty_label": "kg",
+         *       "rest_time_seconds": 120,
+         *       "category_ids": [
+         *         3
+         *       ],
+         *       "categories": [
+         *         {
+         *           "id": 3,
+         *           "name": "Chest"
+         *         }
+         *       ],
+         *       "translations": {
+         *         "name": {
+         *           "en": "Bench press",
+         *           "ru": "Жим лёжа"
+         *         },
+         *         "description": {
+         *           "en": "Lie on the bench, lower the bar to the chest, press up.",
+         *           "ru": null
+         *         }
+         *       }
+         *     }
+         */
         AdminExercise: components["schemas"]["Exercise"] & {
             translations: {
                 name?: components["schemas"]["TranslationMap"];
@@ -876,6 +1081,14 @@ export interface components {
             category_ids?: number[];
             translations: components["schemas"]["TranslationsWrite"];
         };
+        /**
+         * @example {
+         *       "id": 1,
+         *       "name": "Strength 5x5",
+         *       "description": "Three full-body sessions a week.",
+         *       "is_enrolled": true
+         *     }
+         */
         Program: {
             id: number;
             /** @description Localized. */
@@ -884,6 +1097,26 @@ export interface components {
             description?: string | null;
             is_enrolled: boolean;
         };
+        /**
+         * @example {
+         *       "id": 1,
+         *       "name": "Strength 5x5",
+         *       "description": "Three full-body sessions a week.",
+         *       "is_enrolled": true,
+         *       "workout_templates": [
+         *         {
+         *           "id": 22,
+         *           "name": "Strength 5x5 A",
+         *           "description": "Squat, bench press, barbell row.",
+         *           "activities": [],
+         *           "pivot": {
+         *             "weekday": "Monday",
+         *             "weekday_label": "Monday"
+         *           }
+         *         }
+         *       ]
+         *     }
+         */
         ProgramDetail: components["schemas"]["Program"] & {
             workout_templates: components["schemas"]["WorkoutTemplate"][];
         };
@@ -894,6 +1127,37 @@ export interface components {
                 weekday: components["schemas"]["Weekday"];
             }[];
         };
+        /**
+         * @example {
+         *       "id": 1,
+         *       "name": "Strength 5x5",
+         *       "templates_count": 2,
+         *       "translations": {
+         *         "name": {
+         *           "en": "Strength 5x5",
+         *           "ru": "Сила 5x5"
+         *         },
+         *         "description": {
+         *           "en": "Three full-body sessions a week.",
+         *           "ru": null
+         *         }
+         *       },
+         *       "assignments": [
+         *         {
+         *           "workout_template_id": 22,
+         *           "workout_template_name": "Strength 5x5 A",
+         *           "weekday": "Monday",
+         *           "weekday_label": "Monday"
+         *         },
+         *         {
+         *           "workout_template_id": 23,
+         *           "workout_template_name": "Strength 5x5 B",
+         *           "weekday": "Wednesday",
+         *           "weekday_label": "Wednesday"
+         *         }
+         *       ]
+         *     }
+         */
         AdminProgram: {
             id: number;
             name: string | null;
@@ -909,6 +1173,38 @@ export interface components {
                 weekday_label: string;
             }[];
         };
+        /**
+         * @example {
+         *       "id": 22,
+         *       "name": "Strength 5x5 A",
+         *       "description": "Squat, bench press, barbell row.",
+         *       "activities": [
+         *         {
+         *           "id": 301,
+         *           "exercise_id": 15,
+         *           "exercise_name": "Bench press",
+         *           "rest_time_seconds": 120,
+         *           "exercise_equipment_name": "Barbell",
+         *           "exercise_effort_type": "repetitions",
+         *           "exercise_effort_label": "Reps",
+         *           "exercise_difficulty_unit": "kilograms",
+         *           "exercise_difficulty_label": "kg",
+         *           "exercise_category_names": [
+         *             "Chest"
+         *           ],
+         *           "sets": [
+         *             {
+         *               "id": 901,
+         *               "order": 1,
+         *               "effort_value": 5,
+         *               "difficulty_value": null,
+         *               "is_completed": false
+         *             }
+         *           ]
+         *         }
+         *       ]
+         *     }
+         */
         WorkoutTemplate: {
             id: number;
             /** @description Localized. */
@@ -922,6 +1218,48 @@ export interface components {
                 weekday_label: string;
             };
         };
+        /**
+         * @example {
+         *       "id": 22,
+         *       "name": "Strength 5x5 A",
+         *       "activities_count": 3,
+         *       "translations": {
+         *         "name": {
+         *           "en": "Strength 5x5 A",
+         *           "ru": "Сила 5x5 A"
+         *         },
+         *         "description": {
+         *           "en": "Squat, bench press, barbell row.",
+         *           "ru": null
+         *         }
+         *       },
+         *       "activities": [
+         *         {
+         *           "id": 301,
+         *           "exercise_id": 15,
+         *           "exercise_name": "Bench press",
+         *           "rest_time_seconds": 120,
+         *           "exercise_equipment_name": "Barbell",
+         *           "exercise_effort_type": "repetitions",
+         *           "exercise_effort_label": "Reps",
+         *           "exercise_difficulty_unit": "kilograms",
+         *           "exercise_difficulty_label": "kg",
+         *           "exercise_category_names": [
+         *             "Chest"
+         *           ],
+         *           "sets": [
+         *             {
+         *               "id": 901,
+         *               "order": 1,
+         *               "effort_value": 5,
+         *               "difficulty_value": null,
+         *               "is_completed": false
+         *             }
+         *           ]
+         *         }
+         *       ]
+         *     }
+         */
         AdminWorkoutTemplate: {
             id: number;
             name: string | null;
@@ -940,6 +1278,15 @@ export interface components {
                 sets: components["schemas"]["SetWrite"][];
             }[];
         };
+        /**
+         * @example {
+         *       "id": 901,
+         *       "order": 1,
+         *       "effort_value": 5,
+         *       "difficulty_value": 60,
+         *       "is_completed": true
+         *     }
+         */
         Set: {
             id: number;
             order: number;
@@ -957,6 +1304,38 @@ export interface components {
             difficulty_value?: number | null;
             is_completed?: boolean;
         };
+        /**
+         * @example {
+         *       "id": 501,
+         *       "exercise_id": 15,
+         *       "exercise_name": "Bench press",
+         *       "rest_time_seconds": 120,
+         *       "exercise_equipment_name": "Barbell",
+         *       "exercise_effort_type": "repetitions",
+         *       "exercise_effort_label": "Reps",
+         *       "exercise_difficulty_unit": "kilograms",
+         *       "exercise_difficulty_label": "kg",
+         *       "exercise_category_names": [
+         *         "Chest"
+         *       ],
+         *       "sets": [
+         *         {
+         *           "id": 901,
+         *           "order": 1,
+         *           "effort_value": 5,
+         *           "difficulty_value": 60,
+         *           "is_completed": true
+         *         },
+         *         {
+         *           "id": 902,
+         *           "order": 2,
+         *           "effort_value": 5,
+         *           "difficulty_value": 60,
+         *           "is_completed": false
+         *         }
+         *       ]
+         *     }
+         */
         Activity: {
             id: number;
             exercise_id: number | null;
@@ -979,6 +1358,49 @@ export interface components {
             exercise_category_names?: string[];
             sets: components["schemas"]["Set"][];
         };
+        /**
+         * @example {
+         *       "id": 42,
+         *       "user_id": 7,
+         *       "name": "Strength 5x5 A",
+         *       "status": "in_progress",
+         *       "status_label": "In progress",
+         *       "created_at": "2026-10-05T18:06:30Z",
+         *       "updated_at": "2026-10-05T19:02:11Z",
+         *       "activities_count": 1,
+         *       "workout_template": {
+         *         "id": 22,
+         *         "name": "Strength 5x5 A",
+         *         "description": "Squat, bench press, barbell row.",
+         *         "activities": []
+         *       },
+         *       "activities": [
+         *         {
+         *           "id": 501,
+         *           "exercise_id": 15,
+         *           "exercise_name": "Bench press",
+         *           "rest_time_seconds": 120,
+         *           "exercise_equipment_name": "Barbell",
+         *           "exercise_effort_type": "repetitions",
+         *           "exercise_effort_label": "Reps",
+         *           "exercise_difficulty_unit": "kilograms",
+         *           "exercise_difficulty_label": "kg",
+         *           "exercise_category_names": [
+         *             "Chest"
+         *           ],
+         *           "sets": [
+         *             {
+         *               "id": 901,
+         *               "order": 1,
+         *               "effort_value": 5,
+         *               "difficulty_value": 60,
+         *               "is_completed": true
+         *             }
+         *           ]
+         *         }
+         *       ]
+         *     }
+         */
         Workout: {
             id: number;
             user_id: number;
@@ -986,9 +1408,15 @@ export interface components {
             name: string;
             status: components["schemas"]["WorkoutStatus"];
             status_label: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @example 2026-10-05T18:06:30Z
+             */
             created_at?: string | null;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @example 2026-10-05T19:02:11Z
+             */
             updated_at?: string | null;
             activities_count?: number | null;
             /** @description Absent when the workout's template is not loaded or no longer exists. Omitted rather than null because code generators drop nullable `$ref`s. */
@@ -1004,6 +1432,30 @@ export interface components {
                 sets: components["schemas"]["SetWrite"][];
             }[];
         };
+        /**
+         * @example {
+         *       "upcoming_schedule": [
+         *         {
+         *           "id": "1-22-2026-10-12",
+         *           "program_id": 1,
+         *           "program_name": "Strength 5x5",
+         *           "workout_template_id": 22,
+         *           "workout_name": "Strength 5x5 A",
+         *           "weekday": "Monday",
+         *           "weekday_label": "Monday",
+         *           "scheduled_at": "2026-10-12T00:00:00Z",
+         *           "scheduled_for": "2026-10-12"
+         *         }
+         *       ],
+         *       "recent_workouts": [],
+         *       "summary": {
+         *         "enrolled_programs_count": 1,
+         *         "completed_workouts_count": 12,
+         *         "completed_last_7_days_count": 3,
+         *         "upcoming_workouts_count": 3
+         *       }
+         *     }
+         */
         Dashboard: {
             upcoming_schedule: {
                 /** @description `{program_id}-{workout_template_id}-{date}` */
@@ -1014,9 +1466,15 @@ export interface components {
                 workout_name: string | null;
                 weekday: components["schemas"]["Weekday"];
                 weekday_label: string;
-                /** Format: date-time */
+                /**
+                 * Format: date-time
+                 * @example 2026-10-12T00:00:00Z
+                 */
                 scheduled_at: string;
-                /** Format: date */
+                /**
+                 * Format: date
+                 * @example 2026-10-12
+                 */
                 scheduled_for: string;
             }[];
             /** @description The most recent in-progress workout. Absent when there is none; omitted rather than null because code generators drop nullable `$ref`s. */
@@ -1220,11 +1678,108 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "keys": [
+                     *         {
+                     *           "kty": "OKP",
+                     *           "crv": "Ed25519",
+                     *           "alg": "EdDSA",
+                     *           "use": "sig",
+                     *           "kid": "1f2e3d4c5b6a7980",
+                     *           "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+                     *         }
+                     *       ]
+                     *     }
+                     */
                     "application/json": {
                         keys: {
                             [key: string]: unknown;
                         }[];
                     };
+                };
+            };
+        };
+    };
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The process answers requests */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "ok",
+                     *       "timestamp": "2026-10-07T09:30:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "ok";
+                        /**
+                         * Format: date-time
+                         * @example 2026-10-07T09:30:00Z
+                         */
+                        timestamp: string;
+                    };
+                };
+            };
+        };
+    };
+    getReadiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every component is up */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "ok",
+                     *       "components": {
+                     *         "database": "up",
+                     *         "jwt": "up"
+                     *       },
+                     *       "timestamp": "2026-10-07T09:30:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Readiness"];
+                };
+            };
+            /** @description At least one component is down */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "degraded",
+                     *       "components": {
+                     *         "database": "down",
+                     *         "jwt": "up"
+                     *       },
+                     *       "timestamp": "2026-10-07T09:30:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Readiness"];
                 };
             };
         };
@@ -1373,6 +1928,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "access_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IjFmMmUzZDRjNWI2YTc5ODAifQ.e30.sig",
+                     *       "expires_in": 900
+                     *     }
+                     */
                     "application/json": {
                         access_token: string;
                         /** @description Seconds until expiry */
@@ -1589,6 +2150,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "available_locales": {
+                     *           "en": "English",
+                     *           "ru": "Русский"
+                     *         },
+                     *         "theme_preferences": [
+                     *           "light",
+                     *           "dark",
+                     *           "system"
+                     *         ]
+                     *       }
+                     *     }
+                     */
                     "application/json": {
                         data: {
                             /**
@@ -1891,6 +2467,8 @@ export interface operations {
             query?: {
                 /** @description 1-based page number. */
                 page?: number;
+                /** @description Items per page. */
+                per_page?: number;
             };
             header?: {
                 /** @description Preferred locale for translated content. Unsupported values fall back to `en`. */
@@ -1907,9 +2485,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Paginated"] & {
-                        data?: components["schemas"]["Workout"][];
-                    };
+                    "application/json": components["schemas"]["WorkoutPage"];
                 };
             };
             401: components["responses"]["Unauthenticated"];

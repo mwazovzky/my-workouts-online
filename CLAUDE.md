@@ -55,7 +55,7 @@ After modifying any `.swift` file, always run `swift format --in-place` on it an
 
 After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` in `services/api-php` before finalizing.
 
-After modifying `contracts/openapi.yaml` or any API response shape, lint the spec and run `scripts/contract-test.sh` against the dev stack (then reseed). Lint: `docker run --rm -v "$PWD/contracts:/spec:ro" -w /spec redocly/cli:latest lint openapi.yaml --config redocly.yaml`.
+After modifying `contracts/openapi.yaml` or any API response shape, lint the spec and run `scripts/contract-test.sh` against the dev stack (then reseed). Lint: `docker run --rm -v "$PWD/contracts:/spec:ro" -w /spec redocly/cli:latest lint openapi.yaml --config redocly.yaml` and `npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset contracts/.spectral.yaml --fail-severity warn`. A Spectral rule may be disabled only with a comment giving the reason or the story that re-enables it.
 
 ## Architecture
 
@@ -115,6 +115,8 @@ Docker Compose: `web` (nginx + SPA) and `api` (php-fpm) images built by the depl
 ## Documentation
 
 Project coding standards: `docs/code-style.md`.
+
+API design standard (naming, envelope, errors, status codes): `docs/api-design.md`.
 
 Documentation standard (templates, rules, quality checklist): `docs/documentation-standard.md`.
 
