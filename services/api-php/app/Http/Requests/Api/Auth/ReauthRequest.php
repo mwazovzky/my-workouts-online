@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Api\Auth;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\ApiFormRequest;
 
-class ReauthRequest extends FormRequest
+class ReauthRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

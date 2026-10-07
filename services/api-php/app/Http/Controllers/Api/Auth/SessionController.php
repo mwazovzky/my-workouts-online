@@ -8,6 +8,7 @@ use App\Exceptions\Auth\RefreshTokenException;
 use App\Http\Controllers\Api\Auth\Concerns\IssuesTokenResponses;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\RefreshRequest;
 use App\Models\User;
 use App\Services\Auth\TokenPair;
 use App\Services\Auth\TokenServiceInterface;
@@ -39,7 +40,7 @@ class SessionController extends Controller
      * Rotate the refresh token. Web clients present it via the httpOnly cookie
      * (guarded by a custom header), native clients in the body.
      */
-    public function refresh(Request $request): JsonResponse
+    public function refresh(RefreshRequest $request): JsonResponse
     {
         $bodyToken = $request->input('refresh_token');
 

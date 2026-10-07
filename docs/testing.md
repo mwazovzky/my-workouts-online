@@ -238,3 +238,14 @@ The run logs in as the seeded admin (`test@example.com`) and fuzzes writes, so u
 
 Excluded from fuzzing: logout (would revoke the token in use), profile delete/update (would remove or rename the account) and the unimplemented social login endpoint.
 
+### Contract lint
+
+Before Schemathesis runs, the contract itself is linted in `.github/workflows/lint.yml` (job `openapi-lint`) by two tools, both runnable locally without installing anything:
+
+```bash
+npx --yes @redocly/cli@latest lint contracts/openapi.yaml --config contracts/redocly.yaml
+npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset contracts/.spectral.yaml --fail-severity warn
+```
+
+Redocly checks structure and that every example is valid against its schema. Spectral applies the Zalando ruleset plus the project's `house-*` rules from `contracts/.spectral.yaml`; a warning fails the job. A rule may be disabled only with a comment on that line stating the reason or the story that re-enables it. What each rule means and which are off is in [API Design](api-design.md).
+

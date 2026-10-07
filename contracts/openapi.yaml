@@ -3,8 +3,9 @@ info:
   title: My Workouts API
   version: 1.0.0
   description: |
-    Contract for the `/api/v1` surface consumed by the web SPA, the iOS app,
-    and implemented by any backend (PHP today, Go later).
+    Contract for the `/api/v1` surface consumed by the web SPA and the iOS app,
+    and implemented by the backend. The design rules behind it are written in
+    `docs/api-design.md` and enforced by `contracts/.spectral.yaml`.
 
     Conventions:
     - Authentication: `Authorization: Bearer <access JWT>` on every protected
@@ -14,12 +15,18 @@ info:
       the supported locales, translates database content per field with an
       English fallback, and answers with `Content-Language` and
       `Vary: Accept-Language`.
+    - Request bodies are strict: every object declares `additionalProperties:
+      false` and an undeclared key is rejected with 422 (`invalid`).
     - Errors: every non-2xx response uses the `Error` envelope. Validation
       failures use `ValidationError` with a stable `code` per field entry:
       the failed rule name (`required`, `email`, `unique`, `enum`, ...) or
       `invalid` for messages not tied to a rule.
-    - Pagination: list endpoints that paginate return `{ data, links, meta }`.
+    - Pagination: list endpoints that paginate return `{ data, links, meta }`
+      (`PageLinks`, `PageMeta`) and accept `page` and `per_page`.
     - Status: endpoints marked `x-status: target` are not implemented yet.
+  contact:
+    name: My Workouts
+    url: https://github.com/mwazovzky/my-workouts-online
 
 servers:
   - url: /
@@ -44,6 +51,8 @@ tags:
     description: The caller's own workouts and set logging.
   - name: Admin
     description: Catalog management, admin role required.
+  - name: Health
+    description: Liveness and readiness probes used by nginx, CI and the deploy script.
 
 security:
   - bearerAuth: []
@@ -69,6 +78,56 @@ paths:
                     items:
                       type: object
                       additionalProperties: true
+              example:
+                keys:
+                  - kty: OKP
+                    crv: Ed25519
+                    alg: EdDSA
+                    use: sig
+                    kid: 1f2e3d4c5b6a7980
+                    x: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: The process answers requests
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, timestamp]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  timestamp: { type: string, format: date-time, example: '2026-10-07T09:30:00Z' }
+              example: { status: ok, timestamp: '2026-10-07T09:30:00Z' }
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      description: "200 when every component is up, 503 with `status: degraded` otherwise."
+      operationId: getReadiness
+      security: []
+      responses:
+        '200':
+          description: Every component is up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Readiness'
+              example: { status: ok, components: { database: up, jwt: up }, timestamp: '2026-10-07T09:30:00Z' }
+        '503':
+          description: At least one component is down
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Readiness'
+              example: { status: degraded, components: { database: down, jwt: up }, timestamp: '2026-10-07T09:30:00Z' }
 
   /api/v1/auth/register:
     post:
@@ -142,6 +201,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               properties:
                 refresh_token:
                   type: string
@@ -177,6 +237,8 @@ paths:
                   value: { message: 'Refresh token reuse detected.', code: refresh_token_reused }
                 expired:
                   value: { message: 'Refresh token expired.', code: refresh_token_expired }
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /api/v1/auth/logout:
     post:
@@ -201,6 +263,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [password]
               properties:
                 password:
@@ -217,6 +280,7 @@ paths:
                 properties:
                   access_token: { type: string }
                   expires_in: { type: integer, description: Seconds until expiry }
+              example: { access_token: eyJhbGciOiJFZERTQSIsImtpZCI6IjFmMmUzZDRjNWI2YTc5ODAifQ.e30.sig, expires_in: 900 }
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -243,6 +307,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [email]
               properties:
                 email: { type: string, format: email }
@@ -266,6 +331,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [token, email, password, password_confirmation]
               properties:
                 token: { type: string }
@@ -292,6 +358,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [id, hash, expires, signature]
               properties:
                 id: { type: integer }
@@ -359,6 +426,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [client]
               properties:
                 client: { $ref: '#/components/schemas/ClientKind' }
@@ -419,6 +487,10 @@ paths:
                       theme_preferences:
                         type: array
                         items: { $ref: '#/components/schemas/ThemePreference' }
+              example:
+                data:
+                  available_locales: { en: English, ru: Русский }
+                  theme_preferences: [light, dark, system]
 
   /api/v1/profile:
     patch:
@@ -431,6 +503,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [name, email]
               properties:
                 name: { type: string, maxLength: 255 }
@@ -452,6 +525,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [password]
               properties:
                 password: { type: string, format: password }
@@ -474,6 +548,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [current_password, password, password_confirmation]
               properties:
                 current_password: { type: string, format: password }
@@ -498,6 +573,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [locale]
               properties:
                 locale: { $ref: '#/components/schemas/Locale' }
@@ -520,6 +596,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [theme_preference]
               properties:
                 theme_preference: { $ref: '#/components/schemas/ThemePreference' }
@@ -664,7 +741,7 @@ paths:
   /api/v1/workouts:
     get:
       tags: [Workouts]
-      summary: Caller's workout history, newest updated first, 20 per page
+      summary: Caller's workout history, newest updated first
       operationId: listWorkouts
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
@@ -672,19 +749,17 @@ paths:
           in: query
           description: 1-based page number.
           schema: { type: integer, minimum: 1, default: 1 }
+        - name: per_page
+          in: query
+          description: Items per page.
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
       responses:
         '200':
           description: Paginated workouts
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/Paginated'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items: { $ref: '#/components/schemas/Workout' }
+                $ref: '#/components/schemas/WorkoutPage'
         '422':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -699,6 +774,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required: [workout_template_id]
               properties:
                 workout_template_id: { type: integer }
@@ -1365,29 +1441,62 @@ components:
                       type: string
 
     # ------------------------------------------------------------- Common
-    Paginated:
+    Readiness:
+      type: object
+      required: [status, components, timestamp]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        components:
+          type: object
+          description: One entry per checked dependency.
+          additionalProperties: { type: string, enum: [up, down] }
+        timestamp: { type: string, format: date-time, example: '2026-10-07T09:30:00Z' }
+    PageLinks:
+      type: object
+      required: [first, last, prev, next]
+      additionalProperties: false
+      properties:
+        first: { type: [string, 'null'], format: uri }
+        last: { type: [string, 'null'], format: uri }
+        prev: { type: [string, 'null'], format: uri }
+        next: { type: [string, 'null'], format: uri }
+    PageMeta:
+      type: object
+      required: [current_page, from, last_page, per_page, to, total]
+      additionalProperties: false
+      properties:
+        current_page: { type: integer }
+        from: { type: [integer, 'null'], description: 1-based index of the first item on this page; null when the page is empty. }
+        last_page: { type: integer }
+        per_page: { type: integer }
+        to: { type: [integer, 'null'], description: 1-based index of the last item on this page; null when the page is empty. }
+        total: { type: integer }
+    WorkoutPage:
       type: object
       required: [data, links, meta]
       properties:
         data:
           type: array
-          items: {}
+          items: { $ref: '#/components/schemas/Workout' }
+        links: { $ref: '#/components/schemas/PageLinks' }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+      example:
+        data:
+          - id: 42
+            user_id: 7
+            name: Push A
+            status: completed
+            status_label: Completed
+            created_at: '2026-10-05T18:06:30Z'
+            updated_at: '2026-10-05T19:02:11Z'
+            activities_count: 6
+            activities: []
         links:
-          type: object
-          properties:
-            first: { type: [string, 'null'] }
-            last: { type: [string, 'null'] }
-            prev: { type: [string, 'null'] }
-            next: { type: [string, 'null'] }
-        meta:
-          type: object
-          properties:
-            current_page: { type: integer }
-            from: { type: [integer, 'null'] }
-            last_page: { type: integer }
-            per_page: { type: integer }
-            to: { type: [integer, 'null'] }
-            total: { type: integer }
+          first: https://my-workouts.example/api/v1/workouts?page=1&per_page=20
+          last: https://my-workouts.example/api/v1/workouts?page=3&per_page=20
+          prev: null
+          next: https://my-workouts.example/api/v1/workouts?page=2&per_page=20
+        meta: { current_page: 1, from: 1, last_page: 3, per_page: 20, to: 20, total: 47 }
     Locale:
       type: string
       enum: [en, ru]
@@ -1420,29 +1529,35 @@ components:
       type: object
       description: Per-locale name for resources without a description. Blank values remove that locale's translation so reads fall back to English.
       required: [en]
+      additionalProperties: false
       properties:
         en:
           type: object
           required: [name]
+          additionalProperties: false
           properties:
             name: { type: string, maxLength: 255 }
         ru:
           type: object
+          additionalProperties: false
           properties:
             name: { type: [string, 'null'], maxLength: 255 }
     TranslationsWrite:
       type: object
       description: Blank values remove that locale's translation so reads fall back to English.
       required: [en]
+      additionalProperties: false
       properties:
         en:
           type: object
           required: [name]
+          additionalProperties: false
           properties:
             name: { type: string, maxLength: 255 }
             description: { type: [string, 'null'], maxLength: 2000 }
         ru:
           type: object
+          additionalProperties: false
           properties:
             name: { type: [string, 'null'], maxLength: 255 }
             description: { type: [string, 'null'], maxLength: 2000 }
@@ -1450,6 +1565,7 @@ components:
     # ------------------------------------------------------------- Auth
     RegisterRequest:
       type: object
+      additionalProperties: false
       required: [name, email, password, password_confirmation, client]
       properties:
         name: { type: string, maxLength: 255 }
@@ -1460,6 +1576,7 @@ components:
         device_name: { type: string, maxLength: 255 }
     LoginRequest:
       type: object
+      additionalProperties: false
       required: [email, password, client]
       properties:
         email: { type: string, format: email }
@@ -1477,6 +1594,11 @@ components:
           type: string
           description: Present for native clients only. Web clients receive it as a cookie.
         user: { $ref: '#/components/schemas/User' }
+      example:
+        access_token: eyJhbGciOiJFZERTQSIsImtpZCI6IjFmMmUzZDRjNWI2YTc5ODAifQ.e30.sig
+        token_type: Bearer
+        expires_in: 900
+        user: { id: 7, name: Ada, email: ada@example.com, locale: en, theme_preference: system, is_admin: false, email_verified: true }
 
     # ------------------------------------------------------------- Users
     User:
@@ -1490,6 +1612,7 @@ components:
         theme_preference: { $ref: '#/components/schemas/ThemePreference' }
         is_admin: { type: boolean }
         email_verified: { type: boolean }
+      example: { id: 7, name: Ada, email: ada@example.com, locale: en, theme_preference: system, is_admin: false, email_verified: true }
 
     # ------------------------------------------------------------- Catalog
     Category:
@@ -1498,6 +1621,7 @@ components:
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
+      example: { id: 3, name: Chest }
     AdminCategory:
       allOf:
         - $ref: '#/components/schemas/Category'
@@ -1509,8 +1633,10 @@ components:
               type: object
               properties:
                 name: { $ref: '#/components/schemas/TranslationMap' }
+      example: { id: 3, name: Chest, exercises_count: 12, translations: { name: { en: Chest, ru: Грудь } } }
     CategoryWrite:
       type: object
+      additionalProperties: false
       required: [translations]
       properties:
         translations: { $ref: '#/components/schemas/NameTranslationsWrite' }
@@ -1526,8 +1652,10 @@ components:
           type: object
           properties:
             name: { $ref: '#/components/schemas/TranslationMap' }
+      example: { id: 2, name: Barbell, difficulty_unit: kilograms, exercises_count: 9, translations: { name: { en: Barbell, ru: Штанга } } }
     EquipmentWrite:
       type: object
+      additionalProperties: false
       required: [difficulty_unit, translations]
       properties:
         difficulty_unit: { $ref: '#/components/schemas/DifficultyUnit' }
@@ -1535,6 +1663,19 @@ components:
     Exercise:
       type: object
       required: [id, name, equipment_id, effort_type, effort_label, rest_time_seconds]
+      example:
+        id: 15
+        name: Bench press
+        description: Lie on the bench, lower the bar to the chest, press up.
+        equipment_id: 2
+        equipment_name: Barbell
+        effort_type: repetitions
+        effort_label: Reps
+        difficulty_unit: kilograms
+        difficulty_label: kg
+        rest_time_seconds: 120
+        category_ids: [3]
+        categories: [{ id: 3, name: Chest }]
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
@@ -1563,8 +1704,25 @@ components:
               properties:
                 name: { $ref: '#/components/schemas/TranslationMap' }
                 description: { $ref: '#/components/schemas/TranslationMap' }
+      example:
+        id: 15
+        name: Bench press
+        description: Lie on the bench, lower the bar to the chest, press up.
+        equipment_id: 2
+        equipment_name: Barbell
+        effort_type: repetitions
+        effort_label: Reps
+        difficulty_unit: kilograms
+        difficulty_label: kg
+        rest_time_seconds: 120
+        category_ids: [3]
+        categories: [{ id: 3, name: Chest }]
+        translations:
+          name: { en: Bench press, ru: Жим лёжа }
+          description: { en: 'Lie on the bench, lower the bar to the chest, press up.', ru: null }
     ExerciseWrite:
       type: object
+      additionalProperties: false
       required: [equipment_id, effort_type, translations]
       properties:
         equipment_id: { type: integer }
@@ -1584,6 +1742,7 @@ components:
         name: { type: [string, 'null'], description: Localized. }
         description: { type: [string, 'null'], description: Localized. }
         is_enrolled: { type: boolean }
+      example: { id: 1, name: Strength 5x5, description: Three full-body sessions a week., is_enrolled: true }
     ProgramDetail:
       allOf:
         - $ref: '#/components/schemas/Program'
@@ -1593,8 +1752,20 @@ components:
             workout_templates:
               type: array
               items: { $ref: '#/components/schemas/WorkoutTemplate' }
+      example:
+        id: 1
+        name: Strength 5x5
+        description: Three full-body sessions a week.
+        is_enrolled: true
+        workout_templates:
+          - id: 22
+            name: Strength 5x5 A
+            description: Squat, bench press, barbell row.
+            activities: []
+            pivot: { weekday: Monday, weekday_label: Monday }
     ProgramWrite:
       type: object
+      additionalProperties: false
       required: [translations, assignments]
       properties:
         translations: { $ref: '#/components/schemas/TranslationsWrite' }
@@ -1602,6 +1773,7 @@ components:
           type: array
           items:
             type: object
+            additionalProperties: false
             required: [workout_template_id, weekday]
             properties:
               workout_template_id: { type: integer }
@@ -1609,6 +1781,16 @@ components:
     AdminProgram:
       type: object
       required: [id, name, translations]
+      example:
+        id: 1
+        name: Strength 5x5
+        templates_count: 2
+        translations:
+          name: { en: Strength 5x5, ru: Сила 5x5 }
+          description: { en: Three full-body sessions a week., ru: null }
+        assignments:
+          - { workout_template_id: 22, workout_template_name: Strength 5x5 A, weekday: Monday, weekday_label: Monday }
+          - { workout_template_id: 23, workout_template_name: Strength 5x5 B, weekday: Wednesday, weekday_label: Wednesday }
       properties:
         id: { type: integer }
         name: { type: [string, 'null'] }
@@ -1631,6 +1813,23 @@ components:
     WorkoutTemplate:
       type: object
       required: [id, name, activities]
+      example:
+        id: 22
+        name: Strength 5x5 A
+        description: Squat, bench press, barbell row.
+        activities:
+          - id: 301
+            exercise_id: 15
+            exercise_name: Bench press
+            rest_time_seconds: 120
+            exercise_equipment_name: Barbell
+            exercise_effort_type: repetitions
+            exercise_effort_label: Reps
+            exercise_difficulty_unit: kilograms
+            exercise_difficulty_label: kg
+            exercise_category_names: [Chest]
+            sets:
+              - { id: 901, order: 1, effort_value: 5, difficulty_value: null, is_completed: false }
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
@@ -1648,6 +1847,26 @@ components:
     AdminWorkoutTemplate:
       type: object
       required: [id, name, translations]
+      example:
+        id: 22
+        name: Strength 5x5 A
+        activities_count: 3
+        translations:
+          name: { en: Strength 5x5 A, ru: Сила 5x5 A }
+          description: { en: 'Squat, bench press, barbell row.', ru: null }
+        activities:
+          - id: 301
+            exercise_id: 15
+            exercise_name: Bench press
+            rest_time_seconds: 120
+            exercise_equipment_name: Barbell
+            exercise_effort_type: repetitions
+            exercise_effort_label: Reps
+            exercise_difficulty_unit: kilograms
+            exercise_difficulty_label: kg
+            exercise_category_names: [Chest]
+            sets:
+              - { id: 901, order: 1, effort_value: 5, difficulty_value: null, is_completed: false }
       properties:
         id: { type: integer }
         name: { type: [string, 'null'] }
@@ -1662,6 +1881,7 @@ components:
           items: { $ref: '#/components/schemas/Activity' }
     WorkoutTemplateWrite:
       type: object
+      additionalProperties: false
       required: [translations, activities]
       properties:
         translations: { $ref: '#/components/schemas/TranslationsWrite' }
@@ -1670,6 +1890,7 @@ components:
           minItems: 1
           items:
             type: object
+            additionalProperties: false
             required: [exercise_id, order, sets]
             properties:
               exercise_id: { type: integer }
@@ -1691,8 +1912,10 @@ components:
           type: [number, 'null']
           description: Weight, plates, or heart-rate zone 1-5 depending on the equipment difficulty unit; null when the unit is `none`.
         is_completed: { type: boolean }
+      example: { id: 901, order: 1, effort_value: 5, difficulty_value: 60, is_completed: true }
     SetWrite:
       type: object
+      additionalProperties: false
       required: [order, effort_value]
       properties:
         id: { type: [integer, 'null'], description: Omit or null to create. }
@@ -1703,6 +1926,20 @@ components:
     Activity:
       type: object
       required: [id, exercise_id, exercise_name, sets]
+      example:
+        id: 501
+        exercise_id: 15
+        exercise_name: Bench press
+        rest_time_seconds: 120
+        exercise_equipment_name: Barbell
+        exercise_effort_type: repetitions
+        exercise_effort_label: Reps
+        exercise_difficulty_unit: kilograms
+        exercise_difficulty_label: kg
+        exercise_category_names: [Chest]
+        sets:
+          - { id: 901, order: 1, effort_value: 5, difficulty_value: 60, is_completed: true }
+          - { id: 902, order: 2, effort_value: 5, difficulty_value: 60, is_completed: false }
       properties:
         id: { type: integer }
         exercise_id: { type: [integer, 'null'] }
@@ -1728,14 +1965,41 @@ components:
     Workout:
       type: object
       required: [id, user_id, name, status, status_label, activities]
+      example:
+        id: 42
+        user_id: 7
+        name: Strength 5x5 A
+        status: in_progress
+        status_label: In progress
+        created_at: '2026-10-05T18:06:30Z'
+        updated_at: '2026-10-05T19:02:11Z'
+        activities_count: 1
+        workout_template:
+          id: 22
+          name: Strength 5x5 A
+          description: Squat, bench press, barbell row.
+          activities: []
+        activities:
+          - id: 501
+            exercise_id: 15
+            exercise_name: Bench press
+            rest_time_seconds: 120
+            exercise_equipment_name: Barbell
+            exercise_effort_type: repetitions
+            exercise_effort_label: Reps
+            exercise_difficulty_unit: kilograms
+            exercise_difficulty_label: kg
+            exercise_category_names: [Chest]
+            sets:
+              - { id: 901, order: 1, effort_value: 5, difficulty_value: 60, is_completed: true }
       properties:
         id: { type: integer }
         user_id: { type: integer }
         name: { type: string, description: Copied from the template at creation; not re-translated. }
         status: { $ref: '#/components/schemas/WorkoutStatus' }
         status_label: { type: string }
-        created_at: { type: [string, 'null'], format: date-time }
-        updated_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: [string, 'null'], format: date-time, example: '2026-10-05T18:06:30Z' }
+        updated_at: { type: [string, 'null'], format: date-time, example: '2026-10-05T19:02:11Z' }
         activities_count: { type: [integer, 'null'] }
         workout_template:
           description: Absent when the workout's template is not loaded or no longer exists. Omitted rather than null because code generators drop nullable `$ref`s.
@@ -1745,6 +2009,7 @@ components:
           items: { $ref: '#/components/schemas/Activity' }
     WorkoutSaveRequest:
       type: object
+      additionalProperties: false
       required: [activities]
       properties:
         activities:
@@ -1752,6 +2017,7 @@ components:
           minItems: 1
           items:
             type: object
+            additionalProperties: false
             required: [exercise_id, order, sets]
             properties:
               id: { type: [integer, 'null'], description: 'Existing activity id owned by this workout, or null to create.' }
@@ -1766,6 +2032,19 @@ components:
     Dashboard:
       type: object
       required: [upcoming_schedule, recent_workouts, summary]
+      example:
+        upcoming_schedule:
+          - id: 1-22-2026-10-12
+            program_id: 1
+            program_name: Strength 5x5
+            workout_template_id: 22
+            workout_name: Strength 5x5 A
+            weekday: Monday
+            weekday_label: Monday
+            scheduled_at: '2026-10-12T00:00:00Z'
+            scheduled_for: '2026-10-12'
+        recent_workouts: []
+        summary: { enrolled_programs_count: 1, completed_workouts_count: 12, completed_last_7_days_count: 3, upcoming_workouts_count: 3 }
       properties:
         upcoming_schedule:
           type: array
@@ -1780,8 +2059,8 @@ components:
               workout_name: { type: [string, 'null'] }
               weekday: { $ref: '#/components/schemas/Weekday' }
               weekday_label: { type: string }
-              scheduled_at: { type: string, format: date-time }
-              scheduled_for: { type: string, format: date }
+              scheduled_at: { type: string, format: date-time, example: '2026-10-12T00:00:00Z' }
+              scheduled_for: { type: string, format: date, example: '2026-10-12' }
         in_progress_workout:
           description: The most recent in-progress workout. Absent when there is none; omitted rather than null because code generators drop nullable `$ref`s.
           $ref: '#/components/schemas/Workout'

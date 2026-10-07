@@ -3,9 +3,9 @@
 namespace App\Http\Requests\Admin;
 
 use App\Http\Requests\Admin\Concerns\HasTranslationRules;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\ApiFormRequest;
 
-class CategoryStoreRequest extends FormRequest
+class CategoryStoreRequest extends ApiFormRequest
 {
     use HasTranslationRules;
 

@@ -7,6 +7,7 @@ use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
@@ -71,7 +72,7 @@ class EmailVerificationTest extends TestCase
         Event::fake([Verified::class]);
 
         $this->withToken($this->token($user))
-            ->postJson('/api/v1/auth/email/verify', $link)
+            ->postJson('/api/v1/auth/email/verify', Arr::except($link, 'url'))
             ->assertNoContent();
 
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
@@ -88,7 +89,7 @@ class EmailVerificationTest extends TestCase
         $link = $this->linkFor($other);
 
         $this->withToken($this->token($user))
-            ->postJson('/api/v1/auth/email/verify', $link)
+            ->postJson('/api/v1/auth/email/verify', Arr::except($link, 'url'))
             ->assertForbidden()
             ->assertJsonPath('code', 'invalid_verification_link');
 
@@ -102,14 +103,14 @@ class EmailVerificationTest extends TestCase
         $link = $this->linkFor($user);
 
         $this->withToken($this->token($user))
-            ->postJson('/api/v1/auth/email/verify', array_merge($link, ['signature' => strrev($link['signature'])]))
+            ->postJson('/api/v1/auth/email/verify', array_merge(Arr::except($link, 'url'), ['signature' => strrev($link['signature'])]))
             ->assertForbidden()
             ->assertJsonPath('code', 'invalid_signature');
 
         $this->travel(2)->hours();
 
         $this->withToken($this->token($user))
-            ->postJson('/api/v1/auth/email/verify', $link)
+            ->postJson('/api/v1/auth/email/verify', Arr::except($link, 'url'))
             ->assertForbidden()
             ->assertJsonPath('code', 'invalid_signature');
 
@@ -124,7 +125,7 @@ class EmailVerificationTest extends TestCase
         $user->markEmailAsVerified();
 
         $this->withToken($this->token($user))
-            ->postJson('/api/v1/auth/email/verify', $link)
+            ->postJson('/api/v1/auth/email/verify', Arr::except($link, 'url'))
             ->assertNoContent();
     }
 

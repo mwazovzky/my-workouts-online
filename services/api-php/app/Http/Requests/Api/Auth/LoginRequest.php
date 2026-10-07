@@ -3,9 +3,9 @@
 namespace App\Http\Requests\Api\Auth;
 
 use App\Enums\ClientKind;
+use App\Http\Requests\ApiFormRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * Credential check for token issuance, throttled per email + IP.
  */
-class LoginRequest extends FormRequest
+class LoginRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

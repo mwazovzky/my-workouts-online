@@ -4,33 +4,31 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\WorkoutStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WorkoutIndexRequest;
 use App\Http\Requests\WorkoutSaveRequest;
 use App\Http\Requests\WorkoutStoreRequest;
+use App\Http\Resources\WorkoutCollection;
 use App\Http\Resources\WorkoutResource;
 use App\Models\Workout;
 use App\Services\Workout\WorkoutServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 class WorkoutController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(WorkoutIndexRequest $request): WorkoutCollection
     {
-        $request->validate([
-            'page' => ['sometimes', 'integer', 'min:1'],
-        ]);
-
         $workouts = Workout::query()
             ->ownedBy($request->user())
             ->withTemplate()
             ->withActivitiesCount()
             ->latestUpdated()
-            ->paginate(20);
+            ->paginate($request->perPage())
+            ->withQueryString();
 
-        return WorkoutResource::collection($workouts);
+        return new WorkoutCollection($workouts);
     }
 
     public function show(Request $request, Workout $workout): WorkoutResource

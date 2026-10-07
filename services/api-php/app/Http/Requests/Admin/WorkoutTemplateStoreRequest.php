@@ -3,10 +3,10 @@
 namespace App\Http\Requests\Admin;
 
 use App\Http\Requests\Admin\Concerns\HasTranslationRules;
+use App\Http\Requests\ApiFormRequest;
 use App\Rules\HeartRateZoneWithinRange;
-use Illuminate\Foundation\Http\FormRequest;
 
-class WorkoutTemplateStoreRequest extends FormRequest
+class WorkoutTemplateStoreRequest extends ApiFormRequest
 {
     use HasTranslationRules;
 

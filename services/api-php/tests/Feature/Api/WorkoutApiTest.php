@@ -38,6 +38,54 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
+    public function index_pages_twenty_workouts_by_default_with_a_tight_envelope(): void
+    {
+        $user = User::factory()->create();
+        Workout::factory()->count(21)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->getJson('/api/v1/workouts');
+
+        $response->assertOk()
+            ->assertJsonCount(20, 'data')
+            ->assertJsonPath('meta.per_page', 20)
+            ->assertJsonPath('meta.last_page', 2);
+
+        $this->assertSame(['first', 'last', 'prev', 'next'], array_keys($response->json('links')));
+        $this->assertSame(
+            ['current_page', 'from', 'last_page', 'per_page', 'to', 'total'],
+            array_keys($response->json('meta')),
+        );
+    }
+
+    #[Test]
+    public function index_honours_per_page_and_carries_it_into_the_links(): void
+    {
+        $user = User::factory()->create();
+        Workout::factory()->count(6)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->getJson('/api/v1/workouts?per_page=5');
+
+        $response->assertOk()
+            ->assertJsonCount(5, 'data')
+            ->assertJsonPath('meta.per_page', 5)
+            ->assertJsonPath('meta.last_page', 2);
+
+        $this->assertStringContainsString('per_page=5', $response->json('links.next'));
+    }
+
+    #[Test]
+    public function index_rejects_an_invalid_per_page(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['0', '101', 'abc'] as $perPage) {
+            $this->actingAs($user)->getJson("/api/v1/workouts?per_page={$perPage}")
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors(['per_page']);
+        }
+    }
+
+    #[Test]
     public function index_rejects_an_invalid_page(): void
     {
         $user = User::factory()->create();
@@ -48,6 +96,17 @@ class WorkoutApiTest extends TestCase
 
         $this->actingAs($user)->getJson('/api/v1/workouts?page=abc')
             ->assertUnprocessable();
+    }
+
+    #[Test]
+    public function index_rejects_an_undeclared_query_parameter(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->getJson('/api/v1/workouts?page=1&sort=name')
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'validation_failed')
+            ->assertJsonPath('errors.sort.0.code', 'invalid');
     }
 
     #[Test]

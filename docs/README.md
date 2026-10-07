@@ -9,6 +9,7 @@ Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 
 | [Product Overview](product.md) | App summary, glossary, core user flow, feature index |
 | [Pages & Routes](pages-and-routes.md) | Complete page and endpoint inventory with owning feature |
 | [Architecture](architecture.md) | Technical patterns, key decisions, data model, i18n strategy |
+| [API Design](api-design.md) | Contract rules: naming, envelope, request bodies, status codes, errors, versioning, lint setup |
 | [Code Style](code-style.md) | Project coding standards and conventions |
 | [Testing](testing.md) | Test suite structure, required coverage, and common test patterns |
 | [Deployment](deployment.md) | Deployment and operational runbook |

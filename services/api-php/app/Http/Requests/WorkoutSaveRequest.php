@@ -4,10 +4,9 @@ namespace App\Http\Requests;
 
 use App\Rules\CompletedSetRequiresEffort;
 use App\Rules\HeartRateZoneWithinRange;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class WorkoutSaveRequest extends FormRequest
+class WorkoutSaveRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

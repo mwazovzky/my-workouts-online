@@ -3,12 +3,12 @@
 namespace App\Http\Requests\Api\Auth;
 
 use App\Enums\ClientKind;
+use App\Http\Requests\ApiFormRequest;
 use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-class RegisterRequest extends FormRequest
+class RegisterRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

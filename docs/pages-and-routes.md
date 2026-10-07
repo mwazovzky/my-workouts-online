@@ -54,7 +54,7 @@ Access values: Guest (signed-in users are redirected), Auth, Verified, Admin, an
 | Program detail | verified | `GET /api/v1/programs/{program}`, `POST /api/v1/programs/{program}/enroll` |
 | Workout template detail | verified | `GET /api/v1/workout-templates/{id}`, `POST /api/v1/workouts` (Start Workout) |
 | Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workout}`, `PATCH /api/v1/workouts/{workout}/save`, `POST /api/v1/workouts/{workout}/complete`, `GET /api/v1/exercises` (Add activity) |
-| Workouts tab | verified | `GET /api/v1/workouts?page=N`, `DELETE /api/v1/workouts/{workout}` |
+| Workouts tab | verified | `GET /api/v1/workouts?page=N&per_page=M`, `DELETE /api/v1/workouts/{workout}` |
 | Workout detail | verified | `GET /api/v1/workouts/{workout}`, `POST /api/v1/workouts/{workout}/repeat` |
 | Profile tab | auth | `PATCH /api/v1/profile`, `PUT /api/v1/profile/password`, `PATCH /api/v1/profile/theme`, `PATCH /api/v1/profile/locale` (automatic sync), `DELETE /api/v1/profile`, `POST /api/v1/auth/email/resend`, `POST /api/v1/auth/logout` |
 
@@ -82,7 +82,7 @@ Only `email.received` is acted on: it queues `ForwardInboundEmail`, which relays
 
 ## API
 
-The SPA consumes a versioned REST API under `/api/v1`. Protected routes require a JWT bearer token (`auth:jwt`). Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. Clients send `Accept-Language`; responses declare `Content-Language`. Errors use the `{ message, code }` envelope and validation errors `{ errors: { field: [{ code, message }] } }`. The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
+The SPA consumes a versioned REST API under `/api/v1`. Protected routes require a JWT bearer token (`auth:jwt`). Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. Clients send `Accept-Language`; responses declare `Content-Language`. Response envelope, pagination, error shape and status-code rules are in [API Design](api-design.md). The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
 
 | Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |
 | ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |

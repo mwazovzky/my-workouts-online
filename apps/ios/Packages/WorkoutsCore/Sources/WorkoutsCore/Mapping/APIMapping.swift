@@ -197,12 +197,12 @@ extension Workout {
 }
 
 extension Page where Item == Workout {
-    public init(api: Operations.ListWorkouts.Output.Ok.Body.JsonPayload) throws {
+    public init(api: Components.Schemas.WorkoutPage) throws {
         self.init(
-            items: try (api.value2.data ?? []).map(Workout.init(api:)),
-            currentPage: api.value1.meta.currentPage ?? 1,
-            lastPage: api.value1.meta.lastPage ?? 1,
-            total: api.value1.meta.total
+            items: try api.data.map(Workout.init(api:)),
+            currentPage: api.meta.currentPage,
+            lastPage: api.meta.lastPage,
+            total: api.meta.total
         )
     }
 }
