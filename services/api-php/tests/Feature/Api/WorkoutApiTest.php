@@ -197,7 +197,7 @@ class WorkoutApiTest extends TestCase
     }
 
     // -------------------------------------------------------
-    // PATCH /api/v1/workouts/{workout}/save
+    // PUT /api/v1/workouts/{workoutId}/activities
     // -------------------------------------------------------
 
     #[Test]
@@ -209,7 +209,7 @@ class WorkoutApiTest extends TestCase
         $activity = Activity::factory()->for($workout, 'workout')->create(['exercise_id' => $exercise->id, 'order' => 1]);
         $set = Set::factory()->for($activity, 'activity')->create(['order' => 1, 'effort_value' => 5, 'difficulty_value' => 10]);
 
-        $response = $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
+        $response = $this->actingAs($user)->putActivities($workout->id, [
             'activities' => [[
                 'id' => $activity->id,
                 'exercise_id' => $exercise->id,
@@ -230,7 +230,7 @@ class WorkoutApiTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $other->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
+        $this->actingAs($user)->putActivities($workout->id, [
             'activities' => [['exercise_id' => $exercise->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5, 'difficulty_value' => 10]]]],
         ])->assertProblem(404, 'not_found');
     }
@@ -242,7 +242,7 @@ class WorkoutApiTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'completed']);
         $exercise = Exercise::factory()->create();
 
-        $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
+        $this->actingAs($user)->putActivities($workout->id, [
             'activities' => [['exercise_id' => $exercise->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5, 'difficulty_value' => 10]]]],
         ])->assertForbidden();
     }

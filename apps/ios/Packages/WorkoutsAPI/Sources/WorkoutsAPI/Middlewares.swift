@@ -45,3 +45,24 @@ public struct UserAgentMiddleware: ClientMiddleware {
         return try await next(request, body, baseURL)
     }
 }
+
+/// Sends `If-Match` as written. The generated client URI-encodes header parameters, which
+/// turns the quoted entity tag `"42-7"` into `%2242-7%22`, a tag that never matches; this
+/// restores the literal value. Always installed by `APIClientFactory`.
+public struct EntityTagMiddleware: ClientMiddleware {
+    public init() {}
+
+    public func intercept(
+        _ request: HTTPRequest,
+        body: HTTPBody?,
+        baseURL: URL,
+        operationID: String,
+        next: @Sendable (HTTPRequest, HTTPBody?, URL) async throws -> (HTTPResponse, HTTPBody?)
+    ) async throws -> (HTTPResponse, HTTPBody?) {
+        var request = request
+        if let value = request.headerFields[.ifMatch] {
+            request.headerFields[.ifMatch] = value.removingPercentEncoding ?? value
+        }
+        return try await next(request, body, baseURL)
+    }
+}

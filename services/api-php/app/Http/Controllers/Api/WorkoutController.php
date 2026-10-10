@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\ErrorCode;
 use App\Enums\WorkoutStatus;
+use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ReplaceWorkoutActivitiesRequest;
 use App\Http\Requests\WorkoutIndexRequest;
-use App\Http\Requests\WorkoutSaveRequest;
 use App\Http\Requests\WorkoutStoreRequest;
 use App\Http\Resources\WorkoutCollection;
 use App\Http\Resources\WorkoutResource;
+use App\Http\WorkoutETag;
 use App\Models\Workout;
 use App\Services\Workout\WorkoutServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -62,12 +65,25 @@ class WorkoutController extends Controller
         return (new WorkoutResource($workout))->response()->setStatusCode(201);
     }
 
-    public function save(WorkoutSaveRequest $request, Workout $workout, WorkoutServiceInterface $service): WorkoutResource
+    /**
+     * Replaces the activities and sets; `If-Match` must carry the workout's current `ETag`.
+     */
+    public function replaceActivities(ReplaceWorkoutActivitiesRequest $request, Workout $workout, WorkoutServiceInterface $service): WorkoutResource
     {
         $this->ownedOrFail($request, $workout);
         $this->authorize('save', $workout);
 
-        $workout = $service->save($workout, $request->validated());
+        $ifMatch = $request->header('If-Match');
+
+        if ($ifMatch === null) {
+            throw new ApiException(428, ErrorCode::PreconditionRequired, __("Send the workout's ETag in If-Match."));
+        }
+
+        $workout = $service->save(
+            $workout,
+            $request->validated(),
+            fn (Workout $current) => WorkoutETag::matches($ifMatch, $current),
+        );
 
         return new WorkoutResource($workout);
     }
@@ -78,6 +94,7 @@ class WorkoutController extends Controller
         $this->authorize('complete', $workout);
 
         $workout->status = WorkoutStatus::Completed;
+        $workout->version++;
         $workout->save();
 
         Log::info('workout.completed', [

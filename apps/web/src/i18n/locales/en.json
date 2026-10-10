@@ -299,5 +299,7 @@
   "These credentials do not match our records.": "These credentials do not match our records.",
   "Too many login attempts. Try again in :seconds seconds.": "Too many login attempts. Try again in :seconds seconds.",
   "Too many login attempts.": "Too many login attempts.",
-  "The password confirmation does not match.": "The password confirmation does not match."
+  "The password confirmation does not match.": "The password confirmation does not match.",
+  "This workout was changed elsewhere. Reload it to continue.": "This workout was changed elsewhere. Reload it to continue.",
+  "Reload": "Reload"
 }

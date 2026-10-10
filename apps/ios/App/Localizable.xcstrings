@@ -2167,6 +2167,22 @@
         }
       }
     },
+    "Reload" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить"
+          }
+        }
+      }
+    },
     "Remember me" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2737,6 +2753,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Эту тренировку нельзя редактировать"
+          }
+        }
+      }
+    },
+    "This workout was changed elsewhere. Reload it to continue." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This workout was changed elsewhere. Reload it to continue."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта тренировка была изменена в другом месте. Обновите её, чтобы продолжить."
           }
         }
       }

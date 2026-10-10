@@ -184,7 +184,14 @@ struct WorkoutEditorView: View {
         case .loaded(let draft):
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    if let error = model.saveError, model.fieldErrors.isEmpty {
+                    if model.changedElsewhere {
+                        NoticeBanner(
+                            text: "This workout was changed elsewhere. Reload it to continue.", actionTitle: "Reload"
+                        ) {
+                            Task { await model.reloadAfterConflict() }
+                        }
+                        .accessibilityIdentifier("editor.conflict")
+                    } else if let error = model.saveError, model.fieldErrors.isEmpty {
                         FormErrorBanner(general: .failed(message: error.userMessage))
                     }
                     if let error = model.completeError, model.saveError == nil {

@@ -26,7 +26,9 @@ actor FakeWorkoutRepository: WorkoutRepository {
     var stored: Workout?
     var saveError: APIError?
     private(set) var savedPayloads: [WorkoutSavePayload] = []
-    /// What `save` returns; defaults to the stored workout with ids assigned positionally.
+    /// The `If-Match` value of every save, in order.
+    private(set) var ifMatches: [String] = []
+    /// What `replaceActivities` returns; defaults to the stored workout.
     var saveResult: Workout?
 
     func set(createError: APIError?) { self.createError = createError }
@@ -41,8 +43,9 @@ actor FakeWorkoutRepository: WorkoutRepository {
         return stored
     }
 
-    func save(id: Int, payload: WorkoutSavePayload) async throws -> Workout {
+    func replaceActivities(id: Int, ifMatch: String, payload: WorkoutSavePayload) async throws -> Workout {
         savedPayloads.append(payload)
+        ifMatches.append(ifMatch)
         if let saveError { throw saveError }
         if let saveResult { return saveResult }
         guard let stored else { throw APIError.unexpected(status: 500) }

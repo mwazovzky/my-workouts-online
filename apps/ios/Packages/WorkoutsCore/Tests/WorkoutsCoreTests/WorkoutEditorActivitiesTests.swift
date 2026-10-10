@@ -168,12 +168,8 @@ struct WorkoutEditorDraftTests {
 
     @Test("a draft taken before the server copy changed is dropped with a notice")
     func stale() async {
-        var newer = EditorFixtures.weights
-        newer = Workout(
-            id: newer.id, userId: newer.userId, name: newer.name, status: newer.status,
-            createdAt: nil, updatedAt: Date(timeIntervalSince1970: 2000), activitiesCount: nil, template: nil,
-            activities: newer.activities)
-        let stale = WorkoutDraft(workout: EditorFixtures.weights)  // baseUpdatedAt 1000
+        let newer = EditorFixtures.workout(version: 2, activities: EditorFixtures.weights.activities)
+        let stale = WorkoutDraft(workout: EditorFixtures.weights)  // baseETag "42-1"
         let store = InMemoryDraftStore([stale])
         let (model, _) = await loaded(newer, drafts: store)
 
@@ -181,6 +177,25 @@ struct WorkoutEditorDraftTests {
         #expect(!model.restoredDraft)
         #expect(!model.isDirty)
         #expect(await store.load(workoutId: 42) == nil)
+    }
+
+    @Test("a draft written before ETags (no baseETag) loads without crashing and is dropped as stale")
+    func legacyDraft() async throws {
+        let dir = FileManager.default.temporaryDirectory.appending(path: "drafts-\(UUID().uuidString)")
+        let fileStore = FileDraftStore(directory: dir)
+        let encoded = try JSONEncoder().encode(WorkoutDraft(workout: EditorFixtures.weights))
+        var json = try #require(try JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        json["baseETag"] = nil
+        json["baseUpdatedAt"] = "1970-01-01T00:16:40Z"
+        try FileManager.default.createDirectory(at: dir.appending(path: "Drafts"), withIntermediateDirectories: true)
+        try JSONSerialization.data(withJSONObject: json).write(to: dir.appending(path: "Drafts/workout-42.json"))
+
+        let legacy = try #require(try await fileStore.load(workoutId: 42))
+        #expect(legacy.baseETag == nil)
+
+        let (model, _) = await loaded(drafts: InMemoryDraftStore([legacy]))
+        #expect(model.staleDraftDiscarded)
+        #expect(!model.restoredDraft)
     }
 
     @Test("read-only workouts never restore drafts")

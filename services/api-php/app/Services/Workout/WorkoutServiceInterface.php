@@ -19,11 +19,15 @@ interface WorkoutServiceInterface
     public function repeat(Workout $sourceWorkout): Workout;
 
     /**
-     * Save (sync) the full set of activities and sets for a workout.
+     * Save (sync) the full set of activities and sets for a workout and bump its version.
+     *
+     * The precondition runs against the workout row locked for the transaction; when it
+     * returns false nothing is written and a 412 `precondition_failed` problem is thrown.
      *
      * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, effort_value: int, difficulty_value: numeric|null, is_completed?: bool}>}>}  $data
+     * @param  (callable(Workout): bool)|null  $precondition
      */
-    public function save(Workout $workout, array $data): Workout;
+    public function save(Workout $workout, array $data, ?callable $precondition = null): Workout;
 
     /**
      * Delete workout and all related activities and sets.

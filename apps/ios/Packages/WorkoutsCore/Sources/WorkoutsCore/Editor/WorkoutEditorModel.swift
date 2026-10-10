@@ -30,6 +30,9 @@ public final class WorkoutEditorModel {
     public private(set) var restoredDraft = false
     /// A persisted draft was dropped because the server copy had changed since it was taken.
     public private(set) var staleDraftDiscarded = false
+    /// The last save was refused with 412: the workout changed elsewhere since it was loaded.
+    /// Nothing was written; the view offers `reloadAfterConflict()`.
+    public private(set) var changedElsewhere = false
 
     private let workouts: any WorkoutRepository
     private let drafts: (any DraftStore)?
@@ -154,9 +157,19 @@ public final class WorkoutEditorModel {
         staleDraftDiscarded = false
     }
 
+    /// Drops the local edits (and any persisted draft) and loads the server's current copy.
+    public func reloadAfterConflict() async {
+        changedElsewhere = false
+        saveError = nil
+        fieldErrors = [:]
+        await deletePersistedDraft()
+        state = .idle
+        await load()
+    }
+
     private func restoreDraftIfAny(for workout: Workout) async {
         guard isEditable, let drafts, let saved = try? await drafts.load(workoutId: workoutId) else { return }
-        if saved.baseUpdatedAt == workout.updatedAt {
+        if let base = saved.baseETag, base == workout.etag {
             state = .loaded(saved)
             isDirty = true
             restoredDraft = true
@@ -243,7 +256,10 @@ public final class WorkoutEditorModel {
         fieldErrors = [:]
         defer { isSaving = false }
         do {
-            let saved = try await workouts.save(id: workoutId, payload: Self.payload(for: draft))
+            // Never `*`: a draft without a tag must not bypass the check, so it sends an empty
+            // tag that cannot match, and the 412 leads to a reload.
+            let saved = try await workouts.replaceActivities(
+                id: workoutId, ifMatch: draft.baseETag ?? "", payload: Self.payload(for: draft))
             adoptIds(from: saved, into: draft)
             isDirty = false
             lastSavedAt = Date()
@@ -252,6 +268,7 @@ public final class WorkoutEditorModel {
         } catch {
             let apiError = APIError.from(error)
             saveError = apiError
+            changedElsewhere = apiError.code == "precondition_failed"
             if case .validation(_, let fields) = apiError {
                 fieldErrors = fields.compactMapValues { $0.first?.message }
             }
@@ -305,7 +322,7 @@ public final class WorkoutEditorModel {
         workout = saved
         state = .loaded(
             WorkoutDraft(
-                workoutId: updated.workoutId, name: saved.name, baseUpdatedAt: saved.updatedAt,
+                workoutId: updated.workoutId, name: saved.name, baseETag: saved.etag,
                 activities: updated.activities))
     }
 
@@ -339,7 +356,7 @@ public final class WorkoutEditorModel {
     }
 }
 
-/// The body of `PATCH /workouts/{id}/save`, in domain terms; the repository maps it to the
+/// The body of `PUT /workouts/{id}/activities`, in domain terms; the repository maps it to the
 /// generated request type.
 public struct WorkoutSavePayload: Sendable, Equatable {
     public struct Set: Sendable, Equatable {

@@ -259,5 +259,7 @@
   "Create a workout template first": "Create a workout template first",
   "Weekday": "Weekday",
   "Workout template": "Workout template",
-  "The :attribute field must be an object.": "The :attribute field must be an object."
+  "The :attribute field must be an object.": "The :attribute field must be an object.",
+  "This workout was changed elsewhere. Reload it to continue.": "This workout was changed elsewhere. Reload it to continue.",
+  "Send the workout's ETag in If-Match.": "Send the workout's ETag in If-Match."
 }

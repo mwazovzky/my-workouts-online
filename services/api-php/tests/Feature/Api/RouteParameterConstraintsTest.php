@@ -30,7 +30,7 @@ class RouteParameterConstraintsTest extends TestCase
             'workout template show' => ['GET', '/api/v1/workout-templates/8abc'],
             'workout show' => ['GET', '/api/v1/workouts/8abc'],
             'workout delete' => ['DELETE', '/api/v1/workouts/8abc'],
-            'workout save' => ['PATCH', '/api/v1/workouts/8abc/save'],
+            'workout activities' => ['PUT', '/api/v1/workouts/8abc/activities'],
             'workout complete' => ['POST', '/api/v1/workouts/8abc/complete'],
             'workout repeat' => ['POST', '/api/v1/workouts/8abc/repeat'],
             'admin equipment' => ['DELETE', '/api/v1/admin/equipment/8abc'],

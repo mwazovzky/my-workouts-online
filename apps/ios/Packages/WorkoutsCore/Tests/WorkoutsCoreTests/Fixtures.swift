@@ -25,6 +25,6 @@ enum Fixtures {
     static func client(transport: StubTransport) -> Client {
         Client(
             serverURL: URL(string: "http://localhost:8080")!, configuration: APIClientFactory.configuration,
-            transport: transport, middlewares: [])
+            transport: transport, middlewares: APIClientFactory.requiredMiddlewares)
     }
 }

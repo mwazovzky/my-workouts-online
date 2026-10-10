@@ -59,8 +59,8 @@ The path parameter name is a contract concern only: the URL is the same whatever
 - Every request body object, nested objects included, declares `additionalProperties: false`. The backend rejects any undeclared key with 422, field code `unknown_field`, detail "This field is not allowed."; nested keys are reported with their full pointer. Enforced by: Spectral `house-strict-request-bodies`, `scripts/contract-test.sh` (`negative_data_rejection`), `App\Http\Requests\ApiFormRequest`.
 - The same applies to the query string: an operation that declares query parameters (`listWorkouts`) rejects undeclared ones with 422. Operations without query parameters ignore the query string. Enforced by: `scripts/contract-test.sh`, `ApiFormRequest`.
 - Read and write shapes are separate schemas (`Exercise` vs `ExerciseWrite`); `readOnly`/`writeOnly` are not used. Enforced by: review.
-- `PUT` is full replacement: the write schema lists every settable field and the server replaces the whole resource (admin updates, template activities). Enforced by: review.
-- `PATCH` bodies are RFC 7386 merge patches: every field optional, absent fields untouched, at least one field present (`minProperties: 1`), no `required` list (`PATCH /me` with `MePatch`). The one exception, `PATCH /workouts/{workoutId}/save`, is a full replacement and becomes a `PUT` in story 6. Enforced by: Spectral `house-patch-merge-patch`.
+- `PUT` is full replacement: the write schema lists every settable field and the server replaces the whole resource (admin updates, template activities, `PUT /workouts/{workoutId}/activities`). A collection that is only ever written as a whole is a sub-resource replaced with `PUT`, never a verb in the path. Enforced by: review.
+- `PATCH` bodies are RFC 7386 merge patches: every field optional, absent fields untouched, at least one field present (`minProperties: 1`), no `required` list (`PATCH /me` with `MePatch`). Enforced by: Spectral `house-patch-merge-patch`.
 - A resource has one name: the current user is `/me` for reads and writes (`PATCH /me`, `PUT /me/password`, `DELETE /me`), never a parallel `/profile`. Enforced by: review.
 - Confirmation fields (`password_confirmation`) are a client-side concern and are not part of any request body. Enforced by: `house-strict-request-bodies` (the key is undeclared, so the server rejects it).
 - Optional object fields are omitted from responses rather than sent as `null`, and nullable enums are inlined (`type: [string, 'null']` with the values), because code generators drop a nullable `$ref`. Enforced by: review.
@@ -85,9 +85,18 @@ The path parameter name is a contract concern only: the URL is the same whatever
 | Bad credentials at login | 401 | `invalid_credentials`; the `Problem.detail` is the message to show. 422 on login is only malformed input |
 | Login lockout (5 failures per email and IP within a minute) | 429 | `too_many_attempts` with `Retry-After` in seconds |
 | Per-route throttle exceeded | 429 | `too_many_requests`; always carries `Retry-After` |
-| Write rejected because the client's copy is stale | — | **Target (story 6):** `ETag` on every workout response, `If-Match` required on `PUT /workouts/{workoutId}/activities`, 412 `precondition_failed` on mismatch, 428 `precondition_required` when absent |
+| Write rejected because the client's copy is stale | 412 | `precondition_failed`; nothing is written, the client reloads |
+| Conditional write sent without `If-Match` | 428 | `precondition_required` |
 
 Only standard status codes are used (Spectral `must-use-standard-http-status-codes`, redefined in the house ruleset with 422 added to Zalando's list); which one applies is decided by the table above, not by Zalando's method-to-status table (see [Deviations](#deviations-from-zalando)). Enforced by: review.
+
+## Concurrency
+
+- Every single-workout response (`GET`, create, replace activities, complete, repeat) carries `ETag: "<id>-<version>"`. `version` is a counter on the workout bumped by every change to it or its activities, so the tag changes even within one second (an `updated_at` tag would not). Lists and admin resources carry no tag. Enforced by: Schemathesis (`ETag` is a required response header), backend tests.
+- `PUT /workouts/{workoutId}/activities` requires `If-Match`. The tag is compared strongly (RFC 9110): a weak `W/"…"` tag never matches, a comma-separated list matches if any entry does, and `*` matches any existing workout. Missing → 428 `precondition_required`; no match → 412 `precondition_failed` with nothing written. The comparison runs against the row locked for the write, so two concurrent saves with the same tag cannot both succeed. Enforced by: backend tests.
+- Ownership (404) and state (403) are checked before the precondition, so a 412 never reveals anything about a workout the caller cannot write.
+- The tag identifies the workout's version, not the bytes of one localized representation; the same version read in `en` and `ru` has the same tag. Clients send back the tag of the copy they edited. Enforced by: review.
+- Other writes on a workout (complete, repeat, delete) are not conditional. Enforced by: review.
 
 ## Errors
 
@@ -99,7 +108,7 @@ Every non-2xx response under `/api/*` is an [RFC 9457 Problem Details](https://w
   "title": "Validation failed",
   "status": 422,
   "detail": "Проверьте введённые данные.",
-  "instance": "/api/v1/workouts/42/save#0f1e9a3c-7b1d-4e7a-9d6b-2c3f4a5b6c7d",
+  "instance": "/api/v1/workouts/42/activities#0f1e9a3c-7b1d-4e7a-9d6b-2c3f4a5b6c7d",
   "code": "validation_failed",
   "errors": [
     { "pointer": "/activities/0/sets/1/effort_value", "code": "out_of_range", "detail": "Значение усилия должно быть не больше 100000." }

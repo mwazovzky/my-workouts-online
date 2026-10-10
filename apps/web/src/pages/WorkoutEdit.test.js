@@ -2,7 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 const { mockAxios } = vi.hoisted(() => ({
-  mockAxios: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  mockAxios: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }));
 
 vi.mock('@/lib/api', () => ({ api: mockAxios, configureApiAuth: vi.fn() }));
@@ -96,7 +96,7 @@ describe('WorkoutEdit — adding an activity', () => {
     mockAxios.get.mockImplementation(url =>
       url === '/exercises'
         ? Promise.resolve({ data: { data: exercisesPayload } })
-        : Promise.resolve({ data: { data: workoutPayload } })
+        : Promise.resolve({ data: { data: workoutPayload }, headers: { etag: '"1-1"' } })
     );
   });
 
@@ -139,7 +139,7 @@ describe('WorkoutEdit — adding an activity', () => {
   });
 
   it('sends the new activity with a null id and sequential order on save', async () => {
-    mockAxios.patch.mockResolvedValue({ data: { data: workoutPayload } });
+    mockAxios.put.mockResolvedValue({ data: { data: workoutPayload } });
 
     const wrapper = await buildWrapper();
 
@@ -153,8 +153,9 @@ describe('WorkoutEdit — adding an activity', () => {
     await findButtonByText(wrapper, 'Save').trigger('click');
     await flushPromises();
 
-    const [url, payload] = mockAxios.patch.mock.calls[0];
-    expect(url).toBe('/workouts/1/save');
+    const [url, payload, config] = mockAxios.put.mock.calls[0];
+    expect(url).toBe('/workouts/1/activities');
+    expect(config).toEqual({ headers: { 'If-Match': '"1-1"' } });
     expect(payload.activities).toHaveLength(2);
     expect(payload.activities[0]).toMatchObject({ id: 10, exercise_id: 3, order: 1 });
     expect(payload.activities[1]).toMatchObject({ exercise_id: 6, order: 2 });
@@ -165,7 +166,7 @@ describe('WorkoutEdit — adding an activity', () => {
   });
 
   it('seeds a null difficulty when the exercise has no difficulty unit', async () => {
-    mockAxios.patch.mockResolvedValue({ data: { data: workoutPayload } });
+    mockAxios.put.mockResolvedValue({ data: { data: workoutPayload } });
 
     const wrapper = await buildWrapper();
 
@@ -179,7 +180,7 @@ describe('WorkoutEdit — adding an activity', () => {
     await findButtonByText(wrapper, 'Save').trigger('click');
     await flushPromises();
 
-    const [, payload] = mockAxios.patch.mock.calls[0];
+    const [, payload] = mockAxios.put.mock.calls[0];
     expect(payload.activities[1].sets[0].difficulty_value).toBeNull();
   });
 
@@ -204,7 +205,7 @@ describe('WorkoutEdit — adding an activity', () => {
         },
       ],
     };
-    mockAxios.patch.mockResolvedValue({ data: { data: savedPayload } });
+    mockAxios.put.mockResolvedValue({ data: { data: savedPayload } });
 
     const wrapper = await buildWrapper();
 
@@ -223,7 +224,7 @@ describe('WorkoutEdit — adding an activity', () => {
     await findButtonByText(wrapper, 'Save').trigger('click');
     await flushPromises();
 
-    const [, secondPayload] = mockAxios.patch.mock.calls[1];
+    const [, secondPayload] = mockAxios.put.mock.calls[1];
     expect(secondPayload.activities[1]).toMatchObject({ id: 11, exercise_id: 6, order: 2 });
     expect(secondPayload.activities[1].sets[0]).toMatchObject({ id: 101, order: 1 });
   });
@@ -249,5 +250,90 @@ describe('WorkoutEdit — adding an activity', () => {
     const wrapper = await buildWrapper();
 
     expect(findButtonByText(wrapper, 'Add activity')).toBeUndefined();
+  });
+});
+
+describe('WorkoutEdit — concurrency', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAxios.get.mockResolvedValue({ data: { data: workoutPayload }, headers: { etag: '"1-1"' } });
+  });
+
+  async function editAndSave(wrapper) {
+    await wrapper.findAll('button[aria-label="Add set"]')[0].trigger('click');
+    await findButtonByText(wrapper, 'Save').trigger('click');
+    await flushPromises();
+  }
+
+  it('sends the ETag from each save response as the next If-Match', async () => {
+    mockAxios.put
+      .mockResolvedValueOnce({ data: { data: workoutPayload }, headers: { etag: '"1-2"' } })
+      .mockResolvedValueOnce({ data: { data: workoutPayload }, headers: { etag: '"1-3"' } });
+
+    const wrapper = await buildWrapper();
+    await editAndSave(wrapper);
+    await editAndSave(wrapper);
+
+    expect(mockAxios.put.mock.calls[0][2]).toEqual({ headers: { 'If-Match': '"1-1"' } });
+    expect(mockAxios.put.mock.calls[1][2]).toEqual({ headers: { 'If-Match': '"1-2"' } });
+  });
+
+  it('keeps the edits and offers a reload when the workout changed elsewhere', async () => {
+    const { toast } = await import('vue-sonner');
+    mockAxios.put.mockRejectedValueOnce({
+      response: { status: 412, data: { code: 'precondition_failed' } },
+    });
+
+    const wrapper = await buildWrapper();
+    await editAndSave(wrapper);
+
+    expect(wrapper.find('[role="alert"]').text()).toContain(
+      'This workout was changed elsewhere. Reload it to continue.'
+    );
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(wrapper.findComponent({ name: 'Activity' }).props('activity').sets).toHaveLength(2);
+    expect(findButtonByText(wrapper, 'Save').attributes('disabled')).toBeDefined();
+  });
+
+  it('reloads the server copy, discards the edits and adopts the new ETag', async () => {
+    mockAxios.put.mockRejectedValueOnce({
+      response: { status: 412, data: { code: 'precondition_failed' } },
+    });
+
+    const wrapper = await buildWrapper();
+    await editAndSave(wrapper);
+
+    mockAxios.get.mockResolvedValueOnce({
+      data: { data: workoutPayload },
+      headers: { etag: '"1-5"' },
+    });
+    await findButtonByText(wrapper, 'Reload').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+    expect(wrapper.findComponent({ name: 'Activity' }).props('activity').sets).toHaveLength(1);
+    expect(findButtonByText(wrapper, 'Save')).toBeUndefined();
+
+    mockAxios.put.mockResolvedValueOnce({
+      data: { data: workoutPayload },
+      headers: { etag: '"1-6"' },
+    });
+    await editAndSave(wrapper);
+
+    expect(mockAxios.put.mock.calls[1][2]).toEqual({ headers: { 'If-Match': '"1-5"' } });
+  });
+
+  it('does not complete the workout when the save before it is refused', async () => {
+    mockAxios.put.mockRejectedValueOnce({
+      response: { status: 412, data: { code: 'precondition_failed' } },
+    });
+
+    const wrapper = await buildWrapper();
+    await wrapper.findAll('button[aria-label="Add set"]')[0].trigger('click');
+    await findButtonByText(wrapper, 'Complete').trigger('click');
+    await flushPromises();
+
+    expect(mockAxios.post).not.toHaveBeenCalled();
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true);
   });
 });

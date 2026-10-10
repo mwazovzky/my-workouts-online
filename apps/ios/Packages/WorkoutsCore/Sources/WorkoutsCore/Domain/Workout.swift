@@ -58,10 +58,14 @@ public struct Workout: Sendable, Equatable, Identifiable {
     /// Absent when the API omits it (template not loaded or deleted).
     public let template: WorkoutTemplate?
     public var activities: [Activity]
+    /// The response's `ETag` (`"<id>-<version>"`), sent back as `If-Match` when the editor
+    /// replaces the activities. Nil for workouts read from the list, which carries no tag.
+    public var etag: String?
 
     public init(
         id: Int, userId: Int, name: String, status: WorkoutStatus, createdAt: Date?,
-        updatedAt: Date?, activitiesCount: Int?, template: WorkoutTemplate?, activities: [Activity]
+        updatedAt: Date?, activitiesCount: Int?, template: WorkoutTemplate?, activities: [Activity],
+        etag: String? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -72,6 +76,7 @@ public struct Workout: Sendable, Equatable, Identifiable {
         self.activitiesCount = activitiesCount
         self.template = template
         self.activities = activities
+        self.etag = etag
     }
 
     public var isInProgress: Bool { status == .inProgress }

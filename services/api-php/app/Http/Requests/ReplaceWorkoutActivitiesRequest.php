@@ -6,7 +6,7 @@ use App\Rules\CompletedSetRequiresEffort;
 use App\Rules\HeartRateZoneWithinRange;
 use Illuminate\Validation\Rule;
 
-class WorkoutSaveRequest extends ApiFormRequest
+class ReplaceWorkoutActivitiesRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

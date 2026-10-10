@@ -2,7 +2,9 @@
 
 namespace App\Services\Workout;
 
+use App\Enums\ErrorCode;
 use App\Enums\WorkoutStatus;
+use App\Exceptions\Api\ApiException;
 use App\Models\Activity;
 use App\Models\Set;
 use App\Models\User;
@@ -96,7 +98,7 @@ class WorkoutService implements WorkoutServiceInterface
      *
      * @param  array{activities: array<int, array{id?: int|null, exercise_id: int, order: int, sets: array<int, array{id?: int|null, order: int, effort_value: int, difficulty_value: numeric|null, is_completed?: bool}>}>}  $data
      */
-    public function save(Workout $workout, array $data): Workout
+    public function save(Workout $workout, array $data, ?callable $precondition = null): Workout
     {
         if ($workout->status === WorkoutStatus::Completed) {
             abort(422, 'Cannot update a completed workout.');
@@ -104,7 +106,16 @@ class WorkoutService implements WorkoutServiceInterface
 
         $payloadActivities = collect($data['activities']);
 
-        DB::transaction(function () use ($workout, $payloadActivities) {
+        DB::transaction(function () use ($workout, $payloadActivities, $precondition) {
+            $current = Workout::query()->lockForUpdate()->findOrFail($workout->id);
+
+            if ($precondition !== null && ! $precondition($current)) {
+                throw new ApiException(412, ErrorCode::PreconditionFailed, __('This workout was changed elsewhere. Reload it to continue.'));
+            }
+
+            $workout->version = $current->version + 1;
+            $workout->save();
+
             $payloadActivityIds = $payloadActivities
                 ->pluck('id')
                 ->filter(fn ($id) => $id !== null)

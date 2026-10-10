@@ -446,7 +446,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workouts/{workoutId}/save": {
+    "/api/v1/workouts/{workoutId}/activities": {
         parameters: {
             query?: never;
             header?: never;
@@ -454,16 +454,19 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        /**
+         * Replace the activities and sets of an in-progress workout
+         * @description Full replacement: activities and sets missing from the body are deleted, entries with an `id`
+         *     are updated, entries without one are created. `If-Match` must carry the `ETag` of the workout
+         *     the editor loaded; a workout changed since answers 412 and is left untouched.
+         *     A workout the caller does not own answers 404; the caller's own completed workout answers 403.
+         */
+        put: operations["replaceWorkoutActivities"];
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Bulk-save activities and sets of an in-progress workout
-         * @description A workout the caller does not own answers 404; the caller's own completed workout answers 403.
-         */
-        patch: operations["saveWorkout"];
+        patch?: never;
         trace?: never;
     };
     "/api/v1/workouts/{workoutId}/complete": {
@@ -709,7 +712,7 @@ export interface components {
          * @description Every top-level problem code the API emits. Clients switch on `code`, never on `title` or `detail`.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "unauthenticated" | "invalid_credentials" | "token_expired" | "refresh_token_missing" | "refresh_token_invalid" | "refresh_token_expired" | "refresh_token_reused" | "forbidden" | "email_unverified" | "not_found" | "method_not_allowed" | "conflict" | "in_use" | "validation_failed" | "too_many_requests" | "too_many_attempts" | "invalid_verification_link" | "invalid_signature" | "internal_error";
+        ErrorCode: "bad_request" | "unauthenticated" | "invalid_credentials" | "token_expired" | "refresh_token_missing" | "refresh_token_invalid" | "refresh_token_expired" | "refresh_token_reused" | "forbidden" | "email_unverified" | "not_found" | "method_not_allowed" | "conflict" | "in_use" | "precondition_failed" | "precondition_required" | "validation_failed" | "too_many_requests" | "too_many_attempts" | "invalid_verification_link" | "invalid_signature" | "internal_error";
         /**
          * @description Why one request field was rejected.
          * @enum {string}
@@ -752,7 +755,7 @@ export interface components {
          *       "title": "Validation failed",
          *       "status": 422,
          *       "detail": "The effort value must be an integer. (and 1 more error)",
-         *       "instance": "/api/v1/workouts/42/save#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+         *       "instance": "/api/v1/workouts/42/activities#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
          *       "code": "validation_failed",
          *       "errors": [
          *         {
@@ -1470,7 +1473,7 @@ export interface components {
             workout_template?: components["schemas"]["WorkoutTemplate"];
             activities: components["schemas"]["Activity"][];
         };
-        WorkoutSaveRequest: {
+        WorkoutActivitiesWrite: {
             activities: {
                 /** @description Existing activity id owned by this workout, or null to create. */
                 id?: number | null;
@@ -1574,6 +1577,46 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
+        /** @description The `If-Match` tag no longer matches; the workout changed since it was read */
+        PreconditionFailed: {
+            headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "type": "https://my-workouts.online/problems/precondition_failed",
+                 *       "title": "Precondition failed",
+                 *       "status": 412,
+                 *       "detail": "This workout was changed elsewhere. Reload it to continue.",
+                 *       "instance": "/api/v1/workouts/42/activities#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+                 *       "code": "precondition_failed"
+                 *     }
+                 */
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description The request has no `If-Match` header */
+        PreconditionRequired: {
+            headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "type": "https://my-workouts.online/problems/precondition_required",
+                 *       "title": "Precondition required",
+                 *       "status": 428,
+                 *       "detail": "Send the workout's ETag in If-Match.",
+                 *       "instance": "/api/v1/workouts/42/activities#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+                 *       "code": "precondition_required"
+                 *     }
+                 */
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
         /** @description Operation refused because of existing references */
         Conflict: {
             headers: {
@@ -1640,6 +1683,7 @@ export interface components {
         WorkoutResponse: {
             headers: {
                 "Content-Language": components["headers"]["ContentLanguage"];
+                ETag: components["headers"]["ETag"];
                 [name: string]: unknown;
             };
             content: {
@@ -1709,6 +1753,8 @@ export interface components {
         AcceptLanguage: string;
         /** @description CSRF guard for cookie-carried refresh tokens. */
         XRequestedWith: "XMLHttpRequest";
+        /** @description The `ETag` of the workout as last read (RFC 9110 strong comparison); `*` skips the check. */
+        IfMatch: string;
         ProgramId: number;
         WorkoutId: number;
         WorkoutTemplateId: number;
@@ -1718,6 +1764,8 @@ export interface components {
     };
     requestBodies: never;
     headers: {
+        /** @description Version of the workout, `"<id>-<version>"`; changes whenever the workout or its activities change. Send it back as `If-Match` when replacing the activities. */
+        ETag: string;
         /**
          * @description Web clients only. `refresh_token=<opaque>; HttpOnly; Secure; SameSite=Strict;
          *     Path=/api/v1/auth/refresh; Max-Age=<seconds>`
@@ -2610,12 +2658,14 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
-    saveWorkout: {
+    replaceWorkoutActivities: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
                 /** @description Preferred locale for translated content. Unsupported values fall back to `en`. */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description The `ETag` of the workout as last read (RFC 9110 strong comparison); `*` skips the check. */
+                "If-Match": components["parameters"]["IfMatch"];
             };
             path: {
                 workoutId: components["parameters"]["WorkoutId"];
@@ -2624,7 +2674,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WorkoutSaveRequest"];
+                "application/json": components["schemas"]["WorkoutActivitiesWrite"];
             };
         };
         responses: {
@@ -2632,7 +2682,9 @@ export interface operations {
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
             422: components["responses"]["ValidationError"];
+            428: components["responses"]["PreconditionRequired"];
         };
     };
     completeWorkout: {

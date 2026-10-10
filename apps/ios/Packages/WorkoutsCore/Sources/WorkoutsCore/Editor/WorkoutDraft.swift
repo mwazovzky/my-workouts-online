@@ -5,21 +5,22 @@ import Foundation
 public struct WorkoutDraft: Sendable, Equatable, Codable {
     public let workoutId: Int
     public let name: String
-    /// The server's `updated_at` when this draft was taken; story 10 uses it to detect
-    /// edits made elsewhere before restoring a persisted draft.
-    public let baseUpdatedAt: Date?
+    /// The server's `ETag` for the version this draft was taken from. A persisted draft is only
+    /// restored while the server still reports this tag, and the save sends it as `If-Match`.
+    /// Nil for drafts written before ETags existed (they decode without it and count as stale).
+    public let baseETag: String?
     public var activities: [DraftActivity]
 
-    public init(workoutId: Int, name: String, baseUpdatedAt: Date?, activities: [DraftActivity]) {
+    public init(workoutId: Int, name: String, baseETag: String?, activities: [DraftActivity]) {
         self.workoutId = workoutId
         self.name = name
-        self.baseUpdatedAt = baseUpdatedAt
+        self.baseETag = baseETag
         self.activities = activities
     }
 
     public init(workout: Workout) {
         self.init(
-            workoutId: workout.id, name: workout.name, baseUpdatedAt: workout.updatedAt,
+            workoutId: workout.id, name: workout.name, baseETag: workout.etag,
             activities: workout.activities.map(DraftActivity.init(activity:)))
     }
 

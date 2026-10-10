@@ -39,7 +39,7 @@ class UnknownKeysTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
+        $response = $this->actingAs($user)->putActivities($workout->id, [
             'activities' => [[
                 'exercise_id' => $exercise->id,
                 'order' => 1,
