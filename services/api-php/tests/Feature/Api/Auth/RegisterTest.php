@@ -45,6 +45,18 @@ class RegisterTest extends TestCase
     }
 
     #[Test]
+    public function the_new_user_carries_the_default_locale_and_theme(): void
+    {
+        Notification::fake();
+
+        $this->postJson('/api/v1/auth/register', $this->payload())
+            ->assertCreated()
+            ->assertJsonPath('user.locale', 'en')
+            ->assertJsonPath('user.theme_preference', 'system')
+            ->assertJsonPath('user.email_verified_at', null);
+    }
+
+    #[Test]
     public function web_client_receives_refresh_cookie(): void
     {
         Notification::fake();
