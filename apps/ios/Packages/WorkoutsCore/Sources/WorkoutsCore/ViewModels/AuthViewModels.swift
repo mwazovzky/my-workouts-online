@@ -68,15 +68,15 @@ public final class RegisterViewModel {
     /// On success the user is signed in but unverified, so the root view shows the gate.
     public func submit() async {
         guard canSubmit else { return }
-        isSubmitting = true
         errors.clear()
+        guard errors.checkPasswordConfirmation(password, passwordConfirmation) else { return }
+        isSubmitting = true
         defer { isSubmitting = false }
         do {
             let grant = try await auth.register(
                 name: name.trimmingCharacters(in: .whitespaces),
                 email: email.trimmingCharacters(in: .whitespaces),
-                password: password,
-                passwordConfirmation: passwordConfirmation)
+                password: password)
             try await session.apply(grant: grant)
         } catch {
             errors.apply(error)
@@ -190,13 +190,13 @@ public final class ResetPasswordViewModel {
     /// Returns true when the password was reset; the caller then signs the session out.
     public func submit() async -> Bool {
         guard canSubmit else { return false }
-        isSubmitting = true
         errors.clear()
+        guard errors.checkPasswordConfirmation(password, passwordConfirmation) else { return false }
+        isSubmitting = true
         defer { isSubmitting = false }
         do {
             try await auth.resetPassword(
-                token: token, email: email.trimmingCharacters(in: .whitespaces), password: password,
-                passwordConfirmation: passwordConfirmation)
+                token: token, email: email.trimmingCharacters(in: .whitespaces), password: password)
             return true
         } catch {
             errors.apply(error)

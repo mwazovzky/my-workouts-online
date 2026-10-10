@@ -9,6 +9,7 @@ import { useApiForm } from '@/composables/useApiForm';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
 import { useAuthStore } from '@/stores/auth';
+import { ref } from 'vue';
 
 const { t } = useTranslation();
 const auth = useAuthStore();
@@ -20,11 +21,16 @@ const form = useApiForm({
   name: '',
   email: '',
   password: '',
-  password_confirmation: '',
   client: 'web',
 });
+const passwordConfirmation = ref('');
 
 const submit = () => {
+  form.clearErrors();
+  if (form.password !== passwordConfirmation.value) {
+    form.errors = { password_confirmation: t('The password confirmation does not match.') };
+    return;
+  }
   form.post('/auth/register', {
     onSuccess: ({ data }) => {
       auth.applySession(data);
@@ -32,7 +38,7 @@ const submit = () => {
     },
     onFinish: () => {
       form.password = '';
-      form.password_confirmation = '';
+      passwordConfirmation.value = '';
     },
   });
 };
@@ -92,7 +98,7 @@ const submit = () => {
 
         <TextInput
           id="password_confirmation"
-          v-model="form.password_confirmation"
+          v-model="passwordConfirmation"
           type="password"
           class="mt-1 block w-full"
           required

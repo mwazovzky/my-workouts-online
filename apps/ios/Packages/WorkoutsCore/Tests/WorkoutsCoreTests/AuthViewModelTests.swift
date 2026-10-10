@@ -12,6 +12,7 @@ actor FakeAuthRepository: AuthRepository {
     var registerScript: Script = .grant(.unverifiedFixture)
     var forgotScript: APIError?
     private(set) var loginCalls: [(email: String, password: String)] = []
+    private(set) var registerCalls = 0
     private(set) var forgotEmails: [String] = []
 
     func setLogin(_ script: Script) { loginScript = script }
@@ -26,8 +27,8 @@ actor FakeAuthRepository: AuthRepository {
         }
     }
 
-    func register(name: String, email: String, password: String, passwordConfirmation: String) async throws -> AuthGrant
-    {
+    func register(name: String, email: String, password: String) async throws -> AuthGrant {
+        registerCalls += 1
         switch registerScript {
         case .grant(let grant): return grant
         case .fail(let error): throw error
@@ -43,7 +44,7 @@ actor FakeAuthRepository: AuthRepository {
     private(set) var resetCalls: [(token: String, email: String)] = []
     func setReset(_ error: APIError?) { resetError = error }
 
-    func resetPassword(token: String, email: String, password: String, passwordConfirmation: String) async throws {
+    func resetPassword(token: String, email: String, password: String) async throws {
         resetCalls.append((token, email))
         if let resetError { throw resetError }
     }
@@ -76,10 +77,7 @@ actor FakeMeRepository: MeRepository {
     func set(verifyError: APIError?) { self.verifyError = verifyError }
 
     var updateError: APIError?
-    private(set) var profileUpdates: [(name: String, email: String)] = []
     private(set) var passwordUpdates: [(current: String, new: String)] = []
-    private(set) var localeUpdates: [String] = []
-    private(set) var themeUpdates: [ThemePreference] = []
     private(set) var deletePasswords: [String] = []
     func set(updateError: APIError?) { self.updateError = updateError }
 
@@ -90,35 +88,32 @@ actor FakeMeRepository: MeRepository {
         return copy
     }
 
-    func updateProfile(name: String, email: String) async throws -> User {
-        profileUpdates.append((name, email))
+    /// Every patch sent; `profileUpdates`, `localeUpdates` and `themeUpdates` are views of it.
+    private(set) var patches: [MePatch] = []
+    var profileUpdates: [(name: String, email: String)] {
+        patches.compactMap { patch in patch.name.flatMap { name in patch.email.map { (name, $0) } } }
+    }
+    var localeUpdates: [String] { patches.compactMap(\.locale) }
+    var themeUpdates: [ThemePreference] { patches.compactMap(\.themePreference) }
+
+    func updateMe(_ patch: MePatch) async throws -> User {
+        patches.append(patch)
         if let updateError { throw updateError }
-        let emailChanged = email != user.email
+        let emailChanged = patch.email.map { $0 != user.email } ?? false
         return mutated {
             $0 = User(
-                id: $0.id, name: name, email: email, locale: $0.locale, themePreference: $0.themePreference,
+                id: $0.id, name: patch.name ?? $0.name, email: patch.email ?? $0.email,
+                locale: patch.locale ?? $0.locale, themePreference: patch.themePreference ?? $0.themePreference,
                 isAdmin: $0.isAdmin, emailVerified: emailChanged ? false : $0.emailVerified)
         }
     }
 
-    func updatePassword(current: String, new: String, confirmation: String) async throws {
+    func updatePassword(current: String, new: String) async throws {
         passwordUpdates.append((current, new))
         if let updateError { throw updateError }
     }
 
-    func updateLocale(_ locale: String) async throws -> User {
-        localeUpdates.append(locale)
-        if let updateError { throw updateError }
-        return mutated { $0.locale = locale }
-    }
-
-    func updateTheme(_ theme: ThemePreference) async throws -> User {
-        themeUpdates.append(theme)
-        if let updateError { throw updateError }
-        return mutated { $0.themePreference = theme }
-    }
-
-    func deleteProfile(password: String) async throws {
+    func deleteMe(password: String) async throws {
         deletePasswords.append(password)
         if let updateError { throw updateError }
     }
@@ -282,14 +277,28 @@ struct RegisterViewModelTests {
                     fields: [
                         "email": [FieldError(code: "unique", message: "The email has already been taken.")],
                         "password": [
-                            FieldError(code: "confirmed", message: "The password confirmation does not match.")
+                            FieldError(code: "too_short", message: "The password field must be at least 8 characters.")
                         ],
                     ])))
         let model = filled(auth, session: makeSession())
         await model.submit()
         #expect(model.errors["email"] == "The email has already been taken.")
-        #expect(model.errors["password"] == "The password confirmation does not match.")
+        #expect(model.errors["password"] == "The password field must be at least 8 characters.")
         #expect(model.errors["name"] == nil)
+    }
+
+    @Test("a confirmation that differs is caught on the device and nothing is sent")
+    func confirmationMismatch() async {
+        let auth = FakeAuthRepository()
+        let session = makeSession()
+        let model = filled(auth, session: session)
+        model.passwordConfirmation = "password124"
+
+        await model.submit()
+
+        #expect(model.errors["password_confirmation"] == "The password confirmation does not match.")
+        #expect(await auth.registerCalls == 0)
+        #expect(session.state == .bootstrapping)
     }
 }
 

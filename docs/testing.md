@@ -243,7 +243,7 @@ SCHEMATHESIS=schemathesis scripts/contract-test.sh URL     # local binary
 
 The run logs in as the seeded admin (`test@example.com`) and fuzzes writes, so use a disposable database and reseed afterwards (`php artisan migrate:fresh --seed`). Raise `API_RATE_LIMIT_PER_MINUTE` for the run. `.github/workflows/contract.yml` runs it on every push with a fresh MySQL and `php artisan serve`.
 
-Excluded from fuzzing: logout (would revoke the token in use), profile delete/update (would remove or rename the account) and the unimplemented social login endpoint.
+Excluded from fuzzing: logout (would revoke the token in use), `deleteMe`/`updateMe` (would remove or rename the account) and the unimplemented social login endpoint.
 
 ### Contract lint
 

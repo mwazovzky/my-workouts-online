@@ -31,7 +31,7 @@ const confirmUserDeletion = () => {
 };
 
 const deleteUser = () => {
-  form.delete('/profile', {
+  form.delete('/me', {
     onSuccess: () => {
       closeModal();
       auth.clear();

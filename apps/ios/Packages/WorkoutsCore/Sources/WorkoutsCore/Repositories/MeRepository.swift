@@ -7,13 +7,30 @@ public protocol MeRepository: Sendable {
     func resendVerification() async throws
     /// Posts the emailed link's parameters; the caller must be signed in as that user.
     func verifyEmail(id: Int, hash: String, expires: Int, signature: String) async throws
-    /// Changing the email resets verification; the returned user says so.
-    func updateProfile(name: String, email: String) async throws -> User
-    func updatePassword(current: String, new: String, confirmation: String) async throws
-    func updateLocale(_ locale: String) async throws -> User
-    func updateTheme(_ theme: ThemePreference) async throws -> User
+    /// `PATCH /me`: changes only the fields set in `patch`. Changing the email resets
+    /// verification; the returned user says so.
+    func updateMe(_ patch: MePatch) async throws -> User
+    func updatePassword(current: String, new: String) async throws
     /// Permanently deletes the account; the server revokes every session.
-    func deleteProfile(password: String) async throws
+    func deleteMe(password: String) async throws
+}
+
+/// A merge patch for the current user: `nil` fields are left out of the request and stay
+/// unchanged on the server.
+public struct MePatch: Sendable, Equatable {
+    public var name: String?
+    public var email: String?
+    public var locale: String?
+    public var themePreference: ThemePreference?
+
+    public init(
+        name: String? = nil, email: String? = nil, locale: String? = nil, themePreference: ThemePreference? = nil
+    ) {
+        self.name = name
+        self.email = email
+        self.locale = locale
+        self.themePreference = themePreference
+    }
 }
 
 public struct APIMeRepository: MeRepository {
@@ -61,8 +78,21 @@ public struct APIMeRepository: MeRepository {
         }
     }
 
-    public func updateProfile(name: String, email: String) async throws -> User {
-        let output = try await client.updateProfile(body: .json(.init(name: name, email: email)))
+    public func updateMe(_ patch: MePatch) async throws -> User {
+        var body = Components.Schemas.MePatch(name: patch.name, email: patch.email)
+        if let locale = patch.locale {
+            guard let value = Components.Schemas.Locale(rawValue: locale) else {
+                throw APIError.local(description: "unsupported locale \(locale)")
+            }
+            body.locale = value
+        }
+        if let theme = patch.themePreference {
+            guard let value = Components.Schemas.ThemePreference(rawValue: theme.rawValue) else {
+                throw APIError.local(description: "unsupported theme \(theme.rawValue)")
+            }
+            body.themePreference = value
+        }
+        let output = try await client.updateMe(body: .json(body))
         switch output {
         case .ok(let response): return try User(api: try response.body.json.data)
         case .unauthorized(let response):
@@ -72,9 +102,8 @@ public struct APIMeRepository: MeRepository {
         }
     }
 
-    public func updatePassword(current: String, new: String, confirmation: String) async throws {
-        let output = try await client.updatePassword(
-            body: .json(.init(currentPassword: current, password: new, passwordConfirmation: confirmation)))
+    public func updatePassword(current: String, new: String) async throws {
+        let output = try await client.updatePassword(body: .json(.init(currentPassword: current, password: new)))
         switch output {
         case .noContent: return
         case .unauthorized(let response):
@@ -84,36 +113,8 @@ public struct APIMeRepository: MeRepository {
         }
     }
 
-    public func updateLocale(_ locale: String) async throws -> User {
-        guard let value = Components.Schemas.Locale(rawValue: locale) else {
-            throw APIError.local(description: "unsupported locale \(locale)")
-        }
-        let output = try await client.updateLocale(body: .json(.init(locale: value)))
-        switch output {
-        case .ok(let response): return try User(api: try response.body.json.data)
-        case .unauthorized(let response):
-            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
-        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
-        }
-    }
-
-    public func updateTheme(_ theme: ThemePreference) async throws -> User {
-        guard let value = Components.Schemas.ThemePreference(rawValue: theme.rawValue) else {
-            throw APIError.local(description: "unsupported theme \(theme.rawValue)")
-        }
-        let output = try await client.updateTheme(body: .json(.init(themePreference: value)))
-        switch output {
-        case .ok(let response): return try User(api: try response.body.json.data)
-        case .unauthorized(let response):
-            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
-        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
-        }
-    }
-
-    public func deleteProfile(password: String) async throws {
-        let output = try await client.deleteProfile(body: .json(.init(password: password)))
+    public func deleteMe(password: String) async throws {
+        let output = try await client.deleteMe(body: .json(.init(password: password)))
         switch output {
         case .noContent: return
         case .unauthorized(let response):

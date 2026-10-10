@@ -189,4 +189,35 @@ struct APIMappingTests {
         #expect(message.hasPrefix("A workout template is required"))
         #expect(fields["activities.0.sets.1.effort_value"]?.first?.code == "out_of_range")
     }
+
+    @Test("updateMe sends a merge patch: PATCH /me with only the fields that are set")
+    func updateMeMergePatch() async throws {
+        let transport = StubTransport(responses: [.json(200, data: try Fixtures.data("me"))])
+        let repository = APIMeRepository(client: Fixtures.client(transport: transport))
+
+        _ = try await repository.updateMe(MePatch(locale: "ru"))
+
+        let request = try #require(await transport.requests(for: "updateMe").first)
+        #expect(request.method == .patch)
+        #expect(request.path == "/api/v1/me")
+        let body = try #require(request.body)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(json.keys.sorted() == ["locale"])
+        #expect(json["locale"] as? String == "ru")
+    }
+
+    @Test("updatePassword sends no confirmation field")
+    func updatePasswordBody() async throws {
+        let transport = StubTransport(responses: [.empty(204)])
+        let repository = APIMeRepository(client: Fixtures.client(transport: transport))
+
+        try await repository.updatePassword(current: "old", new: "newpassword1")
+
+        let request = try #require(await transport.requests(for: "updatePassword").first)
+        #expect(request.method == .put)
+        #expect(request.path == "/api/v1/me/password")
+        let passwordBody = try #require(request.body)
+        let json = try #require(try JSONSerialization.jsonObject(with: passwordBody) as? [String: Any])
+        #expect(json.keys.sorted() == ["current_password", "password"])
+    }
 }

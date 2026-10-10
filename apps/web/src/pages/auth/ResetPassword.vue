@@ -8,6 +8,7 @@ import TextInput from '@/components/TextInput.vue';
 import { useApiForm } from '@/composables/useApiForm';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
+import { ref } from 'vue';
 
 const { t } = useTranslation();
 const route = useRoute();
@@ -19,15 +20,20 @@ const form = useApiForm({
   token: String(route.params.token ?? ''),
   email: String(route.query.email ?? ''),
   password: '',
-  password_confirmation: '',
 });
+const passwordConfirmation = ref('');
 
 const submit = () => {
+  form.clearErrors();
+  if (form.password !== passwordConfirmation.value) {
+    form.errors = { password_confirmation: t('The password confirmation does not match.') };
+    return;
+  }
   form.post('/auth/password/reset', {
     onSuccess: () => router.push({ name: 'login', query: { reset: 1 } }),
     onFinish: () => {
       form.password = '';
-      form.password_confirmation = '';
+      passwordConfirmation.value = '';
     },
   });
 };
@@ -72,7 +78,7 @@ const submit = () => {
 
         <TextInput
           id="password_confirmation"
-          v-model="form.password_confirmation"
+          v-model="passwordConfirmation"
           type="password"
           class="mt-1 block w-full"
           required

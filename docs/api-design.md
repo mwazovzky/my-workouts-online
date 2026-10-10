@@ -56,7 +56,9 @@ npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset c
 - The same applies to the query string: an operation that declares query parameters (`listWorkouts`) rejects undeclared ones with 422. Operations without query parameters ignore the query string. Enforced by: `scripts/contract-test.sh`, `ApiFormRequest`.
 - Read and write shapes are separate schemas (`Exercise` vs `ExerciseWrite`); `readOnly`/`writeOnly` are not used. Enforced by: review.
 - `PUT` is full replacement: the write schema lists every settable field and the server replaces the whole resource (admin updates, template activities). Enforced by: review.
-- `PATCH` is for partial updates. **Target (story 4):** `PATCH` bodies are RFC 7386 merge patches — every field optional, at least one present, no `required` list (Spectral `house-patch-merge-patch`). Today `PATCH /profile` requires every field.
+- `PATCH` bodies are RFC 7386 merge patches: every field optional, absent fields untouched, at least one field present (`minProperties: 1`), no `required` list (`PATCH /me` with `MePatch`). The one exception, `PATCH /workouts/{workout}/save`, is a full replacement and becomes a `PUT` in story 6. Enforced by: Spectral `house-patch-merge-patch`.
+- A resource has one name: the current user is `/me` for reads and writes (`PATCH /me`, `PUT /me/password`, `DELETE /me`), never a parallel `/profile`. Enforced by: review.
+- Confirmation fields (`password_confirmation`) are a client-side concern and are not part of any request body. Enforced by: `house-strict-request-bodies` (the key is undeclared, so the server rejects it).
 - Optional object fields are omitted from responses rather than sent as `null`, and nullable enums are inlined (`type: [string, 'null']` with the values), because code generators drop a nullable `$ref`. Enforced by: review.
 - Nullability is written as `type: [X, 'null']` (OpenAPI 3.1), never `nullable: true`. Enforced by: Spectral `oas3-schema`.
 

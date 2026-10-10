@@ -68,7 +68,6 @@ class PasswordResetTest extends TestCase
                 'token' => $notification->token,
                 'email' => $user->email,
                 'password' => 'new-password-123',
-                'password_confirmation' => 'new-password-123',
             ])->assertNoContent();
 
             $this->assertTrue(Hash::check('new-password-123', $user->fresh()->password));
@@ -87,7 +86,19 @@ class PasswordResetTest extends TestCase
             'token' => 'bogus',
             'email' => $user->email,
             'password' => 'new-password-123',
-            'password_confirmation' => 'new-password-123',
         ])->assertUnprocessable()->assertFieldErrors(['email']);
+    }
+
+    #[Test]
+    public function reset_no_longer_accepts_a_confirmation_field(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson('/api/v1/auth/password/reset', [
+            'token' => 'bogus',
+            'email' => $user->email,
+            'password' => 'new-password-123',
+            'password_confirmation' => 'new-password-123',
+        ])->assertUnprocessable()->assertFieldErrors(['password_confirmation'], 'unknown_field');
     }
 }

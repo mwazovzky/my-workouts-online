@@ -25,12 +25,12 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 ## iOS Flows (`apps/ios`)
 
 - **Welcome** → Log in / Register. **Log in** posts `/auth/login`; a wrong password (401 `invalid_credentials`) shows the API `detail` under the form, and a lockout (429 `too_many_attempts`) shows "Too many attempts. Try again in N seconds." from `Retry-After`. "Remember me" stores only the email in `UserDefaults`
-- **Register** posts `/auth/register`; the 422 problem's `errors[]` are mapped by pointer (`/name`, `/email`, `/password`, `/password_confirmation`) to their fields; success lands on the verify gate
+- **Register** posts `/auth/register`; the 422 problem's `errors[]` are mapped by pointer (`/name`, `/email`, `/password`) to their fields; the confirmation field is compared on the device and never sent; success lands on the verify gate
 - **Forgot password** posts `/auth/password/forgot` and always shows the neutral "We have emailed your password reset link."; the emailed link opens the web app until story 6 adds Universal Links
 - **Verify email gate** (shown while `email_verified` is false): "I have verified my email" re-fetches `/me` and continues when verified; "Resend" posts `/auth/email/resend` (always 202 → sent notice; 429 → throttle message); Log out
 - A 429 on any form shows a throttle banner, a network failure an offline banner; everything else shows the server's message
 - **Emailed links** open the app on a phone that has it (Universal Links on the production domain; the AASA file is served by nginx, see Deployment) and keep opening the web app everywhere else. A verification link verifies immediately when the linked user is signed in; when signed out it is kept and completes after login ("Sign in to finish verifying your email."); for another signed-in account the app explains and offers to log out. A reset link opens the reset form as a sheet in any state; success signs out locally, since the server revoked every session, and the welcome screen says "Your password has been reset.". The `myworkouts://` scheme mirrors both paths for simulator testing (`xcrun simctl openurl`)
-- **Profile tab**: name and email (`PATCH /profile`; a new email returns the user to the verify gate, with resend offered while unverified), change password (`PUT /profile/password`), theme (`PATCH /profile/theme`, applied at once and cached for the next launch), Log Out, Delete Account (password confirmation, `DELETE /profile`, then signed out locally), and the app version. **Language** follows the iOS per-app language: the row opens the app's page in Settings instead of an in-app picker, and on launch and on becoming active the app syncs the resolved language to `PATCH /profile/locale` when it differs from `user.locale`, so the web shows the same language
+- **Profile tab**: name and email (`PATCH /me`; a new email returns the user to the verify gate, with resend offered while unverified), change password (`PUT /me/password`), theme (`PATCH /me` with `theme_preference`, applied at once and cached for the next launch), Log Out, Delete Account (password confirmation, `DELETE /me`, then signed out locally), and the app version. **Language** follows the iOS per-app language: the row opens the app's page in Settings instead of an in-app picker, and on launch and on becoming active the app syncs the resolved language with `PATCH /me {locale}` when it differs from `user.locale`, so the web shows the same language
 
 ## SPA Flows (`apps/web`)
 
@@ -44,7 +44,8 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 
 - Registration and login pages are guest-only (the SPA redirects signed-in users to the dashboard)
 - App API routes (dashboard, programs, workouts) require `auth:jwt` + `verified`
-- Profile routes require `auth:jwt` only (no `verified` — allows access during re-verification)
+- The current user is one resource: `GET /me`, `PATCH /me` (RFC 7386 merge patch: `name`, `email`, `locale`, `theme_preference`, send only what changes, at least one field), `PUT /me/password` (`current_password`, `password`; revokes the user's other sessions), `DELETE /me` (`password`; revokes every session). They require `auth:jwt` only (no `verified` — allows access during re-verification)
+- No endpoint takes a `password_confirmation`: register, reset and change password compare the two inputs on the client and send `password` only; the server rejects the extra key as `unknown_field`
 - `/confirm-password` performs step-up re-authentication through `POST /api/v1/auth/reauth`
 - Locale is stored on the user record and updated from the profile page
 - Account deletion is permanent — no soft delete

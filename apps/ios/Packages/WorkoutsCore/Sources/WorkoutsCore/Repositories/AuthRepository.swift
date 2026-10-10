@@ -4,11 +4,11 @@ import WorkoutsAPI
 
 public protocol AuthRepository: TokenRefreshing {
     func login(email: String, password: String) async throws -> AuthGrant
-    func register(name: String, email: String, password: String, passwordConfirmation: String) async throws -> AuthGrant
+    func register(name: String, email: String, password: String) async throws -> AuthGrant
     /// Always succeeds for a well-formed email; the API never reveals whether the account exists.
     func forgotPassword(email: String) async throws
     /// Consumes the emailed token; on success the server revokes every refresh family.
-    func resetPassword(token: String, email: String, password: String, passwordConfirmation: String) async throws
+    func resetPassword(token: String, email: String, password: String) async throws
 }
 
 /// Talks to the auth endpoints with a client that carries no session (login, register and
@@ -46,13 +46,13 @@ public struct APIAuthRepository: AuthRepository {
         }
     }
 
-    public func register(name: String, email: String, password: String, passwordConfirmation: String) async throws
+    public func register(name: String, email: String, password: String) async throws
         -> AuthGrant
     {
         let output = try await client.register(
             body: .json(
                 .init(
-                    name: name, email: email, password: password, passwordConfirmation: passwordConfirmation,
+                    name: name, email: email, password: password,
                     client: .native, deviceName: deviceName)))
         switch output {
         case .created(let response): return try AuthGrant(api: try response.body.json)
@@ -74,11 +74,10 @@ public struct APIAuthRepository: AuthRepository {
         }
     }
 
-    public func resetPassword(token: String, email: String, password: String, passwordConfirmation: String) async throws
-    {
+    public func resetPassword(token: String, email: String, password: String) async throws {
         let output = try await client.resetPassword(
             body: .json(
-                .init(token: token, email: email, password: password, passwordConfirmation: passwordConfirmation)))
+                .init(token: token, email: email, password: password)))
         switch output {
         case .noContent: return
         case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)

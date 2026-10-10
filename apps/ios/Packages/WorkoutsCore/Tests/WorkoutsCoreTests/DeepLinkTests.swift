@@ -165,6 +165,18 @@ struct ResetPasswordViewModelTests {
         #expect(await model.submit() == false)
         #expect(model.errors["email"] == "This password reset token is invalid.")
     }
+
+    @Test("a confirmation that differs is caught on the device and nothing is sent")
+    func confirmationMismatch() async {
+        let auth = FakeAuthRepository()
+        let model = ResetPasswordViewModel(auth: auth, link: ResetPasswordLink(token: "tok", email: "test@example.com"))
+        model.password = "newpassword1"
+        model.passwordConfirmation = "newpassword2"
+
+        #expect(await model.submit() == false)
+        #expect(model.errors["password_confirmation"] == "The password confirmation does not match.")
+        #expect(await auth.resetCalls.isEmpty)
+    }
 }
 
 extension AppSession.State {

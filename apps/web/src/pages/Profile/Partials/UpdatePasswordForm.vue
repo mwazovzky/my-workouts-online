@@ -16,15 +16,24 @@ const currentPasswordInput = ref(null);
 const form = useApiForm({
   current_password: '',
   password: '',
-  password_confirmation: '',
 });
+const passwordConfirmation = ref('');
 
 const updatePassword = () => {
-  form.put('/profile/password', {
-    onSuccess: () => form.reset(),
+  form.clearErrors();
+  if (form.password !== passwordConfirmation.value) {
+    form.errors = { password_confirmation: t('The password confirmation does not match.') };
+    return;
+  }
+  form.put('/me/password', {
+    onSuccess: () => {
+      form.reset();
+      passwordConfirmation.value = '';
+    },
     onError: () => {
       if (form.errors.password) {
-        form.reset('password', 'password_confirmation');
+        form.reset('password');
+        passwordConfirmation.value = '';
         passwordInput.value.focus();
       }
       if (form.errors.current_password) {
@@ -85,7 +94,7 @@ const updatePassword = () => {
 
         <TextInput
           id="password_confirmation"
-          v-model="form.password_confirmation"
+          v-model="passwordConfirmation"
           type="password"
           class="mt-1 block w-full"
           autocomplete="new-password"

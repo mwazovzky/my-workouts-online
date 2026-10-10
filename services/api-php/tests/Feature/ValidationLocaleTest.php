@@ -22,13 +22,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/profile', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/me', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
 
         $response->assertUnprocessable();
-        $this->assertStringContainsString('обязательно', $response->fieldError('name')['detail']);
+        $this->assertStringContainsString('должно иметь значение', $response->fieldError('name')['detail']);
     }
 
     #[Test]
@@ -36,13 +36,13 @@ class ValidationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/profile', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/me', [
             'name' => '',
             'email' => 'not-an-email',
         ]);
 
         $response->assertUnprocessable();
-        $this->assertStringContainsString('required', $response->fieldError('name')['detail']);
+        $this->assertStringContainsString('must have a value', $response->fieldError('name')['detail']);
     }
 
     // -------------------------------------------------------
@@ -206,15 +206,15 @@ class ValidationLocaleTest extends TestCase
     // -------------------------------------------------------
 
     // -------------------------------------------------------
-    // ProfileLocaleRequest attributes translation
+    // MeUpdateRequest attributes translation
     // -------------------------------------------------------
 
     #[Test]
-    public function profile_locale_validation_uses_translated_attribute_name(): void
+    public function locale_validation_uses_translated_attribute_name(): void
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/profile/locale', [
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson('/api/v1/me', [
             'locale' => 'fr',
         ]);
 

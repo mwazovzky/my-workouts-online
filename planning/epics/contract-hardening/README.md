@@ -76,8 +76,8 @@ Client switch points that must keep working:
 | --- | --- | --- | --- |
 | 1 | [Lint Ruleset and Schema Hygiene](stories/01-lint-ruleset-and-schema-hygiene.md) | Platform | shipped (#56) |
 | 2 | [Problem Details Error Model](stories/02-problem-details-error-model.md) | Platform | shipped (#57) |
-| 3 | [Auth and Ownership Status Codes](stories/03-auth-and-ownership-status-codes.md) | Auth & Profile | in progress |
-| 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | planned |
+| 3 | [Auth and Ownership Status Codes](stories/03-auth-and-ownership-status-codes.md) | Auth & Profile | shipped (#58) |
+| 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | in progress |
 | 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | planned |
 | 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | planned |
 | 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | planned |

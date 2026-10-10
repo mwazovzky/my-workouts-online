@@ -2602,6 +2602,22 @@
         }
       }
     },
+    "The password confirmation does not match." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The password confirmation does not match."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пароли не совпадают."
+          }
+        }
+      }
+    },
     "The selected workout template could not be found." : {
       "extractionState" : "stale",
       "localizations" : {

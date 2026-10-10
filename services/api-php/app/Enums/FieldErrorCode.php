@@ -27,7 +27,8 @@ enum FieldErrorCode: string
     public static function fromRule(string $rule, array $declaredRules = []): self
     {
         return match ($rule) {
-            'required', 'required_if', 'required_with', 'present', 'filled', 'accepted' => self::Required,
+            'required', 'required_if', 'required_unless', 'required_with', 'required_without',
+            'required_without_all', 'present', 'filled', 'accepted' => self::Required,
             'email', 'string', 'integer', 'numeric', 'boolean', 'array', 'date', 'url', 'uuid',
             'lowercase', 'regex', 'json', 'associative_array', 'password' => self::InvalidFormat,
             'in', 'enum', 'not_in', 'prohibited', 'completed_set_requires_effort' => self::InvalidValue,
