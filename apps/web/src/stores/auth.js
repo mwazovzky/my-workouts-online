@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   let bootstrapPromise = null;
 
   const isAuthenticated = computed(() => user.value !== null);
-  const isVerified = computed(() => Boolean(user.value?.email_verified));
+  const isVerified = computed(() => Boolean(user.value?.email_verified_at));
   const isAdmin = computed(() => Boolean(user.value?.is_admin));
 
   function applySession(payload) {

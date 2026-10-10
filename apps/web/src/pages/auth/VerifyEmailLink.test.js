@@ -21,7 +21,7 @@ import { useAuthStore } from '@/stores/auth';
 function build() {
   return mount(VerifyEmailLink, {
     global: {
-      plugins: [withPinia({ id: 5, email_verified: false })],
+      plugins: [withPinia({ id: 5, email_verified_at: null })],
       stubs: { RouterLink: RouterLinkStub, GuestLayout: { template: '<div><slot /></div>' } },
     },
   });
@@ -32,7 +32,9 @@ describe('VerifyEmailLink page', () => {
 
   it('posts the link parameters, refreshes the user and continues to the dashboard', async () => {
     mockApi.post.mockResolvedValueOnce({});
-    mockApi.get.mockResolvedValueOnce({ data: { data: { id: 5, email_verified: true } } });
+    mockApi.get.mockResolvedValueOnce({
+      data: { data: { id: 5, email_verified_at: '2026-10-01T09:30:00Z' } },
+    });
 
     build();
     await flushPromises();

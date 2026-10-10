@@ -34,7 +34,7 @@ class MeApiTest extends TestCase
                 'locale' => 'ru',
                 'theme_preference' => 'dark',
                 'is_admin' => false,
-                'email_verified' => true,
+                'email_verified_at' => $user->email_verified_at->toJSON(),
             ]]);
     }
 
@@ -46,7 +46,7 @@ class MeApiTest extends TestCase
         $this->actingAs($admin)->getJson('/api/v1/me')
             ->assertOk()
             ->assertJsonPath('data.is_admin', true)
-            ->assertJsonPath('data.email_verified', false);
+            ->assertJsonPath('data.email_verified_at', null);
     }
 
     #[Test]
@@ -138,7 +138,7 @@ class MeApiTest extends TestCase
 
         $this->actingAs($user)->patchJson('/api/v1/me', ['email' => 'new@example.com'])
             ->assertOk()
-            ->assertJsonPath('data.email_verified', false);
+            ->assertJsonPath('data.email_verified_at', null);
 
         $this->assertNull($user->fresh()->email_verified_at);
     }

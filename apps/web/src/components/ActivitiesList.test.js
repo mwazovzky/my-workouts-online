@@ -13,14 +13,15 @@ function buildActivity(overrides = {}) {
     clientKey: 'activity-1',
     id: 10,
     exercise_id: 3,
-    exercise_name: 'Bench Press',
-    rest_time_seconds: 90,
-    exercise_equipment_name: 'Barbell',
-    exercise_category_names: ['Chest'],
-    exercise_effort_type: 'repetitions',
-    exercise_effort_label: 'Reps',
-    exercise_difficulty_unit: 'kilograms',
-    exercise_difficulty_label: 'kg',
+    exercise: {
+      id: 3,
+      name: 'Bench Press',
+      equipment_name: 'Barbell',
+      effort_type: 'repetitions',
+      difficulty_unit: 'kilograms',
+      category_names: ['Chest'],
+      rest_time_seconds: 90,
+    },
     sets: [{ id: 100, order: 1, effort_value: 10, difficulty_value: 60, is_completed: false }],
     ...overrides,
   };
@@ -32,7 +33,7 @@ describe('ActivitiesList', () => {
       props: {
         activities: [
           buildActivity(),
-          buildActivity({ clientKey: 'activity-2', id: 11, exercise_name: 'Deadlift' }),
+          buildActivity({ clientKey: 'activity-2', id: 11, exercise: { name: 'Deadlift' } }),
         ],
         editable: true,
         ...props,
@@ -53,7 +54,7 @@ describe('ActivitiesList', () => {
     const wrapper = buildWrapper({
       activities: [
         buildActivity({ clientKey: undefined }),
-        buildActivity({ clientKey: undefined, id: 11, exercise_name: 'Deadlift' }),
+        buildActivity({ clientKey: undefined, id: 11, exercise: { name: 'Deadlift' } }),
       ],
       editable: false,
     });

@@ -11,13 +11,12 @@ enum EditorFixtures {
     {
         Activity(
             id: id, exerciseId: id * 10, exerciseName: "Exercise \(id)", restTimeSeconds: 60, equipmentName: "Barbell",
-            effortType: effort, effortLabel: effort == .duration ? "Seconds" : "Reps", difficultyUnit: unit,
-            difficultyLabel: unit == .heartRateZone ? "Zone" : "kg", categoryNames: ["Legs"], sets: sets)
+            effortType: effort, difficultyUnit: unit, categoryNames: ["Legs"], sets: sets)
     }
 
     static func workout(status: WorkoutStatus = .inProgress, userId: Int = 1, activities: [Activity]) -> Workout {
         Workout(
-            id: 42, userId: userId, name: "Leg day", status: status, statusLabel: status.rawValue, createdAt: nil,
+            id: 42, userId: userId, name: "Leg day", status: status, createdAt: nil,
             updatedAt: Date(timeIntervalSince1970: 1000), activitiesCount: activities.count, template: nil,
             activities: activities)
     }

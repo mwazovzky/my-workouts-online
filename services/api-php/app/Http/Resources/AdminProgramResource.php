@@ -24,7 +24,6 @@ class AdminProgramResource extends JsonResource
                     'workout_template_id' => $template->id,
                     'workout_template_name' => $template->name,
                     'weekday' => $template->pivot->weekday,
-                    'weekday_label' => __($template->pivot->weekday),
                 ])
                 ->values()),
         ];

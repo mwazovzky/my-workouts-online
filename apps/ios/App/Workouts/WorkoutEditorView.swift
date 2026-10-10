@@ -309,8 +309,8 @@ struct ActivityEditorCard: View {
                     Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 8) {
                         GridRow {
                             Text(verbatim: "#")
-                            if activity.hasDifficulty { Text(verbatim: activity.difficultyLabel ?? "") }
-                            Text(verbatim: activity.effortLabel)
+                            if activity.hasDifficulty { Text(verbatim: activity.difficultyUnit.displayName) }
+                            Text(verbatim: activity.effortType.displayName)
                             Text("Done")
                             if model.isEditable { Text(verbatim: "") }
                         }
@@ -378,7 +378,7 @@ struct SetControls {
             .labelsHidden()
             .pickerStyle(.menu)
             .disabled(locked)
-            .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.difficultyLabel ?? "")"))
+            .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.difficultyUnit.displayName)"))
             .accessibilityIdentifier("\(identifier).zone")
         } else {
             TextField(
@@ -391,7 +391,7 @@ struct SetControls {
             .keyboardType(.decimalPad)
             .textFieldStyle(.roundedBorder)
             .disabled(locked)
-            .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.difficultyLabel ?? "")"))
+            .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.difficultyUnit.displayName)"))
             .accessibilityIdentifier("\(identifier).difficulty")
         }
     }
@@ -407,7 +407,7 @@ struct SetControls {
         .keyboardType(.numberPad)
         .textFieldStyle(.roundedBorder)
         .disabled(locked)
-        .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.effortLabel)"))
+        .accessibilityLabel(Text(verbatim: "\(setName) · \(activity.effortType.displayName)"))
         .accessibilityIdentifier("\(identifier).effort")
     }
 
@@ -485,13 +485,13 @@ struct SetStackView: View {
                 LabeledContent {
                     controls.difficultyField
                 } label: {
-                    Text(verbatim: controls.activity.difficultyLabel ?? "")
+                    Text(verbatim: controls.activity.difficultyUnit.displayName)
                 }
             }
             LabeledContent {
                 controls.effortField
             } label: {
-                Text(verbatim: controls.activity.effortLabel)
+                Text(verbatim: controls.activity.effortType.displayName)
             }
             LabeledContent {
                 controls.doneToggle

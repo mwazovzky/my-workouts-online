@@ -22,11 +22,11 @@ class ExerciseStoreRequest extends ApiFormRequest
     public function rules(): array
     {
         return [
-            'equipment_id' => ['required', 'integer', 'exists:equipment,id'],
+            'equipment_id' => ['required', 'integer:strict', 'exists:equipment,id'],
             'effort_type' => ['required', Rule::enum(EffortType::class)],
-            'rest_time_seconds' => ['nullable', 'integer', 'min:0', 'max:3600'],
+            'rest_time_seconds' => ['nullable', 'integer:strict', 'min:0', 'max:3600'],
             'category_ids' => ['sometimes', 'array'],
-            'category_ids.*' => ['integer', 'exists:categories,id'],
+            'category_ids.*' => ['integer:strict', 'exists:categories,id'],
             ...$this->translationRules(['name', 'description']),
         ];
     }

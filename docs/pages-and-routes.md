@@ -50,12 +50,12 @@ Access values: Guest (signed-in users are redirected), Auth, Verified, Admin, an
 | Verification link (Universal Link `/verify-email/{id}/{hash}`) | auth, same user | `POST /api/v1/auth/email/verify`, `GET /api/v1/me` |
 | Reset password sheet (Universal Link `/reset-password/{token}`) | any | `POST /api/v1/auth/password/reset` |
 | Dashboard tab | verified | `GET /api/v1/dashboard`, `POST /api/v1/workouts` (start from the schedule) |
-| Programs tab | verified | `GET /api/v1/programs`, `POST /api/v1/programs/{program}/enroll` |
-| Program detail | verified | `GET /api/v1/programs/{program}`, `POST /api/v1/programs/{program}/enroll` |
-| Workout template detail | verified | `GET /api/v1/workout-templates/{id}`, `POST /api/v1/workouts` (Start Workout) |
-| Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workout}`, `PATCH /api/v1/workouts/{workout}/save`, `POST /api/v1/workouts/{workout}/complete`, `GET /api/v1/exercises` (Add activity) |
-| Workouts tab | verified | `GET /api/v1/workouts?page=N&per_page=M`, `DELETE /api/v1/workouts/{workout}` |
-| Workout detail | verified | `GET /api/v1/workouts/{workout}`, `POST /api/v1/workouts/{workout}/repeat` |
+| Programs tab | verified | `GET /api/v1/programs`, `POST /api/v1/programs/{programId}/enroll` |
+| Program detail | verified | `GET /api/v1/programs/{programId}`, `POST /api/v1/programs/{programId}/enroll` |
+| Workout template detail | verified | `GET /api/v1/workout-templates/{workoutTemplateId}`, `POST /api/v1/workouts` (Start Workout) |
+| Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workoutId}`, `PATCH /api/v1/workouts/{workoutId}/save`, `POST /api/v1/workouts/{workoutId}/complete`, `GET /api/v1/exercises` (Add activity) |
+| Workouts tab | verified | `GET /api/v1/workouts?page=N&per_page=M`, `DELETE /api/v1/workouts/{workoutId}` |
+| Workout detail | verified | `GET /api/v1/workouts/{workoutId}`, `POST /api/v1/workouts/{workoutId}/repeat` |
 | Profile tab | auth | `PATCH /api/v1/me` (name and email, theme, locale sync), `PUT /api/v1/me/password`, `DELETE /api/v1/me`, `POST /api/v1/auth/email/resend`, `POST /api/v1/auth/logout` |
 
 The root view picks the screen from the session state (`signedOut`, `unverified`, `ready`), mirroring the SPA's `guest` / `auth` / `verified` guards. Signed in, a four-tab shell (Dashboard, Programs, Workouts, Profile) mirrors the web bottom navigation; each tab keeps its own navigation stack, and admins see the same four tabs.
@@ -106,30 +106,30 @@ The SPA consumes a versioned REST API under `/api/v1`. Protected routes require 
 | ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |
 | List exercises      | `GET`    | `/api/v1/exercises`                     | `api.v1.exercises.index`         | Auth + verified          | Workout Logging |
 | List equipment      | `GET`    | `/api/v1/admin/equipment`               | `api.v1.admin.equipment.index`   | Auth + verified + admin  | Admin          |
-| Show equipment      | `GET`    | `/api/v1/admin/equipment/{equipment}`   | `api.v1.admin.equipment.show`    | Auth + verified + admin  | Admin          |
+| Show equipment      | `GET`    | `/api/v1/admin/equipment/{equipmentId}`   | `api.v1.admin.equipment.show`    | Auth + verified + admin  | Admin          |
 | Create equipment    | `POST`   | `/api/v1/admin/equipment`               | `api.v1.admin.equipment.store`   | Auth + verified + admin  | Admin          |
-| Update equipment    | `PUT`    | `/api/v1/admin/equipment/{equipment}`   | `api.v1.admin.equipment.update`  | Auth + verified + admin  | Admin          |
-| Delete equipment    | `DELETE` | `/api/v1/admin/equipment/{equipment}`   | `api.v1.admin.equipment.destroy` | Auth + verified + admin  | Admin          |
+| Update equipment    | `PUT`    | `/api/v1/admin/equipment/{equipmentId}`   | `api.v1.admin.equipment.update`  | Auth + verified + admin  | Admin          |
+| Delete equipment    | `DELETE` | `/api/v1/admin/equipment/{equipmentId}`   | `api.v1.admin.equipment.destroy` | Auth + verified + admin  | Admin          |
 | List categories     | `GET`    | `/api/v1/admin/categories`              | `api.v1.admin.categories.index`  | Auth + verified + admin  | Admin          |
-| Show category       | `GET`    | `/api/v1/admin/categories/{category}`   | `api.v1.admin.categories.show`   | Auth + verified + admin  | Admin          |
+| Show category       | `GET`    | `/api/v1/admin/categories/{categoryId}`   | `api.v1.admin.categories.show`   | Auth + verified + admin  | Admin          |
 | Create category     | `POST`   | `/api/v1/admin/categories`              | `api.v1.admin.categories.store`  | Auth + verified + admin  | Admin          |
-| Update category     | `PUT`    | `/api/v1/admin/categories/{category}`   | `api.v1.admin.categories.update` | Auth + verified + admin  | Admin          |
-| Delete category     | `DELETE` | `/api/v1/admin/categories/{category}`   | `api.v1.admin.categories.destroy`| Auth + verified + admin  | Admin          |
+| Update category     | `PUT`    | `/api/v1/admin/categories/{categoryId}`   | `api.v1.admin.categories.update` | Auth + verified + admin  | Admin          |
+| Delete category     | `DELETE` | `/api/v1/admin/categories/{categoryId}`   | `api.v1.admin.categories.destroy`| Auth + verified + admin  | Admin          |
 | List exercises      | `GET`    | `/api/v1/admin/exercises`               | `api.v1.admin.exercises.index`   | Auth + verified + admin  | Admin          |
-| Show exercise       | `GET`    | `/api/v1/admin/exercises/{exercise}`    | `api.v1.admin.exercises.show`    | Auth + verified + admin  | Admin          |
+| Show exercise       | `GET`    | `/api/v1/admin/exercises/{exerciseId}`    | `api.v1.admin.exercises.show`    | Auth + verified + admin  | Admin          |
 | Create exercise     | `POST`   | `/api/v1/admin/exercises`               | `api.v1.admin.exercises.store`   | Auth + verified + admin  | Admin          |
-| Update exercise     | `PUT`    | `/api/v1/admin/exercises/{exercise}`    | `api.v1.admin.exercises.update`  | Auth + verified + admin  | Admin          |
-| Delete exercise     | `DELETE` | `/api/v1/admin/exercises/{exercise}`    | `api.v1.admin.exercises.destroy` | Auth + verified + admin  | Admin          |
+| Update exercise     | `PUT`    | `/api/v1/admin/exercises/{exerciseId}`    | `api.v1.admin.exercises.update`  | Auth + verified + admin  | Admin          |
+| Delete exercise     | `DELETE` | `/api/v1/admin/exercises/{exerciseId}`    | `api.v1.admin.exercises.destroy` | Auth + verified + admin  | Admin          |
 | List templates      | `GET`    | `/api/v1/admin/workout-templates`       | `api.v1.admin.workout-templates.index`   | Auth + verified + admin | Admin |
-| Show template       | `GET`    | `/api/v1/admin/workout-templates/{workout_template}` | `api.v1.admin.workout-templates.show` | Auth + verified + admin | Admin |
+| Show template       | `GET`    | `/api/v1/admin/workout-templates/{workoutTemplateId}` | `api.v1.admin.workout-templates.show` | Auth + verified + admin | Admin |
 | Create template     | `POST`   | `/api/v1/admin/workout-templates`       | `api.v1.admin.workout-templates.store`   | Auth + verified + admin | Admin |
-| Update template     | `PUT`    | `/api/v1/admin/workout-templates/{workout_template}` | `api.v1.admin.workout-templates.update` | Auth + verified + admin | Admin |
-| Delete template     | `DELETE` | `/api/v1/admin/workout-templates/{workout_template}` | `api.v1.admin.workout-templates.destroy` | Auth + verified + admin | Admin |
+| Update template     | `PUT`    | `/api/v1/admin/workout-templates/{workoutTemplateId}` | `api.v1.admin.workout-templates.update` | Auth + verified + admin | Admin |
+| Delete template     | `DELETE` | `/api/v1/admin/workout-templates/{workoutTemplateId}` | `api.v1.admin.workout-templates.destroy` | Auth + verified + admin | Admin |
 | List programs (admin) | `GET`  | `/api/v1/admin/programs`                | `api.v1.admin.programs.index`    | Auth + verified + admin  | Admin          |
-| Show program (admin)  | `GET`  | `/api/v1/admin/programs/{program}`      | `api.v1.admin.programs.show`     | Auth + verified + admin  | Admin          |
+| Show program (admin)  | `GET`  | `/api/v1/admin/programs/{programId}`      | `api.v1.admin.programs.show`     | Auth + verified + admin  | Admin          |
 | Create program      | `POST`   | `/api/v1/admin/programs`                | `api.v1.admin.programs.store`    | Auth + verified + admin  | Admin          |
-| Update program      | `PUT`    | `/api/v1/admin/programs/{program}`      | `api.v1.admin.programs.update`   | Auth + verified + admin  | Admin          |
-| Delete program      | `DELETE` | `/api/v1/admin/programs/{program}`      | `api.v1.admin.programs.destroy`  | Auth + verified + admin  | Admin          |
+| Update program      | `PUT`    | `/api/v1/admin/programs/{programId}`      | `api.v1.admin.programs.update`   | Auth + verified + admin  | Admin          |
+| Delete program      | `DELETE` | `/api/v1/admin/programs/{programId}`      | `api.v1.admin.programs.destroy`  | Auth + verified + admin  | Admin          |
 
 ## Related
 

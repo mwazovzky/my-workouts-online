@@ -17,15 +17,13 @@ public struct Exercise: Sendable, Equatable, Identifiable {
     public let equipmentId: Int
     public let equipmentName: String?
     public let effortType: EffortType
-    public let effortLabel: String
     public let difficultyUnit: DifficultyUnit
-    public let difficultyLabel: String?
     public let restTimeSeconds: Int?
     public let categories: [Category]
 
     public init(
         id: Int, name: String, description: String?, equipmentId: Int, equipmentName: String?,
-        effortType: EffortType, effortLabel: String, difficultyUnit: DifficultyUnit, difficultyLabel: String?,
+        effortType: EffortType, difficultyUnit: DifficultyUnit,
         restTimeSeconds: Int?, categories: [Category]
     ) {
         self.id = id
@@ -34,9 +32,7 @@ public struct Exercise: Sendable, Equatable, Identifiable {
         self.equipmentId = equipmentId
         self.equipmentName = equipmentName
         self.effortType = effortType
-        self.effortLabel = effortLabel
         self.difficultyUnit = difficultyUnit
-        self.difficultyLabel = difficultyLabel
         self.restTimeSeconds = restTimeSeconds
         self.categories = categories
     }
@@ -69,11 +65,9 @@ public struct ProgramDetail: Sendable, Equatable {
 /// A template's place in a program's week; present only when the template came from a program.
 public struct ScheduleSlot: Sendable, Equatable {
     public let weekday: Weekday
-    public let weekdayLabel: String
 
-    public init(weekday: Weekday, weekdayLabel: String) {
+    public init(weekday: Weekday) {
         self.weekday = weekday
-        self.weekdayLabel = weekdayLabel
     }
 }
 

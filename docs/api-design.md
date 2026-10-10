@@ -35,11 +35,15 @@ npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset c
 | Query parameters are `snake_case` | `page`, `per_page` | Spectral `must-use-snake-case-for-query-parameters` |
 | Path segments are lowercase, plural nouns, hyphen-separated | `/workout-templates`, `/admin/equipment` | Spectral `must-use-lowercase-with-hypens-for-path-segements` |
 | `operationId` is lowerCamelCase, verb first | `listWorkouts`, `adminCreateEquipment` | Spectral `house-operation-id-camel-case` |
-| Enum values are lowercase `snake_case` | `in_progress`, `heart_rate_zone` | review; Spectral `house-enum-lowercase-snake-case` from story 5 |
+| Enum values are lowercase `snake_case` | `in_progress`, `heart_rate_zone`, `monday` | Spectral `house-enum-lowercase-snake-case` |
+| Path parameters are lowerCamelCase; an integer identifier is `{resourceId}`, never the backend's binding name | `{programId}`, `{workoutId}`, `{workoutTemplateId}` | Spectral `house-path-parameter-names`, `house-path-parameter-ids` |
+| Timestamps end in `_at` and are `date-time`; a state that has a moment is a nullable timestamp, not a boolean | `created_at`, `email_verified_at` | review |
 | Header parameters are `Hyphenated-Pascal-Case` | `Accept-Language`, `X-Requested-With` | Spectral `should-use-hyphenated-pascal-case-for-header-parameters` |
-| Action sub-resources are verbs only for state transitions | `/workouts/{workout}/complete`, `/repeat` | review |
+| Action sub-resources are verbs only for state transitions | `/workouts/{workoutId}/complete`, `/repeat` | review |
+| No storage or framework names in the wire format: a join-table attribute is named for what it means | `WorkoutTemplate.assignment.weekday`, not `pivot` | review |
+| Related data embedded for display is one nested snapshot object next to the foreign key, not a row of prefixed fields | `Activity.exercise_id` + `Activity.exercise {name, equipment_name, …}` | review |
 
-**Target (story 5).** Path parameters are lowerCamelCase with an `Id` suffix: `{programId}`, `{workoutId}`, `{workoutTemplateId}`, `{equipmentId}`, `{categoryId}`, `{exerciseId}` (Spectral `house-path-parameter-names`). `Weekday` becomes `monday`…`sunday`; `WorkoutTemplate.pivot` becomes `assignment`; `created_at`/`updated_at` are required; `User.email_verified` becomes `email_verified_at`; the six `Activity.exercise_*` fields become one nested `exercise` snapshot. Today path parameters carry the backend's binding names (`{program}`, `{workout}`, `{id}`).
+The path parameter name is a contract concern only: the URL is the same whatever the name, so a backend's router may bind it under its own name (Laravel binds `{programId}` as `{program}`).
 
 ## Envelope and pagination
 
@@ -56,11 +60,13 @@ npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset c
 - The same applies to the query string: an operation that declares query parameters (`listWorkouts`) rejects undeclared ones with 422. Operations without query parameters ignore the query string. Enforced by: `scripts/contract-test.sh`, `ApiFormRequest`.
 - Read and write shapes are separate schemas (`Exercise` vs `ExerciseWrite`); `readOnly`/`writeOnly` are not used. Enforced by: review.
 - `PUT` is full replacement: the write schema lists every settable field and the server replaces the whole resource (admin updates, template activities). Enforced by: review.
-- `PATCH` bodies are RFC 7386 merge patches: every field optional, absent fields untouched, at least one field present (`minProperties: 1`), no `required` list (`PATCH /me` with `MePatch`). The one exception, `PATCH /workouts/{workout}/save`, is a full replacement and becomes a `PUT` in story 6. Enforced by: Spectral `house-patch-merge-patch`.
+- `PATCH` bodies are RFC 7386 merge patches: every field optional, absent fields untouched, at least one field present (`minProperties: 1`), no `required` list (`PATCH /me` with `MePatch`). The one exception, `PATCH /workouts/{workoutId}/save`, is a full replacement and becomes a `PUT` in story 6. Enforced by: Spectral `house-patch-merge-patch`.
 - A resource has one name: the current user is `/me` for reads and writes (`PATCH /me`, `PUT /me/password`, `DELETE /me`), never a parallel `/profile`. Enforced by: review.
 - Confirmation fields (`password_confirmation`) are a client-side concern and are not part of any request body. Enforced by: `house-strict-request-bodies` (the key is undeclared, so the server rejects it).
 - Optional object fields are omitted from responses rather than sent as `null`, and nullable enums are inlined (`type: [string, 'null']` with the values), because code generators drop a nullable `$ref`. Enforced by: review.
 - Nullability is written as `type: [X, 'null']` (OpenAPI 3.1), never `nullable: true`. Enforced by: Spectral `oas3-schema`.
+- A field the server always sends is `required` and not nullable (`Workout.created_at`); `null` is reserved for a value that is genuinely absent. Enforced by: review.
+- Responses carry data, not presentation: no server-rendered labels (`status_label`, `weekday_label`, unit headers). Enums are sent as values and each client maps them to text through its own string catalog, as the API-first decision on client-owned i18n requires. User-entered and catalog content (`name`, `description`) is still localized by `Accept-Language`. Enforced by: review.
 
 ## HTTP methods and status codes
 

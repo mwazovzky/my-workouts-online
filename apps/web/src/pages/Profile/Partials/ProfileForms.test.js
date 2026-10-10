@@ -28,7 +28,7 @@ const user = {
   email: 'ann@example.com',
   locale: 'en',
   theme_preference: 'light',
-  email_verified: true,
+  email_verified_at: '2026-10-01T09:30:00Z',
   is_admin: false,
 };
 

@@ -339,7 +339,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/programs/{program}": {
+    "/api/v1/programs/{programId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -356,7 +356,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/programs/{program}/enroll": {
+    "/api/v1/programs/{programId}/enroll": {
         parameters: {
             query?: never;
             header?: never;
@@ -373,7 +373,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workout-templates/{id}": {
+    "/api/v1/workout-templates/{workoutTemplateId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -425,7 +425,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workouts/{workout}": {
+    "/api/v1/workouts/{workoutId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -446,7 +446,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workouts/{workout}/save": {
+    "/api/v1/workouts/{workoutId}/save": {
         parameters: {
             query?: never;
             header?: never;
@@ -466,7 +466,7 @@ export interface paths {
         patch: operations["saveWorkout"];
         trace?: never;
     };
-    "/api/v1/workouts/{workout}/complete": {
+    "/api/v1/workouts/{workoutId}/complete": {
         parameters: {
             query?: never;
             header?: never;
@@ -486,7 +486,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workouts/{workout}/repeat": {
+    "/api/v1/workouts/{workoutId}/repeat": {
         parameters: {
             query?: never;
             header?: never;
@@ -524,12 +524,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/equipment/{equipment}": {
+    "/api/v1/admin/equipment/{equipmentId}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                equipment: number;
+                equipmentId: components["parameters"]["EquipmentId"];
             };
             cookie?: never;
         };
@@ -563,12 +563,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/categories/{category}": {
+    "/api/v1/admin/categories/{categoryId}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                category: number;
+                categoryId: components["parameters"]["CategoryId"];
             };
             cookie?: never;
         };
@@ -602,12 +602,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/exercises/{exercise}": {
+    "/api/v1/admin/exercises/{exerciseId}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                exercise: number;
+                exerciseId: components["parameters"]["ExerciseId"];
             };
             cookie?: never;
         };
@@ -641,12 +641,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/workout-templates/{workout_template}": {
+    "/api/v1/admin/workout-templates/{workoutTemplateId}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                workout_template: number;
+                workoutTemplateId: components["parameters"]["WorkoutTemplateId"];
             };
             cookie?: never;
         };
@@ -680,12 +680,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/programs/{program}": {
+    "/api/v1/admin/programs/{programId}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                program: components["parameters"]["ProgramId"];
+                programId: components["parameters"]["ProgramId"];
             };
             cookie?: never;
         };
@@ -827,7 +827,6 @@ export interface components {
          *           "user_id": 7,
          *           "name": "Push A",
          *           "status": "completed",
-         *           "status_label": "Completed",
          *           "created_at": "2026-10-05T18:06:30Z",
          *           "updated_at": "2026-10-05T19:02:11Z",
          *           "activities_count": 6,
@@ -865,10 +864,10 @@ export interface components {
          */
         ClientKind: "web" | "native";
         /**
-         * @description Capitalised English day names, matching the `Weekday` enum backing values.
+         * @description Lowercase English day names. Clients render their own localized label.
          * @enum {string}
          */
-        Weekday: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+        Weekday: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
         /** @enum {string} */
         EffortType: "repetitions" | "duration";
         /** @enum {string} */
@@ -934,7 +933,7 @@ export interface components {
          *         "locale": "en",
          *         "theme_preference": "system",
          *         "is_admin": false,
-         *         "email_verified": true
+         *         "email_verified_at": "2026-10-01T09:30:00Z"
          *       }
          *     }
          */
@@ -964,7 +963,7 @@ export interface components {
          *       "locale": "en",
          *       "theme_preference": "system",
          *       "is_admin": false,
-         *       "email_verified": true
+         *       "email_verified_at": "2026-10-01T09:30:00Z"
          *     }
          */
         User: {
@@ -975,7 +974,12 @@ export interface components {
             locale: components["schemas"]["Locale"];
             theme_preference: components["schemas"]["ThemePreference"];
             is_admin: boolean;
-            email_verified: boolean;
+            /**
+             * Format: date-time
+             * @description When the email address was verified; null until it is.
+             * @example 2026-10-01T09:30:00Z
+             */
+            email_verified_at: string | null;
         };
         /**
          * @example {
@@ -1046,9 +1050,7 @@ export interface components {
          *       "equipment_id": 2,
          *       "equipment_name": "Barbell",
          *       "effort_type": "repetitions",
-         *       "effort_label": "Reps",
          *       "difficulty_unit": "kilograms",
-         *       "difficulty_label": "kg",
          *       "rest_time_seconds": 120,
          *       "category_ids": [
          *         3
@@ -1070,9 +1072,7 @@ export interface components {
             equipment_id: number;
             equipment_name?: string | null;
             effort_type: components["schemas"]["EffortType"];
-            effort_label: string;
             difficulty_unit?: components["schemas"]["DifficultyUnit"];
-            difficulty_label?: string;
             rest_time_seconds: number | null;
             category_ids?: number[];
             categories?: components["schemas"]["Category"][];
@@ -1085,9 +1085,7 @@ export interface components {
          *       "equipment_id": 2,
          *       "equipment_name": "Barbell",
          *       "effort_type": "repetitions",
-         *       "effort_label": "Reps",
          *       "difficulty_unit": "kilograms",
-         *       "difficulty_label": "kg",
          *       "rest_time_seconds": 120,
          *       "category_ids": [
          *         3
@@ -1151,9 +1149,8 @@ export interface components {
          *           "name": "Strength 5x5 A",
          *           "description": "Squat, bench press, barbell row.",
          *           "activities": [],
-         *           "pivot": {
-         *             "weekday": "Monday",
-         *             "weekday_label": "Monday"
+         *           "assignment": {
+         *             "weekday": "monday"
          *           }
          *         }
          *       ]
@@ -1188,14 +1185,12 @@ export interface components {
          *         {
          *           "workout_template_id": 22,
          *           "workout_template_name": "Strength 5x5 A",
-         *           "weekday": "Monday",
-         *           "weekday_label": "Monday"
+         *           "weekday": "monday"
          *         },
          *         {
          *           "workout_template_id": 23,
          *           "workout_template_name": "Strength 5x5 B",
-         *           "weekday": "Wednesday",
-         *           "weekday_label": "Wednesday"
+         *           "weekday": "wednesday"
          *         }
          *       ]
          *     }
@@ -1212,7 +1207,6 @@ export interface components {
                 workout_template_id: number;
                 workout_template_name: string | null;
                 weekday: components["schemas"]["Weekday"];
-                weekday_label: string;
             }[];
         };
         /**
@@ -1224,16 +1218,17 @@ export interface components {
          *         {
          *           "id": 301,
          *           "exercise_id": 15,
-         *           "exercise_name": "Bench press",
-         *           "rest_time_seconds": 120,
-         *           "exercise_equipment_name": "Barbell",
-         *           "exercise_effort_type": "repetitions",
-         *           "exercise_effort_label": "Reps",
-         *           "exercise_difficulty_unit": "kilograms",
-         *           "exercise_difficulty_label": "kg",
-         *           "exercise_category_names": [
-         *             "Chest"
-         *           ],
+         *           "exercise": {
+         *             "id": 15,
+         *             "name": "Bench press",
+         *             "equipment_name": "Barbell",
+         *             "effort_type": "repetitions",
+         *             "difficulty_unit": "kilograms",
+         *             "category_names": [
+         *               "Chest"
+         *             ],
+         *             "rest_time_seconds": 120
+         *           },
          *           "sets": [
          *             {
          *               "id": 901,
@@ -1254,10 +1249,9 @@ export interface components {
             /** @description Localized. */
             description?: string | null;
             activities: components["schemas"]["Activity"][];
-            /** @description Present when the template is listed inside a program. */
-            pivot?: {
+            /** @description The weekday this template is scheduled on; present only when the template is listed inside a program. */
+            assignment?: {
                 weekday: components["schemas"]["Weekday"];
-                weekday_label: string;
             };
         };
         /**
@@ -1279,16 +1273,17 @@ export interface components {
          *         {
          *           "id": 301,
          *           "exercise_id": 15,
-         *           "exercise_name": "Bench press",
-         *           "rest_time_seconds": 120,
-         *           "exercise_equipment_name": "Barbell",
-         *           "exercise_effort_type": "repetitions",
-         *           "exercise_effort_label": "Reps",
-         *           "exercise_difficulty_unit": "kilograms",
-         *           "exercise_difficulty_label": "kg",
-         *           "exercise_category_names": [
-         *             "Chest"
-         *           ],
+         *           "exercise": {
+         *             "id": 15,
+         *             "name": "Bench press",
+         *             "equipment_name": "Barbell",
+         *             "effort_type": "repetitions",
+         *             "difficulty_unit": "kilograms",
+         *             "category_names": [
+         *               "Chest"
+         *             ],
+         *             "rest_time_seconds": 120
+         *           },
          *           "sets": [
          *             {
          *               "id": 901,
@@ -1350,16 +1345,17 @@ export interface components {
          * @example {
          *       "id": 501,
          *       "exercise_id": 15,
-         *       "exercise_name": "Bench press",
-         *       "rest_time_seconds": 120,
-         *       "exercise_equipment_name": "Barbell",
-         *       "exercise_effort_type": "repetitions",
-         *       "exercise_effort_label": "Reps",
-         *       "exercise_difficulty_unit": "kilograms",
-         *       "exercise_difficulty_label": "kg",
-         *       "exercise_category_names": [
-         *         "Chest"
-         *       ],
+         *       "exercise": {
+         *         "id": 15,
+         *         "name": "Bench press",
+         *         "equipment_name": "Barbell",
+         *         "effort_type": "repetitions",
+         *         "difficulty_unit": "kilograms",
+         *         "category_names": [
+         *           "Chest"
+         *         ],
+         *         "rest_time_seconds": 120
+         *       },
          *       "sets": [
          *         {
          *           "id": 901,
@@ -1380,25 +1376,35 @@ export interface components {
          */
         Activity: {
             id: number;
-            exercise_id: number | null;
-            /** @description Localized; retired exercises still resolve. */
-            exercise_name: string | null;
-            rest_time_seconds?: number | null;
-            exercise_equipment_name?: string | null;
-            /**
-             * @description Same values as `EffortType`, inlined because code generators drop nullable `$ref`s. Null when the exercise relation is not loaded (e.g. a template embedded in a freshly created workout).
-             * @enum {string|null}
-             */
-            exercise_effort_type?: "repetitions" | "duration" | null;
-            exercise_effort_label?: string;
-            /**
-             * @description Same values as `DifficultyUnit`, inlined because code generators drop nullable `$ref`s.
-             * @enum {string|null}
-             */
-            exercise_difficulty_unit?: "kilograms" | "pounds" | "plates" | "heart_rate_zone" | "none" | null;
-            exercise_difficulty_label?: string;
-            exercise_category_names?: string[];
+            exercise_id: number;
+            /** @description Snapshot of the exercise for display. Absent when the exercise is not loaded (e.g. a template embedded in a freshly created workout); omitted rather than null because code generators drop nullable `$ref`s. */
+            exercise?: components["schemas"]["ActivityExercise"];
             sets: components["schemas"]["Set"][];
+        };
+        /**
+         * @example {
+         *       "id": 15,
+         *       "name": "Bench press",
+         *       "equipment_name": "Barbell",
+         *       "effort_type": "repetitions",
+         *       "difficulty_unit": "kilograms",
+         *       "category_names": [
+         *         "Chest"
+         *       ],
+         *       "rest_time_seconds": 120
+         *     }
+         */
+        ActivityExercise: {
+            id: number;
+            /** @description Localized; retired exercises still resolve. */
+            name: string | null;
+            /** @description Localized. */
+            equipment_name: string | null;
+            effort_type: components["schemas"]["EffortType"];
+            difficulty_unit: components["schemas"]["DifficultyUnit"];
+            /** @description Localized category names. */
+            category_names: string[];
+            rest_time_seconds: number | null;
         };
         /**
          * @example {
@@ -1406,7 +1412,6 @@ export interface components {
          *       "user_id": 7,
          *       "name": "Strength 5x5 A",
          *       "status": "in_progress",
-         *       "status_label": "In progress",
          *       "created_at": "2026-10-05T18:06:30Z",
          *       "updated_at": "2026-10-05T19:02:11Z",
          *       "activities_count": 1,
@@ -1420,16 +1425,17 @@ export interface components {
          *         {
          *           "id": 501,
          *           "exercise_id": 15,
-         *           "exercise_name": "Bench press",
-         *           "rest_time_seconds": 120,
-         *           "exercise_equipment_name": "Barbell",
-         *           "exercise_effort_type": "repetitions",
-         *           "exercise_effort_label": "Reps",
-         *           "exercise_difficulty_unit": "kilograms",
-         *           "exercise_difficulty_label": "kg",
-         *           "exercise_category_names": [
-         *             "Chest"
-         *           ],
+         *           "exercise": {
+         *             "id": 15,
+         *             "name": "Bench press",
+         *             "equipment_name": "Barbell",
+         *             "effort_type": "repetitions",
+         *             "difficulty_unit": "kilograms",
+         *             "category_names": [
+         *               "Chest"
+         *             ],
+         *             "rest_time_seconds": 120
+         *           },
          *           "sets": [
          *             {
          *               "id": 901,
@@ -1449,17 +1455,16 @@ export interface components {
             /** @description Copied from the template at creation; not re-translated. */
             name: string;
             status: components["schemas"]["WorkoutStatus"];
-            status_label: string;
             /**
              * Format: date-time
              * @example 2026-10-05T18:06:30Z
              */
-            created_at?: string | null;
+            created_at: string;
             /**
              * Format: date-time
              * @example 2026-10-05T19:02:11Z
              */
-            updated_at?: string | null;
+            updated_at: string;
             activities_count?: number | null;
             /** @description Absent when the workout's template is not loaded or no longer exists. Omitted rather than null because code generators drop nullable `$ref`s. */
             workout_template?: components["schemas"]["WorkoutTemplate"];
@@ -1483,8 +1488,7 @@ export interface components {
          *           "program_name": "Strength 5x5",
          *           "workout_template_id": 22,
          *           "workout_name": "Strength 5x5 A",
-         *           "weekday": "Monday",
-         *           "weekday_label": "Monday",
+         *           "weekday": "monday",
          *           "scheduled_at": "2026-10-12T00:00:00Z",
          *           "scheduled_for": "2026-10-12"
          *         }
@@ -1507,7 +1511,6 @@ export interface components {
                 workout_template_id: number;
                 workout_name: string | null;
                 weekday: components["schemas"]["Weekday"];
-                weekday_label: string;
                 /**
                  * Format: date-time
                  * @example 2026-10-12T00:00:00Z
@@ -1708,6 +1711,10 @@ export interface components {
         XRequestedWith: "XMLHttpRequest";
         ProgramId: number;
         WorkoutId: number;
+        WorkoutTemplateId: number;
+        EquipmentId: number;
+        CategoryId: number;
+        ExerciseId: number;
     };
     requestBodies: never;
     headers: {
@@ -2414,7 +2421,7 @@ export interface operations {
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
             };
             path: {
-                program: components["parameters"]["ProgramId"];
+                programId: components["parameters"]["ProgramId"];
             };
             cookie?: never;
         };
@@ -2440,7 +2447,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                program: components["parameters"]["ProgramId"];
+                programId: components["parameters"]["ProgramId"];
             };
             cookie?: never;
         };
@@ -2465,7 +2472,7 @@ export interface operations {
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
             };
             path: {
-                id: number;
+                workoutTemplateId: components["parameters"]["WorkoutTemplateId"];
             };
             cookie?: never;
         };
@@ -2570,7 +2577,7 @@ export interface operations {
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
             };
             path: {
-                workout: components["parameters"]["WorkoutId"];
+                workoutId: components["parameters"]["WorkoutId"];
             };
             cookie?: never;
         };
@@ -2586,7 +2593,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                workout: components["parameters"]["WorkoutId"];
+                workoutId: components["parameters"]["WorkoutId"];
             };
             cookie?: never;
         };
@@ -2611,7 +2618,7 @@ export interface operations {
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
             };
             path: {
-                workout: components["parameters"]["WorkoutId"];
+                workoutId: components["parameters"]["WorkoutId"];
             };
             cookie?: never;
         };
@@ -2633,7 +2640,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                workout: components["parameters"]["WorkoutId"];
+                workoutId: components["parameters"]["WorkoutId"];
             };
             cookie?: never;
         };
@@ -2650,7 +2657,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                workout: components["parameters"]["WorkoutId"];
+                workoutId: components["parameters"]["WorkoutId"];
             };
             cookie?: never;
         };
@@ -2710,7 +2717,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                equipment: number;
+                equipmentId: components["parameters"]["EquipmentId"];
             };
             cookie?: never;
         };
@@ -2727,7 +2734,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                equipment: number;
+                equipmentId: components["parameters"]["EquipmentId"];
             };
             cookie?: never;
         };
@@ -2749,7 +2756,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                equipment: number;
+                equipmentId: components["parameters"]["EquipmentId"];
             };
             cookie?: never;
         };
@@ -2816,7 +2823,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                category: number;
+                categoryId: components["parameters"]["CategoryId"];
             };
             cookie?: never;
         };
@@ -2833,7 +2840,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                category: number;
+                categoryId: components["parameters"]["CategoryId"];
             };
             cookie?: never;
         };
@@ -2855,7 +2862,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                category: number;
+                categoryId: components["parameters"]["CategoryId"];
             };
             cookie?: never;
         };
@@ -2921,7 +2928,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                exercise: number;
+                exerciseId: components["parameters"]["ExerciseId"];
             };
             cookie?: never;
         };
@@ -2938,7 +2945,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                exercise: number;
+                exerciseId: components["parameters"]["ExerciseId"];
             };
             cookie?: never;
         };
@@ -2960,7 +2967,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                exercise: number;
+                exerciseId: components["parameters"]["ExerciseId"];
             };
             cookie?: never;
         };
@@ -3026,7 +3033,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                workout_template: number;
+                workoutTemplateId: components["parameters"]["WorkoutTemplateId"];
             };
             cookie?: never;
         };
@@ -3043,7 +3050,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                workout_template: number;
+                workoutTemplateId: components["parameters"]["WorkoutTemplateId"];
             };
             cookie?: never;
         };
@@ -3065,7 +3072,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                workout_template: number;
+                workoutTemplateId: components["parameters"]["WorkoutTemplateId"];
             };
             cookie?: never;
         };
@@ -3132,7 +3139,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                program: components["parameters"]["ProgramId"];
+                programId: components["parameters"]["ProgramId"];
             };
             cookie?: never;
         };
@@ -3149,7 +3156,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                program: components["parameters"]["ProgramId"];
+                programId: components["parameters"]["ProgramId"];
             };
             cookie?: never;
         };
@@ -3171,7 +3178,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                program: components["parameters"]["ProgramId"];
+                programId: components["parameters"]["ProgramId"];
             };
             cookie?: never;
         };

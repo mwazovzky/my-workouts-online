@@ -59,7 +59,7 @@ actor FakeWorkoutRepository: WorkoutRepository {
         if let completeError { throw completeError }
         guard let stored else { throw APIError.unexpected(status: 500) }
         return Workout(
-            id: stored.id, userId: stored.userId, name: stored.name, status: .completed, statusLabel: "Completed",
+            id: stored.id, userId: stored.userId, name: stored.name, status: .completed,
             createdAt: stored.createdAt, updatedAt: Date(), activitiesCount: stored.activitiesCount,
             template: stored.template,
             activities: stored.activities)
@@ -91,7 +91,6 @@ actor FakeWorkoutRepository: WorkoutRepository {
         guard let stored else { throw APIError.unexpected(status: 500) }
         return Workout(
             id: stored.id + 1000, userId: stored.userId, name: stored.name, status: .inProgress,
-            statusLabel: "In progress",
             createdAt: nil, updatedAt: nil, activitiesCount: stored.activitiesCount, template: stored.template,
             activities: stored.activities)
     }
@@ -100,7 +99,7 @@ actor FakeWorkoutRepository: WorkoutRepository {
         createdTemplateIds.append(templateId)
         if let createError { throw createError }
         return Workout(
-            id: 100 + templateId, userId: 1, name: "New", status: .inProgress, statusLabel: "In progress",
+            id: 100 + templateId, userId: 1, name: "New", status: .inProgress,
             createdAt: nil,
             updatedAt: nil, activitiesCount: 0, template: nil, activities: [])
     }

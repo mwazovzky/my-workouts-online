@@ -25,7 +25,7 @@ None of this is broken. It is cheap to change now — one web SPA, an iOS app no
 | 9 | Path parameters | `{programId}`, `{workoutId}`, `{workoutTemplateId}`, `{equipmentId}`, `{categoryId}`, `{exerciseId}` — camelCase, suffixed `Id`, never the Laravel binding name. |
 | 10 | Enums | Lowercase snake_case everywhere, including `Weekday` (`monday` … `sunday`). |
 | 11 | Versioning | `info.version` bumps to `2.0.0`; the path stays `/api/v1`. A path version is for parallel incompatible APIs, which is unnecessary while every client lives in this repo. |
-| 12 | Localized labels | Whether `status_label`, `weekday_label`, `effort_label`, `difficulty_label` stay in responses is decided in story 5 (recommendation: drop them, clients map enums). The decision is recorded here when that story opens. |
+| 12 | Localized labels | Dropped (story 5): `status_label`, `weekday_label`, `effort_label`, `difficulty_label`, `exercise_effort_label`, `exercise_difficulty_label`. Responses send enum values; the web maps them through `t()` (`src/lib/enumLabels.js`) and iOS through `Localizable.xcstrings`, with the same text the API used to render. Catalog content (`name`, `description`) stays localized by `Accept-Language`. |
 | 13 | Delivery | One PR per story touching the contract, PHP, web and iOS together, so the contract job, the web suite and the iOS build are all green on every merge. |
 | 14 | Standards documentation | Three layers, each with one job: the linter enforces what can be checked mechanically (`contracts/.spectral.yaml`, `redocly.yaml`); `docs/api-design.md` states every rule in prose, semantic rules included (ownership 404, 422 vs 401, how to add an error code), and says per rule whether Spectral or a reviewer enforces it; this README's Decisions table records why. Every disabled or customised lint rule carries a comment naming its story or standard section. Lands in story 1 so later stories follow a written rule, not a memory. |
 
@@ -77,8 +77,8 @@ Client switch points that must keep working:
 | 1 | [Lint Ruleset and Schema Hygiene](stories/01-lint-ruleset-and-schema-hygiene.md) | Platform | shipped (#56) |
 | 2 | [Problem Details Error Model](stories/02-problem-details-error-model.md) | Platform | shipped (#57) |
 | 3 | [Auth and Ownership Status Codes](stories/03-auth-and-ownership-status-codes.md) | Auth & Profile | shipped (#58) |
-| 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | in progress |
-| 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | planned |
+| 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | shipped (#59) |
+| 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | in progress |
 | 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | planned |
 | 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | planned |
 

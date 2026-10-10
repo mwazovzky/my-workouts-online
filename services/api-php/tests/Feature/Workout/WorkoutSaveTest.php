@@ -306,9 +306,9 @@ class WorkoutSaveTest extends TestCase
         $activity = $response->json('data.activities.0');
         $this->assertNotNull($activity['id']);
         $this->assertNotNull($activity['sets'][0]['id']);
-        $this->assertSame('Bench Press', $activity['exercise_name']);
-        $this->assertSame('Barbell', $activity['exercise_equipment_name']);
-        $this->assertSame('kilograms', $activity['exercise_difficulty_unit']);
+        $this->assertSame('Bench Press', $activity['exercise']['name']);
+        $this->assertSame('Barbell', $activity['exercise']['equipment_name']);
+        $this->assertSame('kilograms', $activity['exercise']['difficulty_unit']);
     }
 
     #[Test]

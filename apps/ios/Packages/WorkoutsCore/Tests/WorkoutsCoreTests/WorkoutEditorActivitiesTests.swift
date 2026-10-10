@@ -6,7 +6,7 @@ import WorkoutsAPI
 
 private let barbell = Exercise(
     id: 77, name: "Deadlift", description: nil, equipmentId: 1, equipmentName: "Barbell", effortType: .repetitions,
-    effortLabel: "Reps", difficultyUnit: .kilograms, difficultyLabel: "kg", restTimeSeconds: 120,
+    difficultyUnit: .kilograms, restTimeSeconds: 120,
     categories: [Category(id: 1, name: "Back")])
 
 @MainActor
@@ -170,7 +170,7 @@ struct WorkoutEditorDraftTests {
     func stale() async {
         var newer = EditorFixtures.weights
         newer = Workout(
-            id: newer.id, userId: newer.userId, name: newer.name, status: newer.status, statusLabel: newer.statusLabel,
+            id: newer.id, userId: newer.userId, name: newer.name, status: newer.status,
             createdAt: nil, updatedAt: Date(timeIntervalSince1970: 2000), activitiesCount: nil, template: nil,
             activities: newer.activities)
         let stale = WorkoutDraft(workout: EditorFixtures.weights)  // baseUpdatedAt 1000
@@ -222,7 +222,7 @@ struct ExercisePickerViewModelTests {
                 barbell,
                 Exercise(
                     id: 2, name: "Plank", description: nil, equipmentId: 2, equipmentName: nil, effortType: .duration,
-                    effortLabel: "Seconds", difficultyUnit: .none, difficultyLabel: nil, restTimeSeconds: nil,
+                    difficultyUnit: .none, restTimeSeconds: nil,
                     categories: []),
             ]
         }

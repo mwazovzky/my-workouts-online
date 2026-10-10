@@ -168,7 +168,7 @@ class CatalogSyncTest extends TestCase
         $program = Program::where('slug', 'starter')->firstOrFail();
         $schedule = $program->workoutTemplates()->orderBy('program_workout_template.id')->get();
 
-        $this->assertSame(['Monday', 'Thursday', 'Saturday'], $schedule->pluck('pivot.weekday')->all());
+        $this->assertSame(['monday', 'thursday', 'saturday'], $schedule->pluck('pivot.weekday')->all());
         $this->assertSame(['full-body', 'full-body', 'easy-spin'], $schedule->pluck('slug')->all());
     }
 
@@ -476,7 +476,7 @@ class CatalogSyncTest extends TestCase
         $this->sync();
 
         $template = WorkoutTemplate::where('slug', 'full-body')->firstOrFail();
-        Program::factory()->create()->workoutTemplates()->attach($template->id, ['weekday' => 'Monday']);
+        Program::factory()->create()->workoutTemplates()->attach($template->id, ['weekday' => 'monday']);
 
         $catalog = $this->removeRecord($this->catalog(), 'workout_templates', 'full-body');
         $catalog['programs'][0]['schedule'] = [['weekday' => Weekday::Saturday, 'template' => 'easy-spin']];

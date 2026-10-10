@@ -370,7 +370,7 @@ class CatalogValidatorTest extends TestCase
         $catalog = $this->catalog();
         $catalog['programs'][0]['schedule'][1]['weekday'] = $catalog['programs'][0]['schedule'][0]['weekday'];
 
-        $this->assertViolation('schedule entry 2: workout template "full-body" is already scheduled on Monday', $catalog);
+        $this->assertViolation('schedule entry 2: workout template "full-body" is already scheduled on monday', $catalog);
     }
 
     #[Test]

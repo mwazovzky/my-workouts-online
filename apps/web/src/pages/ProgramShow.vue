@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useEnrollment } from '@/composables/useEnrollment';
 import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
+import { weekdayLabel } from '@/lib/enumLabels';
 
 const router = useRouter();
 
@@ -94,7 +95,12 @@ async function enrollInProgram() {
                     {{ workout.name }}
                   </div>
                   <div class="text-sm text-muted-foreground mt-1">
-                    {{ t('Scheduled:') }} {{ workout.pivot?.weekday_label ?? t('Not scheduled') }}
+                    {{ t('Scheduled:') }}
+                    {{
+                      workout.assignment
+                        ? weekdayLabel(t, workout.assignment.weekday)
+                        : t('Not scheduled')
+                    }}
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">

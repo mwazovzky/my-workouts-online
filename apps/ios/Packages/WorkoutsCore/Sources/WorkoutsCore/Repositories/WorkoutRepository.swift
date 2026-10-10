@@ -35,7 +35,7 @@ public struct APIWorkoutRepository: WorkoutRepository {
     }
 
     public func get(id: Int) async throws -> Workout {
-        let output = try await client.getWorkout(path: .init(workout: id))
+        let output = try await client.getWorkout(path: .init(workoutId: id))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
         case .unauthorized(let response):
@@ -57,7 +57,7 @@ public struct APIWorkoutRepository: WorkoutRepository {
                             isCompleted: set.isCompleted)
                     })
             })
-        let output = try await client.saveWorkout(path: .init(workout: id), body: .json(body))
+        let output = try await client.saveWorkout(path: .init(workoutId: id), body: .json(body))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
         case .unauthorized(let response):
@@ -70,7 +70,7 @@ public struct APIWorkoutRepository: WorkoutRepository {
     }
 
     public func complete(id: Int) async throws -> Workout {
-        let output = try await client.completeWorkout(path: .init(workout: id))
+        let output = try await client.completeWorkout(path: .init(workoutId: id))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
         case .unauthorized(let response):
@@ -93,7 +93,7 @@ public struct APIWorkoutRepository: WorkoutRepository {
     }
 
     public func delete(id: Int) async throws {
-        let output = try await client.deleteWorkout(path: .init(workout: id))
+        let output = try await client.deleteWorkout(path: .init(workoutId: id))
         switch output {
         case .noContent: return
         case .unauthorized(let response):
@@ -104,7 +104,7 @@ public struct APIWorkoutRepository: WorkoutRepository {
     }
 
     public func `repeat`(id: Int) async throws -> Workout {
-        let output = try await client.repeatWorkout(path: .init(workout: id))
+        let output = try await client.repeatWorkout(path: .init(workoutId: id))
         switch output {
         case .created(let response): return try Workout(api: try response.body.json.data)
         case .unauthorized(let response):

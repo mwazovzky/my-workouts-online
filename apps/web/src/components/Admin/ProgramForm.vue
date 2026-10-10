@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useApiForm } from '@/composables/useApiForm';
 import { useTranslation } from '@/composables/useTranslation';
+import { WEEKDAYS, weekdayLabel } from '@/lib/enumLabels';
 
 const props = defineProps({
   program: { type: Object, default: null },
@@ -20,8 +21,6 @@ const emit = defineEmits(['saved', 'cancel']);
 const { t } = useTranslation();
 
 const isEdit = computed(() => props.program !== null);
-
-const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 function mapAssignments(program) {
   if (!program?.assignments?.length) {
@@ -50,7 +49,7 @@ const form = useApiForm({
 function addAssignment() {
   form.assignments.push({
     workout_template_id: props.templates[0]?.id ?? '',
-    weekday: weekdays[0],
+    weekday: WEEKDAYS[0],
   });
 }
 
@@ -123,7 +122,9 @@ function submit() {
         <div class="flex-1">
           <InputLabel :for="`weekday_${index}`" :value="t('Weekday')" />
           <Select :id="`weekday_${index}`" v-model="assignment.weekday" class="mt-1">
-            <option v-for="day in weekdays" :key="day" :value="day">{{ t(day) }}</option>
+            <option v-for="day in WEEKDAYS" :key="day" :value="day">
+              {{ weekdayLabel(t, day) }}
+            </option>
           </Select>
         </div>
         <div class="flex-1">

@@ -18,9 +18,8 @@ class WorkoutTemplateResource extends JsonResource
         ];
 
         if ($this->pivot && $this->pivot->weekday) {
-            $data['pivot'] = [
+            $data['assignment'] = [
                 'weekday' => $this->pivot->weekday,
-                'weekday_label' => __($this->pivot->weekday),
             ];
         }
 

@@ -86,7 +86,8 @@ struct APIMappingTests {
         #expect(programs.allSatisfy { !$0.name.isEmpty })
 
         let detail = try ProgramDetail(
-            api: try await Fixtures.client(returning: "program-detail").getProgram(path: .init(program: 1)).ok.body.json
+            api: try await Fixtures.client(returning: "program-detail").getProgram(path: .init(programId: 1)).ok.body
+                .json
                 .data)
         #expect(!detail.workoutTemplates.isEmpty)
         let template = try #require(detail.workoutTemplates.first)
@@ -96,12 +97,14 @@ struct APIMappingTests {
     @Test("workout template with activities and sets")
     func workoutTemplate() async throws {
         let template = try WorkoutTemplate(
-            api: try await Fixtures.client(returning: "workout-template").getWorkoutTemplate(path: .init(id: 1)).ok.body
+            api: try await Fixtures.client(returning: "workout-template").getWorkoutTemplate(
+                path: .init(workoutTemplateId: 1)
+            ).ok.body
                 .json.data)
         #expect(!template.activities.isEmpty)
         let activity = try #require(template.activities.first)
         #expect(activity.effortType != nil)
-        #expect(!activity.effortLabel.isEmpty)
+        #expect(activity.effortType != nil, "template activities carry the exercise snapshot")
         #expect(!activity.sets.isEmpty)
     }
 
@@ -113,7 +116,6 @@ struct APIMappingTests {
         #expect(exercises.contains { $0.difficultyUnit == .heartRateZone })
         #expect(exercises.contains { $0.difficultyUnit == .none })
         #expect(exercises.contains { $0.effortType == .duration })
-        #expect(exercises.allSatisfy { !$0.effortLabel.isEmpty })
     }
 
     @Test("paginated workouts")
@@ -129,7 +131,8 @@ struct APIMappingTests {
     @Test("a workout with its template, activities, sets and dates")
     func workout() async throws {
         let workout = try Workout(
-            api: try await Fixtures.client(returning: "workout").getWorkout(path: .init(workout: 1)).ok.body.json.data)
+            api: try await Fixtures.client(returning: "workout").getWorkout(path: .init(workoutId: 1)).ok.body.json.data
+        )
         #expect(workout.template != nil)
         #expect(workout.activities.count == 2)
         #expect(workout.status == .completed)
@@ -163,7 +166,7 @@ struct APIMappingTests {
         #expect(APIError(status: 401, envelope: try response.body.applicationProblemJson).code == "unauthenticated")
 
         let notFound = try await Fixtures.client(returning: "error-404", status: 404).getWorkout(
-            path: .init(workout: 999_999))
+            path: .init(workoutId: 999_999))
         guard case .notFound(let nf) = notFound else {
             Issue.record("expected 404, got \(notFound)")
             return

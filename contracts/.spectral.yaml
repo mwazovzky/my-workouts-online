@@ -199,24 +199,30 @@ rules:
       functionOptions:
         match: "^[a-z][A-Za-z0-9]*$"
 
-  # TODO(contract-hardening/05): path parameters become `{programId}`-style.
   house-path-parameter-names:
-    description: Path parameters are lowerCamelCase and end in `Id`.
-    message: "Path parameter `{{value}}` must be lowerCamelCase ending in `Id`"
+    description: Path parameters are lowerCamelCase, never a framework binding name.
+    message: "Path parameter `{{value}}` must be lowerCamelCase"
     severity: error
-    recommended: false
     given: "$.paths[*]..parameters[?(@ && @.in == 'path')].name"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z]+([A-Z][a-z0-9]+)*$"
+
+  house-path-parameter-ids:
+    description: Integer path parameters identify a resource and are named `{resourceId}`.
+    message: "Integer path parameter `{{value}}` must end in `Id`"
+    severity: error
+    given: "$.paths[*]..parameters[?(@ && @.in == 'path' && @.schema && @.schema.type == 'integer')].name"
     then:
       function: pattern
       functionOptions:
         match: "^[a-z]+([A-Z][a-z0-9]+)*Id$"
 
-  # TODO(contract-hardening/05): `Weekday` becomes lowercase.
   house-enum-lowercase-snake-case:
     description: Named enum schemas use lowercase snake_case values.
     message: "Enum value `{{value}}` must be lowercase snake_case"
     severity: error
-    recommended: false
     given: "$.components.schemas[*].enum[?(@ !== null)]"
     then:
       function: pattern

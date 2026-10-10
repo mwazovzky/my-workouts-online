@@ -103,9 +103,9 @@ struct ActivitySummaryCard: View {
                     GridRow {
                         Text(verbatim: "#")
                         if activity.difficultyUnit?.hasValue ?? false {
-                            Text(verbatim: activity.difficultyLabel ?? "")
+                            Text(verbatim: activity.difficultyUnit?.displayName ?? "")
                         }
-                        Text(verbatim: activity.effortLabel)
+                        Text(verbatim: (activity.effortType ?? .repetitions).displayName)
                     }
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)

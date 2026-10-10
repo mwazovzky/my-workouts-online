@@ -23,7 +23,7 @@ class ProgramAdminTest extends TestCase
                 'ru' => ['name' => 'Велозаезд для новичков', 'description' => 'План на неделю.'],
             ],
             'assignments' => [
-                ['workout_template_id' => $template->id, 'weekday' => 'Monday'],
+                ['workout_template_id' => $template->id, 'weekday' => 'monday'],
             ],
         ], $overrides);
     }
@@ -59,8 +59,8 @@ class ProgramAdminTest extends TestCase
 
         $response = $this->actingAs($admin)->postJson('/api/v1/admin/programs', $this->validPayload([
             'assignments' => [
-                ['workout_template_id' => $monday->id, 'weekday' => 'Monday'],
-                ['workout_template_id' => $wednesday->id, 'weekday' => 'Wednesday'],
+                ['workout_template_id' => $monday->id, 'weekday' => 'monday'],
+                ['workout_template_id' => $wednesday->id, 'weekday' => 'wednesday'],
             ],
         ]));
 
@@ -72,10 +72,10 @@ class ProgramAdminTest extends TestCase
             'locale' => 'ru', 'field' => 'name', 'value' => 'Велозаезд для новичков',
         ]);
         $this->assertDatabaseHas('program_workout_template', [
-            'program_id' => $id, 'workout_template_id' => $monday->id, 'weekday' => 'Monday',
+            'program_id' => $id, 'workout_template_id' => $monday->id, 'weekday' => 'monday',
         ]);
         $this->assertDatabaseHas('program_workout_template', [
-            'program_id' => $id, 'workout_template_id' => $wednesday->id, 'weekday' => 'Wednesday',
+            'program_id' => $id, 'workout_template_id' => $wednesday->id, 'weekday' => 'wednesday',
         ]);
     }
 
@@ -87,8 +87,8 @@ class ProgramAdminTest extends TestCase
 
         $response = $this->actingAs($admin)->postJson('/api/v1/admin/programs', $this->validPayload([
             'assignments' => [
-                ['workout_template_id' => $template->id, 'weekday' => 'Tuesday'],
-                ['workout_template_id' => $template->id, 'weekday' => 'Thursday'],
+                ['workout_template_id' => $template->id, 'weekday' => 'tuesday'],
+                ['workout_template_id' => $template->id, 'weekday' => 'thursday'],
             ],
         ]));
 
@@ -143,7 +143,7 @@ class ProgramAdminTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)->postJson('/api/v1/admin/programs', $this->validPayload([
-            'assignments' => [['workout_template_id' => 99999, 'weekday' => 'Monday']],
+            'assignments' => [['workout_template_id' => 99999, 'weekday' => 'monday']],
         ]))->assertUnprocessable()->assertFieldErrors(['assignments.0.workout_template_id']);
     }
 
@@ -161,7 +161,7 @@ class ProgramAdminTest extends TestCase
                 'data' => [
                     'id',
                     'translations' => ['name' => ['en', 'ru'], 'description' => ['en', 'ru']],
-                    'assignments' => [['workout_template_id', 'weekday', 'weekday_label']],
+                    'assignments' => [['workout_template_id', 'weekday']],
                 ],
             ]);
     }
@@ -178,12 +178,12 @@ class ProgramAdminTest extends TestCase
 
         $this->actingAs($admin)->putJson("/api/v1/admin/programs/{$id}", [
             'translations' => ['en' => ['name' => 'Intermediate Cycling']],
-            'assignments' => [['workout_template_id' => $newTemplate->id, 'weekday' => 'Friday']],
+            'assignments' => [['workout_template_id' => $newTemplate->id, 'weekday' => 'friday']],
         ])->assertOk();
 
         $this->assertDatabaseCount('program_workout_template', 1);
         $this->assertDatabaseHas('program_workout_template', [
-            'program_id' => $id, 'workout_template_id' => $newTemplate->id, 'weekday' => 'Friday',
+            'program_id' => $id, 'workout_template_id' => $newTemplate->id, 'weekday' => 'friday',
         ]);
     }
 

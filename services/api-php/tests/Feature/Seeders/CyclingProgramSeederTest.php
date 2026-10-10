@@ -70,8 +70,8 @@ class CyclingProgramSeederTest extends TestCase
     {
         $program = $this->runSeeder();
 
-        $tuesday = $program->workoutTemplates()->wherePivot('weekday', 'Tuesday')->firstOrFail();
-        $thursday = $program->workoutTemplates()->wherePivot('weekday', 'Thursday')->firstOrFail();
+        $tuesday = $program->workoutTemplates()->wherePivot('weekday', 'tuesday')->firstOrFail();
+        $thursday = $program->workoutTemplates()->wherePivot('weekday', 'thursday')->firstOrFail();
 
         $this->assertSame($tuesday->id, $thursday->id);
     }
@@ -82,7 +82,7 @@ class CyclingProgramSeederTest extends TestCase
         $program = $this->runSeeder();
 
         $monday = $program->workoutTemplates()
-            ->wherePivot('weekday', 'Monday')
+            ->wherePivot('weekday', 'monday')
             ->with(['activities.sets'])
             ->firstOrFail();
 

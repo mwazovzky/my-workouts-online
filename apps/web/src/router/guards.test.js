@@ -56,7 +56,7 @@ import { useAuthStore } from '@/stores/auth';
 
 describe('installGuards', () => {
   it('bootstraps the session before every navigation and applies the redirect', async () => {
-    withPinia({ id: 1, email_verified: true, is_admin: false });
+    withPinia({ id: 1, email_verified_at: '2026-10-01T09:30:00Z', is_admin: false });
     const auth = useAuthStore();
     const bootstrap = vi.spyOn(auth, 'bootstrap').mockResolvedValue(undefined);
     const router = { beforeEach: vi.fn() };

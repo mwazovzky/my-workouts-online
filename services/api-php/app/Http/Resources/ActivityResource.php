@@ -15,15 +15,16 @@ class ActivityResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'exercise_id' => $this->exercise_id ?? null,
-            'exercise_name' => $exercise?->name,
-            'rest_time_seconds' => $exercise?->rest_time_seconds,
-            'exercise_equipment_name' => $equipment?->name,
-            'exercise_effort_type' => $exercise?->effort_type?->value,
-            'exercise_effort_label' => $exercise?->effort_type?->columnLabel() ?? '',
-            'exercise_difficulty_unit' => $equipment?->difficulty_unit?->value,
-            'exercise_difficulty_label' => $equipment?->difficulty_unit?->columnLabel() ?? '',
-            'exercise_category_names' => $categories->pluck('name')->values()->all(),
+            'exercise_id' => $this->exercise_id,
+            'exercise' => $this->when($exercise !== null && $equipment !== null, fn () => [
+                'id' => $exercise->id,
+                'name' => $exercise->name,
+                'equipment_name' => $equipment->name,
+                'effort_type' => $exercise->effort_type->value,
+                'difficulty_unit' => $equipment->difficulty_unit->value,
+                'category_names' => $categories->pluck('name')->values()->all(),
+                'rest_time_seconds' => $exercise->rest_time_seconds,
+            ]),
             'sets' => SetResource::collection($sets)->resolve(),
         ];
     }

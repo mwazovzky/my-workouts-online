@@ -3,6 +3,7 @@ import ModelCard from '@/components/ModelCard.vue';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/utils/date';
 import { useTranslation } from '@/composables/useTranslation';
+import { statusLabel } from '@/lib/enumLabels';
 
 const { t } = useTranslation();
 
@@ -26,7 +27,7 @@ defineProps({
           {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
         >
         <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-          {{ workout.status_label ?? workout.status }}
+          {{ statusLabel(t, workout.status) }}
         </Badge>
       </div>
     </template>

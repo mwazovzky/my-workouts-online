@@ -65,7 +65,7 @@ class DashboardController extends Controller
 
     /**
      * @param  Collection<int, Program>  $programs
-     * @return array<int, array{id: string, program_id: int, program_name: ?string, workout_template_id: int, workout_name: ?string, weekday: string, weekday_label: string, scheduled_at: string, scheduled_for: string}>
+     * @return array<int, array{id: string, program_id: int, program_name: ?string, workout_template_id: int, workout_name: ?string, weekday: string, scheduled_at: string, scheduled_for: string}>
      */
     private function buildUpcomingSchedule(Collection $programs): array
     {
@@ -83,7 +83,6 @@ class DashboardController extends Controller
                         'workout_template_id' => $workoutTemplate->id,
                         'workout_name' => $workoutTemplate->name,
                         'weekday' => $workoutTemplate->pivot->weekday,
-                        'weekday_label' => __($workoutTemplate->pivot->weekday),
                         'scheduled_at' => $scheduledDate->startOfDay()->toIso8601String(),
                         'scheduled_for' => $scheduledDate->toDateString(),
                     ];

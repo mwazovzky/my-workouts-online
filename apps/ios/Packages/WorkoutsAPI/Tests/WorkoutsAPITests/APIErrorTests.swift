@@ -58,7 +58,7 @@ struct APIErrorTests {
         let output = try await Client(
             serverURL: baseURL, configuration: APIClientFactory.configuration, transport: transport, middlewares: []
         )
-        .getWorkout(path: .init(workout: 999))
+        .getWorkout(path: .init(workoutId: 999))
         guard case .notFound(let response) = output else {
             Issue.record("expected 404, got \(output)")
             return

@@ -24,11 +24,11 @@ class WorkoutTemplateStoreRequest extends ApiFormRequest
             ...$this->translationRules(['name', 'description']),
 
             'activities' => ['required', 'array', 'min:1'],
-            'activities.*.exercise_id' => ['required', 'integer', 'exists:exercises,id'],
-            'activities.*.order' => ['required', 'integer', 'min:1', 'max:1000'],
+            'activities.*.exercise_id' => ['required', 'integer:strict', 'exists:exercises,id'],
+            'activities.*.order' => ['required', 'integer:strict', 'min:1', 'max:1000'],
             'activities.*.sets' => ['required', 'array', 'min:1'],
-            'activities.*.sets.*.order' => ['required', 'integer', 'min:1', 'max:1000'],
-            'activities.*.sets.*.effort_value' => ['required', 'integer', 'min:0', 'max:100000'],
+            'activities.*.sets.*.order' => ['required', 'integer:strict', 'min:1', 'max:1000'],
+            'activities.*.sets.*.effort_value' => ['required', 'integer:strict', 'min:0', 'max:100000'],
             'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0', 'max:10000', new HeartRateZoneWithinRange],
         ];
     }

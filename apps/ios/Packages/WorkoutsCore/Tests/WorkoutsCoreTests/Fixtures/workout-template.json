@@ -7,17 +7,18 @@
             {
                 "id": 8,
                 "exercise_id": 44,
-                "exercise_name": "Machine Chest Press",
-                "rest_time_seconds": 90,
-                "exercise_equipment_name": "Chest Press Machine",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "plates",
-                "exercise_difficulty_label": "Plates",
-                "exercise_category_names": [
-                    "Chest",
-                    "Triceps"
-                ],
+                "exercise": {
+                    "id": 44,
+                    "name": "Machine Chest Press",
+                    "equipment_name": "Chest Press Machine",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "plates",
+                    "category_names": [
+                        "Chest",
+                        "Triceps"
+                    ],
+                    "rest_time_seconds": 90
+                },
                 "sets": [
                     {
                         "id": 8,
@@ -45,17 +46,18 @@
             {
                 "id": 9,
                 "exercise_id": 124,
-                "exercise_name": "Machine Shoulder Press",
-                "rest_time_seconds": 90,
-                "exercise_equipment_name": "Shoulder Press Machine",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "plates",
-                "exercise_difficulty_label": "Plates",
-                "exercise_category_names": [
-                    "Shoulders",
-                    "Triceps"
-                ],
+                "exercise": {
+                    "id": 124,
+                    "name": "Machine Shoulder Press",
+                    "equipment_name": "Shoulder Press Machine",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "plates",
+                    "category_names": [
+                        "Shoulders",
+                        "Triceps"
+                    ],
+                    "rest_time_seconds": 90
+                },
                 "sets": [
                     {
                         "id": 11,
@@ -83,17 +85,18 @@
             {
                 "id": 10,
                 "exercise_id": 24,
-                "exercise_name": "Lat Pulldown",
-                "rest_time_seconds": 90,
-                "exercise_equipment_name": "Lat Pulldown Machine",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "plates",
-                "exercise_difficulty_label": "Plates",
-                "exercise_category_names": [
-                    "Back",
-                    "Biceps"
-                ],
+                "exercise": {
+                    "id": 24,
+                    "name": "Lat Pulldown",
+                    "equipment_name": "Lat Pulldown Machine",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "plates",
+                    "category_names": [
+                        "Back",
+                        "Biceps"
+                    ],
+                    "rest_time_seconds": 90
+                },
                 "sets": [
                     {
                         "id": 14,
@@ -121,17 +124,18 @@
             {
                 "id": 11,
                 "exercise_id": 94,
-                "exercise_name": "Leg Press",
-                "rest_time_seconds": 120,
-                "exercise_equipment_name": "Leg Press Machine",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "plates",
-                "exercise_difficulty_label": "Plates",
-                "exercise_category_names": [
-                    "Legs",
-                    "Glutes"
-                ],
+                "exercise": {
+                    "id": 94,
+                    "name": "Leg Press",
+                    "equipment_name": "Leg Press Machine",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "plates",
+                    "category_names": [
+                        "Legs",
+                        "Glutes"
+                    ],
+                    "rest_time_seconds": 120
+                },
                 "sets": [
                     {
                         "id": 17,
@@ -159,16 +163,17 @@
             {
                 "id": 12,
                 "exercise_id": 2,
-                "exercise_name": "Barbell Curl",
-                "rest_time_seconds": 60,
-                "exercise_equipment_name": "Barbell",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "kilograms",
-                "exercise_difficulty_label": "Weight (kg)",
-                "exercise_category_names": [
-                    "Biceps"
-                ],
+                "exercise": {
+                    "id": 2,
+                    "name": "Barbell Curl",
+                    "equipment_name": "Barbell",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "kilograms",
+                    "category_names": [
+                        "Biceps"
+                    ],
+                    "rest_time_seconds": 60
+                },
                 "sets": [
                     {
                         "id": 20,
@@ -196,16 +201,17 @@
             {
                 "id": 13,
                 "exercise_id": 5,
-                "exercise_name": "Cable Triceps Pushdown",
-                "rest_time_seconds": 60,
-                "exercise_equipment_name": "Cable Machine",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "plates",
-                "exercise_difficulty_label": "Plates",
-                "exercise_category_names": [
-                    "Triceps"
-                ],
+                "exercise": {
+                    "id": 5,
+                    "name": "Cable Triceps Pushdown",
+                    "equipment_name": "Cable Machine",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "plates",
+                    "category_names": [
+                        "Triceps"
+                    ],
+                    "rest_time_seconds": 60
+                },
                 "sets": [
                     {
                         "id": 23,
@@ -233,16 +239,17 @@
             {
                 "id": 14,
                 "exercise_id": 122,
-                "exercise_name": "Dumbbell Lateral Raise",
-                "rest_time_seconds": 60,
-                "exercise_equipment_name": "Dumbbell",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "kilograms",
-                "exercise_difficulty_label": "Weight (kg)",
-                "exercise_category_names": [
-                    "Shoulders"
-                ],
+                "exercise": {
+                    "id": 122,
+                    "name": "Dumbbell Lateral Raise",
+                    "equipment_name": "Dumbbell",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "kilograms",
+                    "category_names": [
+                        "Shoulders"
+                    ],
+                    "rest_time_seconds": 60
+                },
                 "sets": [
                     {
                         "id": 26,
@@ -270,16 +277,17 @@
             {
                 "id": 15,
                 "exercise_id": 60,
-                "exercise_name": "Crunch",
-                "rest_time_seconds": 45,
-                "exercise_equipment_name": "Bodyweight",
-                "exercise_effort_type": "repetitions",
-                "exercise_effort_label": "Reps",
-                "exercise_difficulty_unit": "none",
-                "exercise_difficulty_label": "",
-                "exercise_category_names": [
-                    "Core"
-                ],
+                "exercise": {
+                    "id": 60,
+                    "name": "Crunch",
+                    "equipment_name": "Bodyweight",
+                    "effort_type": "repetitions",
+                    "difficulty_unit": "none",
+                    "category_names": [
+                        "Core"
+                    ],
+                    "rest_time_seconds": 45
+                },
                 "sets": [
                     {
                         "id": 29,

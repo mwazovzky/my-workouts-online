@@ -257,14 +257,15 @@ function normalizeActivities(payload, existing = []) {
     clientKey: existing[index]?.clientKey ?? nextClientKey(),
     id: a.id,
     exercise_id: a.exercise_id ?? null,
-    exercise_name: a.exercise_name ?? '',
-    rest_time_seconds: a.rest_time_seconds ?? null,
-    exercise_equipment_name: a.exercise_equipment_name ?? null,
-    exercise_category_names: a.exercise_category_names ?? [],
-    exercise_effort_type: a.exercise_effort_type ?? 'repetitions',
-    exercise_effort_label: a.exercise_effort_label ?? '',
-    exercise_difficulty_unit: a.exercise_difficulty_unit ?? null,
-    exercise_difficulty_label: a.exercise_difficulty_label ?? '',
+    exercise: {
+      id: a.exercise?.id ?? a.exercise_id ?? null,
+      name: a.exercise?.name ?? '',
+      equipment_name: a.exercise?.equipment_name ?? null,
+      effort_type: a.exercise?.effort_type ?? 'repetitions',
+      difficulty_unit: a.exercise?.difficulty_unit ?? null,
+      category_names: a.exercise?.category_names ?? [],
+      rest_time_seconds: a.exercise?.rest_time_seconds ?? null,
+    },
     sets: (a.sets ?? []).map(s => ({
       id: s.id ?? null,
       order: s.order,
@@ -414,7 +415,7 @@ function onAddSet({ activityKey }) {
     effort_value: lastSet ? lastSet.effort_value : 0,
     difficulty_value: lastSet
       ? lastSet.difficulty_value
-      : defaultDifficultyValue(activity.exercise_difficulty_unit),
+      : defaultDifficultyValue(activity.exercise.difficulty_unit),
     is_completed: false,
   });
   markDirty();
@@ -505,14 +506,15 @@ function onExerciseSelected(exercise) {
     clientKey: nextClientKey(),
     id: null,
     exercise_id: exercise.id,
-    exercise_name: exercise.name ?? '',
-    rest_time_seconds: exercise.rest_time_seconds ?? null,
-    exercise_equipment_name: exercise.equipment_name ?? null,
-    exercise_category_names: (exercise.categories ?? []).map(c => c.name),
-    exercise_effort_type: exercise.effort_type ?? 'repetitions',
-    exercise_effort_label: exercise.effort_label ?? '',
-    exercise_difficulty_unit: exercise.difficulty_unit ?? null,
-    exercise_difficulty_label: exercise.difficulty_label ?? '',
+    exercise: {
+      id: exercise.id,
+      name: exercise.name ?? '',
+      equipment_name: exercise.equipment_name ?? null,
+      effort_type: exercise.effort_type ?? 'repetitions',
+      difficulty_unit: exercise.difficulty_unit ?? null,
+      category_names: (exercise.categories ?? []).map(c => c.name),
+      rest_time_seconds: exercise.rest_time_seconds ?? null,
+    },
     sets: [
       {
         id: null,

@@ -58,7 +58,6 @@ public final class ProgramListViewModel {
 /// weekday in calendar order, then templates without a slot under "Not scheduled".
 public struct WeekdaySection: Sendable, Equatable, Identifiable {
     public let weekday: Weekday?
-    public let label: String?
     public let templates: [WorkoutTemplate]
     public var id: String { weekday?.rawValue ?? "unscheduled" }
 }
@@ -83,11 +82,11 @@ public final class ProgramDetailViewModel {
         var sections = Weekday.allCases.compactMap { weekday -> WeekdaySection? in
             let matching = templates.filter { $0.schedule?.weekday == weekday }
             guard !matching.isEmpty else { return nil }
-            return WeekdaySection(weekday: weekday, label: matching.first?.schedule?.weekdayLabel, templates: matching)
+            return WeekdaySection(weekday: weekday, templates: matching)
         }
         let unscheduled = templates.filter { $0.schedule == nil }
         if !unscheduled.isEmpty {
-            sections.append(WeekdaySection(weekday: nil, label: nil, templates: unscheduled))
+            sections.append(WeekdaySection(weekday: nil, templates: unscheduled))
         }
         return sections
     }

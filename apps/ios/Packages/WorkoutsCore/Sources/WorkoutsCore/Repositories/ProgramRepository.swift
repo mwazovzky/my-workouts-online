@@ -25,7 +25,7 @@ public struct APIProgramRepository: ProgramRepository {
     }
 
     public func program(id: Int) async throws -> ProgramDetail {
-        let output = try await client.getProgram(path: .init(program: id))
+        let output = try await client.getProgram(path: .init(programId: id))
         switch output {
         case .ok(let response): return try ProgramDetail(api: try response.body.json.data)
         case .unauthorized(let response):
@@ -36,7 +36,7 @@ public struct APIProgramRepository: ProgramRepository {
     }
 
     public func enroll(programId: Int) async throws {
-        let output = try await client.enrollProgram(path: .init(program: programId))
+        let output = try await client.enrollProgram(path: .init(programId: programId))
         switch output {
         case .noContent: return
         case .unauthorized(let response):
@@ -59,7 +59,7 @@ public struct APITemplateRepository: TemplateRepository {
     }
 
     public func template(id: Int) async throws -> WorkoutTemplate {
-        let output = try await client.getWorkoutTemplate(path: .init(id: id))
+        let output = try await client.getWorkoutTemplate(path: .init(workoutTemplateId: id))
         switch output {
         case .ok(let response): return try WorkoutTemplate(api: try response.body.json.data)
         case .unauthorized(let response):

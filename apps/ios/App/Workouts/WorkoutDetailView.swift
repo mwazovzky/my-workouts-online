@@ -66,7 +66,7 @@ struct WorkoutDetailView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Text(verbatim: workout.statusLabel)
+                        Text(verbatim: workout.status.displayName)
                             .font(.caption.weight(.medium))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)

@@ -458,6 +458,22 @@
         }
       }
     },
+    "Completed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершена"
+          }
+        }
+      }
+    },
     "Completed in last 7 days" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -819,7 +835,6 @@
       }
     },
     "Duration" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1380,7 +1395,6 @@
       }
     },
     "Friday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1391,7 +1405,6 @@
       }
     },
     "Heart-rate zone" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1418,6 +1431,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Я подтвердил(а) почту"
+          }
+        }
+      }
+    },
+    "In Progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Progress"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В процессе"
           }
         }
       }
@@ -1639,7 +1668,6 @@
       }
     },
     "Monday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2253,7 +2281,6 @@
       }
     },
     "Reps" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2339,7 +2366,6 @@
       }
     },
     "Saturday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2571,7 +2597,6 @@
       }
     },
     "Sunday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2727,7 +2752,6 @@
       }
     },
     "Thursday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2778,7 +2802,6 @@
       }
     },
     "Tuesday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2918,7 +2941,6 @@
       }
     },
     "Wednesday" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2957,6 +2979,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вес"
+          }
+        }
+      }
+    },
+    "Weight (kg)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight (kg)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вес (кг)"
+          }
+        }
+      }
+    },
+    "Weight (lbs)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight (lbs)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вес (фунты)"
           }
         }
       }
@@ -3355,7 +3409,6 @@
       }
     },
     "plates" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

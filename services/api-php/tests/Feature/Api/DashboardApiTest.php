@@ -101,7 +101,7 @@ class DashboardApiTest extends TestCase
         $user = User::factory()->create();
         $template = WorkoutTemplate::factory()->create();
         $program = Program::factory()->create();
-        $program->workoutTemplates()->attach($template->id, ['weekday' => 'Tuesday']);
+        $program->workoutTemplates()->attach($template->id, ['weekday' => 'tuesday']);
         $user->programs()->attach($program->id);
 
         $response = $this->actingAs($user)->getJson('/api/v1/dashboard');
@@ -124,7 +124,7 @@ class DashboardApiTest extends TestCase
         $user = User::factory()->create();
         $program = Program::factory()->create();
 
-        foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $weekday) {
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $weekday) {
             $template = WorkoutTemplate::factory()->create();
             $program->workoutTemplates()->attach($template->id, ['weekday' => $weekday]);
         }
