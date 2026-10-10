@@ -12,7 +12,7 @@ class WeekdayTest extends TestCase
     public function values_returns_all_seven_days_in_order(): void
     {
         $this->assertSame(
-            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
             Weekday::values(),
         );
     }

@@ -20,7 +20,7 @@ class TranslatedResourceTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function workout_index_returns_russian_status_label_for_russian_user(): void
+    public function workout_index_returns_the_status_enum_for_a_russian_user(): void
     {
         $user = User::factory()->create(['locale' => 'ru']);
 
@@ -38,12 +38,12 @@ class TranslatedResourceTest extends TestCase
 
         $workouts = $response->json('data');
         $this->assertNotEmpty($workouts);
-        $this->assertEquals('В процессе', $workouts[0]['status_label']);
         $this->assertEquals('in_progress', $workouts[0]['status']);
+        $this->assertArrayNotHasKey('status_label', $workouts[0]);
     }
 
     #[Test]
-    public function workout_index_returns_english_status_label_for_english_user(): void
+    public function workout_index_returns_the_status_enum_for_an_english_user(): void
     {
         $user = User::factory()->create(['locale' => 'en']);
 
@@ -61,7 +61,8 @@ class TranslatedResourceTest extends TestCase
 
         $workouts = $response->json('data');
         $this->assertNotEmpty($workouts);
-        $this->assertEquals('Completed', $workouts[0]['status_label']);
+        $this->assertEquals('completed', $workouts[0]['status']);
+        $this->assertArrayNotHasKey('status_label', $workouts[0]);
     }
 
     #[Test]
@@ -132,6 +133,9 @@ class TranslatedResourceTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertEquals('В процессе', $response->json('data.status_label'));
+        $response->assertJsonPath('data.activities.0.exercise.name', 'Жим лёжа')
+            ->assertJsonPath('data.activities.0.exercise.equipment_name', 'Штанга')
+            ->assertJsonPath('data.activities.0.exercise.category_names', ['Грудь'])
+            ->assertJsonPath('data.activities.0.exercise.rest_time_seconds', 90);
     }
 }

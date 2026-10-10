@@ -615,7 +615,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthenticated'
 
-  /api/v1/programs/{program}:
+  /api/v1/programs/{programId}:
     get:
       tags: [Programs]
       summary: Program with its weekday-assigned templates
@@ -638,7 +638,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/programs/{program}/enroll:
+  /api/v1/programs/{programId}/enroll:
     post:
       tags: [Programs]
       summary: Enroll the caller in a program (idempotent)
@@ -653,17 +653,14 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/workout-templates/{id}:
+  /api/v1/workout-templates/{workoutTemplateId}:
     get:
       tags: [Workout Templates]
       summary: Workout template with activities and sets
       operationId: getWorkoutTemplate
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
-        - name: id
-          in: path
-          required: true
-          schema: { type: integer }
+        - $ref: '#/components/parameters/WorkoutTemplateId'
       responses:
         '200':
           description: Template
@@ -749,7 +746,7 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
-  /api/v1/workouts/{workout}:
+  /api/v1/workouts/{workoutId}:
     get:
       tags: [Workouts]
       summary: Workout with activities and sets (owner only)
@@ -779,7 +776,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/workouts/{workout}/save:
+  /api/v1/workouts/{workoutId}/save:
     patch:
       tags: [Workouts]
       summary: Bulk-save activities and sets of an in-progress workout
@@ -806,7 +803,7 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
-  /api/v1/workouts/{workout}/complete:
+  /api/v1/workouts/{workoutId}/complete:
     post:
       tags: [Workouts]
       summary: Mark a workout completed
@@ -824,7 +821,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/workouts/{workout}/repeat:
+  /api/v1/workouts/{workoutId}/repeat:
     post:
       tags: [Workouts]
       summary: Create a new in-progress copy of a workout (template link dropped)
@@ -877,12 +874,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
-  /api/v1/admin/equipment/{equipment}:
+  /api/v1/admin/equipment/{equipmentId}:
     parameters:
-      - name: equipment
-        in: path
-        required: true
-        schema: { type: integer }
+      - $ref: '#/components/parameters/EquipmentId'
     get:
       tags: [Admin]
       summary: Show equipment
@@ -952,12 +946,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
-  /api/v1/admin/categories/{category}:
+  /api/v1/admin/categories/{categoryId}:
     parameters:
-      - name: category
-        in: path
-        required: true
-        schema: { type: integer }
+      - $ref: '#/components/parameters/CategoryId'
     get:
       tags: [Admin]
       summary: Show category
@@ -1026,12 +1017,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
-  /api/v1/admin/exercises/{exercise}:
+  /api/v1/admin/exercises/{exerciseId}:
     parameters:
-      - name: exercise
-        in: path
-        required: true
-        schema: { type: integer }
+      - $ref: '#/components/parameters/ExerciseId'
     get:
       tags: [Admin]
       summary: Show exercise
@@ -1100,12 +1088,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
-  /api/v1/admin/workout-templates/{workout_template}:
+  /api/v1/admin/workout-templates/{workoutTemplateId}:
     parameters:
-      - name: workout_template
-        in: path
-        required: true
-        schema: { type: integer }
+      - $ref: '#/components/parameters/WorkoutTemplateId'
     get:
       tags: [Admin]
       summary: Show workout template
@@ -1175,7 +1160,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
-  /api/v1/admin/programs/{program}:
+  /api/v1/admin/programs/{programId}:
     parameters:
       - $ref: '#/components/parameters/ProgramId'
     get:
@@ -1236,12 +1221,32 @@ components:
       description: CSRF guard for cookie-carried refresh tokens.
       schema: { type: string, enum: [XMLHttpRequest] }
     ProgramId:
-      name: program
+      name: programId
       in: path
       required: true
       schema: { type: integer }
     WorkoutId:
-      name: workout
+      name: workoutId
+      in: path
+      required: true
+      schema: { type: integer }
+    WorkoutTemplateId:
+      name: workoutTemplateId
+      in: path
+      required: true
+      schema: { type: integer }
+    EquipmentId:
+      name: equipmentId
+      in: path
+      required: true
+      schema: { type: integer }
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: integer }
+    ExerciseId:
+      name: exerciseId
       in: path
       required: true
       schema: { type: integer }
@@ -1545,7 +1550,6 @@ components:
             user_id: 7
             name: Push A
             status: completed
-            status_label: Completed
             created_at: '2026-10-05T18:06:30Z'
             updated_at: '2026-10-05T19:02:11Z'
             activities_count: 6
@@ -1568,8 +1572,8 @@ components:
       description: Decides whether the refresh token is delivered as a cookie (web) or in the body (native).
     Weekday:
       type: string
-      description: Capitalised English day names, matching the `Weekday` enum backing values.
-      enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+      description: Lowercase English day names. Clients render their own localized label.
+      enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
     EffortType:
       type: string
       enum: [repetitions, duration]
@@ -1656,7 +1660,7 @@ components:
         access_token: eyJhbGciOiJFZERTQSIsImtpZCI6IjFmMmUzZDRjNWI2YTc5ODAifQ.e30.sig
         token_type: Bearer
         expires_in: 900
-        user: { id: 7, name: Ada, email: ada@example.com, locale: en, theme_preference: system, is_admin: false, email_verified: true }
+        user: { id: 7, name: Ada, email: ada@example.com, locale: en, theme_preference: system, is_admin: false, email_verified_at: '2026-10-01T09:30:00Z' }
 
     # ------------------------------------------------------------- Users
     MePatch:
@@ -1671,7 +1675,7 @@ components:
         theme_preference: { $ref: '#/components/schemas/ThemePreference' }
     User:
       type: object
-      required: [id, name, email, locale, theme_preference, is_admin, email_verified]
+      required: [id, name, email, locale, theme_preference, is_admin, email_verified_at]
       properties:
         id: { type: integer }
         name: { type: [string, 'null'] }
@@ -1679,8 +1683,12 @@ components:
         locale: { $ref: '#/components/schemas/Locale' }
         theme_preference: { $ref: '#/components/schemas/ThemePreference' }
         is_admin: { type: boolean }
-        email_verified: { type: boolean }
-      example: { id: 7, name: Ada, email: ada@example.com, locale: en, theme_preference: system, is_admin: false, email_verified: true }
+        email_verified_at:
+          type: [string, 'null']
+          format: date-time
+          description: When the email address was verified; null until it is.
+          example: '2026-10-01T09:30:00Z'
+      example: { id: 7, name: Ada, email: ada@example.com, locale: en, theme_preference: system, is_admin: false, email_verified_at: '2026-10-01T09:30:00Z' }
 
     # ------------------------------------------------------------- Catalog
     Category:
@@ -1730,7 +1738,7 @@ components:
         translations: { $ref: '#/components/schemas/NameTranslationsWrite' }
     Exercise:
       type: object
-      required: [id, name, equipment_id, effort_type, effort_label, rest_time_seconds]
+      required: [id, name, equipment_id, effort_type, rest_time_seconds]
       example:
         id: 15
         name: Bench press
@@ -1738,9 +1746,7 @@ components:
         equipment_id: 2
         equipment_name: Barbell
         effort_type: repetitions
-        effort_label: Reps
         difficulty_unit: kilograms
-        difficulty_label: kg
         rest_time_seconds: 120
         category_ids: [3]
         categories: [{ id: 3, name: Chest }]
@@ -1751,9 +1757,7 @@ components:
         equipment_id: { type: integer }
         equipment_name: { type: [string, 'null'] }
         effort_type: { $ref: '#/components/schemas/EffortType' }
-        effort_label: { type: string }
         difficulty_unit: { $ref: '#/components/schemas/DifficultyUnit' }
-        difficulty_label: { type: string }
         rest_time_seconds: { type: [integer, 'null'] }
         category_ids:
           type: array
@@ -1779,9 +1783,7 @@ components:
         equipment_id: 2
         equipment_name: Barbell
         effort_type: repetitions
-        effort_label: Reps
         difficulty_unit: kilograms
-        difficulty_label: kg
         rest_time_seconds: 120
         category_ids: [3]
         categories: [{ id: 3, name: Chest }]
@@ -1830,7 +1832,7 @@ components:
             name: Strength 5x5 A
             description: Squat, bench press, barbell row.
             activities: []
-            pivot: { weekday: Monday, weekday_label: Monday }
+            assignment: { weekday: monday }
     ProgramWrite:
       type: object
       additionalProperties: false
@@ -1857,8 +1859,8 @@ components:
           name: { en: Strength 5x5, ru: Сила 5x5 }
           description: { en: Three full-body sessions a week., ru: null }
         assignments:
-          - { workout_template_id: 22, workout_template_name: Strength 5x5 A, weekday: Monday, weekday_label: Monday }
-          - { workout_template_id: 23, workout_template_name: Strength 5x5 B, weekday: Wednesday, weekday_label: Wednesday }
+          - { workout_template_id: 22, workout_template_name: Strength 5x5 A, weekday: monday }
+          - { workout_template_id: 23, workout_template_name: Strength 5x5 B, weekday: wednesday }
       properties:
         id: { type: integer }
         name: { type: [string, 'null'] }
@@ -1872,12 +1874,11 @@ components:
           type: array
           items:
             type: object
-            required: [workout_template_id, workout_template_name, weekday, weekday_label]
+            required: [workout_template_id, workout_template_name, weekday]
             properties:
               workout_template_id: { type: integer }
               workout_template_name: { type: [string, 'null'] }
               weekday: { $ref: '#/components/schemas/Weekday' }
-              weekday_label: { type: string }
     WorkoutTemplate:
       type: object
       required: [id, name, activities]
@@ -1888,14 +1889,14 @@ components:
         activities:
           - id: 301
             exercise_id: 15
-            exercise_name: Bench press
-            rest_time_seconds: 120
-            exercise_equipment_name: Barbell
-            exercise_effort_type: repetitions
-            exercise_effort_label: Reps
-            exercise_difficulty_unit: kilograms
-            exercise_difficulty_label: kg
-            exercise_category_names: [Chest]
+            exercise:
+              id: 15
+              name: Bench press
+              equipment_name: Barbell
+              effort_type: repetitions
+              difficulty_unit: kilograms
+              category_names: [Chest]
+              rest_time_seconds: 120
             sets:
               - { id: 901, order: 1, effort_value: 5, difficulty_value: null, is_completed: false }
       properties:
@@ -1905,13 +1906,12 @@ components:
         activities:
           type: array
           items: { $ref: '#/components/schemas/Activity' }
-        pivot:
+        assignment:
           type: object
-          description: Present when the template is listed inside a program.
-          required: [weekday, weekday_label]
+          description: The weekday this template is scheduled on; present only when the template is listed inside a program.
+          required: [weekday]
           properties:
             weekday: { $ref: '#/components/schemas/Weekday' }
-            weekday_label: { type: string }
     AdminWorkoutTemplate:
       type: object
       required: [id, name, translations]
@@ -1925,14 +1925,14 @@ components:
         activities:
           - id: 301
             exercise_id: 15
-            exercise_name: Bench press
-            rest_time_seconds: 120
-            exercise_equipment_name: Barbell
-            exercise_effort_type: repetitions
-            exercise_effort_label: Reps
-            exercise_difficulty_unit: kilograms
-            exercise_difficulty_label: kg
-            exercise_category_names: [Chest]
+            exercise:
+              id: 15
+              name: Bench press
+              equipment_name: Barbell
+              effort_type: repetitions
+              difficulty_unit: kilograms
+              category_names: [Chest]
+              rest_time_seconds: 120
             sets:
               - { id: 901, order: 1, effort_value: 5, difficulty_value: null, is_completed: false }
       properties:
@@ -1993,52 +1993,53 @@ components:
         is_completed: { type: boolean }
     Activity:
       type: object
-      required: [id, exercise_id, exercise_name, sets]
+      required: [id, exercise_id, sets]
       example:
         id: 501
         exercise_id: 15
-        exercise_name: Bench press
-        rest_time_seconds: 120
-        exercise_equipment_name: Barbell
-        exercise_effort_type: repetitions
-        exercise_effort_label: Reps
-        exercise_difficulty_unit: kilograms
-        exercise_difficulty_label: kg
-        exercise_category_names: [Chest]
+        exercise:
+          id: 15
+          name: Bench press
+          equipment_name: Barbell
+          effort_type: repetitions
+          difficulty_unit: kilograms
+          category_names: [Chest]
+          rest_time_seconds: 120
         sets:
           - { id: 901, order: 1, effort_value: 5, difficulty_value: 60, is_completed: true }
           - { id: 902, order: 2, effort_value: 5, difficulty_value: 60, is_completed: false }
       properties:
         id: { type: integer }
-        exercise_id: { type: [integer, 'null'] }
-        exercise_name: { type: [string, 'null'], description: Localized; retired exercises still resolve. }
-        rest_time_seconds: { type: [integer, 'null'] }
-        exercise_equipment_name: { type: [string, 'null'] }
-        exercise_effort_type:
-          description: Same values as `EffortType`, inlined because code generators drop nullable `$ref`s. Null when the exercise relation is not loaded (e.g. a template embedded in a freshly created workout).
-          type: [string, 'null']
-          enum: [repetitions, duration, null]
-        exercise_effort_label: { type: string }
-        exercise_difficulty_unit:
-          description: Same values as `DifficultyUnit`, inlined because code generators drop nullable `$ref`s.
-          type: [string, 'null']
-          enum: [kilograms, pounds, plates, heart_rate_zone, none, null]
-        exercise_difficulty_label: { type: string }
-        exercise_category_names:
-          type: array
-          items: { type: string }
+        exercise_id: { type: integer }
+        exercise:
+          description: Snapshot of the exercise for display. Absent when the exercise is not loaded (e.g. a template embedded in a freshly created workout); omitted rather than null because code generators drop nullable `$ref`s.
+          $ref: '#/components/schemas/ActivityExercise'
         sets:
           type: array
           items: { $ref: '#/components/schemas/Set' }
+    ActivityExercise:
+      type: object
+      required: [id, name, equipment_name, effort_type, difficulty_unit, category_names, rest_time_seconds]
+      properties:
+        id: { type: integer }
+        name: { type: [string, 'null'], description: Localized; retired exercises still resolve. }
+        equipment_name: { type: [string, 'null'], description: Localized. }
+        effort_type: { $ref: '#/components/schemas/EffortType' }
+        difficulty_unit: { $ref: '#/components/schemas/DifficultyUnit' }
+        category_names:
+          type: array
+          description: Localized category names.
+          items: { type: string }
+        rest_time_seconds: { type: [integer, 'null'] }
+      example: { id: 15, name: Bench press, equipment_name: Barbell, effort_type: repetitions, difficulty_unit: kilograms, category_names: [Chest], rest_time_seconds: 120 }
     Workout:
       type: object
-      required: [id, user_id, name, status, status_label, activities]
+      required: [id, user_id, name, status, created_at, updated_at, activities]
       example:
         id: 42
         user_id: 7
         name: Strength 5x5 A
         status: in_progress
-        status_label: In progress
         created_at: '2026-10-05T18:06:30Z'
         updated_at: '2026-10-05T19:02:11Z'
         activities_count: 1
@@ -2050,14 +2051,14 @@ components:
         activities:
           - id: 501
             exercise_id: 15
-            exercise_name: Bench press
-            rest_time_seconds: 120
-            exercise_equipment_name: Barbell
-            exercise_effort_type: repetitions
-            exercise_effort_label: Reps
-            exercise_difficulty_unit: kilograms
-            exercise_difficulty_label: kg
-            exercise_category_names: [Chest]
+            exercise:
+              id: 15
+              name: Bench press
+              equipment_name: Barbell
+              effort_type: repetitions
+              difficulty_unit: kilograms
+              category_names: [Chest]
+              rest_time_seconds: 120
             sets:
               - { id: 901, order: 1, effort_value: 5, difficulty_value: 60, is_completed: true }
       properties:
@@ -2065,9 +2066,8 @@ components:
         user_id: { type: integer }
         name: { type: string, description: Copied from the template at creation; not re-translated. }
         status: { $ref: '#/components/schemas/WorkoutStatus' }
-        status_label: { type: string }
-        created_at: { type: [string, 'null'], format: date-time, example: '2026-10-05T18:06:30Z' }
-        updated_at: { type: [string, 'null'], format: date-time, example: '2026-10-05T19:02:11Z' }
+        created_at: { type: string, format: date-time, example: '2026-10-05T18:06:30Z' }
+        updated_at: { type: string, format: date-time, example: '2026-10-05T19:02:11Z' }
         activities_count: { type: [integer, 'null'] }
         workout_template:
           description: Absent when the workout's template is not loaded or no longer exists. Omitted rather than null because code generators drop nullable `$ref`s.
@@ -2107,8 +2107,7 @@ components:
             program_name: Strength 5x5
             workout_template_id: 22
             workout_name: Strength 5x5 A
-            weekday: Monday
-            weekday_label: Monday
+            weekday: monday
             scheduled_at: '2026-10-12T00:00:00Z'
             scheduled_for: '2026-10-12'
         recent_workouts: []
@@ -2118,7 +2117,7 @@ components:
           type: array
           items:
             type: object
-            required: [id, program_id, program_name, workout_template_id, workout_name, weekday, weekday_label, scheduled_at, scheduled_for]
+            required: [id, program_id, program_name, workout_template_id, workout_name, weekday, scheduled_at, scheduled_for]
             properties:
               id: { type: string, description: '`{program_id}-{workout_template_id}-{date}`' }
               program_id: { type: integer }
@@ -2126,7 +2125,6 @@ components:
               workout_template_id: { type: integer }
               workout_name: { type: [string, 'null'] }
               weekday: { $ref: '#/components/schemas/Weekday' }
-              weekday_label: { type: string }
               scheduled_at: { type: string, format: date-time, example: '2026-10-12T00:00:00Z' }
               scheduled_for: { type: string, format: date, example: '2026-10-12' }
         in_progress_workout:

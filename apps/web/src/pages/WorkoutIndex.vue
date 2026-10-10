@@ -37,7 +37,7 @@
                       {{ t(':count activities', { count: workout.activities_count ?? 0 }) }}</span
                     >
                     <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-                      {{ workout.status_label }}
+                      {{ statusLabel(t, workout.status) }}
                     </Badge>
                   </div>
                 </div>
@@ -118,6 +118,7 @@ import { Lock } from 'lucide-vue-next';
 import { formatDate } from '@/utils/date';
 import { useApi } from '@/composables/useApi';
 import { useTranslation } from '@/composables/useTranslation';
+import { statusLabel } from '@/lib/enumLabels';
 import { useAuthStore } from '@/stores/auth';
 
 const { t } = useTranslation();

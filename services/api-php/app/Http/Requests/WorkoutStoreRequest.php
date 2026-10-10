@@ -12,7 +12,7 @@ class WorkoutStoreRequest extends ApiFormRequest
     public function rules(): array
     {
         return [
-            'workout_template_id' => ['required', 'integer', 'exists:workout_templates,id'],
+            'workout_template_id' => ['required', 'integer:strict', 'exists:workout_templates,id'],
         ];
     }
 

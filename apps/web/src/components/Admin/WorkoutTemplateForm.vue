@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useApiForm } from '@/composables/useApiForm';
 import { useTranslation } from '@/composables/useTranslation';
+import { difficultyLabel, effortLabel } from '@/lib/enumLabels';
 
 const props = defineProps({
   template: { type: Object, default: null },
@@ -199,9 +200,13 @@ function submit() {
             "
           >
             <span>#</span>
-            <span>{{ exerciseFor(activity)?.effort_label || t('Effort') }}</span>
+            <span>{{
+              exerciseFor(activity)
+                ? effortLabel(t, exerciseFor(activity).effort_type)
+                : t('Effort')
+            }}</span>
             <span v-if="hasDifficulty(activity)">
-              {{ exerciseFor(activity)?.difficulty_label }}
+              {{ difficultyLabel(t, exerciseFor(activity)?.difficulty_unit) }}
             </span>
             <span />
           </div>

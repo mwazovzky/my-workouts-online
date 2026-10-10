@@ -25,7 +25,7 @@ class ProgramStoreRequest extends ApiFormRequest
             ...$this->translationRules(['name', 'description']),
 
             'assignments' => ['present', 'array'],
-            'assignments.*.workout_template_id' => ['required', 'integer', 'exists:workout_templates,id'],
+            'assignments.*.workout_template_id' => ['required', 'integer:strict', 'exists:workout_templates,id'],
             'assignments.*.weekday' => ['required', Rule::in(Weekday::values())],
         ];
     }

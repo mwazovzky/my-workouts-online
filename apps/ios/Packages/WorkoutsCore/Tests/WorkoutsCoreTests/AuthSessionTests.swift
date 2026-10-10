@@ -45,10 +45,10 @@ actor FakeRefresher: TokenRefreshing {
 extension User {
     static let fixture = User(
         id: 1, name: "Test", email: "test@example.com", locale: "en", themePreference: .system, isAdmin: false,
-        emailVerified: true)
+        emailVerifiedAt: Date(timeIntervalSince1970: 0))
     static let unverified = User(
         id: 2, name: "New", email: "new@example.com", locale: "en", themePreference: .system, isAdmin: false,
-        emailVerified: false)
+        emailVerifiedAt: nil)
 }
 
 extension TokenPair {

@@ -7,9 +7,7 @@
             "equipment_id": 27,
             "equipment_name": "Ab Wheel",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 7
@@ -28,9 +26,7 @@
             "equipment_id": 2,
             "equipment_name": "Dumbbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 90,
             "category_ids": [
                 3,
@@ -54,9 +50,7 @@
             "equipment_id": 23,
             "equipment_name": "Assisted Pull-up Machine",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "plates",
-            "difficulty_label": "Plates",
             "rest_time_seconds": 90,
             "category_ids": [
                 2,
@@ -80,9 +74,7 @@
             "equipment_id": 28,
             "equipment_name": "Back Extension Bench",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 2,
@@ -106,9 +98,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 1,
@@ -132,9 +122,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 4
@@ -153,9 +141,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 2,
@@ -184,9 +170,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 2,
@@ -210,9 +194,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 2
@@ -231,9 +213,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 3
@@ -252,9 +232,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 9
@@ -273,9 +251,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 3,
@@ -299,9 +275,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 7
@@ -320,9 +294,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 2,
@@ -346,9 +318,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 2,
@@ -372,9 +342,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 8,
@@ -398,9 +366,7 @@
             "equipment_id": 24,
             "equipment_name": "Resistance Band",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 45,
             "category_ids": [
                 5
@@ -419,9 +385,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 180,
             "category_ids": [
                 8,
@@ -445,9 +409,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 150,
             "category_ids": [
                 1,
@@ -471,9 +433,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 120,
             "category_ids": [
                 2,
@@ -497,9 +457,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 60,
             "category_ids": [
                 4
@@ -518,9 +476,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 180,
             "category_ids": [
                 2,
@@ -549,9 +505,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 180,
             "category_ids": [
                 8,
@@ -575,9 +529,7 @@
             "equipment_id": 1,
             "equipment_name": "Barbell",
             "effort_type": "repetitions",
-            "effort_label": "Reps",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 120,
             "category_ids": [
                 8,
@@ -601,9 +553,7 @@
             "equipment_id": 16,
             "equipment_name": "Bodyweight",
             "effort_type": "duration",
-            "effort_label": "Duration",
             "difficulty_unit": "none",
-            "difficulty_label": "",
             "rest_time_seconds": 60,
             "category_ids": [
                 7,
@@ -627,9 +577,7 @@
             "equipment_id": 29,
             "equipment_name": "Indoor Bike",
             "effort_type": "duration",
-            "effort_label": "Duration",
             "difficulty_unit": "heart_rate_zone",
-            "difficulty_label": "Heart-rate zone",
             "rest_time_seconds": null,
             "category_ids": [
                 12,
@@ -653,9 +601,7 @@
             "equipment_id": 2,
             "equipment_name": "Dumbbell",
             "effort_type": "duration",
-            "effort_label": "Duration",
             "difficulty_unit": "kilograms",
-            "difficulty_label": "Weight (kg)",
             "rest_time_seconds": 90,
             "category_ids": [
                 6,

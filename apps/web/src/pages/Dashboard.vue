@@ -14,6 +14,7 @@ import { formatDate, formatDateOnly } from '@/utils/date';
 import { useApi } from '@/composables/useApi';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
+import { statusLabel, weekdayLabel } from '@/lib/enumLabels';
 
 const router = useRouter();
 
@@ -152,7 +153,7 @@ async function startWorkout(workoutTemplateId) {
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
-                      <Badge variant="info">{{ item.weekday_label }}</Badge>
+                      <Badge variant="info">{{ weekdayLabel(t, item.weekday) }}</Badge>
                       <Badge variant="outline">{{ formatDateOnly(item.scheduled_at) }}</Badge>
                     </div>
                     <div class="mt-2 text-lg font-semibold text-foreground">
@@ -267,7 +268,7 @@ async function startWorkout(workoutTemplateId) {
                         t(':count activities', { count: workout.activities_count ?? 0 })
                       }}</span>
                       <Badge :variant="workout.status === 'completed' ? 'success' : 'warning'">
-                        {{ workout.status_label }}
+                        {{ statusLabel(t, workout.status) }}
                       </Badge>
                     </div>
                   </div>

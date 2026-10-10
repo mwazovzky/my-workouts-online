@@ -10,7 +10,7 @@ import WorkoutsAPITestSupport
 @Suite("AuthMiddleware with AuthSession")
 struct AuthMiddlewareTests {
     private static let me =
-        #"{"data":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified":true}}"#
+        #"{"data":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified_at":"1970-01-01T00:00:00Z"}}"#
     private static let expired =
         #"{"type":"https://my-workouts.online/problems/token_expired","title":"Access token expired","status":401,"detail":"Token has expired.","instance":"/api/v1/me#abc","code":"token_expired"}"#
     private static let unauthenticated =

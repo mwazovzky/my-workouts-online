@@ -9,11 +9,11 @@ import WorkoutsAPITestSupport
 @MainActor
 struct AppSessionTests {
     private static let me =
-        #"{"data":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified":true}}"#
+        #"{"data":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified_at":"1970-01-01T00:00:00Z"}}"#
     private static let unverifiedMe =
-        #"{"data":{"id":2,"name":"New","email":"new@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified":false}}"#
+        #"{"data":{"id":2,"name":"New","email":"new@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified_at":null}}"#
     private static let grant =
-        #"{"access_token":"access-1","token_type":"Bearer","expires_in":900,"refresh_token":"refresh-1","user":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified":true}}"#
+        #"{"access_token":"access-1","token_type":"Bearer","expires_in":900,"refresh_token":"refresh-1","user":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified_at":"1970-01-01T00:00:00Z"}}"#
 
     private func make(store: TokenPair?) -> (AppSession, AppDependencies, StubTransport) {
         let transport = StubTransport()

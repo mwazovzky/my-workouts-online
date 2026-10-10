@@ -6,7 +6,7 @@ import WorkoutsAPI
 
 private func workout(_ id: Int, status: WorkoutStatus = .completed, userId: Int = 1) -> Workout {
     Workout(
-        id: id, userId: userId, name: "W\(id)", status: status, statusLabel: status.rawValue, createdAt: nil,
+        id: id, userId: userId, name: "W\(id)", status: status, createdAt: nil,
         updatedAt: nil,
         activitiesCount: 1, template: nil, activities: [])
 }

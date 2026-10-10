@@ -67,7 +67,7 @@ describe('ProgramForm', () => {
     await wrapper.get('button').trigger('click'); // "Add assignment"
     await wrapper.find('form').trigger('submit');
 
-    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 1, weekday: 'Monday' }]);
+    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 1, weekday: 'monday' }]);
   });
 
   it('puts to the update endpoint and carries existing assignments', async () => {
@@ -75,7 +75,7 @@ describe('ProgramForm', () => {
       program: {
         id: 5,
         translations: { name: { en: 'Beginner' }, description: {} },
-        assignments: [{ workout_template_id: 2, weekday: 'Wednesday' }],
+        assignments: [{ workout_template_id: 2, weekday: 'wednesday' }],
       },
     });
 
@@ -83,7 +83,7 @@ describe('ProgramForm', () => {
 
     expect(lastSubmit.method).toBe('put');
     expect(lastSubmit.url).toBe('/admin/programs/5');
-    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 2, weekday: 'Wednesday' }]);
+    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 2, weekday: 'wednesday' }]);
   });
 
   it('disables adding assignments when there are no templates', () => {
@@ -112,12 +112,12 @@ describe('ProgramForm', () => {
     const wrapper = buildWrapper();
 
     await wrapper.get('button').trigger('click'); // "Add assignment"
-    await wrapper.find('#weekday_0').setValue('Thursday');
+    await wrapper.find('#weekday_0').setValue('thursday');
     // Option values are numeric ids, so select by option rather than by string value.
     await wrapper.find('#template_0').findAll('option')[1].setSelected();
     await wrapper.find('form').trigger('submit');
 
-    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 2, weekday: 'Thursday' }]);
+    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 2, weekday: 'thursday' }]);
   });
 
   it('removes an assignment when its remove button is clicked', async () => {
@@ -126,8 +126,8 @@ describe('ProgramForm', () => {
         id: 5,
         translations: { name: { en: 'Beginner' }, description: {} },
         assignments: [
-          { workout_template_id: 1, weekday: 'Monday' },
-          { workout_template_id: 2, weekday: 'Friday' },
+          { workout_template_id: 1, weekday: 'monday' },
+          { workout_template_id: 2, weekday: 'friday' },
         ],
       },
     });
@@ -136,7 +136,7 @@ describe('ProgramForm', () => {
     await removeButtons[0].trigger('click');
     await wrapper.find('form').trigger('submit');
 
-    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 2, weekday: 'Friday' }]);
+    expect(lastSubmit.assignments).toEqual([{ workout_template_id: 2, weekday: 'friday' }]);
   });
 
   it('shows the empty-schedule hint when templates exist but nothing is scheduled', () => {

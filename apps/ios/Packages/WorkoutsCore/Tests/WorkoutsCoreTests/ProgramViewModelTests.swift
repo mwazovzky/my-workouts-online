@@ -49,7 +49,7 @@ private let cardio = Program(id: 2, name: "Cardio", description: nil, isEnrolled
 private func template(_ id: Int, weekday: Weekday?) -> WorkoutTemplate {
     WorkoutTemplate(
         id: id, name: "T\(id)", description: nil, activities: [],
-        schedule: weekday.map { ScheduleSlot(weekday: $0, weekdayLabel: $0.rawValue) })
+        schedule: weekday.map { ScheduleSlot(weekday: $0) })
 }
 
 @Suite("ProgramListViewModel")
@@ -123,9 +123,9 @@ struct ProgramDetailViewModelTests {
         await model.load()
 
         let sections = model.sections
-        #expect(sections.map(\.id) == ["Monday", "Friday", "unscheduled"])
+        #expect(sections.map(\.id) == ["monday", "friday", "unscheduled"])
         #expect(sections[0].templates.map(\.id) == [1, 2])
-        #expect(sections[2].label == nil)
+        #expect(sections[2].weekday == nil)
     }
 
     @Test("enroll is optimistic and rolls back on failure")

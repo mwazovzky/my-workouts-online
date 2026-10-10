@@ -16,25 +16,22 @@ public struct WorkoutSet: Sendable, Equatable, Identifiable {
     }
 }
 
-/// An exercise within a template or a workout, with its sets. Exercise details are
-/// denormalized by the API so retired exercises still render.
+/// An exercise within a template or a workout, with its sets. Exercise details come from the
+/// API's exercise snapshot so retired exercises still render; they are nil when the API omits it.
 public struct Activity: Sendable, Equatable, Identifiable {
     public let id: Int
-    public let exerciseId: Int?
+    public let exerciseId: Int
     public let exerciseName: String?
     public let restTimeSeconds: Int?
     public let equipmentName: String?
     public let effortType: EffortType?
-    public let effortLabel: String
     public let difficultyUnit: DifficultyUnit?
-    public let difficultyLabel: String?
     public let categoryNames: [String]
     public var sets: [WorkoutSet]
 
     public init(
-        id: Int, exerciseId: Int?, exerciseName: String?, restTimeSeconds: Int?, equipmentName: String?,
-        effortType: EffortType?, effortLabel: String, difficultyUnit: DifficultyUnit?, difficultyLabel: String?,
-        categoryNames: [String], sets: [WorkoutSet]
+        id: Int, exerciseId: Int, exerciseName: String?, restTimeSeconds: Int?, equipmentName: String?,
+        effortType: EffortType?, difficultyUnit: DifficultyUnit?, categoryNames: [String], sets: [WorkoutSet]
     ) {
         self.id = id
         self.exerciseId = exerciseId
@@ -42,9 +39,7 @@ public struct Activity: Sendable, Equatable, Identifiable {
         self.restTimeSeconds = restTimeSeconds
         self.equipmentName = equipmentName
         self.effortType = effortType
-        self.effortLabel = effortLabel
         self.difficultyUnit = difficultyUnit
-        self.difficultyLabel = difficultyLabel
         self.categoryNames = categoryNames
         self.sets = sets
     }
@@ -57,7 +52,6 @@ public struct Workout: Sendable, Equatable, Identifiable {
     public let userId: Int
     public let name: String
     public let status: WorkoutStatus
-    public let statusLabel: String
     public let createdAt: Date?
     public let updatedAt: Date?
     public let activitiesCount: Int?
@@ -66,14 +60,13 @@ public struct Workout: Sendable, Equatable, Identifiable {
     public var activities: [Activity]
 
     public init(
-        id: Int, userId: Int, name: String, status: WorkoutStatus, statusLabel: String, createdAt: Date?,
+        id: Int, userId: Int, name: String, status: WorkoutStatus, createdAt: Date?,
         updatedAt: Date?, activitiesCount: Int?, template: WorkoutTemplate?, activities: [Activity]
     ) {
         self.id = id
         self.userId = userId
         self.name = name
         self.status = status
-        self.statusLabel = statusLabel
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.activitiesCount = activitiesCount
@@ -111,14 +104,13 @@ public struct ScheduledWorkout: Sendable, Equatable, Identifiable {
     public let workoutTemplateId: Int
     public let workoutName: String?
     public let weekday: Weekday
-    public let weekdayLabel: String
     public let scheduledAt: Date
     /// `YYYY-MM-DD` in the user's calendar, as the API formats it.
     public let scheduledFor: String
 
     public init(
         id: String, programId: Int, programName: String?, workoutTemplateId: Int, workoutName: String?,
-        weekday: Weekday, weekdayLabel: String, scheduledAt: Date, scheduledFor: String
+        weekday: Weekday, scheduledAt: Date, scheduledFor: String
     ) {
         self.id = id
         self.programId = programId
@@ -126,7 +118,6 @@ public struct ScheduledWorkout: Sendable, Equatable, Identifiable {
         self.workoutTemplateId = workoutTemplateId
         self.workoutName = workoutName
         self.weekday = weekday
-        self.weekdayLabel = weekdayLabel
         self.scheduledAt = scheduledAt
         self.scheduledFor = scheduledFor
     }

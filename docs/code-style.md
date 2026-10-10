@@ -47,6 +47,7 @@
 
 - All API responses **must** use Eloquent Resources.
 - `whenLoaded()` **must** be used for relationships and `whenCounted()` for `*_count` attributes.
+- Resources **must not** leak Eloquent names (`pivot`) or return server-rendered labels; send enum values and let clients map them (see `docs/api-design.md`, Naming and Schemas).
 
 ## Configuration & Middleware
 

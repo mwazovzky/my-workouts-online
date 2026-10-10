@@ -10,9 +10,8 @@
                 "name": "Beginner Full Body",
                 "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
                 "activities": [],
-                "pivot": {
-                    "weekday": "Monday",
-                    "weekday_label": "Monday"
+                "assignment": {
+                    "weekday": "monday"
                 }
             },
             {
@@ -20,9 +19,8 @@
                 "name": "Beginner Full Body",
                 "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
                 "activities": [],
-                "pivot": {
-                    "weekday": "Wednesday",
-                    "weekday_label": "Wednesday"
+                "assignment": {
+                    "weekday": "wednesday"
                 }
             },
             {
@@ -30,9 +28,8 @@
                 "name": "Beginner Full Body",
                 "description": "Eight exercises that cover every major muscle group, mostly on machines. Choose a weight that lets you finish every set with two repetitions to spare.",
                 "activities": [],
-                "pivot": {
-                    "weekday": "Friday",
-                    "weekday_label": "Friday"
+                "assignment": {
+                    "weekday": "friday"
                 }
             }
         ]

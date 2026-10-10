@@ -104,7 +104,7 @@ actor FakeMeRepository: MeRepository {
             $0 = User(
                 id: $0.id, name: patch.name ?? $0.name, email: patch.email ?? $0.email,
                 locale: patch.locale ?? $0.locale, themePreference: patch.themePreference ?? $0.themePreference,
-                isAdmin: $0.isAdmin, emailVerified: emailChanged ? false : $0.emailVerified)
+                isAdmin: $0.isAdmin, emailVerifiedAt: emailChanged ? nil : $0.emailVerifiedAt)
         }
     }
 
@@ -123,7 +123,7 @@ actor FakeMeRepository: MeRepository {
         if let verifyError { throw verifyError }
         user = User(
             id: user.id, name: user.name, email: user.email, locale: user.locale, themePreference: user.themePreference,
-            isAdmin: user.isAdmin, emailVerified: true)
+            isAdmin: user.isAdmin, emailVerifiedAt: Date(timeIntervalSince1970: 0))
     }
 }
 

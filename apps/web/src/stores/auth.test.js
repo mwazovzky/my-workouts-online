@@ -15,7 +15,7 @@ import { useLocaleStore } from '@/stores/locale';
 const user = {
   id: 1,
   name: 'Ann',
-  email_verified: true,
+  email_verified_at: '2026-10-01T09:30:00Z',
   is_admin: false,
   theme_preference: 'dark',
   locale: 'ru',

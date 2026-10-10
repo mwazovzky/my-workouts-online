@@ -4,13 +4,13 @@ namespace App\Enums;
 
 enum Weekday: string
 {
-    case Monday = 'Monday';
-    case Tuesday = 'Tuesday';
-    case Wednesday = 'Wednesday';
-    case Thursday = 'Thursday';
-    case Friday = 'Friday';
-    case Saturday = 'Saturday';
-    case Sunday = 'Sunday';
+    case Monday = 'monday';
+    case Tuesday = 'tuesday';
+    case Wednesday = 'wednesday';
+    case Thursday = 'thursday';
+    case Friday = 'friday';
+    case Saturday = 'saturday';
+    case Sunday = 'sunday';
 
     /**
      * The backing values, in week order.

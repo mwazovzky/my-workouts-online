@@ -105,7 +105,7 @@ class WorkoutTemplateAdminTest extends TestCase
                     'id',
                     'translations' => ['name' => ['en', 'ru'], 'description' => ['en', 'ru']],
                     'activities' => [[
-                        'exercise_id', 'exercise_effort_type', 'exercise_difficulty_unit',
+                        'exercise_id', 'exercise' => ['effort_type', 'difficulty_unit'],
                         'sets' => [['order', 'effort_value', 'difficulty_value']],
                     ]],
                 ],
@@ -227,7 +227,7 @@ class WorkoutTemplateAdminTest extends TestCase
         $admin = User::factory()->admin()->create();
         $template = WorkoutTemplate::factory()->create();
         $program = \App\Models\Program::factory()->create();
-        $program->workoutTemplates()->attach($template->id, ['weekday' => 'Monday']);
+        $program->workoutTemplates()->attach($template->id, ['weekday' => 'monday']);
 
         $this->actingAs($admin)
             ->deleteJson("/api/v1/admin/workout-templates/{$template->id}")

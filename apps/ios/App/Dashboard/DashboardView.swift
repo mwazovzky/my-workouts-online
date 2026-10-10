@@ -97,7 +97,7 @@ struct DashboardView: View {
                                 Text(verbatim: slot.workoutName ?? String(localized: "Workout")).font(.headline)
                                 Text(
                                     verbatim:
-                                        "\(slot.weekdayLabel) · \(slot.scheduledAt.formatted(date: .abbreviated, time: .omitted))"
+                                        "\(slot.weekday.displayName) · \(slot.scheduledAt.formatted(date: .abbreviated, time: .omitted))"
                                 )
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -213,7 +213,7 @@ struct WorkoutRow: View {
                     .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text(verbatim: workout.statusLabel)
+                Text(verbatim: workout.status.displayName)
                     .font(.caption.weight(.medium))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)

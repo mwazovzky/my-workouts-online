@@ -129,52 +129,30 @@ class WorkoutResourceTest extends TestCase
     public function resource_includes_all_expected_keys(): void
     {
         $workout = Workout::factory()->create();
-        $resource = new WorkoutResource($workout);
-        $array = $resource->toArray(request());
+        $array = (new WorkoutResource($workout))->resolve();
 
-        $expectedKeys = ['id', 'user_id', 'name', 'status', 'status_label', 'created_at', 'updated_at', 'activities_count', 'workout_template', 'activities'];
-
-        foreach ($expectedKeys as $key) {
-            $this->assertArrayHasKey($key, $array);
-        }
+        $this->assertSame(['id', 'user_id', 'name', 'status', 'created_at', 'updated_at', 'activities_count', 'activities'], array_keys($array));
     }
 
     #[Test]
-    public function status_label_is_translated_for_in_progress(): void
-    {
-        $workout = Workout::factory()->create(['status' => 'in_progress']);
-
-        App::setLocale('en');
-        $resource = new WorkoutResource($workout);
-        $array = $resource->toArray(request());
-
-        $this->assertEquals('in_progress', $array['status']);
-        $this->assertEquals('In Progress', $array['status_label']);
-    }
-
-    #[Test]
-    public function status_label_is_translated_for_completed(): void
-    {
-        $workout = Workout::factory()->create(['status' => 'completed']);
-
-        App::setLocale('en');
-        $resource = new WorkoutResource($workout);
-        $array = $resource->toArray(request());
-
-        $this->assertEquals('completed', $array['status']);
-        $this->assertEquals('Completed', $array['status_label']);
-    }
-
-    #[Test]
-    public function status_label_returns_russian_translation(): void
+    public function status_is_the_enum_value_without_a_server_rendered_label(): void
     {
         $workout = Workout::factory()->create(['status' => 'in_progress']);
 
         App::setLocale('ru');
-        $resource = new WorkoutResource($workout);
-        $array = $resource->toArray(request());
+        $array = (new WorkoutResource($workout))->resolve();
 
-        $this->assertEquals('in_progress', $array['status']);
-        $this->assertEquals('В процессе', $array['status_label']);
+        $this->assertSame('in_progress', $array['status']);
+        $this->assertArrayNotHasKey('status_label', $array);
+    }
+
+    #[Test]
+    public function timestamps_are_always_present(): void
+    {
+        $workout = Workout::factory()->create();
+        $array = (new WorkoutResource($workout))->resolve();
+
+        $this->assertNotNull($array['created_at']);
+        $this->assertNotNull($array['updated_at']);
     }
 }

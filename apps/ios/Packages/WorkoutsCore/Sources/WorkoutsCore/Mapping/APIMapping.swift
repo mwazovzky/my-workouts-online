@@ -19,24 +19,10 @@ extension EffortType {
         }
         self = value
     }
-
-    init(api: Components.Schemas.Activity.ExerciseEffortTypePayload) throws {
-        guard let value = EffortType(rawValue: api.rawValue) else {
-            throw UnknownEnumValue(type: "EffortType", value: api.rawValue)
-        }
-        self = value
-    }
 }
 
 extension DifficultyUnit {
     init(api: Components.Schemas.DifficultyUnit) throws {
-        guard let value = DifficultyUnit(rawValue: api.rawValue) else {
-            throw UnknownEnumValue(type: "DifficultyUnit", value: api.rawValue)
-        }
-        self = value
-    }
-
-    init(api: Components.Schemas.Activity.ExerciseDifficultyUnitPayload) throws {
         guard let value = DifficultyUnit(rawValue: api.rawValue) else {
             throw UnknownEnumValue(type: "DifficultyUnit", value: api.rawValue)
         }
@@ -80,7 +66,7 @@ extension User {
             locale: api.locale.rawValue,
             themePreference: try ThemePreference(api: api.themePreference),
             isAdmin: api.isAdmin,
-            emailVerified: api.emailVerified
+            emailVerifiedAt: api.emailVerifiedAt
         )
     }
 }
@@ -111,9 +97,7 @@ extension Exercise {
             equipmentId: api.equipmentId,
             equipmentName: api.equipmentName,
             effortType: try EffortType(api: api.effortType),
-            effortLabel: api.effortLabel,
             difficultyUnit: try api.difficultyUnit.map(DifficultyUnit.init(api:)) ?? .none,
-            difficultyLabel: api.difficultyLabel,
             restTimeSeconds: api.restTimeSeconds,
             categories: (api.categories ?? []).map(Category.init(api:))
         )
@@ -142,9 +126,7 @@ extension WorkoutTemplate {
             name: api.name ?? "",
             description: api.description,
             activities: try api.activities.map(Activity.init(api:)),
-            schedule: try api.pivot.map {
-                ScheduleSlot(weekday: try Weekday(api: $0.weekday), weekdayLabel: $0.weekdayLabel)
-            }
+            schedule: try api.assignment.map { ScheduleSlot(weekday: try Weekday(api: $0.weekday)) }
         )
     }
 }
@@ -163,17 +145,16 @@ extension WorkoutSet {
 
 extension Activity {
     public init(api: Components.Schemas.Activity) throws {
+        let exercise = api.exercise
         self.init(
             id: api.id,
             exerciseId: api.exerciseId,
-            exerciseName: api.exerciseName,
-            restTimeSeconds: api.restTimeSeconds,
-            equipmentName: api.exerciseEquipmentName,
-            effortType: try api.exerciseEffortType.map(EffortType.init(api:)),
-            effortLabel: api.exerciseEffortLabel ?? "",
-            difficultyUnit: try api.exerciseDifficultyUnit.map(DifficultyUnit.init(api:)),
-            difficultyLabel: api.exerciseDifficultyLabel,
-            categoryNames: api.exerciseCategoryNames ?? [],
+            exerciseName: exercise?.name,
+            restTimeSeconds: exercise?.restTimeSeconds,
+            equipmentName: exercise?.equipmentName,
+            effortType: try exercise.map { try EffortType(api: $0.effortType) },
+            difficultyUnit: try exercise.map { try DifficultyUnit(api: $0.difficultyUnit) },
+            categoryNames: exercise?.categoryNames ?? [],
             sets: api.sets.map(WorkoutSet.init(api:))
         )
     }
@@ -186,7 +167,6 @@ extension Workout {
             userId: api.userId,
             name: api.name,
             status: try WorkoutStatus(api: api.status),
-            statusLabel: api.statusLabel,
             createdAt: api.createdAt,
             updatedAt: api.updatedAt,
             activitiesCount: api.activitiesCount,
@@ -216,7 +196,6 @@ extension ScheduledWorkout {
             workoutTemplateId: api.workoutTemplateId,
             workoutName: api.workoutName,
             weekday: try Weekday(api: api.weekday),
-            weekdayLabel: api.weekdayLabel,
             scheduledAt: api.scheduledAt,
             scheduledFor: api.scheduledFor
         )

@@ -38,7 +38,7 @@ class ActivityResourceTest extends TestCase
     }
 
     #[Test]
-    public function resource_includes_exercise_name_when_exercise_loaded(): void
+    public function resource_includes_the_exercise_snapshot_when_exercise_loaded(): void
     {
         $equipment = Equipment::factory()->withTranslation('name', 'Barbell')->create();
         $category = Category::factory()->withTranslation('name', 'Strength')->create();
@@ -58,19 +58,21 @@ class ActivityResourceTest extends TestCase
 
         // Load activity with exercise relationship (including equipment + categories)
         $activityWithExercise = Activity::with('exercise.equipment.translations', 'exercise.categories.translations', 'exercise.translations')->find($activity->id);
-        $resource = new ActivityResource($activityWithExercise);
-        $array = $resource->toArray(request());
+        $array = (new ActivityResource($activityWithExercise))->resolve();
 
-        $this->assertEquals('Squat', $array['exercise_name']);
-        $this->assertEquals($exercise->rest_time_seconds, $array['rest_time_seconds']);
-        $this->assertSame('Barbell', $array['exercise_equipment_name']);
-        $this->assertSame(['Strength'], $array['exercise_category_names']);
-        $this->assertSame('repetitions', $array['exercise_effort_type']);
-        $this->assertSame('kilograms', $array['exercise_difficulty_unit']);
+        $this->assertSame([
+            'id' => $exercise->id,
+            'name' => 'Squat',
+            'equipment_name' => 'Barbell',
+            'effort_type' => 'repetitions',
+            'difficulty_unit' => 'kilograms',
+            'category_names' => ['Strength'],
+            'rest_time_seconds' => $exercise->rest_time_seconds,
+        ], $array['exercise']);
     }
 
     #[Test]
-    public function resource_handles_exercise_name_when_exercise_not_loaded(): void
+    public function resource_omits_the_exercise_snapshot_when_exercise_not_loaded(): void
     {
         $exercise = Exercise::factory()->withTranslation('name', 'Deadlift')->create();
         $workout = Workout::factory()->create();
@@ -83,14 +85,10 @@ class ActivityResourceTest extends TestCase
 
         // Load activity WITHOUT exercise relationship
         $activityWithoutExercise = Activity::find($activity->id);
-        $resource = new ActivityResource($activityWithoutExercise);
-        $array = $resource->toArray(request());
+        $array = (new ActivityResource($activityWithoutExercise))->resolve();
 
-        // exercise_name should be null when relationship not loaded
-        $this->assertNull($array['exercise_name']);
-        $this->assertNull($array['rest_time_seconds']);
-        $this->assertNull($array['exercise_equipment_name']);
-        $this->assertSame([], $array['exercise_category_names']);
+        $this->assertSame($exercise->id, $array['exercise_id']);
+        $this->assertArrayNotHasKey('exercise', $array);
     }
 
     #[Test]
@@ -187,13 +185,8 @@ class ActivityResourceTest extends TestCase
             'workout_type' => 'workout',
         ]);
 
-        $resource = new ActivityResource($activity);
-        $array = $resource->toArray(request());
+        $array = (new ActivityResource($activity->load('exercise.equipment', 'exercise.categories')))->resolve();
 
-        $expectedKeys = ['id', 'exercise_id', 'exercise_name', 'rest_time_seconds', 'exercise_equipment_name', 'exercise_category_names', 'exercise_effort_type', 'exercise_difficulty_unit', 'sets'];
-
-        foreach ($expectedKeys as $key) {
-            $this->assertArrayHasKey($key, $array);
-        }
+        $this->assertSame(['id', 'exercise_id', 'exercise', 'sets'], array_keys($array));
     }
 }

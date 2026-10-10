@@ -8,11 +8,12 @@ public struct User: Sendable, Equatable, Identifiable, Codable {
     public var locale: String
     public var themePreference: ThemePreference
     public let isAdmin: Bool
-    public var emailVerified: Bool
+    /// When the email was verified; nil until it is (and again after an email change).
+    public var emailVerifiedAt: Date?
 
     public init(
         id: Int, name: String?, email: String, locale: String, themePreference: ThemePreference,
-        isAdmin: Bool, emailVerified: Bool
+        isAdmin: Bool, emailVerifiedAt: Date?
     ) {
         self.id = id
         self.name = name
@@ -20,8 +21,10 @@ public struct User: Sendable, Equatable, Identifiable, Codable {
         self.locale = locale
         self.themePreference = themePreference
         self.isAdmin = isAdmin
-        self.emailVerified = emailVerified
+        self.emailVerifiedAt = emailVerifiedAt
     }
+
+    public var emailVerified: Bool { emailVerifiedAt != nil }
 }
 
 /// What login, register and refresh return. The refresh token is present for native clients.

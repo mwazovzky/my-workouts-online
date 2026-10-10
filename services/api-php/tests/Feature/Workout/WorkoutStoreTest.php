@@ -113,4 +113,19 @@ class WorkoutStoreTest extends TestCase
             $response->fieldError('workout_template_id')['detail'],
         );
     }
+
+    #[Test]
+    public function rejects_a_boolean_workout_template_id(): void
+    {
+        $user = User::factory()->create();
+        WorkoutTemplate::factory()->create(['id' => 1]);
+
+        $response = $this->actingAs($user)->postJson('/api/v1/workouts', [
+            'workout_template_id' => true,
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertFieldErrors(['workout_template_id'], 'invalid_format');
+        $this->assertDatabaseCount('workouts', 0);
+    }
 }

@@ -41,23 +41,20 @@ describe('WorkoutTemplateForm', () => {
     {
       id: 1,
       name: 'Bench Press',
-      effort_label: 'Reps',
+      effort_type: 'repetitions',
       difficulty_unit: 'kilograms',
-      difficulty_label: 'Weight (kg)',
     },
     {
       id: 2,
       name: 'Endurance Ride',
-      effort_label: 'Duration',
+      effort_type: 'duration',
       difficulty_unit: 'heart_rate_zone',
-      difficulty_label: 'Zone',
     },
     {
       id: 3,
       name: 'Plank',
-      effort_label: 'Duration',
+      effort_type: 'duration',
       difficulty_unit: 'none',
-      difficulty_label: '',
     },
   ];
 

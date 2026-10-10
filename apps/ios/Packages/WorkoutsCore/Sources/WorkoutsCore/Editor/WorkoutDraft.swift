@@ -37,17 +37,15 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
     public let restTimeSeconds: Int?
     public let categoryNames: [String]
     public let effortType: EffortType
-    public let effortLabel: String
     public let difficultyUnit: DifficultyUnit
-    public let difficultyLabel: String?
     public var sets: [DraftSet]
 
     public var id: UUID { localId }
 
     public init(
         localId: UUID = UUID(), serverId: Int?, exerciseId: Int, exerciseName: String, equipmentName: String?,
-        restTimeSeconds: Int?, categoryNames: [String], effortType: EffortType, effortLabel: String,
-        difficultyUnit: DifficultyUnit, difficultyLabel: String?, sets: [DraftSet]
+        restTimeSeconds: Int?, categoryNames: [String], effortType: EffortType, difficultyUnit: DifficultyUnit,
+        sets: [DraftSet]
     ) {
         self.localId = localId
         self.serverId = serverId
@@ -57,24 +55,20 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
         self.restTimeSeconds = restTimeSeconds
         self.categoryNames = categoryNames
         self.effortType = effortType
-        self.effortLabel = effortLabel
         self.difficultyUnit = difficultyUnit
-        self.difficultyLabel = difficultyLabel
         self.sets = sets
     }
 
     public init(activity: Activity) {
         self.init(
             serverId: activity.id,
-            exerciseId: activity.exerciseId ?? 0,
+            exerciseId: activity.exerciseId,
             exerciseName: activity.exerciseName ?? "",
             equipmentName: activity.equipmentName,
             restTimeSeconds: activity.restTimeSeconds,
             categoryNames: activity.categoryNames,
             effortType: activity.effortType ?? .repetitions,
-            effortLabel: activity.effortLabel.isEmpty ? "Reps" : activity.effortLabel,
             difficultyUnit: activity.difficultyUnit ?? .none,
-            difficultyLabel: activity.difficultyLabel,
             sets: activity.sets.map(DraftSet.init(set:)))
     }
 
@@ -88,9 +82,7 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
             restTimeSeconds: exercise.restTimeSeconds,
             categoryNames: exercise.categories.map(\.name),
             effortType: exercise.effortType,
-            effortLabel: exercise.effortLabel,
             difficultyUnit: exercise.difficultyUnit,
-            difficultyLabel: exercise.difficultyLabel,
             sets: [])
         sets = [DraftSet.blank(for: difficultyUnit)]
     }

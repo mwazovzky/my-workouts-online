@@ -5,6 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, GripVertical, Plus, Trash2 } from 'lucide-vue-next';
 import { useTranslation } from '@/composables/useTranslation';
+import {
+  difficultyLabel as difficultyLabelFor,
+  effortLabel as effortLabelFor,
+} from '@/lib/enumLabels';
 
 const { t } = useTranslation();
 
@@ -23,14 +27,15 @@ const emits = defineEmits([
   'set-completion-toggled',
 ]);
 
+const exercise = computed(() => props.activity.exercise ?? {});
+
 const hasDifficulty = computed(
-  () =>
-    props.activity.exercise_difficulty_unit && props.activity.exercise_difficulty_unit !== 'none'
+  () => exercise.value.difficulty_unit && exercise.value.difficulty_unit !== 'none'
 );
 
-const effortLabel = computed(() => props.activity.exercise_effort_label || t('Reps'));
+const effortLabel = computed(() => effortLabelFor(t, exercise.value.effort_type));
 
-const difficultyLabel = computed(() => props.activity.exercise_difficulty_label || '');
+const difficultyLabel = computed(() => difficultyLabelFor(t, exercise.value.difficulty_unit));
 
 const formatRestTime = seconds => {
   if (seconds == null) return null;
@@ -93,17 +98,17 @@ function removeActivity() {
             <GripVertical class="h-4 w-4" />
           </button>
           <div class="flex-1 min-w-0">
-            <CardTitle class="text-sm font-semibold">{{ activity.exercise_name }}</CardTitle>
+            <CardTitle class="text-sm font-semibold">{{ exercise.name }}</CardTitle>
 
             <div class="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-              <span>{{ (activity.exercise_category_names ?? []).join(', ') || '—' }}</span>
+              <span>{{ (exercise.category_names ?? []).join(', ') || '—' }}</span>
               <span>·</span>
-              <span>{{ activity.exercise_equipment_name ?? '—' }}</span>
-              <template v-if="activity.rest_time_seconds != null">
+              <span>{{ exercise.equipment_name ?? '—' }}</span>
+              <template v-if="exercise.rest_time_seconds != null">
                 <span>·</span>
                 <span class="inline-flex items-center gap-0.5">
                   <Clock class="h-3 w-3" />
-                  {{ formatRestTime(activity.rest_time_seconds) }}
+                  {{ formatRestTime(exercise.rest_time_seconds) }}
                 </span>
               </template>
             </div>
@@ -154,8 +159,8 @@ function removeActivity() {
           :key="set.id ?? set.order"
           :set="set"
           :editable="editable"
-          :effort-type="activity.exercise_effort_type"
-          :difficulty-unit="activity.exercise_difficulty_unit"
+          :effort-type="exercise.effort_type"
+          :difficulty-unit="exercise.difficulty_unit"
           @update="onSetUpdate"
           @remove="onSetRemove"
           @completion-toggled="onSetCompletionToggled"

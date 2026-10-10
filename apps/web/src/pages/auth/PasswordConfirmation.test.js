@@ -29,7 +29,7 @@ describe('password confirmation stays on the client', () => {
 
   it('register sends no password_confirmation', async () => {
     mockApi.post.mockResolvedValueOnce({
-      data: { access_token: 'at', user: { id: 1, email_verified: false } },
+      data: { access_token: 'at', user: { id: 1, email_verified_at: null } },
     });
     const wrapper = build(Register);
     await wrapper.find('#name').setValue('Ann');

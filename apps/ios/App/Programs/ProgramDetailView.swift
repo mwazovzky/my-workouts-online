@@ -66,8 +66,8 @@ struct ProgramDetailView: View {
                         ForEach(model.sections) { section in
                             VStack(alignment: .leading, spacing: 8) {
                                 Group {
-                                    if let label = section.label {
-                                        Text(verbatim: label)
+                                    if let weekday = section.weekday {
+                                        Text(verbatim: weekday.displayName)
                                     } else {
                                         Text("Not scheduled")
                                     }
