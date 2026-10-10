@@ -82,14 +82,15 @@ jobs:
       # The app build's DerivedData (fixed path, see App tests): checked-out
       # dependencies and their compiled products. Our own sources are newer than
       # the cache after checkout, so they always recompile; only unchanged
-      # dependencies are reused.
+      # dependencies are reused. It lives at the repo root, never under apps/ios,
+      # where `swift format lint --recursive` would lint the dependency checkouts.
       - name: Cache Xcode build
         uses: actions/cache@v6
         with:
           path: |
-            apps/ios/DerivedData/SourcePackages
-            apps/ios/DerivedData/Build
-            apps/ios/DerivedData/ModuleCache.noindex
+            DerivedData/SourcePackages
+            DerivedData/Build
+            DerivedData/ModuleCache.noindex
           key: xcode-${{ runner.os }}-${{ steps.xcode.outputs.build }}-${{ hashFiles('apps/ios/Packages/*/Package.swift', 'apps/ios/Packages/*/Package.resolved', 'apps/ios/project.yml') }}
           restore-keys: xcode-${{ runner.os }}-${{ steps.xcode.outputs.build }}-
 
@@ -121,7 +122,7 @@ jobs:
             -scheme MyWorkouts \
             -destination "id=${{ steps.simulator.outputs.udid }}" \
             $SKIP_UI_TESTS \
-            -derivedDataPath apps/ios/DerivedData \
+            -derivedDataPath DerivedData \
             -resultBundlePath TestResults.xcresult \
             -skipPackagePluginValidation -skipMacroValidation \
             COMPILER_INDEX_STORE_ENABLE=NO \
