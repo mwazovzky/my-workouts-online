@@ -8,6 +8,7 @@ import TextInput from '@/components/TextInput.vue';
 import { useApiForm } from '@/composables/useApiForm';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
+import { problemDetail } from '@/lib/problem';
 import { useAuthStore } from '@/stores/auth';
 
 const { t } = useTranslation();
@@ -25,12 +26,30 @@ const form = useApiForm({
 
 const status = route.query.reset ? t('Your password has been reset.') : null;
 
+/**
+ * Wrong credentials (401) and a lockout (429) are not field errors on the
+ * wire, but the email field is still where the user expects to read them.
+ */
+const showLoginFailure = error => {
+  const status = error.response?.status;
+
+  if (status === 401) {
+    form.errors.email = problemDetail(error) ?? t('These credentials do not match our records.');
+  } else if (status === 429) {
+    const seconds = Number.parseInt(error.response.headers?.['retry-after'], 10);
+    form.errors.email = Number.isFinite(seconds)
+      ? t('Too many login attempts. Try again in :seconds seconds.', { seconds })
+      : (problemDetail(error) ?? t('Too many login attempts.'));
+  }
+};
+
 const submit = () => {
   form.post('/auth/login', {
     onSuccess: ({ data }) => {
       auth.applySession(data);
       router.push(route.query.redirect || { name: 'dashboard' });
     },
+    onFail: showLoginFailure,
     onFinish: () => {
       form.password = '';
     },

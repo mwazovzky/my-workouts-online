@@ -74,7 +74,7 @@ class LoginTest extends TestCase
     }
 
     #[Test]
-    public function rejects_invalid_password(): void
+    public function rejects_invalid_password_with_401(): void
     {
         $user = User::factory()->create(['password' => bcrypt('secret123')]);
 
@@ -82,9 +82,19 @@ class LoginTest extends TestCase
             'email' => $user->email,
             'password' => 'wrong',
             'client' => 'web',
-        ])->assertUnprocessable()->assertFieldErrors(['email']);
+        ])->assertProblem(401, 'invalid_credentials')
+            ->assertJsonPath('detail', trans('auth.failed'))
+            ->assertJsonMissingPath('errors');
 
         $this->assertDatabaseCount('refresh_tokens', 0);
+    }
+
+    #[Test]
+    public function rejects_malformed_email_with_422(): void
+    {
+        $this->postJson('/api/v1/auth/login', ['email' => 'not-an-email', 'password' => 'x', 'client' => 'web'])
+            ->assertProblem(422, 'validation_failed')
+            ->assertFieldErrors(['email'], 'invalid_format');
     }
 
     #[Test]
@@ -111,13 +121,16 @@ class LoginTest extends TestCase
                 'email' => $user->email,
                 'password' => 'wrong',
                 'client' => 'web',
-            ])->assertUnprocessable();
+            ])->assertProblem(401, 'invalid_credentials');
         }
 
-        $this->postJson('/api/v1/auth/login', [
+        $response = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
             'password' => 'secret123',
             'client' => 'web',
-        ])->assertUnprocessable()->assertFieldErrors(['email']);
+        ])->assertProblem(429, 'too_many_attempts')
+            ->assertJsonMissingPath('errors');
+
+        $this->assertMatchesRegularExpression('/^\d+$/', (string) $response->headers->get('Retry-After'));
     }
 }

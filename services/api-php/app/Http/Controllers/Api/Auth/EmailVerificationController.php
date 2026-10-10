@@ -54,15 +54,14 @@ class EmailVerificationController extends Controller
     }
 
     /**
-     * Resend the verification email; 204 when nothing needs verifying.
+     * Resend the verification email. Always 202: an already verified address
+     * is a no-op, not a different outcome.
      */
     public function resend(Request $request): Response
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return response()->noContent();
+        if (! $request->user()->hasVerifiedEmail()) {
+            $request->user()->sendEmailVerificationNotification();
         }
-
-        $request->user()->sendEmailVerificationNotification();
 
         return response()->noContent(202);
     }

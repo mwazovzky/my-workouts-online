@@ -166,12 +166,13 @@ class ErrorEnvelopeTest extends TestCase
     }
 
     #[Test]
-    public function manual_validation_messages_use_the_invalid_value_code(): void
+    public function wrong_credentials_are_a_401_problem_not_a_validation_failure(): void
     {
         $user = User::factory()->create(['password' => bcrypt('secret123')]);
 
         $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'password' => 'wrong', 'client' => 'web'])
-            ->assertFieldErrors(['email'], 'invalid_value');
+            ->assertProblem(401, 'invalid_credentials')
+            ->assertJsonMissingPath('errors');
     }
 
     #[Test]

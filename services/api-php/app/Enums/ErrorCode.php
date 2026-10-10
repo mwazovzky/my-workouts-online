@@ -10,6 +10,7 @@ enum ErrorCode: string
 {
     case BadRequest = 'bad_request';
     case Unauthenticated = 'unauthenticated';
+    case InvalidCredentials = 'invalid_credentials';
     case TokenExpired = 'token_expired';
     case RefreshTokenMissing = 'refresh_token_missing';
     case RefreshTokenInvalid = 'refresh_token_invalid';
@@ -23,6 +24,7 @@ enum ErrorCode: string
     case InUse = 'in_use';
     case ValidationFailed = 'validation_failed';
     case TooManyRequests = 'too_many_requests';
+    case TooManyAttempts = 'too_many_attempts';
     case InvalidVerificationLink = 'invalid_verification_link';
     case InvalidSignature = 'invalid_signature';
     case InternalError = 'internal_error';
@@ -35,6 +37,7 @@ enum ErrorCode: string
         return match ($this) {
             self::BadRequest => 'Bad request',
             self::Unauthenticated => 'Unauthenticated',
+            self::InvalidCredentials => 'Invalid credentials',
             self::TokenExpired => 'Access token expired',
             self::RefreshTokenMissing => 'Refresh token missing',
             self::RefreshTokenInvalid => 'Refresh token invalid',
@@ -48,6 +51,7 @@ enum ErrorCode: string
             self::InUse => 'Resource in use',
             self::ValidationFailed => 'Validation failed',
             self::TooManyRequests => 'Too many requests',
+            self::TooManyAttempts => 'Too many attempts',
             self::InvalidVerificationLink => 'Invalid verification link',
             self::InvalidSignature => 'Invalid signature',
             self::InternalError => 'Internal server error',

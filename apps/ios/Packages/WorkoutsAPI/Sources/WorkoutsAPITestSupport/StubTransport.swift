@@ -19,11 +19,16 @@ public actor StubTransport: ClientTransport {
         public let status: Int
         public let body: Data?
         public let contentType: String
+        /// Extra response headers, e.g. `["Retry-After": "42"]`.
+        public let headers: [String: String]
 
-        public init(status: Int, body: Data? = nil, contentType: String = "application/json") {
+        public init(
+            status: Int, body: Data? = nil, contentType: String = "application/json", headers: [String: String] = [:]
+        ) {
             self.status = status
             self.body = body
             self.contentType = contentType
+            self.headers = headers
         }
 
         public static func json(_ status: Int, _ json: String) -> StubResponse {
@@ -35,18 +40,21 @@ public actor StubTransport: ClientTransport {
         }
 
         /// An RFC 9457 problem body, the shape of every non-2xx API response.
-        public static func problem(_ status: Int, _ json: String) -> StubResponse {
-            StubResponse(status: status, body: Data(json.utf8), contentType: "application/problem+json")
+        public static func problem(_ status: Int, _ json: String, headers: [String: String] = [:]) -> StubResponse {
+            StubResponse(
+                status: status, body: Data(json.utf8), contentType: "application/problem+json", headers: headers)
         }
 
         /// A minimal `Problem` for `status` and `code`; `detail` defaults to the code.
-        public static func problem(_ status: Int, code: String, detail: String? = nil) -> StubResponse {
+        public static func problem(
+            _ status: Int, code: String, detail: String? = nil, headers: [String: String] = [:]
+        ) -> StubResponse {
             let detail = detail ?? code
             let json = """
                 {"type":"https://my-workouts.online/problems/\(code)","title":"\(code)","status":\(status),\
                 "detail":"\(detail)","instance":"/api/v1/test#00000000-0000-4000-8000-000000000000","code":"\(code)"}
                 """
-            return problem(status, json)
+            return problem(status, json, headers: headers)
         }
 
         public static func empty(_ status: Int) -> StubResponse {
@@ -109,6 +117,11 @@ public actor StubTransport: ClientTransport {
             throw StubError.noResponseQueued(operationID: operationID)
         }
         var response = HTTPResponse(status: .init(code: stub.status))
+        for (name, value) in stub.headers {
+            if let field = HTTPField.Name(name) {
+                response.headerFields[field] = value
+            }
+        }
         if let responseBody = stub.body {
             response.headerFields[.contentType] = stub.contentType
             return (response, HTTPBody(responseBody))

@@ -24,6 +24,37 @@ struct APIMappingTests {
         #expect(meta.themePreferences == [.light, .dark, .system])
     }
 
+    @Test("login 401 maps to invalid_credentials with the detail as the message")
+    func loginInvalidCredentials() async throws {
+        let transport = StubTransport(responses: [
+            .problem(401, code: "invalid_credentials", detail: "These credentials do not match our records.")
+        ])
+        let repository = APIAuthRepository(
+            client: Fixtures.client(transport: transport), makeClient: { _ in Fixtures.client(transport: transport) },
+            deviceName: "test")
+        await #expect(
+            throws: APIError.api(
+                status: 401, code: "invalid_credentials", message: "These credentials do not match our records.")
+        ) {
+            try await repository.login(email: "test@example.com", password: "nope")
+        }
+    }
+
+    @Test("login 429 carries the Retry-After seconds")
+    func loginLockout() async throws {
+        let transport = StubTransport(responses: [
+            .problem(429, code: "too_many_attempts", detail: "Slow down", headers: ["Retry-After": "42"])
+        ])
+        let repository = APIAuthRepository(
+            client: Fixtures.client(transport: transport), makeClient: { _ in Fixtures.client(transport: transport) },
+            deviceName: "test")
+        await #expect(
+            throws: APIError.api(status: 429, code: "too_many_attempts", message: "Slow down", retryAfter: 42)
+        ) {
+            try await repository.login(email: "test@example.com", password: "nope")
+        }
+    }
+
     @Test("login grant carries both tokens for a native client")
     func authGrant() async throws {
         let output = try await Fixtures.client(returning: "auth-login")

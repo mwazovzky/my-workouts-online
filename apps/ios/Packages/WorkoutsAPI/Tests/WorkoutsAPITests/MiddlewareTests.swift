@@ -51,16 +51,16 @@ struct MiddlewareTests {
     @Test("the client posts native login bodies as the contract describes")
     func loginBody() async throws {
         let transport = StubTransport(responses: [
-            .problem(401, code: "unauthenticated", detail: "Unauthenticated.")
+            .problem(401, code: "invalid_credentials", detail: "These credentials do not match our records.")
         ])
         let output = try await makeClient(transport).login(
             body: .json(.init(email: "a@b.c", password: "secret", client: .native, deviceName: "iPhone"))
         )
-        guard case .undocumented(let status, _) = output else {
-            Issue.record("expected an undocumented 401, got \(output)")
+        guard case .unauthorized(let response) = output else {
+            Issue.record("expected the documented 401, got \(output)")
             return
         }
-        #expect(status == 401)
+        #expect(try response.body.applicationProblemJson.code == .invalidCredentials)
 
         let request = try #require(await transport.requests.first)
         let body = try JSONSerialization.jsonObject(with: try #require(request.body)) as? [String: Any]

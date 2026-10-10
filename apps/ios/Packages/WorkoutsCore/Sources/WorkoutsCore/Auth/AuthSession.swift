@@ -110,7 +110,7 @@ public actor AuthSession {
     }
 
     private static func revocationCode(_ error: any Error) -> String? {
-        guard case .api(let status, let code, _) = APIError.from(error), status == 401 || status == 403 else {
+        guard case .api(let status, let code, _, _) = APIError.from(error), status == 401 || status == 403 else {
             return nil
         }
         return code.hasPrefix("refresh_token") ? code : nil

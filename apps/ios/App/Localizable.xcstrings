@@ -2731,6 +2731,16 @@
         }
       }
     },
+    "Too many attempts. Try again in %lld seconds." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слишком много попыток. Попробуйте снова через %lld сек."
+          }
+        }
+      }
+    },
     "Track your programs and log every set." : {
       "localizations" : {
         "ru" : {

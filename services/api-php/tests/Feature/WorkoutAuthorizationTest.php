@@ -27,7 +27,7 @@ class WorkoutAuthorizationTest extends TestCase
             ->actingAs($user)
             ->postJson("/api/v1/workouts/{$otherUserWorkout->id}/complete");
 
-        $response->assertForbidden();
+        $this->assertProblem($response, 404, 'not_found');
 
         $otherUserWorkout->refresh();
         $this->assertSame('in_progress', $otherUserWorkout->status->value);

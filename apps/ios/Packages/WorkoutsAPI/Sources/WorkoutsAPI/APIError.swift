@@ -19,8 +19,9 @@ public enum APIError: Error, Sendable, Equatable {
     /// 422. `fields` is keyed by the dotted path of the rejected field, e.g.
     /// `activities.0.sets.1.effort_value` (converted from the API's JSON Pointer).
     case validation(message: String, fields: [String: [FieldError]])
-    /// Any other documented or undocumented error status with a `Problem` body.
-    case api(status: Int, code: String, message: String)
+    /// Any other documented or undocumented error status with a `Problem` body. `retryAfter` is
+    /// the `Retry-After` header in seconds when the response carried one (429s).
+    case api(status: Int, code: String, message: String, retryAfter: Int? = nil)
     /// A non-2xx response whose body was not a `Problem`.
     case unexpected(status: Int)
     /// The request never completed (offline, timeout, TLS).
@@ -33,7 +34,7 @@ public enum APIError: Error, Sendable, Equatable {
     public var code: String? {
         switch self {
         case .validation: "validation_failed"
-        case .api(_, let code, _): code
+        case .api(_, let code, _, _): code
         case .unexpected, .network, .decoding, .local: nil
         }
     }
@@ -41,7 +42,7 @@ public enum APIError: Error, Sendable, Equatable {
     public var status: Int? {
         switch self {
         case .validation: 422
-        case .api(let status, _, _), .unexpected(let status): status
+        case .api(let status, _, _, _), .unexpected(let status): status
         case .network, .decoding, .local: nil
         }
     }
@@ -65,8 +66,8 @@ extension APIError {
     }
 
     /// Maps a documented error response whose body is a `Problem`.
-    public init(status: Int, envelope: Components.Schemas.Problem) {
-        self = .api(status: status, code: envelope.code.rawValue, message: envelope.detail)
+    public init(status: Int, envelope: Components.Schemas.Problem, retryAfter: Int? = nil) {
+        self = .api(status: status, code: envelope.code.rawValue, message: envelope.detail, retryAfter: retryAfter)
     }
 
     /// Maps an `undocumented` response by decoding a `Problem` from its body.
@@ -74,16 +75,17 @@ extension APIError {
         guard let body = payload.body, let data = try? await Data(collecting: body, upTo: 64 * 1024) else {
             return .unexpected(status: status)
         }
-        return from(status: status, data: data)
+        let retryAfter = payload.headerFields[.retryAfter].flatMap(Int.init)
+        return from(status: status, data: data, retryAfter: retryAfter)
     }
 
     /// Maps raw `Problem` bytes (also used by middlewares that inspect a response). The body
     /// is read loosely so a `code` outside the contract's enum still surfaces as `.api`.
-    public static func from(status: Int, data: Data) -> APIError {
+    public static func from(status: Int, data: Data, retryAfter: Int? = nil) -> APIError {
         guard let problem = try? JSONDecoder().decode(LooseProblem.self, from: data) else {
             return .unexpected(status: status)
         }
-        return .api(status: status, code: problem.code, message: problem.detail)
+        return .api(status: status, code: problem.code, message: problem.detail, retryAfter: retryAfter)
     }
 
     /// Maps anything thrown by the generated client. `APIError`s pass through unchanged.

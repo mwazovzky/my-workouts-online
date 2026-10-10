@@ -68,7 +68,7 @@ public final class AppSession {
         } catch {
             let apiError = APIError.from(error)
             switch apiError {
-            case .api(let status, _, _) where status == 401 || status == 403:
+            case .api(let status, _, _, _) where status == 401 || status == 403:
                 await authSession.signOut(revoke: false)
                 state = .signedOut(reason: .sessionExpired)
             default:

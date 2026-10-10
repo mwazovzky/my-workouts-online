@@ -100,7 +100,7 @@ class WorkoutRepeatTest extends TestCase
             ->actingAs($otherUser)
             ->postJson("/api/v1/workouts/{$sourceWorkout->id}/repeat");
 
-        $response->assertForbidden();
+        $this->assertProblem($response, 404, 'not_found');
     }
 
     #[Test]

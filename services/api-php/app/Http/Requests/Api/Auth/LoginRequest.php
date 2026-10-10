@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Api\Auth;
 
 use App\Enums\ClientKind;
+use App\Enums\ErrorCode;
+use App\Exceptions\Api\ApiException;
 use App\Http\Requests\ApiFormRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
@@ -10,10 +12,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 /**
- * Credential check for token issuance, throttled per email + IP.
+ * Credential check for token issuance, throttled per email + IP. Malformed
+ * input is a 422; wrong credentials are a 401 and a lockout a 429.
  */
 class LoginRequest extends ApiFormRequest
 {
@@ -38,7 +40,7 @@ class LoginRequest extends ApiFormRequest
     /**
      * Validate the credentials and return the user without starting a session.
      *
-     * @throws ValidationException
+     * @throws ApiException 401 `invalid_credentials` or 429 `too_many_attempts`
      */
     public function authenticateUser(): User
     {
@@ -50,9 +52,7 @@ class LoginRequest extends ApiFormRequest
         if (! $user instanceof User || ! $provider->validateCredentials($user, $this->only('password'))) {
             RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+            throw new ApiException(401, ErrorCode::InvalidCredentials, trans('auth.failed'));
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -66,7 +66,7 @@ class LoginRequest extends ApiFormRequest
     }
 
     /**
-     * @throws ValidationException
+     * @throws ApiException 429 `too_many_attempts` with `Retry-After`
      */
     public function ensureIsNotRateLimited(): void
     {
@@ -78,12 +78,10 @@ class LoginRequest extends ApiFormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
-        throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
+        throw new ApiException(429, ErrorCode::TooManyAttempts, trans('auth.throttle', [
+            'seconds' => $seconds,
+            'minutes' => ceil($seconds / 60),
+        ]), ['Retry-After' => (string) $seconds]);
     }
 
     public function throttleKey(): string

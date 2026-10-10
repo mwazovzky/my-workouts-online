@@ -20,7 +20,7 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `Privacy`             | `/privacy`                | Public          | Landing         | Privacy policy; linked from the guest and authenticated layout footers, Welcome and the iOS Profile tab; signed-in users keep the app navigation |
 | `Support`             | `/support`                | Public          | Landing         | Support contact (`support@my-workouts.online`); linked like Privacy       |
 | `auth/Register`       | `/register`               | Guest           | Auth & Profile  | Registration, then the verify-email notice                               |
-| `auth/Login`          | `/login`                  | Guest           | Auth & Profile  | Honours `?redirect=`; shows a banner after `?reset=1`                    |
+| `auth/Login`          | `/login`                  | Guest           | Auth & Profile  | Honours `?redirect=`; banner after `?reset=1`; 401 detail under email, 429 lockout countdown |
 | `auth/ForgotPassword` | `/forgot-password`        | Guest           | Auth & Profile  | Request password reset link                                              |
 | `auth/ResetPassword`  | `/reset-password/{token}` | Guest           | Auth & Profile  | Enter a new password (`?email=` prefilled)                               |
 | `auth/VerifyEmail`    | `/verify-email`           | Auth            | Auth & Profile  | Verification notice with resend                                          |

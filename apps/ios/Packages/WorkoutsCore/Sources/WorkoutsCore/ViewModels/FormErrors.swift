@@ -5,8 +5,8 @@ import WorkoutsAPI
 /// `useApiForm` composable does: the first message per field, everything else as one banner.
 public struct FormErrors: Sendable, Equatable {
     public enum General: Sendable, Equatable {
-        /// 429: the throttle message.
-        case tooManyAttempts
+        /// 429: the throttle message, with the `Retry-After` seconds when the API sent them.
+        case tooManyAttempts(retryAfter: Int?)
         /// Any other failure, with the server's message when it sent one.
         case failed(message: String?)
         case offline
@@ -38,8 +38,8 @@ public struct FormErrors: Sendable, Equatable {
                 fields[field] = errors.first?.message
             }
             if fields.isEmpty { general = .failed(message: message) }
-        case .api(let status, _, let message):
-            general = status == 429 ? .tooManyAttempts : .failed(message: message)
+        case .api(let status, _, let message, let retryAfter):
+            general = status == 429 ? .tooManyAttempts(retryAfter: retryAfter) : .failed(message: message)
         case .network:
             general = .offline
         case .unexpected, .decoding, .local:

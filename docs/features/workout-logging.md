@@ -30,7 +30,7 @@ Start workouts from templates, edit activities and sets, save progress, complete
 - New workouts are always created in `in_progress` status.
 - Repeated workouts do not keep a template reference. They set `workout_template_id` to `null`.
 - Workout status is one-way: `in_progress` to `completed`.
-- Reads are owner-scoped through the workout query builder. Non-owners receive 404 responses.
+- Reads are owner-scoped through the workout query builder. Non-owners receive 404 on every action (read, save, complete, repeat, delete); 403 is only for the owner's own workout in a status that forbids the action.
 - Mutations are policy-guarded and require the current user to own the workout.
 - Save is only allowed for `in_progress` workouts.
 - Complete requires `in_progress` status.

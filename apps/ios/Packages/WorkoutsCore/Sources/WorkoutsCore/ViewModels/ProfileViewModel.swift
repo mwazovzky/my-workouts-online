@@ -117,10 +117,8 @@ public final class ProfileViewModel {
         resendError = nil
         defer { isResending = false }
         do {
-            switch try await me.resendVerification() {
-            case .sent: notice = .verificationSent
-            case .alreadyVerified: try await session.refreshUser()
-            }
+            try await me.resendVerification()
+            notice = .verificationSent
         } catch {
             resendError = APIError.from(error)
         }

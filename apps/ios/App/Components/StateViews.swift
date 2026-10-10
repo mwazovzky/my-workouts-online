@@ -107,7 +107,7 @@ extension APIError {
     var userMessage: String {
         switch self {
         case .validation(let message, _): message
-        case .api(_, _, let message): message
+        case .api(_, _, let message, _): message
         case .network: String(localized: "Could not reach the server.")
         case .unexpected, .decoding, .local: String(localized: "Something went wrong. Please try again.")
         }
