@@ -252,10 +252,20 @@ export interface paths {
         get: operations["getMe"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete the account
+         * @description Requires the current password; revokes every refresh-token family.
+         */
+        delete: operations["deleteMe"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update the current user (merge patch)
+         * @description RFC 7386 JSON Merge Patch: send only the fields to change; absent fields
+         *     are untouched. At least one field is required. A changed `email`
+         *     un-verifies the account until the new address is verified.
+         */
+        patch: operations["updateMe"];
         trace?: never;
     };
     "/api/v1/meta": {
@@ -275,7 +285,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/profile": {
+    "/api/v1/me/password": {
         parameters: {
             query?: never;
             header?: never;
@@ -283,65 +293,16 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
-        post?: never;
-        /** Delete the account */
-        delete: operations["deleteProfile"];
-        options?: never;
-        head?: never;
-        /** Update name and email */
-        patch: operations["updateProfile"];
-        trace?: never;
-    };
-    "/api/v1/profile/password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Change password */
+        /**
+         * Change the password
+         * @description Revokes every other refresh-token family; the current session stays signed in.
+         */
         put: operations["updatePassword"];
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/v1/profile/locale": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Store the preferred locale */
-        patch: operations["updateLocale"];
-        trace?: never;
-    };
-    "/api/v1/profile/theme": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Store the theme preference */
-        patch: operations["updateTheme"];
         trace?: never;
     };
     "/api/v1/dashboard": {
@@ -950,8 +911,6 @@ export interface components {
             email: string;
             /** Format: password */
             password: string;
-            /** Format: password */
-            password_confirmation: string;
             client: components["schemas"]["ClientKind"];
             device_name?: string;
         };
@@ -988,6 +947,14 @@ export interface components {
             /** @description Present for native clients only. Web clients receive it as a cookie. */
             refresh_token?: string;
             user: components["schemas"]["User"];
+        };
+        /** @description RFC 7386 merge patch for the current user; every field optional, at least one present. */
+        MePatch: {
+            name?: string;
+            /** Format: email */
+            email?: string;
+            locale?: components["schemas"]["Locale"];
+            theme_preference?: components["schemas"]["ThemePreference"];
         };
         /**
          * @example {
@@ -2145,8 +2112,6 @@ export interface operations {
                     email: string;
                     /** Format: password */
                     password: string;
-                    /** Format: password */
-                    password_confirmation: string;
                 };
             };
         };
@@ -2262,18 +2227,53 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Current user */
-            200: {
+            200: components["responses"]["UserResponse"];
+            401: components["responses"]["Unauthenticated"];
+        };
+    };
+    deleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: password */
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Deleted */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": {
-                        data: components["schemas"]["User"];
-                    };
-                };
+                content?: never;
             };
             401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MePatch"];
+            };
+        };
+        responses: {
+            200: components["responses"]["UserResponse"];
+            401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
         };
     };
     getMeta: {
@@ -2324,55 +2324,6 @@ export interface operations {
             };
         };
     };
-    deleteProfile: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** Format: password */
-                    password: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: components["responses"]["Unauthenticated"];
-            422: components["responses"]["ValidationError"];
-        };
-    };
-    updateProfile: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    name: string;
-                    /** Format: email */
-                    email: string;
-                };
-            };
-        };
-        responses: {
-            200: components["responses"]["UserResponse"];
-            401: components["responses"]["Unauthenticated"];
-            422: components["responses"]["ValidationError"];
-        };
-    };
     updatePassword: {
         parameters: {
             query?: never;
@@ -2387,8 +2338,6 @@ export interface operations {
                     current_password: string;
                     /** Format: password */
                     password: string;
-                    /** Format: password */
-                    password_confirmation: string;
                 };
             };
         };
@@ -2400,46 +2349,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            401: components["responses"]["Unauthenticated"];
-            422: components["responses"]["ValidationError"];
-        };
-    };
-    updateLocale: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    locale: components["schemas"]["Locale"];
-                };
-            };
-        };
-        responses: {
-            200: components["responses"]["UserResponse"];
-            401: components["responses"]["Unauthenticated"];
-            422: components["responses"]["ValidationError"];
-        };
-    };
-    updateTheme: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    theme_preference: components["schemas"]["ThemePreference"];
-                };
-            };
-        };
-        responses: {
-            200: components["responses"]["UserResponse"];
             401: components["responses"]["Unauthenticated"];
             422: components["responses"]["ValidationError"];
         };

@@ -115,7 +115,7 @@ describe('useApiForm', () => {
     const form = useApiForm({ name: 'x' });
     form.errors = { name: 'old' };
 
-    await form.patch('/profile', { onSuccess });
+    await form.patch('/me', { onSuccess });
 
     expect(form.errors).toEqual({});
     expect(form.recentlySuccessful).toBe(true);

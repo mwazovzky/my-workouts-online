@@ -56,7 +56,7 @@ Access values: Guest (signed-in users are redirected), Auth, Verified, Admin, an
 | Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workout}`, `PATCH /api/v1/workouts/{workout}/save`, `POST /api/v1/workouts/{workout}/complete`, `GET /api/v1/exercises` (Add activity) |
 | Workouts tab | verified | `GET /api/v1/workouts?page=N&per_page=M`, `DELETE /api/v1/workouts/{workout}` |
 | Workout detail | verified | `GET /api/v1/workouts/{workout}`, `POST /api/v1/workouts/{workout}/repeat` |
-| Profile tab | auth | `PATCH /api/v1/profile`, `PUT /api/v1/profile/password`, `PATCH /api/v1/profile/theme`, `PATCH /api/v1/profile/locale` (automatic sync), `DELETE /api/v1/profile`, `POST /api/v1/auth/email/resend`, `POST /api/v1/auth/logout` |
+| Profile tab | auth | `PATCH /api/v1/me` (name and email, theme, locale sync), `PUT /api/v1/me/password`, `DELETE /api/v1/me`, `POST /api/v1/auth/email/resend`, `POST /api/v1/auth/logout` |
 
 The root view picks the screen from the session state (`signedOut`, `unverified`, `ready`), mirroring the SPA's `guest` / `auth` / `verified` guards. Signed in, a four-tab shell (Dashboard, Programs, Workouts, Profile) mirrors the web bottom navigation; each tab keeps its own navigation stack, and admins see the same four tabs.
 
@@ -82,7 +82,7 @@ Only `email.received` is acted on: it queues `ForwardInboundEmail`, which relays
 
 ## API
 
-The SPA consumes a versioned REST API under `/api/v1`. Protected routes require a JWT bearer token (`auth:jwt`). Key groups: auth, programs, workouts, workout-templates, dashboard, profile, and the admin catalog below. Route names are prefixed `api.v1.`. Clients send `Accept-Language`; responses declare `Content-Language`. Response envelope, pagination, error shape and status-code rules are in [API Design](api-design.md). The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
+The SPA consumes a versioned REST API under `/api/v1`. Protected routes require a JWT bearer token (`auth:jwt`). Key groups: auth, the current user (`/me`), programs, workouts, workout-templates, dashboard, and the admin catalog below. Route names are prefixed `api.v1.`. Clients send `Accept-Language`; responses declare `Content-Language`. Response envelope, pagination, error shape and status-code rules are in [API Design](api-design.md). The full contract lives in [`contracts/openapi.yaml`](../contracts/openapi.yaml).
 
 | Action              | Method   | Path                                    | Route Name                       | Access                   | Owning Feature |
 | ------------------- | -------- | --------------------------------------- | -------------------------------- | ------------------------ | -------------- |
@@ -96,6 +96,9 @@ The SPA consumes a versioned REST API under `/api/v1`. Protected routes require 
 | Verify email        | `POST`   | `/api/v1/auth/email/verify`             | `api.v1.auth.email.verify`       | Auth, throttled          | Auth & Profile |
 | Resend verification | `POST`   | `/api/v1/auth/email/resend`             | `api.v1.auth.email.resend`       | Auth, throttled          | Auth & Profile |
 | Current user        | `GET`    | `/api/v1/me`                            | `api.v1.me`                      | Auth                     | Auth & Profile |
+| Update current user (merge patch) | `PATCH` | `/api/v1/me`              | `api.v1.me.update`               | Auth                     | Auth & Profile |
+| Change password     | `PUT`    | `/api/v1/me/password`                   | `api.v1.me.password`             | Auth                     | Auth & Profile |
+| Delete account      | `DELETE` | `/api/v1/me`                            | `api.v1.me.destroy`              | Auth                     | Auth & Profile |
 | App options         | `GET`    | `/api/v1/meta`                          | `api.v1.meta`                    | Public                   | Auth & Profile |
 
 

@@ -23,7 +23,7 @@ const form = useApiForm({
 });
 
 function submit() {
-  form.patch('/profile/theme', {
+  form.patch('/me', {
     onSuccess: ({ data }) => {
       auth.setUser(data.data);
       applyThemePreference(form.theme_preference);

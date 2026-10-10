@@ -20,7 +20,7 @@ class ResetPasswordRequest extends ApiFormRequest
         return [
             'token' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', Password::defaults()],
         ];
     }
 }

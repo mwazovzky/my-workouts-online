@@ -69,8 +69,9 @@ public final class ProfileViewModel {
         notice = nil
         defer { isSavingProfile = false }
         do {
-            let user = try await me.updateProfile(
-                name: name.trimmingCharacters(in: .whitespaces), email: email.trimmingCharacters(in: .whitespaces))
+            let user = try await me.updateMe(
+                MePatch(
+                    name: name.trimmingCharacters(in: .whitespaces), email: email.trimmingCharacters(in: .whitespaces)))
             session.apply(user: user)
             name = user.name ?? ""
             email = user.email
@@ -82,13 +83,13 @@ public final class ProfileViewModel {
 
     public func updatePassword() async {
         guard canUpdatePassword else { return }
-        isUpdatingPassword = true
         passwordErrors.clear()
         notice = nil
+        guard passwordErrors.checkPasswordConfirmation(newPassword, newPasswordConfirmation) else { return }
+        isUpdatingPassword = true
         defer { isUpdatingPassword = false }
         do {
-            try await me.updatePassword(
-                current: currentPassword, new: newPassword, confirmation: newPasswordConfirmation)
+            try await me.updatePassword(current: currentPassword, new: newPassword)
             currentPassword = ""
             newPassword = ""
             newPasswordConfirmation = ""
@@ -104,7 +105,7 @@ public final class ProfileViewModel {
         themeError = nil
         defer { isSavingTheme = false }
         do {
-            session.apply(user: try await me.updateTheme(theme))
+            session.apply(user: try await me.updateMe(MePatch(themePreference: theme)))
             notice = .themeSaved
         } catch {
             themeError = APIError.from(error)
@@ -131,7 +132,7 @@ public final class ProfileViewModel {
         deleteErrors.clear()
         defer { isDeleting = false }
         do {
-            try await me.deleteProfile(password: deletePassword)
+            try await me.deleteMe(password: deletePassword)
             deletePassword = ""
             await session.signOut(reason: .accountDeleted)
             return true
@@ -163,7 +164,7 @@ public struct LocaleSync {
     @discardableResult
     public func syncIfNeeded(resolved: String) async -> Bool {
         guard let user = session.user, user.locale != resolved else { return false }
-        guard let updated = try? await me.updateLocale(resolved) else { return false }
+        guard let updated = try? await me.updateMe(MePatch(locale: resolved)) else { return false }
         session.apply(user: updated)
         return true
     }

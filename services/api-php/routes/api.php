@@ -14,7 +14,6 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\MetaController;
-use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ProgramController;
 use App\Http\Controllers\Api\Webhooks\ResendWebhookController;
 use App\Http\Controllers\Api\WorkoutController;
@@ -36,18 +35,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('auth/password/reset', [PasswordResetController::class, 'reset'])->middleware('throttle:6,1')->name('auth.password.reset');
 
     Route::middleware('auth:jwt')->group(function () {
-        Route::get('me', MeController::class)->name('me');
+        Route::get('me', [MeController::class, 'show'])->name('me');
+        Route::patch('me', [MeController::class, 'update'])->name('me.update');
+        Route::put('me/password', [MeController::class, 'updatePassword'])->name('me.password');
+        Route::delete('me', [MeController::class, 'destroy'])->name('me.destroy');
 
         Route::post('auth/logout', [SessionController::class, 'logout'])->name('auth.logout');
         Route::post('auth/reauth', ReauthController::class)->middleware('throttle:6,1')->name('auth.reauth');
         Route::post('auth/email/verify', [EmailVerificationController::class, 'verify'])->middleware('throttle:6,1')->name('auth.email.verify');
         Route::post('auth/email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:6,1')->name('auth.email.resend');
-
-        Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-        Route::patch('profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
-        Route::patch('profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
-        Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
     Route::middleware(['auth:jwt', 'verified'])->group(function () {

@@ -298,5 +298,6 @@
   "You can delete your account yourself at any time from the profile settings; this removes your account and all your workouts.": "You can delete your account yourself at any time from the profile settings; this removes your account and all your workouts.",
   "These credentials do not match our records.": "These credentials do not match our records.",
   "Too many login attempts. Try again in :seconds seconds.": "Too many login attempts. Try again in :seconds seconds.",
-  "Too many login attempts.": "Too many login attempts."
+  "Too many login attempts.": "Too many login attempts.",
+  "The password confirmation does not match.": "The password confirmation does not match."
 }

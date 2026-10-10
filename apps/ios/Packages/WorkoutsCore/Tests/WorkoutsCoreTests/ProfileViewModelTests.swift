@@ -80,6 +80,29 @@ struct ProfileViewModelTests {
         #expect(model.currentPassword.isEmpty && model.newPassword.isEmpty)
     }
 
+    @Test("a new password whose confirmation differs is caught on the device and nothing is sent")
+    func passwordConfirmationMismatch() async {
+        let (model, _, me) = await make()
+        model.currentPassword = "password"
+        model.newPassword = "newpassword1"
+        model.newPasswordConfirmation = "newpassword2"
+        await model.updatePassword()
+        #expect(model.passwordErrors["password_confirmation"] == "The password confirmation does not match.")
+        #expect(await me.passwordUpdates.isEmpty)
+        #expect(model.notice == nil)
+    }
+
+    @Test("profile, theme and locale changes send merge patches with only their own fields")
+    func mergePatches() async {
+        let (model, _, me) = await make()
+        model.name = "Tess"
+        await model.saveProfile()
+        await model.setTheme(.dark)
+        #expect(await me.patches.last == MePatch(themePreference: .dark))
+        #expect(await me.patches.first?.locale == nil)
+        #expect(await me.patches.first?.themePreference == nil)
+    }
+
     @Test("theme changes apply to the session and ignore no-ops")
     func theme() async {
         let (model, session, me) = await make()

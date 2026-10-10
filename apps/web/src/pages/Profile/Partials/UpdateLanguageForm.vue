@@ -24,7 +24,7 @@ const form = useApiForm({
 });
 
 function submit() {
-  form.patch('/profile/locale', {
+  form.patch('/me', {
     onSuccess: ({ data }) => {
       auth.setUser(data.data);
       localeStore.setLocale(form.locale);

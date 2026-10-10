@@ -28,7 +28,7 @@ if [[ -z "${token}" ]]; then
 fi
 
 # Operations excluded from fuzzing because they would break the run itself:
-# logout revokes the token in use, profile delete/update removes or renames
+# logout revokes the token in use, deleteMe/updateMe removes or renames
 # the account, and the social login endpoint is not implemented yet.
 common_args=(
   --header "Authorization: Bearer ${token}"
@@ -41,8 +41,8 @@ common_args=(
   --phases examples,coverage,fuzzing
   --exclude-operation-id socialLogin
   --exclude-operation-id logout
-  --exclude-operation-id updateProfile
-  --exclude-operation-id deleteProfile
+  --exclude-operation-id updateMe
+  --exclude-operation-id deleteMe
   --report junit
 )
 

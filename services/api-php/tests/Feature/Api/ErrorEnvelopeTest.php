@@ -133,14 +133,13 @@ class ErrorEnvelopeTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', [
             'email' => $existing->email,
             'password' => 'short',
-            'password_confirmation' => 'other',
             'client' => 'toaster',
         ]);
 
         $response->assertFieldErrors(['name'], 'required');
         $response->assertFieldErrors(['email'], 'not_unique');
         $response->assertFieldErrors(['client'], 'invalid_value');
-        $this->assertContains($response->fieldError('password')['code'], ['mismatch', 'invalid_format', 'too_short']);
+        $this->assertContains($response->fieldError('password')['code'], ['invalid_format', 'too_short']);
     }
 
     #[Test]

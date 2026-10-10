@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-class ProfileDeleteRequest extends ApiFormRequest
+class MeDeleteRequest extends ApiFormRequest
 {
     public function authorize(): bool
     {

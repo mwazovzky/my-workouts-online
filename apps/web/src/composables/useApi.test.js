@@ -39,8 +39,8 @@ describe('useApi', () => {
 
   it('patch() calls axios.patch with url and data', () => {
     const { patch } = useApi();
-    patch('/profile', { name: 'Alice' });
-    expect(mockAxios.patch).toHaveBeenCalledWith('/profile', { name: 'Alice' });
+    patch('/me', { name: 'Alice' });
+    expect(mockAxios.patch).toHaveBeenCalledWith('/me', { name: 'Alice' });
   });
 
   it('del() calls axios.delete with url', () => {

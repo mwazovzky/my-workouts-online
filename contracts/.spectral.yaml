@@ -223,12 +223,10 @@ rules:
       functionOptions:
         match: "^[a-z][a-z0-9_]*$"
 
-  # TODO(contract-hardening/04): PATCH bodies become RFC 7386 merge patches.
   house-patch-merge-patch:
     description: PATCH request bodies have no required fields (RFC 7386 JSON Merge Patch).
     message: "PATCH bodies must not declare required fields"
     severity: error
-    recommended: false
     given: "$.paths[*].patch.requestBody.content['application/json'].schema"
     then:
       field: required
@@ -246,3 +244,8 @@ overrides:
       - "openapi.yaml#/paths/~1health~1ready"
     rules:
       must-use-problem-json-for-errors: off
+  # TODO(contract-hardening/06): the workout save becomes PUT /workouts/{workoutId}/activities.
+  - files:
+      - "openapi.yaml#/components/schemas/WorkoutSaveRequest"
+    rules:
+      house-patch-merge-patch: off

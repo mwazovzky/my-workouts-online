@@ -22,7 +22,6 @@ class RegisterTest extends TestCase
             'name' => 'New User',
             'email' => 'new@example.com',
             'password' => 'password123',
-            'password_confirmation' => 'password123',
             'client' => 'native',
         ], $overrides);
     }
@@ -67,7 +66,7 @@ class RegisterTest extends TestCase
             ->assertForbidden()
             ->assertJsonPath('code', 'email_unverified');
 
-        $this->withToken($token)->patchJson('/api/v1/profile', ['name' => 'Still Me', 'email' => 'new@example.com'])
+        $this->withToken($token)->patchJson('/api/v1/me', ['name' => 'Still Me'])
             ->assertOk();
     }
 
@@ -78,9 +77,9 @@ class RegisterTest extends TestCase
             ->assertUnprocessable()
             ->assertFieldErrors(['name', 'email', 'password', 'client']);
 
-        $this->postJson('/api/v1/auth/register', $this->payload(['password_confirmation' => 'other']))
+        $this->postJson('/api/v1/auth/register', $this->payload(['password_confirmation' => 'password123']))
             ->assertUnprocessable()
-            ->assertFieldErrors(['password']);
+            ->assertFieldErrors(['password_confirmation'], 'unknown_field');
 
         $this->postJson('/api/v1/auth/register', $this->payload(['email' => 'Upper@Example.com']))
             ->assertUnprocessable()

@@ -22,7 +22,7 @@ const form = useApiForm({
 });
 
 function submit() {
-  form.patch('/profile', {
+  form.patch('/me', {
     onSuccess: ({ data }) => auth.setUser(data.data),
     onFail: () => toast.error(t('Failed to save profile')),
   });

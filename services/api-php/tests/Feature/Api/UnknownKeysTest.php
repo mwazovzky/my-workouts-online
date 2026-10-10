@@ -74,10 +74,9 @@ class UnknownKeysTest extends TestCase
         $user = User::factory()->create(['password' => bcrypt('secret123')]);
         $pair = app(TokenServiceInterface::class)->issuePair($user, 'test');
 
-        $this->actingAs($user)->putJson('/api/v1/profile/password', [
+        $this->actingAs($user)->putJson('/api/v1/me/password', [
             'current_password' => 'secret123',
             'password' => 'new-password-123',
-            'password_confirmation' => 'new-password-123',
             'remember' => true,
         ])->assertFieldErrors(['remember'], 'unknown_field');
 
@@ -101,13 +100,12 @@ class UnknownKeysTest extends TestCase
     }
 
     #[Test]
-    public function omitted_optional_keys_and_confirmation_fields_are_not_flagged(): void
+    public function omitted_optional_keys_are_not_flagged(): void
     {
         $this->postJson('/api/v1/auth/register', [
             'name' => 'Ada',
             'email' => 'ada@example.com',
             'password' => 'long-enough-password',
-            'password_confirmation' => 'long-enough-password',
             'client' => 'native',
         ])->assertCreated();
     }

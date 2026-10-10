@@ -115,13 +115,12 @@ describe('auth store edge cases', () => {
     mockApi.post.mockResolvedValueOnce({ data: { access_token: 'at', user } });
 
     const auth = useAuthStore();
-    await auth.register({ name: 'Ann', email: 'a@b.c', password: 'x', password_confirmation: 'x' });
+    await auth.register({ name: 'Ann', email: 'a@b.c', password: 'x' });
 
     expect(mockApi.post).toHaveBeenCalledWith('/auth/register', {
       name: 'Ann',
       email: 'a@b.c',
       password: 'x',
-      password_confirmation: 'x',
       client: 'web',
     });
     expect(auth.isAuthenticated).toBe(true);

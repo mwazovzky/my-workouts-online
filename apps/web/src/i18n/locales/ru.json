@@ -298,5 +298,6 @@
   "You can delete your account yourself at any time from the profile settings; this removes your account and all your workouts.": "Вы можете сами удалить аккаунт в любой момент в настройках профиля; это удалит аккаунт и все ваши тренировки.",
   "These credentials do not match our records.": "Эти учётные данные не найдены.",
   "Too many login attempts. Try again in :seconds seconds.": "Слишком много попыток входа. Попробуйте снова через :seconds сек.",
-  "Too many login attempts.": "Слишком много попыток входа."
+  "Too many login attempts.": "Слишком много попыток входа.",
+  "The password confirmation does not match.": "Пароли не совпадают."
 }

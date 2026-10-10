@@ -30,6 +30,23 @@ public struct FormErrors: Sendable, Equatable {
         fields[field] = nil
     }
 
+    /// A field error found on the device, before any request is sent.
+    public mutating func set(field: String, message: String) {
+        fields[field] = message
+    }
+
+    /// The API no longer receives a password confirmation, so forms compare the two fields
+    /// themselves. Returns false (and records the error under `password_confirmation`) on a
+    /// mismatch.
+    public mutating func checkPasswordConfirmation(_ password: String, _ confirmation: String) -> Bool {
+        guard password != confirmation else { return true }
+        // Resolved against the app bundle's string catalog at runtime; the key in tests.
+        set(
+            field: "password_confirmation",
+            message: String(localized: "The password confirmation does not match.", bundle: .main))
+        return false
+    }
+
     public mutating func apply(_ error: any Error) {
         clear()
         switch APIError.from(error) {
