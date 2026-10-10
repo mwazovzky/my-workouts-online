@@ -27,8 +27,9 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.createWorkout(body: .json(.init(workoutTemplateId: templateId)))
         switch output {
         case .created(let response): return try Workout(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -37,8 +38,9 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.getWorkout(path: .init(workout: id))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -58,10 +60,11 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.saveWorkout(path: .init(workout: id), body: .json(body))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -70,9 +73,10 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.completeWorkout(path: .init(workout: id))
         switch output {
         case .ok(let response): return try Workout(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -81,8 +85,9 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.listWorkouts(query: .init(page: page))
         switch output {
         case .ok(let response): return try Page<Workout>(api: try response.body.json)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -91,9 +96,10 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.deleteWorkout(path: .init(workout: id))
         switch output {
         case .noContent: return
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -102,9 +108,10 @@ public struct APIWorkoutRepository: WorkoutRepository {
         let output = try await client.repeatWorkout(path: .init(workout: id))
         switch output {
         case .created(let response): return try Workout(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

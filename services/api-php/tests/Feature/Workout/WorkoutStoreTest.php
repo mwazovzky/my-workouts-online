@@ -88,11 +88,11 @@ class WorkoutStoreTest extends TestCase
         $response = $this->actingAs($user)->postJson('/api/v1/workouts', []);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['workout_template_id']);
+        $response->assertFieldErrors(['workout_template_id']);
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            $response->json('errors.workout_template_id.0.message'),
+            $response->fieldError('workout_template_id')['detail'],
         );
     }
 
@@ -106,11 +106,11 @@ class WorkoutStoreTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['workout_template_id']);
+        $response->assertFieldErrors(['workout_template_id']);
 
         $this->assertSame(
             'The selected workout template could not be found.',
-            $response->json('errors.workout_template_id.0.message'),
+            $response->fieldError('workout_template_id')['detail'],
         );
     }
 }

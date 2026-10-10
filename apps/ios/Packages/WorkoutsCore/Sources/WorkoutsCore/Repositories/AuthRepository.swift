@@ -35,8 +35,9 @@ public struct APIAuthRepository: AuthRepository {
             body: .json(.init(email: email, password: password, client: .native, deviceName: deviceName)))
         switch output {
         case .ok(let response): return try AuthGrant(api: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
-        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
+        case .tooManyRequests(let response):
+            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -51,8 +52,9 @@ public struct APIAuthRepository: AuthRepository {
                     client: .native, deviceName: deviceName)))
         switch output {
         case .created(let response): return try AuthGrant(api: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
-        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
+        case .tooManyRequests(let response):
+            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -61,8 +63,9 @@ public struct APIAuthRepository: AuthRepository {
         let output = try await client.forgotPassword(body: .json(.init(email: email)))
         switch output {
         case .accepted: return
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
-        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
+        case .tooManyRequests(let response):
+            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -74,8 +77,9 @@ public struct APIAuthRepository: AuthRepository {
                 .init(token: token, email: email, password: password, passwordConfirmation: passwordConfirmation)))
         switch output {
         case .noContent: return
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
-        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
+        case .tooManyRequests(let response):
+            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -87,9 +91,10 @@ public struct APIAuthRepository: AuthRepository {
             headers: .init(xRequestedWith: .xmlHttpRequest), body: .json(.init(refreshToken: refreshToken)))
         switch output {
         case .ok(let response): return try AuthGrant(api: try response.body.json)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -98,7 +103,8 @@ public struct APIAuthRepository: AuthRepository {
         let output = try await makeClient([StaticBearerMiddleware(token: accessToken)]).logout()
         switch output {
         case .noContent: return
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

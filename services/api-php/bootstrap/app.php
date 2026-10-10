@@ -1,6 +1,7 @@
 <?php
 
 use App\Auth\JwtUserResolver;
+use App\Enums\ErrorCode;
 use App\Exceptions\Api\ApiErrorResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -42,10 +43,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json([
-                    'message' => $e->getMessage(),
-                    'code' => $request->attributes->get(JwtUserResolver::ERROR_ATTRIBUTE, 'unauthenticated'),
-                ], 401);
+                $code = ErrorCode::tryFrom((string) $request->attributes->get(JwtUserResolver::ERROR_ATTRIBUTE, ''))
+                    ?? ErrorCode::Unauthenticated;
+
+                return ApiErrorResponse::problem(401, $code, $e->getMessage());
             }
         });
 
@@ -58,6 +59,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
             if ($request->is('api/*')) {
                 return ApiErrorResponse::fromHttpException($e);
+            }
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if ($request->is('api/*')) {
+                return ApiErrorResponse::fromThrowable($e);
             }
         });
     })->create();

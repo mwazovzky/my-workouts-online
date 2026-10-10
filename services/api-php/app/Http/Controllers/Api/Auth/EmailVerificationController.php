@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Auth\EmailVerificationLink;
+use App\Enums\ErrorCode;
+use App\Exceptions\Api\ApiErrorResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\VerifyEmailRequest;
 use Illuminate\Auth\Events\Verified;
@@ -22,10 +24,11 @@ class EmailVerificationController extends Controller
 
         if ((int) $request->validated('id') !== $user->getKey()
             || ! hash_equals(sha1($user->getEmailForVerification()), (string) $request->validated('hash'))) {
-            return response()->json([
-                'message' => 'This verification link does not belong to the signed-in account.',
-                'code' => 'invalid_verification_link',
-            ], 403);
+            return ApiErrorResponse::problem(
+                403,
+                ErrorCode::InvalidVerificationLink,
+                'This verification link does not belong to the signed-in account.',
+            );
         }
 
         if (! EmailVerificationLink::isValid(
@@ -34,10 +37,11 @@ class EmailVerificationController extends Controller
             (int) $request->validated('expires'),
             (string) $request->validated('signature'),
         )) {
-            return response()->json([
-                'message' => 'This verification link is invalid or has expired.',
-                'code' => 'invalid_signature',
-            ], 403);
+            return ApiErrorResponse::problem(
+                403,
+                ErrorCode::InvalidSignature,
+                'This verification link is invalid or has expired.',
+            );
         }
 
         if (! $user->hasVerifiedEmail() && $user->markEmailAsVerified()) {

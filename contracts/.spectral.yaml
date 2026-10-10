@@ -124,12 +124,13 @@ rules:
       functionOptions:
         match: "Z$"
 
-  # ------------------------------------------------------------ story-scoped
-  # TODO(contract-hardening/02): errors become RFC 9457 Problem Details.
-  must-use-problem-json-as-default-response: off
-  must-use-problem-json-for-errors: off
-  must-use-valid-problem-json-schema: off
+  # A documented `default` response would make every status "documented" and
+  # silence the contract suite's undocumented-status check; every error
+  # response is listed explicitly instead (docs/api-design.md).
   must-specify-default-response: off
+  must-use-problem-json-as-default-response: off
+
+  # ------------------------------------------------------------ story-scoped
 
   # ------------------------------------------------------------ house rules
   house-data-envelope:
@@ -239,3 +240,9 @@ overrides:
       - "openapi.yaml#/paths/~1.well-known~1jwks.json"
     rules:
       must-use-lowercase-with-hypens-for-path-segements: off
+  # The readiness probe's 503 carries the component status document that
+  # orchestrators read, not an API problem.
+  - files:
+      - "openapi.yaml#/paths/~1health~1ready"
+    rules:
+      must-use-problem-json-for-errors: off

@@ -1,4 +1,5 @@
 import { api as axios } from '@/lib/api';
+import { problemFieldErrors } from '@/lib/problem';
 import { reactive } from 'vue';
 
 const META_KEYS = new Set([
@@ -77,13 +78,7 @@ export function useApiForm(initialData) {
       options.onSuccess?.(response);
     } catch (error) {
       if (error.response?.status === 422) {
-        const rawErrors = error.response.data.errors ?? {};
-        const flattened = {};
-        for (const key in rawErrors) {
-          const first = Array.isArray(rawErrors[key]) ? rawErrors[key][0] : rawErrors[key];
-          flattened[key] = first && typeof first === 'object' ? first.message : first;
-        }
-        form.errors = flattened;
+        form.errors = problemFieldErrors(error.response.data);
         options.onError?.(form.errors);
       } else {
         options.onFail?.(error);

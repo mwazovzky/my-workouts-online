@@ -28,9 +28,7 @@ class ValidationLocaleTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-
-        $errors = $response->json('errors');
-        $this->assertStringContainsString('обязательно', $errors['name'][0]['message']);
+        $this->assertStringContainsString('обязательно', $response->fieldError('name')['detail']);
     }
 
     #[Test]
@@ -44,9 +42,7 @@ class ValidationLocaleTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-
-        $errors = $response->json('errors');
-        $this->assertStringContainsString('required', $errors['name'][0]['message']);
+        $this->assertStringContainsString('required', $response->fieldError('name')['detail']);
     }
 
     // -------------------------------------------------------
@@ -64,7 +60,7 @@ class ValidationLocaleTest extends TestCase
 
         $this->assertSame(
             'Для начала тренировки необходимо выбрать шаблон.',
-            $response->json('errors.workout_template_id.0.message'),
+            $response->fieldError('workout_template_id')['detail'],
         );
     }
 
@@ -81,7 +77,7 @@ class ValidationLocaleTest extends TestCase
 
         $this->assertSame(
             'Выбранный шаблон тренировки не найден.',
-            $response->json('errors.workout_template_id.0.message'),
+            $response->fieldError('workout_template_id')['detail'],
         );
     }
 
@@ -96,7 +92,7 @@ class ValidationLocaleTest extends TestCase
 
         $this->assertSame(
             'A workout template is required to start a workout.',
-            $response->json('errors.workout_template_id.0.message'),
+            $response->fieldError('workout_template_id')['detail'],
         );
     }
 
@@ -116,7 +112,7 @@ class ValidationLocaleTest extends TestCase
         );
 
         $response->assertUnprocessable();
-        $this->assertStringContainsString('обязательно', $response->json('errors.activities.0.message'));
+        $this->assertStringContainsString('обязательно', $response->fieldError('activities')['detail']);
     }
 
     #[Test]
@@ -140,8 +136,7 @@ class ValidationLocaleTest extends TestCase
         );
 
         $response->assertUnprocessable();
-        $errors = $response->json('errors');
-        $this->assertStringContainsString('обязательно', $errors['activities.0.sets'][0]['message']);
+        $this->assertStringContainsString('обязательно', $response->fieldError('activities.0.sets')['detail']);
     }
 
     // -------------------------------------------------------
@@ -171,11 +166,9 @@ class ValidationLocaleTest extends TestCase
         );
 
         $response->assertUnprocessable();
-
-        $errors = $response->json('errors');
         $this->assertSame(
             'Подход не может быть отмечен как выполненный с нулевым усилием.',
-            $errors['activities.0.sets.0.is_completed'][0]['message'],
+            $response->fieldError('activities.0.sets.0.is_completed')['detail'],
         );
     }
 
@@ -202,11 +195,9 @@ class ValidationLocaleTest extends TestCase
         );
 
         $response->assertUnprocessable();
-
-        $errors = $response->json('errors');
         $this->assertSame(
             'A set cannot be marked as completed with 0 effort.',
-            $errors['activities.0.sets.0.is_completed'][0]['message'],
+            $response->fieldError('activities.0.sets.0.is_completed')['detail'],
         );
     }
 
@@ -228,8 +219,6 @@ class ValidationLocaleTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-
-        $errors = $response->json('errors');
-        $this->assertStringContainsString('Язык', $errors['locale'][0]['message']);
+        $this->assertStringContainsString('Язык', $response->fieldError('locale')['detail']);
     }
 }

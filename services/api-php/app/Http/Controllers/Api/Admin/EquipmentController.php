@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Enums\ErrorCode;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\EquipmentStoreRequest;
@@ -59,7 +60,7 @@ class EquipmentController extends Controller
         $this->authorize('delete', $equipment);
 
         if ($equipment->exercises()->withTrashed()->exists()) {
-            throw new ApiException(409, 'in_use', __('Cannot delete equipment that is used by exercises.'));
+            throw new ApiException(409, ErrorCode::InUse, __('Cannot delete equipment that is used by exercises.'));
         }
 
         $this->service->delete($equipment);

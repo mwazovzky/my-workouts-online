@@ -32,7 +32,8 @@ public struct APIMeRepository: MeRepository {
         let output = try await client.getMe()
         switch output {
         case .ok(let response): return try User(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -42,8 +43,10 @@ public struct APIMeRepository: MeRepository {
         switch output {
         case .accepted: return .sent
         case .noContent: return .alreadyVerified
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .tooManyRequests(let response):
+            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -53,10 +56,12 @@ public struct APIMeRepository: MeRepository {
             body: .json(.init(id: id, hash: hash, expires: expires, signature: signature)))
         switch output {
         case .noContent: return
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
-        case .tooManyRequests(let response): throw APIError(status: 429, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
+        case .tooManyRequests(let response):
+            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -65,8 +70,9 @@ public struct APIMeRepository: MeRepository {
         let output = try await client.updateProfile(body: .json(.init(name: name, email: email)))
         switch output {
         case .ok(let response): return try User(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -76,8 +82,9 @@ public struct APIMeRepository: MeRepository {
             body: .json(.init(currentPassword: current, password: new, passwordConfirmation: confirmation)))
         switch output {
         case .noContent: return
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -89,8 +96,9 @@ public struct APIMeRepository: MeRepository {
         let output = try await client.updateLocale(body: .json(.init(locale: value)))
         switch output {
         case .ok(let response): return try User(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -102,8 +110,9 @@ public struct APIMeRepository: MeRepository {
         let output = try await client.updateTheme(body: .json(.init(themePreference: value)))
         switch output {
         case .ok(let response): return try User(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -112,8 +121,9 @@ public struct APIMeRepository: MeRepository {
         let output = try await client.deleteProfile(body: .json(.init(password: password)))
         switch output {
         case .noContent: return
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .unprocessableContent(let response): throw APIError(validation: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

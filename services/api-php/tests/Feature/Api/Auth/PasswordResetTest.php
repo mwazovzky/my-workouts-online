@@ -88,6 +88,6 @@ class PasswordResetTest extends TestCase
             'email' => $user->email,
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
-        ])->assertUnprocessable()->assertJsonValidationErrors(['email']);
+        ])->assertUnprocessable()->assertFieldErrors(['email']);
     }
 }

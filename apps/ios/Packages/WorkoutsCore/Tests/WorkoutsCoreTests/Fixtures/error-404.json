@@ -1,4 +1,8 @@
 {
-    "message": "Record not found.",
+    "type": "https://my-workouts.online/problems/not_found",
+    "title": "Not found",
+    "status": 404,
+    "detail": "Record not found.",
+    "instance": "/api/v1/workouts/999999#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
     "code": "not_found"
 }

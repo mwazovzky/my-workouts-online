@@ -17,10 +17,12 @@ info:
       `Vary: Accept-Language`.
     - Request bodies are strict: every object declares `additionalProperties:
       false` and an undeclared key is rejected with 422 (`invalid`).
-    - Errors: every non-2xx response uses the `Error` envelope. Validation
-      failures use `ValidationError` with a stable `code` per field entry:
-      the failed rule name (`required`, `email`, `unique`, `enum`, ...) or
-      `invalid` for messages not tied to a rule.
+    - Errors: every non-2xx response is an RFC 9457 `Problem`
+      (`application/problem+json`) whose `code` is an `ErrorCode`; validation
+      failures are a `ValidationProblem` with one `{pointer, code, detail}`
+      entry per rejected field, `code` being a `FieldErrorCode`.
+    - Every response carries `X-Request-Id`, the id that also appears in
+      `Problem.instance` and in the server logs.
     - Pagination: list endpoints that paginate return `{ data, links, meta }`
       (`PageLinks`, `PageMeta`) and accept `page` and `per_page`.
     - Status: endpoints marked `x-status: target` are not implemented yet.
@@ -219,24 +221,25 @@ paths:
         '403':
           description: Cookie flow without the `X-Requested-With` header
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Problem'
+              example: { type: https://my-workouts.online/problems/forbidden, title: Forbidden, status: 403, detail: Missing X-Requested-With header., instance: '/api/v1/auth/refresh#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: forbidden }
         '401':
           description: Refresh token missing, expired, revoked, or reused
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Problem'
               examples:
                 missing:
-                  value: { message: 'Refresh token missing.', code: refresh_token_missing }
+                  value: { type: https://my-workouts.online/problems/refresh_token_missing, title: Refresh token missing, status: 401, detail: Refresh token missing., instance: '/api/v1/auth/refresh#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: refresh_token_missing }
                 invalid:
-                  value: { message: 'Refresh token invalid.', code: refresh_token_invalid }
+                  value: { type: https://my-workouts.online/problems/refresh_token_invalid, title: Refresh token invalid, status: 401, detail: Refresh token invalid., instance: '/api/v1/auth/refresh#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: refresh_token_invalid }
                 reused:
-                  value: { message: 'Refresh token reuse detected.', code: refresh_token_reused }
+                  value: { type: https://my-workouts.online/problems/refresh_token_reused, title: Refresh token reuse detected, status: 401, detail: Refresh token reuse detected., instance: '/api/v1/auth/refresh#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: refresh_token_reused }
                 expired:
-                  value: { message: 'Refresh token expired.', code: refresh_token_expired }
+                  value: { type: https://my-workouts.online/problems/refresh_token_expired, title: Refresh token expired, status: 401, detail: Refresh token expired., instance: '/api/v1/auth/refresh#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: refresh_token_expired }
         '422':
           $ref: '#/components/responses/ValidationError'
 
@@ -284,11 +287,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
-          description: Authenticated by session rather than a bearer token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Forbidden'
         '422':
           $ref: '#/components/responses/ValidationError'
         '429':
@@ -373,14 +372,14 @@ paths:
         '403':
           description: Link belongs to another account, or signature invalid or expired
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Problem'
               examples:
                 wrongAccount:
-                  value: { message: 'This verification link does not belong to the signed-in account.', code: invalid_verification_link }
+                  value: { type: https://my-workouts.online/problems/invalid_verification_link, title: Invalid verification link, status: 403, detail: This verification link does not belong to the signed-in account., instance: '/api/v1/auth/email/verify#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: invalid_verification_link }
                 badSignature:
-                  value: { message: 'This verification link is invalid or has expired.', code: invalid_signature }
+                  value: { type: https://my-workouts.online/problems/invalid_signature, title: Invalid signature, status: 403, detail: This verification link is invalid or has expired., instance: '/api/v1/auth/email/verify#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: invalid_signature }
         '422':
           $ref: '#/components/responses/ValidationError'
         '429':
@@ -1290,54 +1289,68 @@ components:
     ContentLanguage:
       description: Locale used for translated content in this response.
       schema: { type: string }
+    RequestId:
+      description: Correlation id of this request, sent on every response; the incoming `X-Request-Id` when it is a UUID, otherwise generated. Appears in `Problem.instance` and in the server logs.
+      schema: { type: string, format: uuid }
 
   responses:
     Unauthenticated:
       description: Missing, invalid, or expired access token
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
           examples:
             missing:
-              value: { message: Unauthenticated., code: unauthenticated }
+              value: { type: https://my-workouts.online/problems/unauthenticated, title: Unauthenticated, status: 401, detail: Unauthenticated., instance: '/api/v1/me#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: unauthenticated }
             expired:
-              value: { message: Access token expired., code: token_expired }
+              value: { type: https://my-workouts.online/problems/token_expired, title: Access token expired, status: 401, detail: Unauthenticated., instance: '/api/v1/me#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: token_expired }
     Forbidden:
       description: Authenticated but not allowed
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
           examples:
             unverified:
-              value: { message: Your email address is not verified., code: email_unverified }
+              value: { type: https://my-workouts.online/problems/email_unverified, title: Email address not verified, status: 403, detail: Your email address is not verified., instance: '/api/v1/dashboard#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: email_unverified }
             forbidden:
-              value: { message: This action is unauthorized., code: forbidden }
+              value: { type: https://my-workouts.online/problems/forbidden, title: Forbidden, status: 403, detail: This action is unauthorized., instance: '/api/v1/admin/equipment#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: forbidden }
     NotFound:
       description: Record not found or not owned by the caller
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-          example: { message: Record not found., code: not_found }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: https://my-workouts.online/problems/not_found, title: Not found, status: 404, detail: Record not found., instance: '/api/v1/workouts/42#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: not_found }
     Conflict:
       description: Operation refused because of existing references
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-          example: { message: Equipment is in use by one or more exercises., code: in_use }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: https://my-workouts.online/problems/in_use, title: Resource in use, status: 409, detail: Cannot delete equipment that is used by exercises., instance: '/api/v1/admin/equipment/2#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: in_use }
     TooManyRequests:
       description: Rate limit exceeded
       headers:
         Retry-After:
           schema: { type: integer }
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-          example: { message: Too many attempts., code: too_many_requests }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: https://my-workouts.online/problems/too_many_requests, title: Too many requests, status: 429, detail: Too Many Attempts., instance: '/api/v1/auth/email/resend#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: too_many_requests }
     ValidationError:
       description: Validation failed
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/ValidationError' }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ValidationProblem' }
     UserResponse:
       description: User
       content:
@@ -1406,39 +1419,117 @@ components:
 
   schemas:
     # ------------------------------------------------------------- Errors
-    Error:
+    ErrorCode:
+      type: string
+      description: Every top-level problem code the API emits. Clients switch on `code`, never on `title` or `detail`.
+      enum:
+        - bad_request
+        - unauthenticated
+        - token_expired
+        - refresh_token_missing
+        - refresh_token_invalid
+        - refresh_token_expired
+        - refresh_token_reused
+        - forbidden
+        - email_unverified
+        - not_found
+        - method_not_allowed
+        - conflict
+        - in_use
+        - validation_failed
+        - too_many_requests
+        - invalid_verification_link
+        - invalid_signature
+        - internal_error
+    FieldErrorCode:
+      type: string
+      description: Why one request field was rejected.
+      enum:
+        - required
+        - invalid_format
+        - invalid_value
+        - too_short
+        - too_long
+        - out_of_range
+        - not_unique
+        - not_found
+        - mismatch
+        - unknown_field
+    Problem:
       type: object
-      required: [message, code]
+      description: RFC 9457 Problem Details; every non-2xx response under `/api/*`, served as `application/problem+json`.
+      required: [type, title, status, detail, code]
       properties:
-        message:
+        type:
           type: string
-          description: Localized, human-readable.
+          format: uri
+          description: '`{APP_URL}/problems/{code}`; an identifier, not a page.'
+        title:
+          type: string
+          description: Stable English summary of `code`; never localized.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code of the response.
+        detail:
+          type: string
+          description: Localized, human-readable explanation of this occurrence.
+        instance:
+          type: string
+          description: 'Request path plus the request id: `/api/v1/workouts/42#<uuid>`. The same id is returned in `X-Request-Id`.'
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+      example:
+        type: https://my-workouts.online/problems/not_found
+        title: Not found
+        status: 404
+        detail: Record not found.
+        instance: /api/v1/workouts/42#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f
+        code: not_found
+    ValidationProblem:
+      type: object
+      description: "A `Problem` whose code is `validation_failed`, with one entry per rejected field. Written flat (not `allOf`) so generated clients get one type."
+      required: [type, title, status, detail, code, errors]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
         code:
           type: string
-          description: Stable, machine-readable, snake_case.
-    ValidationError:
-      allOf:
-        - $ref: '#/components/schemas/Error'
-        - type: object
-          required: [errors]
-          properties:
-            code:
-              type: string
-              enum: [validation_failed]
-            errors:
-              type: object
-              description: Keyed by dot-notation field path, e.g. `activities.0.sets.1.effort_value`.
-              additionalProperties:
-                type: array
-                items:
-                  type: object
-                  required: [code, message]
-                  properties:
-                    code:
-                      type: string
-                      description: Validation rule name, e.g. `required`, `email`, `unique`.
-                    message:
-                      type: string
+          enum: [validation_failed]
+        errors:
+          type: array
+          items:
+            type: object
+            required: [pointer, code, detail]
+            properties:
+              pointer:
+                type: string
+                description: RFC 6901 JSON Pointer into the request body, e.g. `/activities/0/sets/1/effort_value`.
+              code:
+                $ref: '#/components/schemas/FieldErrorCode'
+              detail:
+                type: string
+                description: Localized.
+      example:
+        type: https://my-workouts.online/problems/validation_failed
+        title: Validation failed
+        status: 422
+        detail: The effort value must be an integer. (and 1 more error)
+        instance: /api/v1/workouts/42/save#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f
+        code: validation_failed
+        errors:
+          - { pointer: /activities/0/sets/1/effort_value, code: invalid_format, detail: The effort value must be an integer. }
+          - { pointer: /activities/1/exercise_id, code: not_found, detail: The selected exercise could not be found. }
 
     # ------------------------------------------------------------- Common
     Readiness:

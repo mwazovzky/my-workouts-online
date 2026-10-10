@@ -167,6 +167,8 @@ return [
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
 
+    'unknown_field' => 'This field is not allowed.',
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

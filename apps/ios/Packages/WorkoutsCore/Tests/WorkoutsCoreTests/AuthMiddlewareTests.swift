@@ -11,8 +11,10 @@ import WorkoutsAPITestSupport
 struct AuthMiddlewareTests {
     private static let me =
         #"{"data":{"id":1,"name":"Test","email":"test@example.com","locale":"en","theme_preference":"system","is_admin":false,"email_verified":true}}"#
-    private static let expired = #"{"message":"Token has expired.","code":"token_expired"}"#
-    private static let unauthenticated = #"{"message":"Unauthenticated.","code":"unauthenticated"}"#
+    private static let expired =
+        #"{"type":"https://my-workouts.online/problems/token_expired","title":"Access token expired","status":401,"detail":"Token has expired.","instance":"/api/v1/me#abc","code":"token_expired"}"#
+    private static let unauthenticated =
+        #"{"type":"https://my-workouts.online/problems/unauthenticated","title":"Unauthenticated","status":401,"detail":"Unauthenticated.","instance":"/api/v1/me#abc","code":"unauthenticated"}"#
     private static func grant(_ n: Int) -> String {
         #"{"access_token":"access-\#(n)","token_type":"Bearer","expires_in":900,"refresh_token":"refresh-\#(n)","user":\#(me.dropFirst(8).dropLast())}"#
     }
@@ -29,7 +31,7 @@ struct AuthMiddlewareTests {
     @Test("an expired token is refreshed once and the request replayed with the new bearer")
     func refreshAndRetry() async throws {
         let (deps, transport) = make(store: .fixture(fresh: true))
-        await transport.enqueue(.json(401, Self.expired), for: "getMe")
+        await transport.enqueue(.problem(401, Self.expired), for: "getMe")
         await transport.enqueue(.json(200, Self.me), for: "getMe")
         await transport.enqueue(.json(200, Self.grant(1)), for: "refresh")
 
@@ -48,7 +50,7 @@ struct AuthMiddlewareTests {
     @Test("three concurrent expired requests cause exactly one refresh")
     func concurrentRefresh() async throws {
         let (deps, transport) = make(store: .fixture(fresh: true))
-        for _ in 0..<3 { await transport.enqueue(.json(401, Self.expired), for: "getMe") }
+        for _ in 0..<3 { await transport.enqueue(.problem(401, Self.expired), for: "getMe") }
         for _ in 0..<3 { await transport.enqueue(.json(200, Self.me), for: "getMe") }
         await transport.enqueue(.json(200, Self.grant(1)), for: "refresh")
 
@@ -64,7 +66,7 @@ struct AuthMiddlewareTests {
     @Test("a 401 that is not token_expired passes through untouched")
     func otherUnauthorizedPassesThrough() async throws {
         let (deps, transport) = make(store: .fixture(fresh: true))
-        await transport.enqueue(.json(401, Self.unauthenticated), for: "getMe")
+        await transport.enqueue(.problem(401, Self.unauthenticated), for: "getMe")
 
         await #expect(throws: APIError.api(status: 401, code: "unauthenticated", message: "Unauthenticated.")) {
             try await deps.meRepository.me()
@@ -75,9 +77,9 @@ struct AuthMiddlewareTests {
     @Test("a rejected refresh returns the original 401 and signs the session out")
     func rejectedRefresh() async throws {
         let (deps, transport) = make(store: .fixture(fresh: true))
-        await transport.enqueue(.json(401, Self.expired), for: "getMe")
+        await transport.enqueue(.problem(401, Self.expired), for: "getMe")
         await transport.enqueue(
-            .json(401, #"{"message":"Refresh token reused.","code":"refresh_token_reused"}"#), for: "refresh")
+            .problem(401, code: "refresh_token_reused", detail: "Refresh token reused."), for: "refresh")
 
         await #expect(throws: APIError.api(status: 401, code: "token_expired", message: "Token has expired.")) {
             try await deps.meRepository.me()

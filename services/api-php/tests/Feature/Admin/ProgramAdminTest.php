@@ -123,7 +123,7 @@ class ProgramAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/programs', $this->validPayload([
             'translations' => ['en' => ['name' => '']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations.en.name');
+        ]))->assertUnprocessable()->assertFieldErrors(['translations.en.name']);
     }
 
     #[Test]
@@ -134,7 +134,7 @@ class ProgramAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/programs', $this->validPayload([
             'assignments' => [['workout_template_id' => $template->id, 'weekday' => 'Someday']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('assignments.0.weekday');
+        ]))->assertUnprocessable()->assertFieldErrors(['assignments.0.weekday']);
     }
 
     #[Test]
@@ -144,7 +144,7 @@ class ProgramAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/programs', $this->validPayload([
             'assignments' => [['workout_template_id' => 99999, 'weekday' => 'Monday']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('assignments.0.workout_template_id');
+        ]))->assertUnprocessable()->assertFieldErrors(['assignments.0.workout_template_id']);
     }
 
     #[Test]

@@ -259,6 +259,5 @@
   "Create a workout template first": "Сначала создайте шаблон тренировки",
   "Weekday": "День недели",
   "Workout template": "Шаблон тренировки",
-  "The :attribute field must be an object.": "Поле :attribute должно быть объектом.",
-  "This field is not allowed.": "Это поле не допускается."
+  "The :attribute field must be an object.": "Поле :attribute должно быть объектом."
 }

@@ -117,7 +117,7 @@ class EquipmentAdminTest extends TestCase
         ]));
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrorFor('translations.en.name');
+        $response->assertFieldErrors(['translations.en.name']);
     }
 
     #[Test]
@@ -128,7 +128,7 @@ class EquipmentAdminTest extends TestCase
         $this->actingAs($admin)
             ->postJson('/api/v1/admin/equipment', $this->validPayload(['difficulty_unit' => 'stones']))
             ->assertUnprocessable()
-            ->assertJsonValidationErrorFor('difficulty_unit');
+            ->assertFieldErrors(['difficulty_unit']);
     }
 
     #[Test]

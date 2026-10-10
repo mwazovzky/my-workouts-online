@@ -74,8 +74,8 @@ Client switch points that must keep working:
 
 | # | Story | Primary feature | State |
 | --- | --- | --- | --- |
-| 1 | [Lint Ruleset and Schema Hygiene](stories/01-lint-ruleset-and-schema-hygiene.md) | Platform | in progress |
-| 2 | [Problem Details Error Model](stories/02-problem-details-error-model.md) | Platform | planned |
+| 1 | [Lint Ruleset and Schema Hygiene](stories/01-lint-ruleset-and-schema-hygiene.md) | Platform | shipped (#56) |
+| 2 | [Problem Details Error Model](stories/02-problem-details-error-model.md) | Platform | in progress |
 | 3 | [Auth and Ownership Status Codes](stories/03-auth-and-ownership-status-codes.md) | Auth & Profile | planned |
 | 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | planned |
 | 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | planned |

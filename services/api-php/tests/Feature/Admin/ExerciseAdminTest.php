@@ -164,7 +164,7 @@ class ExerciseAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/exercises', $this->validPayload([
             'equipment_id' => 99999,
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('equipment_id');
+        ]))->assertUnprocessable()->assertFieldErrors(['equipment_id']);
     }
 
     #[Test]
@@ -174,7 +174,7 @@ class ExerciseAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/exercises', $this->validPayload([
             'effort_type' => 'jumps',
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('effort_type');
+        ]))->assertUnprocessable()->assertFieldErrors(['effort_type']);
     }
 
     #[Test]
@@ -184,7 +184,7 @@ class ExerciseAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/exercises', $this->validPayload([
             'translations' => ['en' => ['name' => '', 'description' => '']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations.en.name');
+        ]))->assertUnprocessable()->assertFieldErrors(['translations.en.name']);
     }
 
     #[Test]

@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\ErrorCode;
+use App\Exceptions\Api\ApiErrorResponse;
 use Closure;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
@@ -21,10 +23,7 @@ class EnsureEmailIsVerified
         $user = $request->user();
 
         if (! $user || ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail())) {
-            return response()->json([
-                'message' => 'Your email address is not verified.',
-                'code' => 'email_unverified',
-            ], 403);
+            return ApiErrorResponse::problem(403, ErrorCode::EmailUnverified, 'Your email address is not verified.');
         }
 
         return $next($request);

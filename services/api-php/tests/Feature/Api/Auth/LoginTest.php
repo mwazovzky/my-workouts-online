@@ -82,7 +82,7 @@ class LoginTest extends TestCase
             'email' => $user->email,
             'password' => 'wrong',
             'client' => 'web',
-        ])->assertUnprocessable()->assertJsonValidationErrors(['email']);
+        ])->assertUnprocessable()->assertFieldErrors(['email']);
 
         $this->assertDatabaseCount('refresh_tokens', 0);
     }
@@ -92,11 +92,11 @@ class LoginTest extends TestCase
     {
         $this->postJson('/api/v1/auth/login', ['email' => 'a@b.c', 'password' => 'x'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['client']);
+            ->assertFieldErrors(['client']);
 
         $this->postJson('/api/v1/auth/login', ['email' => 'a@b.c', 'password' => 'x', 'client' => 'desktop'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['client']);
+            ->assertFieldErrors(['client']);
     }
 
     #[Test]
@@ -118,6 +118,6 @@ class LoginTest extends TestCase
             'email' => $user->email,
             'password' => 'secret123',
             'client' => 'web',
-        ])->assertUnprocessable()->assertJsonValidationErrors(['email']);
+        ])->assertUnprocessable()->assertFieldErrors(['email']);
     }
 }

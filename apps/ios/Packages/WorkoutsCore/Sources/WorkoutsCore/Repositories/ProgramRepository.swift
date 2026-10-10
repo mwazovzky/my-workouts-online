@@ -18,7 +18,8 @@ public struct APIProgramRepository: ProgramRepository {
         let output = try await client.listPrograms()
         switch output {
         case .ok(let response): return try response.body.json.data.map(Program.init(api:))
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -27,8 +28,9 @@ public struct APIProgramRepository: ProgramRepository {
         let output = try await client.getProgram(path: .init(program: id))
         switch output {
         case .ok(let response): return try ProgramDetail(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -37,8 +39,9 @@ public struct APIProgramRepository: ProgramRepository {
         let output = try await client.enrollProgram(path: .init(program: programId))
         switch output {
         case .noContent: return
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }
@@ -59,8 +62,9 @@ public struct APITemplateRepository: TemplateRepository {
         let output = try await client.getWorkoutTemplate(path: .init(id: id))
         switch output {
         case .ok(let response): return try WorkoutTemplate(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

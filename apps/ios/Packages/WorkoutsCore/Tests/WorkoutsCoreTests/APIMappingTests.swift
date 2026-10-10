@@ -129,7 +129,7 @@ struct APIMappingTests {
             Issue.record("expected 401, got \(unauthorized)")
             return
         }
-        #expect(APIError(status: 401, envelope: try response.body.json).code == "unauthenticated")
+        #expect(APIError(status: 401, envelope: try response.body.applicationProblemJson).code == "unauthenticated")
 
         let notFound = try await Fixtures.client(returning: "error-404", status: 404).getWorkout(
             path: .init(workout: 999_999))
@@ -138,7 +138,7 @@ struct APIMappingTests {
             return
         }
         #expect(
-            APIError(status: 404, envelope: try nf.body.json)
+            APIError(status: 404, envelope: try nf.body.applicationProblemJson)
                 == .api(status: 404, code: "not_found", message: "Record not found."))
 
         let invalid = try await Fixtures.client(returning: "error-422", status: 422)
@@ -147,7 +147,15 @@ struct APIMappingTests {
             Issue.record("expected 422, got \(invalid)")
             return
         }
-        let error = APIError(validation: try v.body.json)
-        #expect(error.message(for: "workout_template_id") != nil)
+        let error = APIError(validation: try v.body.applicationProblemJson)
+        #expect(error.message(for: "workout_template_id") == "A workout template is required to start a workout.")
+        #expect(
+            error.message(for: "activities.0.sets.1.effort_value") == "The effort value must be between 0 and 100000.")
+        guard case .validation(let message, let fields) = error else {
+            Issue.record("expected .validation, got \(error)")
+            return
+        }
+        #expect(message.hasPrefix("A workout template is required"))
+        #expect(fields["activities.0.sets.1.effort_value"]?.first?.code == "out_of_range")
     }
 }
