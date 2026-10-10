@@ -98,11 +98,11 @@ class CategoryAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/categories', $this->validPayload([
             'translations' => ['en' => ['name' => 'Chest'], 'ru' => [['name' => 'Грудь']]],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations.ru');
+        ]))->assertUnprocessable()->assertFieldErrors(['translations.ru']);
 
         $this->actingAs($admin)->postJson('/api/v1/admin/categories', $this->validPayload([
             'translations' => [['name' => 'Chest']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations');
+        ]))->assertUnprocessable()->assertFieldErrors(['translations']);
     }
 
     #[Test]
@@ -112,7 +112,7 @@ class CategoryAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/categories', $this->validPayload([
             'translations' => ['en' => ['name' => '']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations.en.name');
+        ]))->assertUnprocessable()->assertFieldErrors(['translations.en.name']);
     }
 
     #[Test]

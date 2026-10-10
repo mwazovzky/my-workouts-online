@@ -613,7 +613,7 @@ class WorkoutSaveTest extends TestCase
             ['activities' => []],
         );
 
-        $response->assertJsonValidationErrors(['activities']);
+        $response->assertFieldErrors(['activities']);
     }
 
     #[Test]
@@ -636,7 +636,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors(['activities.0.sets']);
+        $response->assertFieldErrors(['activities.0.sets']);
     }
 
     #[Test]
@@ -660,7 +660,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors(['activities.0.exercise_id']);
+        $response->assertFieldErrors(['activities.0.exercise_id']);
     }
 
     #[Test]
@@ -692,7 +692,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors(['activities.0.id']);
+        $response->assertFieldErrors(['activities.0.id']);
     }
 
     #[Test]
@@ -744,7 +744,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors([
+        $response->assertFieldErrors([
             'activities.0.sets.0.order',
             'activities.0.sets.0.effort_value',
         ]);
@@ -772,7 +772,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors(['activities.0.sets.0.is_completed']);
+        $response->assertFieldErrors(['activities.0.sets.0.is_completed']);
     }
 
     // -------------------------------------------------------
@@ -858,7 +858,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors(['activities.0.sets.0.difficulty_value']);
+        $response->assertFieldErrors(['activities.0.sets.0.difficulty_value']);
     }
 
     #[Test]
@@ -882,7 +882,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertJsonValidationErrors(['activities.0.sets.0.difficulty_value']);
+        $response->assertFieldErrors(['activities.0.sets.0.difficulty_value']);
     }
 
     #[Test]
@@ -932,7 +932,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertUnprocessable()->assertJsonValidationErrors([
+        $response->assertUnprocessable()->assertFieldErrors([
             'activities.0.order',
             'activities.0.sets.0.order',
             'activities.0.sets.0.effort_value',

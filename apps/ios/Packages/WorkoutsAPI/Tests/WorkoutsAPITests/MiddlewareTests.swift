@@ -51,7 +51,7 @@ struct MiddlewareTests {
     @Test("the client posts native login bodies as the contract describes")
     func loginBody() async throws {
         let transport = StubTransport(responses: [
-            .json(401, #"{"message":"Unauthenticated.","code":"unauthenticated"}"#)
+            .problem(401, code: "unauthenticated", detail: "Unauthenticated.")
         ])
         let output = try await makeClient(transport).login(
             body: .json(.init(email: "a@b.c", password: "secret", client: .native, deviceName: "iPhone"))

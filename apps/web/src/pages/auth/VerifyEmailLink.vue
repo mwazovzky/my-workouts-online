@@ -5,6 +5,7 @@ import GuestLayout from '@/layouts/GuestLayout.vue';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
 import { api } from '@/lib/api';
+import { problemDetail } from '@/lib/problem';
 import { useAuthStore } from '@/stores/auth';
 
 /**
@@ -31,8 +32,7 @@ onMounted(async () => {
     await auth.fetchUser();
     router.replace({ name: 'dashboard', query: { verified: 1 } });
   } catch (e) {
-    error.value =
-      e.response?.data?.message ?? t('This verification link is invalid or has expired.');
+    error.value = problemDetail(e) ?? t('This verification link is invalid or has expired.');
   }
 });
 </script>

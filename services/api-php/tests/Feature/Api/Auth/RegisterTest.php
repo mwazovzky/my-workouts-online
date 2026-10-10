@@ -76,15 +76,15 @@ class RegisterTest extends TestCase
     {
         $this->postJson('/api/v1/auth/register', [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['name', 'email', 'password', 'client']);
+            ->assertFieldErrors(['name', 'email', 'password', 'client']);
 
         $this->postJson('/api/v1/auth/register', $this->payload(['password_confirmation' => 'other']))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['password']);
+            ->assertFieldErrors(['password']);
 
         $this->postJson('/api/v1/auth/register', $this->payload(['email' => 'Upper@Example.com']))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
+            ->assertFieldErrors(['email']);
     }
 
     #[Test]
@@ -92,7 +92,7 @@ class RegisterTest extends TestCase
     {
         $this->postJson('/api/v1/auth/register', $this->payload(['email' => [['nested' => 1]]]))
             ->assertUnprocessable()
-            ->assertJsonValidationErrorFor('email');
+            ->assertFieldErrors(['email']);
     }
 
     #[Test]
@@ -102,6 +102,6 @@ class RegisterTest extends TestCase
 
         $this->postJson('/api/v1/auth/register', $this->payload())
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
+            ->assertFieldErrors(['email']);
     }
 }

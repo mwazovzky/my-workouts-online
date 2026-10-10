@@ -6,6 +6,7 @@ import { useLogout } from '@/composables/useLogout';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useTranslation } from '@/composables/useTranslation';
 import { api } from '@/lib/api';
+import { problemDetail } from '@/lib/problem';
 
 const { t } = useTranslation();
 const { logout } = useLogout();
@@ -24,7 +25,7 @@ async function submit() {
     await api.post('/auth/email/resend');
     verificationLinkSent.value = true;
   } catch (e) {
-    error.value = e.response?.data?.message ?? t('Failed to send verification email');
+    error.value = problemDetail(e) ?? t('Failed to send verification email');
   } finally {
     processing.value = false;
   }

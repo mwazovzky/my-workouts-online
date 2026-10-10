@@ -18,7 +18,7 @@ class UnknownKeysTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function an_unknown_top_level_key_is_rejected_with_the_invalid_code(): void
+    public function an_unknown_top_level_key_is_rejected_with_the_unknown_field_code(): void
     {
         $user = User::factory()->create();
         $template = WorkoutTemplate::factory()->create();
@@ -28,20 +28,18 @@ class UnknownKeysTest extends TestCase
             'workout_tempate_id' => $template->id,
         ]);
 
-        $response->assertUnprocessable()
-            ->assertJsonPath('code', 'validation_failed')
-            ->assertJsonPath('errors.workout_tempate_id.0.code', 'invalid')
-            ->assertJsonPath('errors.workout_tempate_id.0.message', 'This field is not allowed.');
+        $response->assertFieldErrors(['workout_tempate_id'], 'unknown_field');
+        $this->assertSame('This field is not allowed.', $response->fieldError('workout_tempate_id')['detail']);
     }
 
     #[Test]
-    public function a_nested_unknown_key_is_reported_on_its_full_path(): void
+    public function a_nested_unknown_key_is_reported_on_its_full_pointer(): void
     {
         $user = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create();
 
-        $errors = $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
+        $response = $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
             'activities' => [[
                 'exercise_id' => $exercise->id,
                 'order' => 1,
@@ -49,10 +47,10 @@ class UnknownKeysTest extends TestCase
                     ['order' => 1, 'effort_value' => 5, 'weight' => 40],
                 ],
             ]],
-        ])->assertUnprocessable()->json('errors');
+        ]);
 
-        $this->assertSame(['activities.0.sets.0.weight'], array_keys($errors));
-        $this->assertSame('invalid', $errors['activities.0.sets.0.weight'][0]['code']);
+        $response->assertFieldErrors(['/activities/0/sets/0/weight'], 'unknown_field');
+        $this->assertCount(1, $response->json('errors'));
     }
 
     #[Test]
@@ -60,14 +58,14 @@ class UnknownKeysTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
 
-        $errors = $this->actingAs($admin)->postJson('/api/v1/admin/categories', [
+        $response = $this->actingAs($admin)->postJson('/api/v1/admin/categories', [
             'translations' => [
                 'en' => ['name' => 'Chest', 'title' => 'Chest'],
             ],
-        ])->assertUnprocessable()->json('errors');
+        ]);
 
-        $this->assertSame(['translations.en.title'], array_keys($errors));
-        $this->assertSame('invalid', $errors['translations.en.title'][0]['code']);
+        $response->assertFieldErrors(['translations.en.title'], 'unknown_field');
+        $this->assertCount(1, $response->json('errors'));
     }
 
     #[Test]
@@ -81,16 +79,25 @@ class UnknownKeysTest extends TestCase
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
             'remember' => true,
-        ])
-            ->assertUnprocessable()
-            ->assertJsonPath('errors.remember.0.code', 'invalid');
+        ])->assertFieldErrors(['remember'], 'unknown_field');
 
         $this->postJson('/api/v1/auth/refresh', [
             'refresh_token' => $pair->refreshToken,
             'client' => 'native',
-        ])
-            ->assertUnprocessable()
-            ->assertJsonPath('errors.client.0.code', 'invalid');
+        ])->assertFieldErrors(['client'], 'unknown_field');
+    }
+
+    #[Test]
+    public function the_unknown_field_message_is_localized(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->withHeader('Accept-Language', 'ru')
+            ->getJson('/api/v1/workouts?page=1&sort=name');
+
+        $response->assertFieldErrors(['sort'], 'unknown_field');
+        $this->assertSame('Это поле не допускается.', $response->fieldError('sort')['detail']);
     }
 
     #[Test]

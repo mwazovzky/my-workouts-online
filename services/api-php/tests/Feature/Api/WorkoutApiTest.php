@@ -81,7 +81,7 @@ class WorkoutApiTest extends TestCase
         foreach (['0', '101', 'abc'] as $perPage) {
             $this->actingAs($user)->getJson("/api/v1/workouts?per_page={$perPage}")
                 ->assertUnprocessable()
-                ->assertJsonValidationErrors(['per_page']);
+                ->assertFieldErrors(['per_page']);
         }
     }
 
@@ -92,7 +92,7 @@ class WorkoutApiTest extends TestCase
 
         $this->actingAs($user)->getJson('/api/v1/workouts?page=0')
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['page']);
+            ->assertFieldErrors(['page']);
 
         $this->actingAs($user)->getJson('/api/v1/workouts?page=abc')
             ->assertUnprocessable();
@@ -104,9 +104,7 @@ class WorkoutApiTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)->getJson('/api/v1/workouts?page=1&sort=name')
-            ->assertUnprocessable()
-            ->assertJsonPath('code', 'validation_failed')
-            ->assertJsonPath('errors.sort.0.code', 'invalid');
+            ->assertFieldErrors(['sort'], 'unknown_field');
     }
 
     #[Test]
@@ -179,7 +177,7 @@ class WorkoutApiTest extends TestCase
 
         $this->actingAs($user)->postJson('/api/v1/workouts', [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['workout_template_id']);
+            ->assertFieldErrors(['workout_template_id']);
     }
 
     #[Test]
@@ -189,7 +187,7 @@ class WorkoutApiTest extends TestCase
 
         $this->actingAs($user)->postJson('/api/v1/workouts', ['workout_template_id' => 99999])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['workout_template_id']);
+            ->assertFieldErrors(['workout_template_id']);
     }
 
     #[Test]

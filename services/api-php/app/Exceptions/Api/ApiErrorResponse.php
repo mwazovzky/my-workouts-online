@@ -2,75 +2,100 @@
 
 namespace App\Exceptions\Api;
 
+use App\Enums\ErrorCode;
+use App\Enums\FieldErrorCode;
+use App\Http\RequestId;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 
 /**
- * Builds the `{ message, code }` envelope every non-2xx API response uses.
+ * Builds the RFC 9457 Problem Details body every non-2xx API response uses:
+ * `{ type, title, status, detail, instance, code }`, served as
+ * `application/problem+json`, plus `errors` on validation failures.
  */
 class ApiErrorResponse
 {
-    /**
-     * @var array<int, string>
-     */
-    private const CODES = [
-        400 => 'bad_request',
-        401 => 'unauthenticated',
-        403 => 'forbidden',
-        404 => 'not_found',
-        405 => 'method_not_allowed',
-        409 => 'conflict',
-        419 => 'csrf_token_mismatch',
-        422 => 'validation_failed',
-        429 => 'too_many_requests',
-    ];
+    public const CONTENT_TYPE = 'application/problem+json';
 
     /**
      * @var array<int, string>
      */
-    private const MESSAGES = [
+    private const DETAILS = [
         403 => 'This action is unauthorized.',
         404 => 'Record not found.',
         429 => 'Too many attempts.',
     ];
 
+    /**
+     * @param  array<string, mixed>  $headers
+     * @param  array<string, mixed>  $extensions  extra members appended after the standard ones
+     */
+    public static function problem(int $status, ErrorCode $code, string $detail, array $headers = [], array $extensions = []): JsonResponse
+    {
+        $request = request();
+        $requestId = RequestId::for($request);
+
+        $body = [
+            'type' => rtrim((string) config('app.url'), '/').'/problems/'.$code->value,
+            'title' => $code->title(),
+            'status' => $status,
+            'detail' => $detail,
+            'instance' => $request->getPathInfo().'#'.$requestId,
+            'code' => $code->value,
+        ] + $extensions;
+
+        return response()->json($body, $status, $headers + [
+            'Content-Type' => self::CONTENT_TYPE,
+            RequestId::HEADER => $requestId,
+        ]);
+    }
+
     public static function fromHttpException(HttpExceptionInterface $e): JsonResponse
     {
         $status = $e->getStatusCode();
+        $code = $e instanceof ApiException ? $e->errorCode : ErrorCode::fromStatus($status);
 
-        $code = $e instanceof ApiException
-            ? $e->errorCode
-            : (self::CODES[$status] ?? 'http_'.$status);
-
-        $message = $status === 404 || $e->getMessage() === ''
-            ? (self::MESSAGES[$status] ?? (Response::$statusTexts[$status] ?? 'Error'))
+        $detail = $status === 404 || $e->getMessage() === ''
+            ? (self::DETAILS[$status] ?? (Response::$statusTexts[$status] ?? 'Error'))
             : $e->getMessage();
 
-        return response()->json(['message' => $message, 'code' => $code], $status, $e->getHeaders());
+        $extensions = $code === ErrorCode::ValidationFailed ? ['errors' => []] : [];
+
+        return self::problem($status, $code, $detail, $e->getHeaders(), $extensions);
     }
 
     public static function fromValidation(ValidationException $e): JsonResponse
     {
-        return response()->json([
-            'message' => $e->getMessage(),
-            'code' => 'validation_failed',
+        return self::problem($e->status, ErrorCode::ValidationFailed, $e->getMessage(), [], [
             'errors' => self::validationErrors($e),
-        ], $e->status);
+        ]);
     }
 
     /**
-     * Pair every message with the rule that produced it, e.g. `required`,
-     * `email`, `unique`, `enum`, `heart_rate_zone_within_range`. Messages
-     * added manually (no rule) get `invalid`.
+     * Unhandled exceptions: a generic 500 Problem; the exception itself is
+     * still reported by the handler.
+     */
+    public static function fromThrowable(Throwable $e): JsonResponse
+    {
+        $detail = config('app.debug') ? $e->getMessage() : 'Server Error';
+
+        return self::problem(500, ErrorCode::InternalError, $detail !== '' ? $detail : 'Server Error');
+    }
+
+    /**
+     * One entry per validation message: the field as a JSON Pointer, the
+     * failed rule mapped to a `FieldErrorCode`, and the localized message.
      *
-     * @return array<string, list<array{code: string, message: string}>>
+     * @return list<array{pointer: string, code: string, detail: string}>
      */
     public static function validationErrors(ValidationException $e): array
     {
         $failed = $e->validator->failed();
+        $declared = $e->validator->getRules();
         $errors = [];
 
         foreach ($e->errors() as $field => $messages) {
@@ -78,18 +103,49 @@ class ApiErrorResponse
                 fn (string $rule): string => Str::snake(class_basename($rule)),
                 array_keys($failed[$field] ?? []),
             );
+            $declaredRules = $declared[$field] ?? $declared[self::wildcardPath($field)] ?? [];
 
             foreach (array_values($messages) as $index => $message) {
-                $code = match (true) {
+                $rule = match (true) {
                     count($rules) === count($messages) => $rules[$index],
                     count($rules) === 1 => $rules[0],
-                    default => 'invalid',
+                    default => null,
                 };
 
-                $errors[$field][] = ['code' => $code, 'message' => $message];
+                $errors[] = [
+                    'pointer' => self::pointer($field),
+                    'code' => ($rule === null ? FieldErrorCode::InvalidValue : FieldErrorCode::fromRule($rule, $declaredRules))->value,
+                    'detail' => $message,
+                ];
             }
         }
 
         return $errors;
+    }
+
+    /**
+     * `activities.0.sets.1.effort_value` becomes `/activities/0/sets/1/effort_value`
+     * (RFC 6901: `~` is `~0`, `/` is `~1` inside a segment).
+     */
+    public static function pointer(string $dottedPath): string
+    {
+        $segments = array_map(
+            static fn (string $segment): string => str_replace(['~', '/'], ['~0', '~1'], $segment),
+            explode('.', $dottedPath),
+        );
+
+        return '/'.implode('/', $segments);
+    }
+
+    /**
+     * `activities.0.sets.1.order` becomes `activities.*.sets.*.order`, the key
+     * the rules were declared under.
+     */
+    private static function wildcardPath(string $field): string
+    {
+        return implode('.', array_map(
+            static fn (string $segment): string => ctype_digit($segment) ? '*' : $segment,
+            explode('.', $field),
+        ));
     }
 }

@@ -73,7 +73,9 @@ describe('Login page', () => {
       response: {
         status: 422,
         data: {
-          errors: { email: [{ code: 'invalid', message: 'These credentials do not match.' }] },
+          errors: [
+            { pointer: '/email', code: 'invalid', detail: 'These credentials do not match.' },
+          ],
         },
       },
     });

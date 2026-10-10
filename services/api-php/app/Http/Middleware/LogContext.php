@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\RequestId;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogContext
@@ -13,26 +13,19 @@ class LogContext
     public function handle(Request $request, Closure $next): Response
     {
         $route = $request->route();
+        $requestId = RequestId::for($request);
 
         Log::shareContext([
-            'request_id' => $this->resolveRequestId($request),
+            'request_id' => $requestId,
             'user_id' => $request->user()?->id,
             'method' => $request->method(),
             'route_name' => $route?->getName(),
             'route_uri' => $route?->uri(),
         ]);
 
-        return $next($request);
-    }
+        $response = $next($request);
+        $response->headers->set(RequestId::HEADER, $requestId);
 
-    private function resolveRequestId(Request $request): string
-    {
-        $header = $request->header('X-Request-Id');
-
-        if (is_string($header) && Str::isUuid($header)) {
-            return $header;
-        }
-
-        return (string) Str::uuid();
+        return $response;
     }
 }

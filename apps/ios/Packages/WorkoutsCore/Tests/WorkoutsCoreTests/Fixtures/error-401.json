@@ -1,4 +1,8 @@
 {
-    "message": "Unauthenticated.",
+    "type": "https://my-workouts.online/problems/unauthenticated",
+    "title": "Unauthenticated",
+    "status": 401,
+    "detail": "Unauthenticated.",
+    "instance": "/api/v1/me#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
     "code": "unauthenticated"
 }

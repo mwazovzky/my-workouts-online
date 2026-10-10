@@ -16,8 +16,9 @@ public struct APIDashboardRepository: DashboardRepository {
         let output = try await client.getDashboard()
         switch output {
         case .ok(let response): return try Dashboard(api: try response.body.json.data)
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

@@ -34,6 +34,21 @@ public actor StubTransport: ClientTransport {
             StubResponse(status: status, body: data)
         }
 
+        /// An RFC 9457 problem body, the shape of every non-2xx API response.
+        public static func problem(_ status: Int, _ json: String) -> StubResponse {
+            StubResponse(status: status, body: Data(json.utf8), contentType: "application/problem+json")
+        }
+
+        /// A minimal `Problem` for `status` and `code`; `detail` defaults to the code.
+        public static func problem(_ status: Int, code: String, detail: String? = nil) -> StubResponse {
+            let detail = detail ?? code
+            let json = """
+                {"type":"https://my-workouts.online/problems/\(code)","title":"\(code)","status":\(status),\
+                "detail":"\(detail)","instance":"/api/v1/test#00000000-0000-4000-8000-000000000000","code":"\(code)"}
+                """
+            return problem(status, json)
+        }
+
         public static func empty(_ status: Int) -> StubResponse {
             StubResponse(status: status, body: nil, contentType: "")
         }

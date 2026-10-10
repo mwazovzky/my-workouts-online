@@ -84,7 +84,14 @@ Common patterns in this project:
 - Authenticate with `actingAs($user)`.
 - Hit named routes with `route(...)` instead of hard-coded URLs.
 - Assert both the HTTP response and the persisted database state.
-- API validation errors are `errors.<field>.<n>.message` / `.code`; API content translation is driven by `withHeader('Accept-Language', ...)`, not the user's stored locale.
+- API errors are RFC 9457 problems; assert them with the `AssertsProblems` trait (`tests/Concerns/`, used by `tests/TestCase.php`) rather than `assertJsonValidationErrors`, which expects Laravel's `errors` map:
+
+  ```php
+  $this->assertProblem($response, 404, 'not_found');
+  $this->assertFieldErrors($response, ['activities.0.sets.1.effort_value'], 'out_of_range');
+  ```
+
+  `assertProblem` checks the status, the `application/problem+json` content type, the six problem fields and `code`; `assertFieldErrors` accepts dotted paths or JSON pointers and an optional `FieldErrorCode` value. API content translation is driven by `withHeader('Accept-Language', ...)`, not the user's stored locale.
 
 Representative examples:
 
@@ -158,8 +165,8 @@ When adding or changing validation:
 
 - Test the happy path.
 - Test the failing input.
-- Assert the relevant validation errors.
-- Only assert exact custom messages when the project intentionally defines a domain-specific message.
+- Assert the relevant validation errors with `assertFieldErrors` (path or pointer, plus the expected `FieldErrorCode` when the rule matters).
+- Only assert exact custom messages (`errors[].detail`) when the project intentionally defines a domain-specific message.
 
 ## Service and Transaction Tests
 

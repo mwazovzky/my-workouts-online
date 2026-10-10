@@ -16,7 +16,8 @@ public struct APIExerciseRepository: ExerciseRepository {
         let output = try await client.listExercises()
         switch output {
         case .ok(let response): return try response.body.json.data.map(Exercise.init(api:))
-        case .unauthorized(let response): throw APIError(status: 401, envelope: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

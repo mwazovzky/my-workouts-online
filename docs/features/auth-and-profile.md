@@ -17,15 +17,15 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 ## iOS Session (`apps/ios`)
 
 - Logs in with `client: native` and a `device_name` (`iPhone · iOS 27.0`); both tokens are kept in the Keychain (`KeychainTokenStore`, after-first-unlock, this device only), the access token also in memory
-- `AuthSession` (actor) rotates the pair through `POST /api/v1/auth/refresh` with the refresh token in the body; concurrent callers share one refresh. A 401/403 with a `refresh_token_*` code clears the Keychain and the app returns to the login screen with a "session expired" notice; a network failure keeps the tokens for a later retry
+- `AuthSession` (actor) rotates the pair through `POST /api/v1/auth/refresh` with the refresh token in the body; concurrent callers share one refresh. A 401/403 problem whose `code` starts with `refresh_token_` clears the Keychain and the app returns to the login screen with a "session expired" notice; a network failure keeps the tokens for a later retry
 - `AuthMiddleware` adds the bearer to every request and, on a 401 `token_expired` (never on `unauthenticated`), refreshes once and replays the request; the auth endpoints themselves are excluded so a failed refresh cannot loop
 - Launch (`AppSession.bootstrap`): no stored pair → signed out; fresh access token → `GET /me`; stale → refresh, then `/me`. The state (`signedOut`, `unverified`, `ready`) drives the root view like the SPA's route guards; an unverified user only sees the verify gate
 - Logout posts `/auth/logout` with the current access token (best effort) and clears the Keychain even if the call fails
 
 ## iOS Flows (`apps/ios`)
 
-- **Welcome** → Log in / Register. **Log in** posts `/auth/login`; a wrong password shows the API message under the password field and the lockout (a 422 on `email`) under the email field. "Remember me" stores only the email in `UserDefaults`
-- **Register** posts `/auth/register`; field errors (`name`, `email`, `password`, `password_confirmation`) appear under their fields; success lands on the verify gate
+- **Welcome** → Log in / Register. **Log in** posts `/auth/login`; a wrong password shows the API `detail` under the password field and the lockout (a 422 problem with an error pointing at `/email`) under the email field. "Remember me" stores only the email in `UserDefaults`
+- **Register** posts `/auth/register`; the 422 problem's `errors[]` are mapped by pointer (`/name`, `/email`, `/password`, `/password_confirmation`) to their fields; success lands on the verify gate
 - **Forgot password** posts `/auth/password/forgot` and always shows the neutral "We have emailed your password reset link."; the emailed link opens the web app until story 6 adds Universal Links
 - **Verify email gate** (shown while `email_verified` is false): "I have verified my email" re-fetches `/me` and continues when verified; "Resend" posts `/auth/email/resend` (202 → sent notice, 204 → already verified, so `/me` is refreshed; 429 → throttle message); Log out
 - A 429 on any form shows a throttle banner, a network failure an offline banner; everything else shows the server's message

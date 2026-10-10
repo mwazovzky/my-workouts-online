@@ -78,12 +78,12 @@ class LocaleNegotiationTest extends TestCase
             ->withHeader('Accept-Language', 'ru')
             ->patchJson('/api/v1/profile', ['name' => '', 'email' => $user->email])
             ->assertUnprocessable()
-            ->assertJsonPath('errors.name.0.code', 'required');
+            ->assertFieldErrors(['name'], 'required');
 
         $message = $this->actingAs($user)
             ->withHeader('Accept-Language', 'ru')
             ->patchJson('/api/v1/profile', ['name' => '', 'email' => $user->email])
-            ->json('errors.name.0.message');
+            ->fieldError('name')['detail'];
 
         $this->assertStringContainsString('обязательно', $message);
     }

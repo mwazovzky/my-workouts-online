@@ -13,14 +13,15 @@ public struct FieldError: Sendable, Equatable, Hashable {
     }
 }
 
-/// Every failure the app surfaces, mapped from the API's `{ message, code }` envelope,
-/// the 422 `ValidationError` shape, or the transport.
+/// Every failure the app surfaces, mapped from the API's RFC 9457 `Problem` body, the 422
+/// `ValidationProblem` shape, or the transport.
 public enum APIError: Error, Sendable, Equatable {
-    /// 422. `fields` is keyed by the dot path the API uses, e.g. `activities.0.sets.1.effort_value`.
+    /// 422. `fields` is keyed by the dotted path of the rejected field, e.g.
+    /// `activities.0.sets.1.effort_value` (converted from the API's JSON Pointer).
     case validation(message: String, fields: [String: [FieldError]])
-    /// Any other documented or undocumented error status with the standard envelope.
+    /// Any other documented or undocumented error status with a `Problem` body.
     case api(status: Int, code: String, message: String)
-    /// A non-2xx response whose body was not the standard envelope.
+    /// A non-2xx response whose body was not a `Problem`.
     case unexpected(status: Int)
     /// The request never completed (offline, timeout, TLS).
     case network(description: String)
@@ -53,21 +54,22 @@ public enum APIError: Error, Sendable, Equatable {
 }
 
 extension APIError {
-    /// Maps a decoded 422 body.
-    public init(validation body: Components.Schemas.ValidationError) {
+    /// Maps a decoded 422 body. Each `pointer` becomes a dotted field path.
+    public init(validation body: Components.Schemas.ValidationProblem) {
         var fields: [String: [FieldError]] = [:]
-        for (path, errors) in body.value2.errors.additionalProperties {
-            fields[path] = errors.map { FieldError(code: $0.code, message: $0.message) }
+        for entry in body.errors {
+            fields[Self.pointerToPath(entry.pointer), default: []]
+                .append(FieldError(code: entry.code.rawValue, message: entry.detail))
         }
-        self = .validation(message: body.value1.message, fields: fields)
+        self = .validation(message: body.detail, fields: fields)
     }
 
-    /// Maps a documented error response whose body is the standard envelope.
-    public init(status: Int, envelope: Components.Schemas._Error) {
-        self = .api(status: status, code: envelope.code, message: envelope.message)
+    /// Maps a documented error response whose body is a `Problem`.
+    public init(status: Int, envelope: Components.Schemas.Problem) {
+        self = .api(status: status, code: envelope.code.rawValue, message: envelope.detail)
     }
 
-    /// Maps an `undocumented` response by decoding the standard envelope from its body.
+    /// Maps an `undocumented` response by decoding a `Problem` from its body.
     public static func from(status: Int, payload: UndocumentedPayload) async -> APIError {
         guard let body = payload.body, let data = try? await Data(collecting: body, upTo: 64 * 1024) else {
             return .unexpected(status: status)
@@ -75,12 +77,13 @@ extension APIError {
         return from(status: status, data: data)
     }
 
-    /// Maps raw envelope bytes (also used by middlewares that inspect a response).
+    /// Maps raw `Problem` bytes (also used by middlewares that inspect a response). The body
+    /// is read loosely so a `code` outside the contract's enum still surfaces as `.api`.
     public static func from(status: Int, data: Data) -> APIError {
-        guard let envelope = try? JSONDecoder().decode(Components.Schemas._Error.self, from: data) else {
+        guard let problem = try? JSONDecoder().decode(LooseProblem.self, from: data) else {
             return .unexpected(status: status)
         }
-        return .api(status: status, code: envelope.code, message: envelope.message)
+        return .api(status: status, code: problem.code, message: problem.detail)
     }
 
     /// Maps anything thrown by the generated client. `APIError`s pass through unchanged.
@@ -99,5 +102,21 @@ extension APIError {
             return .network(description: String(describing: underlying))
         }
         return .local(description: String(describing: error))
+    }
+
+    /// `/activities/0/sets/1/effort_value` → `activities.0.sets.1.effort_value`, unescaping
+    /// `~1` to `/` and `~0` to `~` per RFC 6901.
+    static func pointerToPath(_ pointer: String) -> String {
+        pointer.split(separator: "/", omittingEmptySubsequences: false)
+            .dropFirst()
+            .map { $0.replacingOccurrences(of: "~1", with: "/").replacingOccurrences(of: "~0", with: "~") }
+            .joined(separator: ".")
+    }
+
+    /// The `Problem` fields the client needs, decoded without the contract's `code` enum so an
+    /// unknown code does not turn a readable problem into `.unexpected`.
+    struct LooseProblem: Decodable {
+        let detail: String
+        let code: String
     }
 }

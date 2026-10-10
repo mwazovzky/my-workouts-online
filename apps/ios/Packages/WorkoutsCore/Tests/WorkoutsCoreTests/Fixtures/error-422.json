@@ -1,12 +1,20 @@
 {
-    "message": "A workout template is required to start a workout.",
+    "type": "https://my-workouts.online/problems/validation_failed",
+    "title": "Validation failed",
+    "status": 422,
+    "detail": "A workout template is required to start a workout. (and 1 more error)",
+    "instance": "/api/v1/workouts#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
     "code": "validation_failed",
-    "errors": {
-        "workout_template_id": [
-            {
-                "code": "required",
-                "message": "A workout template is required to start a workout."
-            }
-        ]
-    }
+    "errors": [
+        {
+            "pointer": "/workout_template_id",
+            "code": "required",
+            "detail": "A workout template is required to start a workout."
+        },
+        {
+            "pointer": "/activities/0/sets/1/effort_value",
+            "code": "out_of_range",
+            "detail": "The effort value must be between 0 and 100000."
+        }
+    ]
 }

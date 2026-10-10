@@ -69,10 +69,10 @@ public struct AuthMiddleware: ClientMiddleware {
     }
 
     private static func code(in data: Data?) -> String? {
-        guard let data, let envelope = try? JSONDecoder().decode(Components.Schemas._Error.self, from: data) else {
+        guard let data, case .api(_, let code, _) = APIError.from(status: 401, data: data) else {
             return nil
         }
-        return envelope.code
+        return code
     }
 }
 

@@ -119,7 +119,7 @@ class WorkoutTemplateAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
             'translations' => ['en' => ['name' => '']],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('translations.en.name');
+        ]))->assertUnprocessable()->assertFieldErrors(['translations.en.name']);
     }
 
     #[Test]
@@ -129,7 +129,7 @@ class WorkoutTemplateAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
             'activities' => [],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('activities');
+        ]))->assertUnprocessable()->assertFieldErrors(['activities']);
     }
 
     #[Test]
@@ -140,7 +140,7 @@ class WorkoutTemplateAdminTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
             'activities' => [['exercise_id' => $exercise->id, 'order' => 1, 'sets' => []]],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('activities.0.sets');
+        ]))->assertUnprocessable()->assertFieldErrors(['activities.0.sets']);
     }
 
     #[Test]
@@ -156,7 +156,7 @@ class WorkoutTemplateAdminTest extends TestCase
                 'order' => 1,
                 'sets' => [['order' => 1, 'effort_value' => 1800, 'difficulty_value' => 7]],
             ]],
-        ]))->assertUnprocessable()->assertJsonValidationErrorFor('activities.0.sets.0.difficulty_value');
+        ]))->assertUnprocessable()->assertFieldErrors(['activities.0.sets.0.difficulty_value']);
     }
 
     #[Test]
@@ -171,7 +171,7 @@ class WorkoutTemplateAdminTest extends TestCase
                 'order' => 1001,
                 'sets' => [['order' => 58601485020608, 'effort_value' => 100001, 'difficulty_value' => 123456.5]],
             ]],
-        ]))->assertUnprocessable()->assertJsonValidationErrors([
+        ]))->assertUnprocessable()->assertFieldErrors([
             'activities.0.order',
             'activities.0.sets.0.order',
             'activities.0.sets.0.effort_value',

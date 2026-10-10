@@ -23,7 +23,7 @@ class ProfileApiTest extends TestCase
 
         $this->actingAs($user)->patchJson('/api/v1/profile', ['name' => 'Tess', 'email' => [['nested' => 1]]])
             ->assertUnprocessable()
-            ->assertJsonValidationErrorFor('email');
+            ->assertFieldErrors(['email']);
     }
 
     #[Test]
@@ -93,7 +93,7 @@ class ProfileApiTest extends TestCase
         $response = $this->actingAs($user)->patchJson('/api/v1/profile', []);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['name', 'email']);
+        $response->assertFieldErrors(['name', 'email']);
     }
 
     #[Test]
@@ -108,7 +108,7 @@ class ProfileApiTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['email']);
+        $response->assertFieldErrors(['email']);
     }
 
     #[Test]
@@ -135,10 +135,10 @@ class ProfileApiTest extends TestCase
             'current_password' => [null, null],
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
-        ])->assertUnprocessable()->assertJsonValidationErrors(['current_password']);
+        ])->assertUnprocessable()->assertFieldErrors(['current_password']);
 
         $this->actingAs($user)->deleteJson('/api/v1/profile', ['password' => ['x']])
-            ->assertUnprocessable()->assertJsonValidationErrors(['password']);
+            ->assertUnprocessable()->assertFieldErrors(['password']);
     }
 
     #[Test]
@@ -172,7 +172,7 @@ class ProfileApiTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['current_password']);
+        $response->assertFieldErrors(['current_password']);
     }
 
     #[Test]
@@ -189,7 +189,7 @@ class ProfileApiTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['password']);
+        $response->assertFieldErrors(['password']);
     }
 
     #[Test]
@@ -231,7 +231,7 @@ class ProfileApiTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['locale']);
+        $response->assertFieldErrors(['locale']);
     }
 
     #[Test]
@@ -269,7 +269,7 @@ class ProfileApiTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['theme_preference']);
+        $response->assertFieldErrors(['theme_preference']);
     }
 
     #[Test]
@@ -311,7 +311,7 @@ class ProfileApiTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['password']);
+        $response->assertFieldErrors(['password']);
         $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
 

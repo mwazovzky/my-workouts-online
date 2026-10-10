@@ -69,7 +69,7 @@ struct AppSessionTests {
     @Test("a revoked refresh token signs out with sessionExpired and clears the store")
     func revoked() async throws {
         let (session, deps, transport) = make(store: .fixture(fresh: false))
-        await transport.enqueue(.json(401, #"{"message":"Reused.","code":"refresh_token_reused"}"#), for: "refresh")
+        await transport.enqueue(.problem(401, code: "refresh_token_reused", detail: "Reused."), for: "refresh")
 
         await session.bootstrap()
 

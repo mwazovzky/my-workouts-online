@@ -49,7 +49,7 @@ describe('VerifyEmailLink page', () => {
 
   it('shows the API message when the link is rejected', async () => {
     mockApi.post.mockRejectedValueOnce({
-      response: { data: { message: 'Link expired.', code: 'invalid_signature' } },
+      response: { data: { detail: 'Link expired.', code: 'invalid_signature' } },
     });
 
     const wrapper = build();

@@ -17,7 +17,7 @@ abstract class ApiFormRequest extends FormRequest
     {
         $validator->after(function (Validator $validator): void {
             foreach ($this->unknownKeys() as $path) {
-                $validator->errors()->add($path, __('This field is not allowed.'));
+                $validator->addFailure($path, 'UnknownField');
             }
         });
     }

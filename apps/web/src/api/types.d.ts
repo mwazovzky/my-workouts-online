@@ -732,23 +732,86 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Error: {
-            /** @description Localized, human-readable. */
-            message: string;
-            /** @description Stable, machine-readable, snake_case. */
-            code: string;
+        /**
+         * @description Every top-level problem code the API emits. Clients switch on `code`, never on `title` or `detail`.
+         * @enum {string}
+         */
+        ErrorCode: "bad_request" | "unauthenticated" | "token_expired" | "refresh_token_missing" | "refresh_token_invalid" | "refresh_token_expired" | "refresh_token_reused" | "forbidden" | "email_unverified" | "not_found" | "method_not_allowed" | "conflict" | "in_use" | "validation_failed" | "too_many_requests" | "invalid_verification_link" | "invalid_signature" | "internal_error";
+        /**
+         * @description Why one request field was rejected.
+         * @enum {string}
+         */
+        FieldErrorCode: "required" | "invalid_format" | "invalid_value" | "too_short" | "too_long" | "out_of_range" | "not_unique" | "not_found" | "mismatch" | "unknown_field";
+        /**
+         * @description RFC 9457 Problem Details; every non-2xx response under `/api/*`, served as `application/problem+json`.
+         * @example {
+         *       "type": "https://my-workouts.online/problems/not_found",
+         *       "title": "Not found",
+         *       "status": 404,
+         *       "detail": "Record not found.",
+         *       "instance": "/api/v1/workouts/42#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+         *       "code": "not_found"
+         *     }
+         */
+        Problem: {
+            /**
+             * Format: uri
+             * @description `{APP_URL}/problems/{code}`; an identifier, not a page.
+             */
+            type: string;
+            /** @description Stable English summary of `code`; never localized. */
+            title: string;
+            /**
+             * Format: int32
+             * @description The HTTP status code of the response.
+             */
+            status: number;
+            /** @description Localized, human-readable explanation of this occurrence. */
+            detail: string;
+            /** @description Request path plus the request id: `/api/v1/workouts/42#<uuid>`. The same id is returned in `X-Request-Id`. */
+            instance?: string;
+            code: components["schemas"]["ErrorCode"];
         };
-        ValidationError: components["schemas"]["Error"] & {
+        /**
+         * @description A `Problem` whose code is `validation_failed`, with one entry per rejected field. Written flat (not `allOf`) so generated clients get one type.
+         * @example {
+         *       "type": "https://my-workouts.online/problems/validation_failed",
+         *       "title": "Validation failed",
+         *       "status": 422,
+         *       "detail": "The effort value must be an integer. (and 1 more error)",
+         *       "instance": "/api/v1/workouts/42/save#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+         *       "code": "validation_failed",
+         *       "errors": [
+         *         {
+         *           "pointer": "/activities/0/sets/1/effort_value",
+         *           "code": "invalid_format",
+         *           "detail": "The effort value must be an integer."
+         *         },
+         *         {
+         *           "pointer": "/activities/1/exercise_id",
+         *           "code": "not_found",
+         *           "detail": "The selected exercise could not be found."
+         *         }
+         *       ]
+         *     }
+         */
+        ValidationProblem: {
+            /** Format: uri */
+            type: string;
+            title: string;
+            /** Format: int32 */
+            status: number;
+            detail: string;
+            instance?: string;
             /** @enum {string} */
-            code?: "validation_failed";
-            /** @description Keyed by dot-notation field path, e.g. `activities.0.sets.1.effort_value`. */
+            code: "validation_failed";
             errors: {
-                [key: string]: {
-                    /** @description Validation rule name, e.g. `required`, `email`, `unique`. */
-                    code: string;
-                    message: string;
-                }[];
-            };
+                /** @description RFC 6901 JSON Pointer into the request body, e.g. `/activities/0/sets/1/effort_value`. */
+                pointer: string;
+                code: components["schemas"]["FieldErrorCode"];
+                /** @description Localized. */
+                detail: string;
+            }[];
         };
         Readiness: {
             /** @enum {string} */
@@ -1492,74 +1555,92 @@ export interface components {
         /** @description Missing, invalid, or expired access token */
         Unauthenticated: {
             headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["Error"];
+                "application/problem+json": components["schemas"]["Problem"];
             };
         };
         /** @description Authenticated but not allowed */
         Forbidden: {
             headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["Error"];
+                "application/problem+json": components["schemas"]["Problem"];
             };
         };
         /** @description Record not found or not owned by the caller */
         NotFound: {
             headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
                 [name: string]: unknown;
             };
             content: {
                 /**
                  * @example {
-                 *       "message": "Record not found.",
+                 *       "type": "https://my-workouts.online/problems/not_found",
+                 *       "title": "Not found",
+                 *       "status": 404,
+                 *       "detail": "Record not found.",
+                 *       "instance": "/api/v1/workouts/42#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
                  *       "code": "not_found"
                  *     }
                  */
-                "application/json": components["schemas"]["Error"];
+                "application/problem+json": components["schemas"]["Problem"];
             };
         };
         /** @description Operation refused because of existing references */
         Conflict: {
             headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
                 [name: string]: unknown;
             };
             content: {
                 /**
                  * @example {
-                 *       "message": "Equipment is in use by one or more exercises.",
+                 *       "type": "https://my-workouts.online/problems/in_use",
+                 *       "title": "Resource in use",
+                 *       "status": 409,
+                 *       "detail": "Cannot delete equipment that is used by exercises.",
+                 *       "instance": "/api/v1/admin/equipment/2#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
                  *       "code": "in_use"
                  *     }
                  */
-                "application/json": components["schemas"]["Error"];
+                "application/problem+json": components["schemas"]["Problem"];
             };
         };
         /** @description Rate limit exceeded */
         TooManyRequests: {
             headers: {
                 "Retry-After"?: number;
+                "X-Request-Id": components["headers"]["RequestId"];
                 [name: string]: unknown;
             };
             content: {
                 /**
                  * @example {
-                 *       "message": "Too many attempts.",
+                 *       "type": "https://my-workouts.online/problems/too_many_requests",
+                 *       "title": "Too many requests",
+                 *       "status": 429,
+                 *       "detail": "Too Many Attempts.",
+                 *       "instance": "/api/v1/auth/email/resend#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
                  *       "code": "too_many_requests"
                  *     }
                  */
-                "application/json": components["schemas"]["Error"];
+                "application/problem+json": components["schemas"]["Problem"];
             };
         };
         /** @description Validation failed */
         ValidationError: {
             headers: {
+                "X-Request-Id": components["headers"]["RequestId"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["ValidationError"];
+                "application/problem+json": components["schemas"]["ValidationProblem"];
             };
         };
         /** @description User */
@@ -1658,6 +1739,8 @@ export interface components {
         RefreshCookie: string;
         /** @description Locale used for translated content in this response. */
         ContentLanguage: string;
+        /** @description Correlation id of this request, sent on every response; the incoming `X-Request-Id` when it is a UUID, otherwise generated. Appears in `Problem.instance` and in the server logs. */
+        RequestId: string;
     };
     pathItems: never;
 }
@@ -1873,7 +1956,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Error"];
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
             /** @description Cookie flow without the `X-Requested-With` header */
@@ -1882,9 +1965,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Error"];
+                    /**
+                     * @example {
+                     *       "type": "https://my-workouts.online/problems/forbidden",
+                     *       "title": "Forbidden",
+                     *       "status": 403,
+                     *       "detail": "Missing X-Requested-With header.",
+                     *       "instance": "/api/v1/auth/refresh#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+                     *       "code": "forbidden"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
+            422: components["responses"]["ValidationError"];
         };
     };
     logout: {
@@ -1942,15 +2036,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthenticated"];
-            /** @description Authenticated by session rather than a bearer token */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
+            403: components["responses"]["Forbidden"];
             422: components["responses"]["ValidationError"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -2046,7 +2132,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Error"];
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
             422: components["responses"]["ValidationError"];
