@@ -223,7 +223,7 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
-    public function save_returns_403_for_another_users_workout(): void
+    public function save_returns_404_for_another_users_workout(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
@@ -232,7 +232,7 @@ class WorkoutApiTest extends TestCase
 
         $this->actingAs($user)->patchJson("/api/v1/workouts/{$workout->id}/save", [
             'activities' => [['exercise_id' => $exercise->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5, 'difficulty_value' => 10]]]],
-        ])->assertForbidden();
+        ])->assertProblem(404, 'not_found');
     }
 
     #[Test]
@@ -265,13 +265,13 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
-    public function complete_returns_403_for_another_users_workout(): void
+    public function complete_returns_404_for_another_users_workout(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $other->id, 'status' => WorkoutStatus::InProgress]);
 
-        $this->actingAs($user)->postJson("/api/v1/workouts/{$workout->id}/complete")->assertForbidden();
+        $this->actingAs($user)->postJson("/api/v1/workouts/{$workout->id}/complete")->assertProblem(404, 'not_found');
     }
 
     #[Test]
@@ -327,13 +327,13 @@ class WorkoutApiTest extends TestCase
     }
 
     #[Test]
-    public function destroy_returns_403_for_another_users_workout(): void
+    public function destroy_returns_404_for_another_users_workout(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $other->id]);
 
-        $this->actingAs($user)->deleteJson("/api/v1/workouts/{$workout->id}")->assertForbidden();
+        $this->actingAs($user)->deleteJson("/api/v1/workouts/{$workout->id}")->assertProblem(404, 'not_found');
     }
 
     #[Test]

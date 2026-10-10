@@ -104,7 +104,7 @@ public final class DeepLinkCoordinator {
             notice = .verified
         } catch {
             pendingVerification = nil
-            if case .api(_, _, let message) = APIError.from(error) {
+            if case .api(_, _, let message, _) = APIError.from(error) {
                 notice = .invalidLink(message: message)
             } else {
                 notice = .invalidLink(message: nil)

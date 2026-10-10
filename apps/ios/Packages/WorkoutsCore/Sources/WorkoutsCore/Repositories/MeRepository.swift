@@ -1,14 +1,10 @@
 import Foundation
 import WorkoutsAPI
 
-public enum ResendVerificationResult: Sendable, Equatable {
-    case sent
-    case alreadyVerified
-}
-
 public protocol MeRepository: Sendable {
     func me() async throws -> User
-    func resendVerification() async throws -> ResendVerificationResult
+    /// Always accepted (202); the API sends nothing when the address is already verified.
+    func resendVerification() async throws
     /// Posts the emailed link's parameters; the caller must be signed in as that user.
     func verifyEmail(id: Int, hash: String, expires: Int, signature: String) async throws
     /// Changing the email resets verification; the returned user says so.
@@ -38,11 +34,10 @@ public struct APIMeRepository: MeRepository {
         }
     }
 
-    public func resendVerification() async throws -> ResendVerificationResult {
+    public func resendVerification() async throws {
         let output = try await client.resendVerification()
         switch output {
-        case .accepted: return .sent
-        case .noContent: return .alreadyVerified
+        case .accepted: return
         case .unauthorized(let response):
             throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
         case .tooManyRequests(let response):

@@ -54,13 +54,11 @@ actor FakeAuthRepository: AuthRepository {
 
 actor FakeMeRepository: MeRepository {
     var user: User = .fixture
-    var resendResult: ResendVerificationResult = .sent
     var resendError: APIError?
     private(set) var resendCalls = 0
     private(set) var meCalls = 0
 
     func set(user: User) { self.user = user }
-    func set(resend: ResendVerificationResult) { resendResult = resend }
     func set(resendError: APIError?) { self.resendError = resendError }
 
     func me() async throws -> User {
@@ -68,10 +66,9 @@ actor FakeMeRepository: MeRepository {
         return user
     }
 
-    func resendVerification() async throws -> ResendVerificationResult {
+    func resendVerification() async throws {
         resendCalls += 1
         if let resendError { throw resendError }
-        return resendResult
     }
 
     var verifyError: APIError?
@@ -146,14 +143,14 @@ private func makeSession(me: FakeMeRepository = FakeMeRepository()) -> AppSessio
     AppSession(authSession: AuthSession(store: InMemoryTokenStore(), refresher: FakeRefresher()), meRepository: me)
 }
 
-private let lockoutError = APIError.validation(
-    message: "Too many login attempts.",
-    fields: [
-        "email": [FieldError(code: "throttle", message: "Too many login attempts. Please try again in 60 seconds.")]
-    ])
-private let wrongPasswordError = APIError.validation(
-    message: "Invalid.",
-    fields: ["password": [FieldError(code: "invalid", message: "These credentials do not match our records.")]])
+private let lockoutError = APIError.api(
+    status: 429, code: "too_many_attempts", message: "Too many login attempts. Please try again in 42 seconds.",
+    retryAfter: 42)
+private let wrongPasswordError = APIError.api(
+    status: 401, code: "invalid_credentials", message: "These credentials do not match our records.")
+private let malformedEmailError = APIError.validation(
+    message: "The email field must be a valid email address.",
+    fields: ["email": [FieldError(code: "invalid_format", message: "The email field must be a valid email address.")]])
 
 @Suite("LoginViewModel")
 @MainActor
@@ -185,7 +182,7 @@ struct LoginViewModelTests {
         #expect(model.rememberEmail)
     }
 
-    @Test("a wrong password shows the API message under the password field")
+    @Test("a wrong password (401 invalid_credentials) shows the API detail as the form message")
     func wrongPassword() async throws {
         let auth = FakeAuthRepository()
         await auth.setLogin(.fail(wrongPasswordError))
@@ -196,12 +193,12 @@ struct LoginViewModelTests {
 
         await model.submit()
 
-        #expect(model.errors["password"] == "These credentials do not match our records.")
-        #expect(model.errors.general == nil)
+        #expect(model.errors.general == .failed(message: "These credentials do not match our records."))
+        #expect(model.errors.fields.isEmpty)
         #expect(session.state == .bootstrapping, "session untouched")
     }
 
-    @Test("the lockout arrives as a 422 on email")
+    @Test("the lockout (429 too_many_attempts) carries the Retry-After seconds")
     func lockout() async throws {
         let auth = FakeAuthRepository()
         await auth.setLogin(.fail(lockoutError))
@@ -211,7 +208,22 @@ struct LoginViewModelTests {
 
         await model.submit()
 
-        #expect(model.errors["email"]?.contains("Too many login attempts") == true)
+        #expect(model.errors.general == .tooManyAttempts(retryAfter: 42))
+        #expect(model.errors.fields.isEmpty)
+    }
+
+    @Test("a malformed email is still a 422 field error")
+    func malformedEmail() async throws {
+        let auth = FakeAuthRepository()
+        await auth.setLogin(.fail(malformedEmailError))
+        let model = LoginViewModel(auth: auth, session: makeSession(), memory: InMemoryCredentialsMemory())
+        model.email = "not-an-email"
+        model.password = "x"
+
+        await model.submit()
+
+        #expect(model.errors["email"] == "The email field must be a valid email address.")
+        #expect(model.errors.general == nil)
     }
 
     @Test("a 429 and a network failure become general messages")
@@ -223,7 +235,7 @@ struct LoginViewModelTests {
 
         await auth.setLogin(.fail(.api(status: 429, code: "too_many_requests", message: "Slow down")))
         await model.submit()
-        #expect(model.errors.general == .tooManyAttempts)
+        #expect(model.errors.general == .tooManyAttempts(retryAfter: nil))
 
         await auth.setLogin(.fail(.network(description: "offline")))
         await model.submit()
@@ -302,7 +314,7 @@ struct ForgotPasswordViewModelTests {
         model.email = "test@example.com"
         await model.submit()
         #expect(!model.wasSent)
-        #expect(model.errors.general == .tooManyAttempts)
+        #expect(model.errors.general == .tooManyAttempts(retryAfter: nil))
     }
 }
 
@@ -318,24 +330,13 @@ struct VerifyEmailViewModelTests {
         #expect(await me.resendCalls == 1)
     }
 
-    @Test("resend 204 means already verified: /me is refreshed and the session becomes ready")
-    func resendAlreadyVerified() async {
-        let me = FakeMeRepository()
-        await me.set(resend: .alreadyVerified)
-        let session = makeSession(me: me)
-        let model = VerifyEmailViewModel(me: me, session: session)
-        await model.resend()
-        #expect(session.state == .ready(.fixture))
-        #expect(model.notice == nil)
-    }
-
     @Test("resend 429 shows the throttle message")
     func resendThrottled() async {
         let me = FakeMeRepository()
         await me.set(resendError: .api(status: 429, code: "too_many_requests", message: "Slow down"))
         let model = VerifyEmailViewModel(me: me, session: makeSession(me: me))
         await model.resend()
-        #expect(model.errors.general == .tooManyAttempts)
+        #expect(model.errors.general == .tooManyAttempts(retryAfter: nil))
     }
 
     @Test("checking while still unverified says so; once verified the session moves on")

@@ -16,10 +16,14 @@ enum Fixtures {
 
     static func client(returning name: String, status: Int = 200) throws -> Client {
         let contentType = status >= 400 ? "application/problem+json" : "application/json"
-        let transport = StubTransport(responses: [
-            StubTransport.StubResponse(status: status, body: try data(name), contentType: contentType)
-        ])
-        return Client(
+        return client(
+            transport: StubTransport(responses: [
+                StubTransport.StubResponse(status: status, body: try data(name), contentType: contentType)
+            ]))
+    }
+
+    static func client(transport: StubTransport) -> Client {
+        Client(
             serverURL: URL(string: "http://localhost:8080")!, configuration: APIClientFactory.configuration,
             transport: transport, middlewares: [])
     }

@@ -68,15 +68,12 @@ describe('Login page', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/workouts/3');
   });
 
-  it('shows the coded validation error and clears the password', async () => {
+  it('shows wrong credentials under the email field and clears the password', async () => {
     mockApi.post.mockRejectedValueOnce({
       response: {
-        status: 422,
-        data: {
-          errors: [
-            { pointer: '/email', code: 'invalid', detail: 'These credentials do not match.' },
-          ],
-        },
+        status: 401,
+        headers: {},
+        data: { code: 'invalid_credentials', detail: 'These credentials do not match.' },
       },
     });
     const wrapper = build();
@@ -87,6 +84,42 @@ describe('Login page', () => {
 
     expect(wrapper.text()).toContain('These credentials do not match.');
     expect(wrapper.find('#password').element.value).toBe('');
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it('shows the lockout wait from Retry-After', async () => {
+    mockApi.post.mockRejectedValueOnce({
+      response: {
+        status: 429,
+        headers: { 'retry-after': '42' },
+        data: { code: 'too_many_attempts', detail: 'Too Many Attempts.' },
+      },
+    });
+    const wrapper = build();
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Too many login attempts. Try again in :seconds seconds.');
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it('shows a malformed-input error from the 422 pointer', async () => {
+    mockApi.post.mockRejectedValueOnce({
+      response: {
+        status: 422,
+        data: {
+          code: 'validation_failed',
+          errors: [{ pointer: '/email', code: 'invalid_format', detail: 'Enter a valid email.' }],
+        },
+      },
+    });
+    const wrapper = build();
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Enter a valid email.');
     expect(mockRouter.push).not.toHaveBeenCalled();
   });
 

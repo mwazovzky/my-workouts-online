@@ -73,10 +73,10 @@ struct WorkoutListViewModelTests {
         #expect(model.state.value?.map(\.id) == [11])
         #expect(await repo.deleteCalls == [10])
 
-        await repo.set(deleteError: .api(status: 403, code: "forbidden", message: "Not yours"))
+        await repo.set(deleteError: .api(status: 404, code: "not_found", message: "Record not found."))
         await model.delete(id: 11)
         #expect(model.state.value?.map(\.id) == [11], "rolled back into place")
-        #expect(model.deleteError?.status == 403)
+        #expect(model.deleteError?.status == 404)
     }
 
     @Test("an empty history loads to an empty list, not an error")

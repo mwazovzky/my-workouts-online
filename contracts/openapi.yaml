@@ -180,10 +180,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: The email and password do not match an account
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example: { type: https://my-workouts.online/problems/invalid_credentials, title: Invalid credentials, status: 401, detail: These credentials do not match our records., instance: '/api/v1/auth/login#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: invalid_credentials }
         '422':
-          $ref: '#/components/responses/ValidationError'
+          description: Malformed input only; a wrong password is a 401
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ValidationProblem' }
         '429':
-          $ref: '#/components/responses/TooManyRequests'
+          description: Locked out after five failed attempts for this email and IP within a minute
+          headers:
+            Retry-After:
+              description: Seconds until the next attempt is accepted.
+              schema: { type: integer }
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example: { type: https://my-workouts.online/problems/too_many_attempts, title: Too many attempts, status: 429, detail: Too many login attempts. Please try again in 42 seconds., instance: '/api/v1/auth/login#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: too_many_attempts }
 
   /api/v1/auth/refresh:
     post:
@@ -393,9 +415,7 @@ paths:
       operationId: resendVerification
       responses:
         '202':
-          description: Verification email sent
-        '204':
-          description: Email already verified; nothing sent
+          description: Accepted; a verification email is sent unless the address is already verified.
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '429':
@@ -803,6 +823,7 @@ paths:
     delete:
       tags: [Workouts]
       summary: Delete a workout (owner only)
+      description: A workout the caller does not own answers 404, never 403.
       operationId: deleteWorkout
       parameters:
         - $ref: '#/components/parameters/WorkoutId'
@@ -811,8 +832,6 @@ paths:
           description: Deleted
         '401':
           $ref: '#/components/responses/Unauthenticated'
-        '403':
-          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -820,6 +839,7 @@ paths:
     patch:
       tags: [Workouts]
       summary: Bulk-save activities and sets of an in-progress workout
+      description: A workout the caller does not own answers 404; the caller's own completed workout answers 403.
       operationId: saveWorkout
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
@@ -846,6 +866,7 @@ paths:
     post:
       tags: [Workouts]
       summary: Mark a workout completed
+      description: A workout the caller does not own answers 404; the caller's own already-completed workout answers 403.
       operationId: completeWorkout
       parameters:
         - $ref: '#/components/parameters/WorkoutId'
@@ -863,6 +884,7 @@ paths:
     post:
       tags: [Workouts]
       summary: Create a new in-progress copy of a workout (template link dropped)
+      description: A workout the caller does not own answers 404; the caller's own in-progress workout answers 403.
       operationId: repeatWorkout
       parameters:
         - $ref: '#/components/parameters/WorkoutId'
@@ -1319,7 +1341,7 @@ components:
             forbidden:
               value: { type: https://my-workouts.online/problems/forbidden, title: Forbidden, status: 403, detail: This action is unauthorized., instance: '/api/v1/admin/equipment#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: forbidden }
     NotFound:
-      description: Record not found or not owned by the caller
+      description: Record not found, or not owned by the caller (ownership never answers 403)
       headers:
         X-Request-Id: { $ref: '#/components/headers/RequestId' }
       content:
@@ -1425,6 +1447,7 @@ components:
       enum:
         - bad_request
         - unauthenticated
+        - invalid_credentials
         - token_expired
         - refresh_token_missing
         - refresh_token_invalid
@@ -1438,6 +1461,7 @@ components:
         - in_use
         - validation_failed
         - too_many_requests
+        - too_many_attempts
         - invalid_verification_link
         - invalid_signature
         - internal_error

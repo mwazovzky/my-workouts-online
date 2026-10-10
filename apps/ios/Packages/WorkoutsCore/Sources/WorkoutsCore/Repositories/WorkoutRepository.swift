@@ -98,7 +98,6 @@ public struct APIWorkoutRepository: WorkoutRepository {
         case .noContent: return
         case .unauthorized(let response):
             throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
-        case .forbidden(let response): throw APIError(status: 403, envelope: try response.body.applicationProblemJson)
         case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }

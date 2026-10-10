@@ -108,16 +108,16 @@ struct ProfileViewModelTests {
         #expect(await me.deletePasswords == ["nope", "password"])
     }
 
-    @Test("resend for an unverified user reports sent; 204 refreshes the user")
+    @Test("resend for an unverified user reports sent; a 429 surfaces as the resend error")
     func resend() async {
-        let (model, session, me) = await make(user: .unverified)
+        let (model, _, me) = await make(user: .unverified)
         await model.resendVerification()
         #expect(model.notice == .verificationSent)
+        #expect(await me.resendCalls == 1)
 
-        await me.set(resend: .alreadyVerified)
-        await me.set(user: .fixture)
+        await me.set(resendError: .api(status: 429, code: "too_many_requests", message: "Slow down"))
         await model.resendVerification()
-        #expect(session.state.isReady)
+        #expect(model.resendError?.status == 429)
     }
 }
 

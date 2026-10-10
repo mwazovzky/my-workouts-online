@@ -141,12 +141,8 @@ public final class VerifyEmailViewModel {
         notice = nil
         defer { isBusy = false }
         do {
-            switch try await me.resendVerification() {
-            case .sent:
-                notice = .sent
-            case .alreadyVerified:
-                try await session.refreshUser()
-            }
+            try await me.resendVerification()
+            notice = .sent
         } catch {
             errors.apply(error)
         }

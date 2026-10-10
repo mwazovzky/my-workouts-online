@@ -475,7 +475,10 @@ export interface paths {
         get: operations["getWorkout"];
         put?: never;
         post?: never;
-        /** Delete a workout (owner only) */
+        /**
+         * Delete a workout (owner only)
+         * @description A workout the caller does not own answers 404, never 403.
+         */
         delete: operations["deleteWorkout"];
         options?: never;
         head?: never;
@@ -495,7 +498,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Bulk-save activities and sets of an in-progress workout */
+        /**
+         * Bulk-save activities and sets of an in-progress workout
+         * @description A workout the caller does not own answers 404; the caller's own completed workout answers 403.
+         */
         patch: operations["saveWorkout"];
         trace?: never;
     };
@@ -508,7 +514,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Mark a workout completed */
+        /**
+         * Mark a workout completed
+         * @description A workout the caller does not own answers 404; the caller's own already-completed workout answers 403.
+         */
         post: operations["completeWorkout"];
         delete?: never;
         options?: never;
@@ -525,7 +534,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a new in-progress copy of a workout (template link dropped) */
+        /**
+         * Create a new in-progress copy of a workout (template link dropped)
+         * @description A workout the caller does not own answers 404; the caller's own in-progress workout answers 403.
+         */
         post: operations["repeatWorkout"];
         delete?: never;
         options?: never;
@@ -736,7 +748,7 @@ export interface components {
          * @description Every top-level problem code the API emits. Clients switch on `code`, never on `title` or `detail`.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "unauthenticated" | "token_expired" | "refresh_token_missing" | "refresh_token_invalid" | "refresh_token_expired" | "refresh_token_reused" | "forbidden" | "email_unverified" | "not_found" | "method_not_allowed" | "conflict" | "in_use" | "validation_failed" | "too_many_requests" | "invalid_verification_link" | "invalid_signature" | "internal_error";
+        ErrorCode: "bad_request" | "unauthenticated" | "invalid_credentials" | "token_expired" | "refresh_token_missing" | "refresh_token_invalid" | "refresh_token_expired" | "refresh_token_reused" | "forbidden" | "email_unverified" | "not_found" | "method_not_allowed" | "conflict" | "in_use" | "validation_failed" | "too_many_requests" | "too_many_attempts" | "invalid_verification_link" | "invalid_signature" | "internal_error";
         /**
          * @description Why one request field was rejected.
          * @enum {string}
@@ -1572,7 +1584,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description Record not found or not owned by the caller */
+        /** @description Record not found, or not owned by the caller (ownership never answers 403) */
         NotFound: {
             headers: {
                 "X-Request-Id": components["headers"]["RequestId"];
@@ -1917,8 +1929,58 @@ export interface operations {
                     "application/json": components["schemas"]["AuthResponse"];
                 };
             };
-            422: components["responses"]["ValidationError"];
-            429: components["responses"]["TooManyRequests"];
+            /** @description The email and password do not match an account */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["RequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://my-workouts.online/problems/invalid_credentials",
+                     *       "title": "Invalid credentials",
+                     *       "status": 401,
+                     *       "detail": "These credentials do not match our records.",
+                     *       "instance": "/api/v1/auth/login#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+                     *       "code": "invalid_credentials"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Malformed input only; a wrong password is a 401 */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["RequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Locked out after five failed attempts for this email and IP within a minute */
+            429: {
+                headers: {
+                    /** @description Seconds until the next attempt is accepted. */
+                    "Retry-After"?: number;
+                    "X-Request-Id": components["headers"]["RequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://my-workouts.online/problems/too_many_attempts",
+                     *       "title": "Too many attempts",
+                     *       "status": 429,
+                     *       "detail": "Too many login attempts. Please try again in 42 seconds.",
+                     *       "instance": "/api/v1/auth/login#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f",
+                     *       "code": "too_many_attempts"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     refresh: {
@@ -2148,15 +2210,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Verification email sent */
+            /** @description Accepted; a verification email is sent unless the address is already verified. */
             202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Email already verified; nothing sent */
-            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2636,7 +2691,6 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
         };
     };

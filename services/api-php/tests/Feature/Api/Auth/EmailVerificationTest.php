@@ -130,7 +130,7 @@ class EmailVerificationTest extends TestCase
     }
 
     #[Test]
-    public function resend_sends_for_unverified_and_noops_for_verified(): void
+    public function resend_answers_202_and_sends_only_for_unverified(): void
     {
         Notification::fake();
         $unverified = User::factory()->unverified()->create();
@@ -139,7 +139,7 @@ class EmailVerificationTest extends TestCase
         $this->withToken($this->token($unverified))->postJson('/api/v1/auth/email/resend')->assertStatus(202);
         Notification::assertSentTo($unverified, VerifyEmail::class);
 
-        $this->withToken($this->token($verified))->postJson('/api/v1/auth/email/resend')->assertNoContent();
+        $this->withToken($this->token($verified))->postJson('/api/v1/auth/email/resend')->assertStatus(202);
         Notification::assertNotSentTo($verified, VerifyEmail::class);
     }
 

@@ -35,9 +35,13 @@ public struct APIAuthRepository: AuthRepository {
             body: .json(.init(email: email, password: password, client: .native, deviceName: deviceName)))
         switch output {
         case .ok(let response): return try AuthGrant(api: try response.body.json)
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
         case .unprocessableContent(let response): throw APIError(validation: try response.body.applicationProblemJson)
         case .tooManyRequests(let response):
-            throw APIError(status: 429, envelope: try response.body.applicationProblemJson)
+            throw APIError(
+                status: 429, envelope: try response.body.applicationProblemJson,
+                retryAfter: response.headers.retryAfter)
         case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
         }
     }

@@ -44,7 +44,7 @@ class WorkoutCompleteTest extends TestCase
 
         $response = $this->actingAs($user)->postJson("/api/v1/workouts/{$otherUserWorkout->id}/complete");
 
-        $response->assertForbidden();
+        $this->assertProblem($response, 404, 'not_found');
 
         $this->assertDatabaseHas('workouts', [
             'id' => $otherUserWorkout->id,

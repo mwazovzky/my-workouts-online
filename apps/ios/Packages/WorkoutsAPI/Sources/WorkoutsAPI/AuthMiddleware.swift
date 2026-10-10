@@ -69,7 +69,7 @@ public struct AuthMiddleware: ClientMiddleware {
     }
 
     private static func code(in data: Data?) -> String? {
-        guard let data, case .api(_, let code, _) = APIError.from(status: 401, data: data) else {
+        guard let data, case .api(_, let code, _, _) = APIError.from(status: 401, data: data) else {
             return nil
         }
         return code

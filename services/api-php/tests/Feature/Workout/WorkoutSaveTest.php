@@ -544,7 +544,7 @@ class WorkoutSaveTest extends TestCase
             ],
         );
 
-        $response->assertForbidden();
+        $this->assertProblem($response, 404, 'not_found');
     }
 
     #[Test]

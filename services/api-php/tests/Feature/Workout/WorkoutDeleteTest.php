@@ -42,7 +42,7 @@ class WorkoutDeleteTest extends TestCase
 
         $response = $this->actingAs($otherUser)->deleteJson("/api/v1/workouts/{$workout->id}");
 
-        $response->assertForbidden();
+        $this->assertProblem($response, 404, 'not_found');
 
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,

@@ -33,7 +33,7 @@ class WorkoutController extends Controller
 
     public function show(Request $request, Workout $workout): WorkoutResource
     {
-        abort_if($workout->user_id !== $request->user()->id, 404);
+        $this->ownedOrFail($request, $workout);
 
         $workout->load([
             'workoutTemplate',
@@ -64,6 +64,7 @@ class WorkoutController extends Controller
 
     public function save(WorkoutSaveRequest $request, Workout $workout, WorkoutServiceInterface $service): WorkoutResource
     {
+        $this->ownedOrFail($request, $workout);
         $this->authorize('save', $workout);
 
         $workout = $service->save($workout, $request->validated());
@@ -71,8 +72,9 @@ class WorkoutController extends Controller
         return new WorkoutResource($workout);
     }
 
-    public function complete(Workout $workout): WorkoutResource
+    public function complete(Request $request, Workout $workout): WorkoutResource
     {
+        $this->ownedOrFail($request, $workout);
         $this->authorize('complete', $workout);
 
         $workout->status = WorkoutStatus::Completed;
@@ -86,8 +88,9 @@ class WorkoutController extends Controller
         return new WorkoutResource($workout);
     }
 
-    public function repeat(Workout $workout, WorkoutServiceInterface $service): JsonResponse
+    public function repeat(Request $request, Workout $workout, WorkoutServiceInterface $service): JsonResponse
     {
+        $this->ownedOrFail($request, $workout);
         $this->authorize('repeat', $workout);
 
         $newWorkout = $service->repeat($workout);
@@ -101,8 +104,9 @@ class WorkoutController extends Controller
         return (new WorkoutResource($newWorkout))->response()->setStatusCode(201);
     }
 
-    public function destroy(Workout $workout, WorkoutServiceInterface $service): Response
+    public function destroy(Request $request, Workout $workout, WorkoutServiceInterface $service): Response
     {
+        $this->ownedOrFail($request, $workout);
         $this->authorize('delete', $workout);
 
         $userId = $workout->user_id;
@@ -114,5 +118,14 @@ class WorkoutController extends Controller
         ]);
 
         return response()->noContent();
+    }
+
+    /**
+     * A workout the caller does not own is reported as missing on every
+     * action, so an id never reveals whether it exists for someone else.
+     */
+    private function ownedOrFail(Request $request, Workout $workout): void
+    {
+        abort_if($workout->user_id !== $request->user()->id, 404);
     }
 }

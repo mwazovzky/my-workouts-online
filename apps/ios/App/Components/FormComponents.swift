@@ -57,7 +57,12 @@ struct FormErrorBanner: View {
 
     private func message(for general: FormErrors.General) -> String {
         switch general {
-        case .tooManyAttempts: String(localized: "Too many attempts. Please try again later.")
+        case .tooManyAttempts(let retryAfter):
+            if let retryAfter {
+                String(localized: "Too many attempts. Try again in \(retryAfter) seconds.")
+            } else {
+                String(localized: "Too many attempts. Please try again later.")
+            }
         case .offline: String(localized: "Could not reach the server.")
         case .failed(let message): message ?? String(localized: "Something went wrong. Please try again.")
         }
