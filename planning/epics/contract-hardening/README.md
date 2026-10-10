@@ -1,6 +1,6 @@
 # Epic: Contract Hardening
 
-**Status: in progress** (story 7 is the last; `info.version` is `2.0.0`).
+**Status: shipped (2026-10-10), all seven stories merged (#56–#60, #62, #64); the contract is `2.0.0`.** Kept for reference; current truth lives in `contracts/openapi.yaml`, `docs/api-design.md` and the rest of `docs/`. The [Go Backend](../go-backend/README.md) epic is unblocked.
 
 Bring `contracts/openapi.yaml` up to current REST conventions — RFC 9457 errors, consistent naming and HTTP semantics, generator-friendly schemas — while the API has one backend and two clients the repo controls, so the Go backend epic implements the hardened contract once instead of inheriting Laravel-shaped quirks.
 
@@ -80,7 +80,7 @@ Client switch points that must keep working:
 | 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | shipped (#59) |
 | 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | shipped (#60) |
 | 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | shipped (#62) |
-| 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | in progress |
+| 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | shipped (#64) |
 
 States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a story's PR opens and when it merges; archive or delete the story file after it ships, per `planning/README.md`.
 
@@ -108,6 +108,16 @@ States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a s
 - `additionalProperties: false` on request bodies makes Schemathesis `negative_data_rejection` strict; any PHP form request that silently ignores unknown keys now has to reject them. Mitigated by a shared `RejectsUnknownKeys` rule applied in story 1 and the contract job in CI.
 - Lowercasing `Weekday` touches the enum backing values, the `program_workout_template.weekday` column data, the catalog data files and the validator. Mitigated by one migration that rewrites the column in place and `CatalogSyncTest` fixtures updated in the same PR.
 - Seven breaking PRs in a row on one SPA. Mitigated by the order above and by every PR deploying together (the web image and the API image are built from one tag).
+
+## Outcome
+
+What shipped differs from the plan in a few deliberate places, each recorded in the Decisions table or the story's PR:
+
+- the `ETag` is the strong tag `"<id>-<version>"` from a new `workouts.version` counter, not a weak `updated_at` tag (decision 6)
+- path parameters are renamed in the contract only; Laravel keeps its binding names (`{program}`), since the URL is identical (`docs/api-design.md`, Naming)
+- `Activity` keeps a top-level `exercise_id` next to the nested `exercise` snapshot, matching the write shape
+- Schemathesis found three older PHP gaps along the way, all fixed: query keys on `GET` were not rejected (story 1), body integers accepted `true` (story 5, now `integer:strict`), and a new user's `locale`/`theme_preference` serialized as `null` (story 7, model defaults)
+- the iOS generated client percent-encodes header values; `EntityTagMiddleware` restores `If-Match` (story 6)
 
 ## Done Criteria
 

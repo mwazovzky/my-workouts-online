@@ -59,7 +59,7 @@ None. The web SPA and iOS app render the same dashboard from either backend; the
 
 - unit: weekday arithmetic for all 7 × 7 combinations of today × target, in UTC; composite id formatting; sort order
 - repo: schedule query returns assignments in pivot id order and localizes names with English fallback
-- HTTP: port of `tests/Feature/Api/DashboardTest.php`; `Accept-Language: ru` yields Russian `weekday_label` and program names
+- HTTP: port of `tests/Feature/Api/DashboardApiTest.php`; `Accept-Language: ru` yields Russian program and template names, while `weekday` stays the lowercase enum (no label)
 - contract: Schemathesis scoped to `getDashboard`
 
 ## Docs To Update

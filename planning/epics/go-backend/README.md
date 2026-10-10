@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: planned (starts after the Contract Hardening epic ships).**
+**Status: planned; unblocked (the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`).**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
