@@ -58,7 +58,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::post('workouts/{workout}/complete', [WorkoutController::class, 'complete'])->name('workouts.complete');
         Route::post('workouts/{workout}/repeat', [WorkoutController::class, 'repeat'])->name('workouts.repeat');
-        Route::patch('workouts/{workout}/save', [WorkoutController::class, 'save'])->name('workouts.save');
+        Route::put('workouts/{workout}/activities', [WorkoutController::class, 'replaceActivities'])->name('workouts.activities.replace');
         Route::apiResource('workouts', WorkoutController::class)->except(['update']);
 
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

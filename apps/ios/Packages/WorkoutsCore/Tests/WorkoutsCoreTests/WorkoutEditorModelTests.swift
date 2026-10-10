@@ -14,11 +14,13 @@ enum EditorFixtures {
             effortType: effort, difficultyUnit: unit, categoryNames: ["Legs"], sets: sets)
     }
 
-    static func workout(status: WorkoutStatus = .inProgress, userId: Int = 1, activities: [Activity]) -> Workout {
+    static func workout(
+        status: WorkoutStatus = .inProgress, userId: Int = 1, version: Int = 1, activities: [Activity]
+    ) -> Workout {
         Workout(
             id: 42, userId: userId, name: "Leg day", status: status, createdAt: nil,
             updatedAt: Date(timeIntervalSince1970: 1000), activitiesCount: activities.count, template: nil,
-            activities: activities)
+            activities: activities, etag: "\"42-\(version)\"")
     }
 
     static let weights = workout(activities: [
@@ -229,6 +231,48 @@ struct WorkoutEditorSaveTests {
         _ = await model.save()
         let second = await repo.savedPayloads.last
         #expect(second?.activities[0].sets.map(\.id) == [11, 12, 13])
+    }
+
+    @Test("save sends the loaded ETag as If-Match and adopts the returned one for the next save")
+    func ifMatchRotates() async {
+        let (model, repo) = await loaded()
+        let (a, s) = ids(model, 0, 0)
+        var saved = EditorFixtures.weights
+        saved.etag = "\"42-2\""
+        await repo.set(saveResult: saved)
+
+        model.setEffort(3, activity: a, set: s)
+        #expect(await model.save())
+        #expect(model.draft?.baseETag == "\"42-2\"")
+
+        model.setEffort(4, activity: a, set: s)
+        _ = await model.save()
+        #expect(await repo.ifMatches == ["\"42-1\"", "\"42-2\""])
+    }
+
+    @Test("a 412 keeps the edits, flags the conflict, and reload replaces them with the server copy")
+    func preconditionFailed() async {
+        let (model, repo) = await loaded()
+        let (a, s) = ids(model, 0, 0)
+        model.setEffort(3, activity: a, set: s)
+        await repo.set(
+            saveError: .api(
+                status: 412, code: "precondition_failed",
+                message: "This workout was changed elsewhere. Reload it to continue."))
+
+        #expect(await model.save() == false)
+        #expect(model.changedElsewhere)
+        #expect(model.isDirty)
+
+        await repo.set(saveError: nil)
+        await repo.set(stored: EditorFixtures.workout(version: 2, activities: EditorFixtures.weights.activities))
+        await model.reloadAfterConflict()
+
+        #expect(!model.changedElsewhere)
+        #expect(!model.isDirty)
+        #expect(model.saveError == nil)
+        #expect(model.draft?.baseETag == "\"42-2\"")
+        #expect(model.draft?.activities[0].sets[0].effortValue == 10)
     }
 
     @Test("a 422 lands on the offending row and keeps the draft dirty")

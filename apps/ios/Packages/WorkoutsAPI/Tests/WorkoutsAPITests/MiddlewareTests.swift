@@ -48,6 +48,23 @@ struct MiddlewareTests {
         #expect(seen == ["en", "ru"])
     }
 
+    @Test("If-Match reaches the wire as the literal quoted entity tag")
+    func ifMatchIsNotPercentEncoded() async throws {
+        let body: Operations.ReplaceWorkoutActivities.Input.Body = .json(.init(activities: []))
+        let plain = StubTransport(responses: [.problem(412, code: "precondition_failed")])
+        _ = try await Client(
+            serverURL: baseURL, configuration: APIClientFactory.configuration, transport: plain, middlewares: []
+        ).replaceWorkoutActivities(path: .init(workoutId: 42), headers: .init(ifMatch: #""42-7""#), body: body)
+        #expect(await plain.requests.first?.header(.ifMatch) == "%2242-7%22", "the generated client encodes it")
+
+        let fixed = StubTransport(responses: [.problem(412, code: "precondition_failed")])
+        _ = try await Client(
+            serverURL: baseURL, configuration: APIClientFactory.configuration, transport: fixed,
+            middlewares: APIClientFactory.requiredMiddlewares
+        ).replaceWorkoutActivities(path: .init(workoutId: 42), headers: .init(ifMatch: #""42-7""#), body: body)
+        #expect(await fixed.requests.first?.header(.ifMatch) == #""42-7""#)
+    }
+
     @Test("the client posts native login bodies as the contract describes")
     func loginBody() async throws {
         let transport = StubTransport(responses: [

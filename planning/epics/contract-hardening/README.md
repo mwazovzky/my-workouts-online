@@ -19,7 +19,7 @@ None of this is broken. It is cheap to change now — one web SPA, an iOS app no
 | 3 | Error code registries | `FieldErrorCode` enum (`required`, `invalid_format`, `invalid_value`, `too_short`, `too_long`, `out_of_range`, `not_unique`, `not_found`, `mismatch`) mapped from Laravel rules in `ApiErrorResponse`; `ErrorCode` enum listing every top-level code. Backends may not invent codes outside the spec. |
 | 4 | Rulebook | Zalando RESTful API Guidelines, enforced by Spectral with the Zalando ruleset in `.github/workflows/lint.yml` next to Redocly. Rules a later story fixes are disabled with a TODO naming that story and re-enabled by it. |
 | 5 | PATCH semantics | RFC 7386 JSON Merge Patch: every field optional, at least one present. `PUT` keeps full-replacement write schemas. |
-| 6 | Concurrency | `ETag` on every `WorkoutResponse`; `If-Match` required on the editor write, `412 precondition_failed` on mismatch, `428 precondition_required` when absent. |
+| 6 | Concurrency | `ETag` on every `WorkoutResponse`; `If-Match` required on the editor write, `412 precondition_failed` on mismatch, `428 precondition_required` when absent. The tag is `"<id>-<version>"` from a `workouts.version` counter (story 6), not `updated_at`: the save did not touch `updated_at`, and second precision lets two saves in one second share a tag. Comparison is strong per RFC 9110, so the tag is strong too. |
 | 7 | Ownership | 404 for any resource the caller does not own, on every action. 403 is reserved for authenticated-but-forbidden (unverified email, non-admin). |
 | 8 | Login failures | Bad credentials `401 invalid_credentials`; lockout `429 too_many_attempts` with `Retry-After`. 422 is only for malformed input. |
 | 9 | Path parameters | `{programId}`, `{workoutId}`, `{workoutTemplateId}`, `{equipmentId}`, `{categoryId}`, `{exerciseId}` — camelCase, suffixed `Id`, never the Laravel binding name. |
@@ -78,8 +78,8 @@ Client switch points that must keep working:
 | 2 | [Problem Details Error Model](stories/02-problem-details-error-model.md) | Platform | shipped (#57) |
 | 3 | [Auth and Ownership Status Codes](stories/03-auth-and-ownership-status-codes.md) | Auth & Profile | shipped (#58) |
 | 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | shipped (#59) |
-| 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | in progress |
-| 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | planned |
+| 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | shipped (#60) |
+| 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | in progress |
 | 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | planned |
 
 States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a story's PR opens and when it merges; archive or delete the story file after it ships, per `planning/README.md`.

@@ -776,21 +776,26 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/workouts/{workoutId}/save:
-    patch:
+  /api/v1/workouts/{workoutId}/activities:
+    put:
       tags: [Workouts]
-      summary: Bulk-save activities and sets of an in-progress workout
-      description: A workout the caller does not own answers 404; the caller's own completed workout answers 403.
-      operationId: saveWorkout
+      summary: Replace the activities and sets of an in-progress workout
+      description: |
+        Full replacement: activities and sets missing from the body are deleted, entries with an `id`
+        are updated, entries without one are created. `If-Match` must carry the `ETag` of the workout
+        the editor loaded; a workout changed since answers 412 and is left untouched.
+        A workout the caller does not own answers 404; the caller's own completed workout answers 403.
+      operationId: replaceWorkoutActivities
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
         - $ref: '#/components/parameters/WorkoutId'
+        - $ref: '#/components/parameters/IfMatch'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkoutSaveRequest'
+              $ref: '#/components/schemas/WorkoutActivitiesWrite'
       responses:
         '200':
           $ref: '#/components/responses/WorkoutResponse'
@@ -800,8 +805,12 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
         '422':
           $ref: '#/components/responses/ValidationError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
 
   /api/v1/workouts/{workoutId}/complete:
     post:
@@ -1220,6 +1229,12 @@ components:
       required: true
       description: CSRF guard for cookie-carried refresh tokens.
       schema: { type: string, enum: [XMLHttpRequest] }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: The `ETag` of the workout as last read (RFC 9110 strong comparison); `*` skips the check.
+      schema: { type: string, example: '"42-7"' }
     ProgramId:
       name: programId
       in: path
@@ -1252,6 +1267,10 @@ components:
       schema: { type: integer }
 
   headers:
+    ETag:
+      description: Version of the workout, `"<id>-<version>"`; changes whenever the workout or its activities change. Send it back as `If-Match` when replacing the activities.
+      required: true
+      schema: { type: string, example: '"42-7"' }
     RefreshCookie:
       description: |
         Web clients only. `refresh_token=<opaque>; HttpOnly; Secure; SameSite=Strict;
@@ -1297,6 +1316,22 @@ components:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
           example: { type: https://my-workouts.online/problems/not_found, title: Not found, status: 404, detail: Record not found., instance: '/api/v1/workouts/42#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: not_found }
+    PreconditionFailed:
+      description: The `If-Match` tag no longer matches; the workout changed since it was read
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: https://my-workouts.online/problems/precondition_failed, title: Precondition failed, status: 412, detail: This workout was changed elsewhere. Reload it to continue., instance: '/api/v1/workouts/42/activities#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: precondition_failed }
+    PreconditionRequired:
+      description: The request has no `If-Match` header
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: https://my-workouts.online/problems/precondition_required, title: Precondition required, status: 428, detail: Send the workout's ETag in If-Match., instance: '/api/v1/workouts/42/activities#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f', code: precondition_required }
     Conflict:
       description: Operation refused because of existing references
       headers:
@@ -1335,6 +1370,7 @@ components:
       description: Workout
       headers:
         Content-Language: { $ref: '#/components/headers/ContentLanguage' }
+        ETag: { $ref: '#/components/headers/ETag' }
       content:
         application/json:
           schema:
@@ -1408,6 +1444,8 @@ components:
         - method_not_allowed
         - conflict
         - in_use
+        - precondition_failed
+        - precondition_required
         - validation_failed
         - too_many_requests
         - too_many_attempts
@@ -1498,7 +1536,7 @@ components:
         title: Validation failed
         status: 422
         detail: The effort value must be an integer. (and 1 more error)
-        instance: /api/v1/workouts/42/save#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f
+        instance: /api/v1/workouts/42/activities#9b2d1f0e-7c3a-4c6e-9d2b-1a2b3c4d5e6f
         code: validation_failed
         errors:
           - { pointer: /activities/0/sets/1/effort_value, code: invalid_format, detail: The effort value must be an integer. }
@@ -2075,7 +2113,7 @@ components:
         activities:
           type: array
           items: { $ref: '#/components/schemas/Activity' }
-    WorkoutSaveRequest:
+    WorkoutActivitiesWrite:
       type: object
       additionalProperties: false
       required: [activities]

@@ -15,7 +15,7 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `WorkoutTemplateShow` | `/workout-templates/{id}` | Verified        | Programs        | View a single workout template                                           |
 | `WorkoutIndex`        | `/workouts`               | Verified        | Workout Logging | Owner-scoped workout history                                             |
 | `WorkoutShow`         | `/workouts/{id}`          | Verified        | Workout Logging | Owner-scoped workout details                                             |
-| `WorkoutEdit`         | `/workouts/{id}/edit`     | Verified        | Workout Logging | Edit an in-progress workout (unsaved-changes guard)                      |
+| `WorkoutEdit`         | `/workouts/{id}/edit`     | Verified        | Workout Logging | Edit an in-progress workout (unsaved-changes guard; reload prompt when the workout changed elsewhere) |
 | `About`               | `/about`                  | Verified        | Landing         | App version (`VITE_APP_VERSION`)                                         |
 | `Privacy`             | `/privacy`                | Public          | Landing         | Privacy policy; linked from the guest and authenticated layout footers, Welcome and the iOS Profile tab; signed-in users keep the app navigation |
 | `Support`             | `/support`                | Public          | Landing         | Support contact (`support@my-workouts.online`); linked like Privacy       |
@@ -53,7 +53,7 @@ Access values: Guest (signed-in users are redirected), Auth, Verified, Admin, an
 | Programs tab | verified | `GET /api/v1/programs`, `POST /api/v1/programs/{programId}/enroll` |
 | Program detail | verified | `GET /api/v1/programs/{programId}`, `POST /api/v1/programs/{programId}/enroll` |
 | Workout template detail | verified | `GET /api/v1/workout-templates/{workoutTemplateId}`, `POST /api/v1/workouts` (Start Workout) |
-| Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workoutId}`, `PATCH /api/v1/workouts/{workoutId}/save`, `POST /api/v1/workouts/{workoutId}/complete`, `GET /api/v1/exercises` (Add activity) |
+| Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workoutId}`, `PUT /api/v1/workouts/{workoutId}/activities` (`If-Match`), `POST /api/v1/workouts/{workoutId}/complete`, `GET /api/v1/exercises` (Add activity) |
 | Workouts tab | verified | `GET /api/v1/workouts?page=N&per_page=M`, `DELETE /api/v1/workouts/{workoutId}` |
 | Workout detail | verified | `GET /api/v1/workouts/{workoutId}`, `POST /api/v1/workouts/{workoutId}/repeat` |
 | Profile tab | auth | `PATCH /api/v1/me` (name and email, theme, locale sync), `PUT /api/v1/me/password`, `DELETE /api/v1/me`, `POST /api/v1/auth/email/resend`, `POST /api/v1/auth/logout` |

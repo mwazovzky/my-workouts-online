@@ -20,6 +20,13 @@ class Workout extends Model
         return new WorkoutBuilder($query);
     }
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'version' => 1,
+    ];
+
     protected $fillable = [
         'user_id',
         'workout_template_id',
@@ -34,6 +41,7 @@ class Workout extends Model
             'workout_template_id' => 'integer',
             'name' => 'string',
             'status' => WorkoutStatus::class,
+            'version' => 'integer',
         ];
     }
 

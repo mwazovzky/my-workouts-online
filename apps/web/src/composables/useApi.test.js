@@ -49,9 +49,19 @@ describe('useApi', () => {
     expect(mockAxios.delete).toHaveBeenCalledWith('/workouts/42');
   });
 
-  it('put() calls axios.put with url and data', () => {
+  it('put() calls axios.put with url, data and an empty config', () => {
     const { put } = useApi();
     put('/admin/equipment/1', { name: 'Bar' });
-    expect(mockAxios.put).toHaveBeenCalledWith('/admin/equipment/1', { name: 'Bar' });
+    expect(mockAxios.put).toHaveBeenCalledWith('/admin/equipment/1', { name: 'Bar' }, {});
+  });
+
+  it('put() passes request config such as headers through to axios', () => {
+    const { put } = useApi();
+    put('/workouts/1/activities', { activities: [] }, { headers: { 'If-Match': '"1-1"' } });
+    expect(mockAxios.put).toHaveBeenCalledWith(
+      '/workouts/1/activities',
+      { activities: [] },
+      { headers: { 'If-Match': '"1-1"' } }
+    );
   });
 });

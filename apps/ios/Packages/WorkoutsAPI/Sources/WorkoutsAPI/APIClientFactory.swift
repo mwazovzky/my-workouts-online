@@ -9,6 +9,10 @@ public enum APIClientFactory {
     /// decode exactly as production responses do.
     public static let configuration = Configuration(dateTranscoder: APIDateTranscoder())
 
+    /// Middlewares every `Client` needs for the wire format to match the contract, whatever
+    /// else the caller adds; tests building a `Client` directly must include them too.
+    public static let requiredMiddlewares: [any ClientMiddleware] = [EntityTagMiddleware()]
+
     public static func make(
         environment: APIEnvironment,
         middlewares: [any ClientMiddleware],
@@ -18,7 +22,7 @@ public enum APIClientFactory {
             serverURL: environment.baseURL,
             configuration: configuration,
             transport: URLSessionTransport(configuration: .init(session: session)),
-            middlewares: middlewares
+            middlewares: requiredMiddlewares + middlewares
         )
     }
 }

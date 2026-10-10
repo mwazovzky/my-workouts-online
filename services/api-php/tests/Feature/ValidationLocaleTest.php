@@ -97,7 +97,7 @@ class ValidationLocaleTest extends TestCase
     }
 
     // -------------------------------------------------------
-    // WorkoutSaveRequest custom messages
+    // ReplaceWorkoutActivitiesRequest custom messages
     // -------------------------------------------------------
 
     #[Test]
@@ -106,8 +106,8 @@ class ValidationLocaleTest extends TestCase
         $user = User::factory()->create(['locale' => 'ru']);
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
-            "/api/v1/workouts/{$workout->id}/save",
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->putActivities(
+            $workout->id,
             ['activities' => []],
         );
 
@@ -122,8 +122,8 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
-            "/api/v1/workouts/{$workout->id}/save",
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->putActivities(
+            $workout->id,
             [
                 'activities' => [
                     [
@@ -150,8 +150,8 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
-            "/api/v1/workouts/{$workout->id}/save",
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->putActivities(
+            $workout->id,
             [
                 'activities' => [
                     [
@@ -179,8 +179,8 @@ class ValidationLocaleTest extends TestCase
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
         $exercise = Exercise::factory()->create();
 
-        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->patchJson(
-            "/api/v1/workouts/{$workout->id}/save",
+        $response = $this->actingAs($user)->withHeader('Accept-Language', $user->locale)->putActivities(
+            $workout->id,
             [
                 'activities' => [
                     [

@@ -299,5 +299,7 @@
   "These credentials do not match our records.": "Эти учётные данные не найдены.",
   "Too many login attempts. Try again in :seconds seconds.": "Слишком много попыток входа. Попробуйте снова через :seconds сек.",
   "Too many login attempts.": "Слишком много попыток входа.",
-  "The password confirmation does not match.": "Пароли не совпадают."
+  "The password confirmation does not match.": "Пароли не совпадают.",
+  "This workout was changed elsewhere. Reload it to continue.": "Эта тренировка была изменена в другом месте. Обновите её, чтобы продолжить.",
+  "Reload": "Обновить"
 }

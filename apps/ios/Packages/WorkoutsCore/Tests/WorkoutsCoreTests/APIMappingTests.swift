@@ -128,17 +128,50 @@ struct APIMappingTests {
         #expect(page.hasMore == (page.lastPage > 1))
     }
 
-    @Test("a workout with its template, activities, sets and dates")
+    @Test("a workout with its template, activities, sets, dates and ETag")
     func workout() async throws {
-        let workout = try Workout(
-            api: try await Fixtures.client(returning: "workout").getWorkout(path: .init(workoutId: 1)).ok.body.json.data
-        )
+        let transport = StubTransport(responses: [
+            .init(status: 200, body: try Fixtures.data("workout"), headers: ["ETag": "\"1-3\""])
+        ])
+        let workout = try await APIWorkoutRepository(client: Fixtures.client(transport: transport)).get(id: 1)
+        #expect(workout.etag == "\"1-3\"")
         #expect(workout.template != nil)
         #expect(workout.activities.count == 2)
         #expect(workout.status == .completed)
         #expect(workout.createdAt != nil, "API dates with microseconds must decode")
         #expect(workout.totalSetCount > 0)
         #expect(workout.completedSetCount <= workout.totalSetCount)
+    }
+
+    @Test("replaceActivities sends If-Match on PUT …/activities and maps 412 and 428 to problems")
+    func replaceActivities() async throws {
+        let transport = StubTransport(responses: [
+            .init(status: 200, body: try Fixtures.data("workout"), headers: ["ETag": "\"1-4\""]),
+            .problem(412, code: "precondition_failed"),
+            .problem(428, code: "precondition_required"),
+        ])
+        let repository = APIWorkoutRepository(client: Fixtures.client(transport: transport))
+        let payload = WorkoutSavePayload(activities: [
+            .init(
+                id: 5, exerciseId: 7, order: 1,
+                sets: [.init(id: nil, order: 1, effortValue: 10, difficultyValue: nil, isCompleted: false)])
+        ])
+
+        let saved = try await repository.replaceActivities(id: 1, ifMatch: "\"1-3\"", payload: payload)
+        #expect(saved.etag == "\"1-4\"")
+        let request = try #require(await transport.requests.first)
+        #expect(request.method == .put)
+        #expect(request.path == "/api/v1/workouts/1/activities")
+        #expect(request.header(.ifMatch) == "\"1-3\"")
+
+        await #expect(throws: APIError.api(status: 412, code: "precondition_failed", message: "precondition_failed")) {
+            try await repository.replaceActivities(id: 1, ifMatch: "\"1-3\"", payload: payload)
+        }
+        await #expect(
+            throws: APIError.api(status: 428, code: "precondition_required", message: "precondition_required")
+        ) {
+            try await repository.replaceActivities(id: 1, ifMatch: "", payload: payload)
+        }
     }
 
     @Test("an omitted optional object decodes as nil")

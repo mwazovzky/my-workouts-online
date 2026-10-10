@@ -259,5 +259,7 @@
   "Create a workout template first": "Сначала создайте шаблон тренировки",
   "Weekday": "День недели",
   "Workout template": "Шаблон тренировки",
-  "The :attribute field must be an object.": "Поле :attribute должно быть объектом."
+  "The :attribute field must be an object.": "Поле :attribute должно быть объектом.",
+  "This workout was changed elsewhere. Reload it to continue.": "Эта тренировка была изменена в другом месте. Обновите её, чтобы продолжить.",
+  "Send the workout's ETag in If-Match.": "Передайте ETag тренировки в заголовке If-Match."
 }

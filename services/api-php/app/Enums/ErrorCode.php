@@ -22,6 +22,8 @@ enum ErrorCode: string
     case MethodNotAllowed = 'method_not_allowed';
     case Conflict = 'conflict';
     case InUse = 'in_use';
+    case PreconditionFailed = 'precondition_failed';
+    case PreconditionRequired = 'precondition_required';
     case ValidationFailed = 'validation_failed';
     case TooManyRequests = 'too_many_requests';
     case TooManyAttempts = 'too_many_attempts';
@@ -49,6 +51,8 @@ enum ErrorCode: string
             self::MethodNotAllowed => 'Method not allowed',
             self::Conflict => 'Conflict',
             self::InUse => 'Resource in use',
+            self::PreconditionFailed => 'Precondition failed',
+            self::PreconditionRequired => 'Precondition required',
             self::ValidationFailed => 'Validation failed',
             self::TooManyRequests => 'Too many requests',
             self::TooManyAttempts => 'Too many attempts',
@@ -70,6 +74,7 @@ enum ErrorCode: string
             $status === 404 => self::NotFound,
             $status === 405 => self::MethodNotAllowed,
             $status === 409 => self::Conflict,
+            $status === 412 => self::PreconditionFailed,
             $status === 422 => self::ValidationFailed,
             $status === 429 => self::TooManyRequests,
             $status >= 500 => self::InternalError,

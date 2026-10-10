@@ -2,10 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Http\WorkoutETag;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class WorkoutResource extends JsonResource
 {
+    /**
+     * Every single-workout response carries the workout's `ETag`.
+     */
+    public function withResponse($request, $response): void
+    {
+        $response->header('ETag', WorkoutETag::for($this->resource));
+    }
+
     public function toArray($request): array
     {
         $workoutTemplate = $this->relationLoaded('workoutTemplate') ? $this->workoutTemplate : null;

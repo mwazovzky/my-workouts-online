@@ -10,12 +10,12 @@
           v-if="isDirty"
           size="sm"
           variant="outline"
-          :disabled="isSaving"
+          :disabled="isSaving || isStale"
           @click="saveWorkout"
         >
           {{ isSaving ? t('Saving…') : t('Save') }}
         </Button>
-        <Button size="sm" :disabled="isFinishing" @click="finishWorkout">
+        <Button size="sm" :disabled="isFinishing || isStale" @click="finishWorkout">
           {{ isFinishing ? t('Completing…') : t('Complete') }}
         </Button>
       </div>
@@ -39,6 +39,17 @@
       </div>
 
       <template v-else>
+        <div
+          v-if="isStale"
+          role="alert"
+          class="mb-4 flex flex-col gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p>{{ t('This workout was changed elsewhere. Reload it to continue.') }}</p>
+          <Button size="sm" variant="outline" :disabled="isReloading" @click="reloadWorkout">
+            {{ t('Reload') }}
+          </Button>
+        </div>
+
         <WorkoutCard :workout="workout" />
 
         <div v-if="totalSets > 0" class="mb-2 flex items-center gap-3">
@@ -86,7 +97,7 @@
       <div class="flex items-center gap-3">
         <Button
           v-if="isDirty"
-          :disabled="isSaving"
+          :disabled="isSaving || isStale"
           variant="outline"
           size="lg"
           class="px-8"
@@ -96,7 +107,7 @@
           <span v-else>{{ t('Saving…') }}</span>
         </Button>
         <Button
-          :disabled="isFinishing"
+          :disabled="isFinishing || isStale"
           variant="default"
           size="lg"
           class="px-8"
@@ -150,7 +161,7 @@ import { useAuthStore } from '@/stores/auth';
 const router = useRouter();
 
 const { t } = useTranslation();
-const { get, patch, post } = useApi();
+const { get, put, post } = useApi();
 
 /**
  * Activities are identified client-side by a stable key rather than by `id`,
@@ -169,11 +180,15 @@ const workoutId = ref(null);
 const activities = ref([]);
 const workoutStatus = ref(null);
 const workoutOwnerId = ref(null);
+// The workout's ETag as last read; sent back as If-Match so a stale editor cannot overwrite a newer save.
+const etag = ref(null);
 
 // UI flags
 const isSaving = ref(false);
 const isFinishing = ref(false);
 const isDirty = ref(false);
+const isStale = ref(false);
+const isReloading = ref(false);
 const skipNavigationGuard = ref(false);
 const isRedirectingAfterLoadError = ref(false);
 
@@ -287,17 +302,39 @@ function defaultDifficultyValue(difficultyUnit) {
   return hasDifficulty && difficultyUnit !== 'heart_rate_zone' ? 0 : null;
 }
 
+async function loadWorkout() {
+  const { data, headers } = await get(`/workouts/${props.id}`);
+  const w = data.data;
+  workout.value = w;
+  workoutId.value = w.id ?? null;
+  workoutStatus.value = w.status ?? null;
+  workoutOwnerId.value = w.user_id ?? null;
+  etag.value = headers?.etag ?? null;
+  activities.value = normalizeActivities(w.activities);
+}
+
+/**
+ * Discard local edits and adopt the server's current copy after a 412.
+ */
+async function reloadWorkout() {
+  isReloading.value = true;
+
+  try {
+    await loadWorkout();
+    isDirty.value = false;
+    isStale.value = false;
+  } catch {
+    toast.error(t('Failed to load workout'));
+  } finally {
+    isReloading.value = false;
+  }
+}
+
 onMounted(async () => {
   window.addEventListener('beforeunload', onBeforeUnload);
 
   try {
-    const { data } = await get(`/workouts/${props.id}`);
-    const w = data.data;
-    workout.value = w;
-    workoutId.value = w.id ?? null;
-    workoutStatus.value = w.status ?? null;
-    workoutOwnerId.value = w.user_id ?? null;
-    activities.value = normalizeActivities(w.activities);
+    await loadWorkout();
   } catch {
     toast.error(t('Failed to load workout'));
     skipNavigationGuard.value = true;
@@ -344,16 +381,28 @@ async function saveWorkout({ onSuccess, onError } = {}) {
   skipNavigationGuard.value = true;
 
   try {
-    const { data } = await patch(`/workouts/${workoutId.value}/save`, buildSavePayload());
+    const { data, headers } = await put(
+      `/workouts/${workoutId.value}/activities`,
+      buildSavePayload(),
+      {
+        headers: { 'If-Match': etag.value },
+      }
+    );
     // Adopt the persisted IDs so a subsequent save updates rows instead of
     // deleting and recreating everything that was added client-side.
     activities.value = normalizeActivities(data?.data?.activities, activities.value);
+    etag.value = headers?.etag ?? etag.value;
     isDirty.value = false;
     toast.success(t('Workout saved'));
     onSuccess?.();
-  } catch {
+  } catch (error) {
     onError?.();
-    toast.error(t('Failed to save workout'));
+    if (error?.response?.data?.code === 'precondition_failed') {
+      // Saved elsewhere since this editor loaded; keep the edits on screen until the user reloads.
+      isStale.value = true;
+    } else {
+      toast.error(t('Failed to save workout'));
+    }
   } finally {
     isSaving.value = false;
     skipNavigationGuard.value = false;
