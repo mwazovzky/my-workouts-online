@@ -48,4 +48,19 @@ class ProgramController extends Controller
 
         return response()->noContent();
     }
+
+    /**
+     * Idempotent: a caller who is not enrolled gets the same 204. Their workouts stay.
+     */
+    public function unenroll(Request $request, Program $program): Response
+    {
+        $program->users()->detach($request->user()->id);
+
+        Log::info('program.unenrolled', [
+            'user_id' => $request->user()->id,
+            'program_id' => $program->id,
+        ]);
+
+        return response()->noContent();
+    }
 }

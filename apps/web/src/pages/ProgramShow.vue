@@ -6,6 +6,7 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import PageLayout from '@/components/PageLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import ProgramCard from '@/components/ProgramCard.vue';
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
@@ -19,7 +20,7 @@ const router = useRouter();
 
 const { t } = useTranslation();
 const { get } = useApi();
-const { enroll } = useEnrollment();
+const { enroll, unenroll } = useEnrollment();
 
 const props = defineProps({
   id: { type: Number, required: true },
@@ -27,6 +28,7 @@ const props = defineProps({
 
 const program = ref(null);
 const workoutTemplates = ref(null);
+const confirmingUnenroll = ref(false);
 
 const isEnrolled = computed(() => program.value?.is_enrolled ?? false);
 
@@ -46,6 +48,14 @@ async function enrollInProgram() {
     program.value.is_enrolled = true;
   }
 }
+
+async function unenrollFromProgram() {
+  confirmingUnenroll.value = false;
+
+  if ((await unenroll(props.id)) && program.value) {
+    program.value.is_enrolled = false;
+  }
+}
 </script>
 
 <template>
@@ -59,7 +69,14 @@ async function enrollInProgram() {
       <div v-if="program === null" class="space-y-4">
         <Skeleton class="h-24 w-full rounded-xl" />
       </div>
-      <ProgramCard v-else :program="program" :is-enrolled="isEnrolled" @enroll="enrollInProgram" />
+      <ProgramCard
+        v-else
+        :program="program"
+        :is-enrolled="isEnrolled"
+        can-unenroll
+        @enroll="enrollInProgram"
+        @unenroll="confirmingUnenroll = true"
+      />
 
       <!-- Workouts Section -->
       <div class="mb-4">
@@ -119,5 +136,13 @@ async function enrollInProgram() {
         </ul>
       </div>
     </PageLayout>
+
+    <ConfirmDialog
+      :open="confirmingUnenroll"
+      :description="t('Unenroll from this program? Your workouts are kept.')"
+      :confirm-label="t('Unenroll')"
+      @confirm="unenrollFromProgram"
+      @cancel="confirmingUnenroll = false"
+    />
   </AuthenticatedLayout>
 </template>

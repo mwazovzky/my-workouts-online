@@ -1,6 +1,6 @@
 # Epic: Contract Hardening
 
-**Status: planned.**
+**Status: in progress** (story 7 is the last; `info.version` is `2.0.0`).
 
 Bring `contracts/openapi.yaml` up to current REST conventions — RFC 9457 errors, consistent naming and HTTP semantics, generator-friendly schemas — while the API has one backend and two clients the repo controls, so the Go backend epic implements the hardened contract once instead of inheriting Laravel-shaped quirks.
 
@@ -79,8 +79,8 @@ Client switch points that must keep working:
 | 3 | [Auth and Ownership Status Codes](stories/03-auth-and-ownership-status-codes.md) | Auth & Profile | shipped (#58) |
 | 4 | [`/me` Consolidation](stories/04-me-consolidation.md) | Auth & Profile | shipped (#59) |
 | 5 | [Naming Consistency](stories/05-naming-consistency.md) | Platform | shipped (#60) |
-| 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | in progress |
-| 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | planned |
+| 6 | [Workout Editor Sub-Resource and Concurrency](stories/06-workout-editor-sub-resource-and-concurrency.md) | Workout Logging | shipped (#62) |
+| 7 | [Enrollment as a Resource](stories/07-enrollment-as-a-resource.md) | Programs | in progress |
 
 States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a story's PR opens and when it merges; archive or delete the story file after it ships, per `planning/README.md`.
 

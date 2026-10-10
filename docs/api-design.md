@@ -40,6 +40,7 @@ npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset c
 | Timestamps end in `_at` and are `date-time`; a state that has a moment is a nullable timestamp, not a boolean | `created_at`, `email_verified_at` | review |
 | Header parameters are `Hyphenated-Pascal-Case` | `Accept-Language`, `X-Requested-With` | Spectral `should-use-hyphenated-pascal-case-for-header-parameters` |
 | Action sub-resources are verbs only for state transitions | `/workouts/{workoutId}/complete`, `/repeat` | review |
+| A relationship the caller switches on and off is a singular noun sub-resource with idempotent `PUT` / `DELETE`, not an action | `/programs/{programId}/enrollment` | review |
 | No storage or framework names in the wire format: a join-table attribute is named for what it means | `WorkoutTemplate.assignment.weekday`, not `pivot` | review |
 | Related data embedded for display is one nested snapshot object next to the foreign key, not a row of prefixed fields | `Activity.exercise_id` + `Activity.exercise {name, equipment_name, …}` | review |
 
@@ -75,7 +76,7 @@ The path parameter name is a contract concern only: the URL is the same whatever
 | Read, update, or action that returns the resource | 200 | Body is the `data` envelope |
 | Resource created (`POST /workouts`, admin creates, `repeat`) | 201 | Body is the created resource |
 | Accepted for later processing (forgot password, resend verification) | 202 | Empty body; identical response whether or not the account exists |
-| Done, nothing to return (delete, enroll, logout, password change) | 204 | Empty body |
+| Done, nothing to return (delete, enroll, unenroll, logout, password change) | 204 | Empty body |
 | Missing, malformed or expired access token | 401 | `code` is `unauthenticated` or `token_expired`; only `token_expired` triggers a client refresh |
 | Authenticated but not allowed by role or verification state | 403 | `forbidden`, `email_unverified` |
 | Resource does not exist | 404 | `not_found`; `detail` is always "Record not found." and never reveals whether the id exists for someone else |

@@ -33,8 +33,8 @@ describe('useApi', () => {
 
   it('post() calls axios.post with url and data', () => {
     const { post } = useApi();
-    post('/programs/1/enroll', { foo: 'bar' });
-    expect(mockAxios.post).toHaveBeenCalledWith('/programs/1/enroll', { foo: 'bar' });
+    post('/workouts', { foo: 'bar' });
+    expect(mockAxios.post).toHaveBeenCalledWith('/workouts', { foo: 'bar' });
   });
 
   it('patch() calls axios.patch with url and data', () => {

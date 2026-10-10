@@ -26,7 +26,7 @@ class RouteParameterConstraintsTest extends TestCase
     {
         return [
             'program show' => ['GET', '/api/v1/programs/8abc'],
-            'program enroll' => ['POST', '/api/v1/programs/8abc/enroll'],
+            'program enrollment' => ['PUT', '/api/v1/programs/8abc/enrollment'],
             'workout template show' => ['GET', '/api/v1/workout-templates/8abc'],
             'workout show' => ['GET', '/api/v1/workouts/8abc'],
             'workout delete' => ['DELETE', '/api/v1/workouts/8abc'],

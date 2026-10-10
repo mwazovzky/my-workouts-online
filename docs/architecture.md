@@ -126,7 +126,7 @@ Core relationships:
 
 ```
 Program ←M:N→ WorkoutTemplate (pivot: weekday)
-Program ←M:N→ User           (pivot: program_user — enrollment)
+Program ←M:N→ User           (pivot: program_user — enrollment, unique per user and program)
 WorkoutTemplate ←morph— Activity
 Workout      ←morph— Activity
 Workout → User

@@ -15,6 +15,17 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasFactory, Notifiable;
 
     /**
+     * Column defaults, mirrored so a freshly created user serializes them
+     * without a reload (the database defaults are not read back on insert).
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'locale' => 'en',
+        'theme_preference' => 'system',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
