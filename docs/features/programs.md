@@ -6,7 +6,7 @@ Browse workout programs, inspect their templates, and enroll.
 
 1. User opens **ProgramIndex** and sees all programs with enrollment state for the current user.
 2. User opens **ProgramShow** and sees the selected program plus its workout templates grouped by weekday.
-3. User clicks **Enroll** and is enrolled without leaving the page.
+3. User clicks **Enroll** and is enrolled without leaving the page (`PUT /api/v1/programs/{programId}/enrollment`). When enrolled, **Unenroll** asks for confirmation ("Your workouts are kept.") and calls `DELETE` on the same URL.
 4. User opens **WorkoutTemplateShow** to inspect a single template with its activities and sets.
 
 ## iOS (`apps/ios`)
@@ -18,25 +18,26 @@ Browse workout programs, inspect their templates, and enroll.
 ## Business Rules
 
 - Programs are global catalog data. All authenticated and verified users see the same list.
-- Enrollment is idempotent. Repeating the enroll action has no effect because the relation is synced without duplicates.
+- Enrollment is a sub-resource, `/programs/{programId}/enrollment`: `PUT` enrolls, `DELETE` unenrolls, both answer 204 and both are idempotent (enrolling twice leaves one row; unenrolling when not enrolled is still 204). `program_user` has a unique `(user_id, program_id)` index, so concurrent enrolls cannot create a duplicate.
+- Unenrolling removes only the caller's enrollment; workouts the user started from the program's templates are their own records and stay.
 - Program responses expose `is_enrolled` per user rather than the full enrolled-users list.
 - Templates are attached to programs through a many-to-many relation with a `weekday` attribute (stored lowercase, `monday`…`sunday`); the API returns it as `assignment.weekday` on each template inside a program.
 - Templates, template activities, and template sets are read-only for end users.
-- Users can start workouts from templates regardless of enrollment status. Enrollment currently affects only the visible state in the program UI.
+- Users can start workouts from templates regardless of enrollment status. Enrollment drives the program's enrolled state and the dashboard's upcoming schedule and enrolled-programs count.
 
 ## Known Limitations
 
-- No unenroll action.
+- iOS has no Unenroll control yet; `ProgramRepository.unenroll(programId:)` exists for it.
 - No search, filter, or sort on the program list.
 - No pagination for programs.
 - No program categories, media, or difficulty metadata.
-- No dashboard summary for enrolled programs or next suggested workout.
+- No next suggested workout beyond the dashboard's upcoming schedule.
 - No user-facing CRUD for programs or templates (admins manage them via [Admin Content Management](admin-content-management.md)).
 
 ## Surface Area
 
 - Pages: `ProgramIndex`, `ProgramShow`, `WorkoutTemplateShow`
-- Route names: `programs.index`, `programs.show`, `programs.enroll`, `workout.templates.show`
+- Route names: `programs.index`, `programs.show`, `programs.enrollment.store`, `programs.enrollment.destroy`, `workout.templates.show`
 - Full reference: [Pages & Routes](../pages-and-routes.md)
 
 ## Related

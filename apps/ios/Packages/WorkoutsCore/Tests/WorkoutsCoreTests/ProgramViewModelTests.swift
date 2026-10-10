@@ -9,6 +9,7 @@ actor FakeProgramRepository: ProgramRepository {
     var detail: ProgramDetail?
     var enrollError: APIError?
     private(set) var enrollCalls: [Int] = []
+    private(set) var unenrollCalls: [Int] = []
 
     init(list: [Program] = [], detail: ProgramDetail? = nil) {
         self.list = list
@@ -27,6 +28,10 @@ actor FakeProgramRepository: ProgramRepository {
     func enroll(programId: Int) async throws {
         enrollCalls.append(programId)
         if let enrollError { throw enrollError }
+    }
+
+    func unenroll(programId: Int) async throws {
+        unenrollCalls.append(programId)
     }
 }
 
@@ -101,6 +106,7 @@ struct ProgramListViewModelTests {
             }
             func program(id: Int) async throws -> ProgramDetail { throw APIError.unexpected(status: 500) }
             func enroll(programId: Int) async throws {}
+            func unenroll(programId: Int) async throws {}
         }
         let model = ProgramListViewModel(programs: Forbidden())
         await model.load()

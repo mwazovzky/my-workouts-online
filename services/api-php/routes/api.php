@@ -50,7 +50,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
-        Route::post('programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
+        Route::put('programs/{program}/enrollment', [ProgramController::class, 'enroll'])->name('programs.enrollment.store');
+        Route::delete('programs/{program}/enrollment', [ProgramController::class, 'unenroll'])->name('programs.enrollment.destroy');
 
         Route::get('workout-templates/{workoutTemplate}', [WorkoutTemplateController::class, 'show'])->name('workout-templates.show');
 

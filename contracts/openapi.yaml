@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: My Workouts API
-  version: 1.0.0
+  version: 2.0.0
   description: |
     Contract for the `/api/v1` surface consumed by the web SPA and the iOS app,
     and implemented by the backend. The design rules behind it are written in
@@ -638,16 +638,29 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/programs/{programId}/enroll:
-    post:
+  /api/v1/programs/{programId}/enrollment:
+    parameters:
+      - $ref: '#/components/parameters/ProgramId'
+    put:
       tags: [Programs]
-      summary: Enroll the caller in a program (idempotent)
+      summary: Enroll the caller in a program
+      description: Idempotent; enrolling twice leaves one enrollment.
       operationId: enrollProgram
-      parameters:
-        - $ref: '#/components/parameters/ProgramId'
       responses:
         '204':
           description: Enrolled
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Programs]
+      summary: Unenroll the caller from a program
+      description: Idempotent; answers 204 when the caller was not enrolled. The caller's workouts started from the program's templates are kept.
+      operationId: unenrollProgram
+      responses:
+        '204':
+          description: Not enrolled
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '404':

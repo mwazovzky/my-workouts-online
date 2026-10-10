@@ -74,7 +74,7 @@ class ProgramApiTest extends TestCase
     }
 
     // -------------------------------------------------------
-    // POST /api/v1/programs/{program}/enroll
+    // PUT /api/v1/programs/{programId}/enrollment
     // -------------------------------------------------------
 
     #[Test]
@@ -83,7 +83,7 @@ class ProgramApiTest extends TestCase
         $user = User::factory()->create();
         $program = Program::factory()->create();
 
-        $response = $this->actingAs($user)->postJson("/api/v1/programs/{$program->id}/enroll");
+        $response = $this->actingAs($user)->putJson("/api/v1/programs/{$program->id}/enrollment");
 
         $response->assertNoContent();
         $this->assertDatabaseHas('program_user', ['user_id' => $user->id, 'program_id' => $program->id]);
@@ -96,7 +96,7 @@ class ProgramApiTest extends TestCase
         $program = Program::factory()->create();
         $user->programs()->attach($program->id);
 
-        $this->actingAs($user)->postJson("/api/v1/programs/{$program->id}/enroll")->assertNoContent();
+        $this->actingAs($user)->putJson("/api/v1/programs/{$program->id}/enrollment")->assertNoContent();
 
         $this->assertDatabaseCount('program_user', 1);
     }
@@ -105,6 +105,6 @@ class ProgramApiTest extends TestCase
     public function enroll_requires_authentication(): void
     {
         $program = Program::factory()->create();
-        $this->postJson("/api/v1/programs/{$program->id}/enroll")->assertUnauthorized();
+        $this->putJson("/api/v1/programs/{$program->id}/enrollment")->assertUnauthorized();
     }
 }

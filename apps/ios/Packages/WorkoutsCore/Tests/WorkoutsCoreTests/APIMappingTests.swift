@@ -256,4 +256,30 @@ struct APIMappingTests {
         let json = try #require(try JSONSerialization.jsonObject(with: passwordBody) as? [String: Any])
         #expect(json.keys.sorted() == ["current_password", "password"])
     }
+
+    @Test("enroll and unenroll PUT and DELETE the enrollment resource")
+    func enrollmentResource() async throws {
+        let transport = StubTransport(responses: [.empty(204), .empty(204)])
+        let repository = APIProgramRepository(client: Fixtures.client(transport: transport))
+
+        try await repository.enroll(programId: 7)
+        try await repository.unenroll(programId: 7)
+
+        let enroll = try #require(await transport.requests(for: "enrollProgram").first)
+        #expect(enroll.method == .put)
+        #expect(enroll.path == "/api/v1/programs/7/enrollment")
+        let unenroll = try #require(await transport.requests(for: "unenrollProgram").first)
+        #expect(unenroll.method == .delete)
+        #expect(unenroll.path == "/api/v1/programs/7/enrollment")
+    }
+
+    @Test("unenroll from a missing program maps the 404 problem")
+    func unenrollNotFound() async throws {
+        let transport = StubTransport(responses: [.problem(404, code: "not_found", detail: "Record not found.")])
+        let repository = APIProgramRepository(client: Fixtures.client(transport: transport))
+
+        await #expect(throws: APIError.api(status: 404, code: "not_found", message: "Record not found.")) {
+            try await repository.unenroll(programId: 999)
+        }
+    }
 }

@@ -11,7 +11,7 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `Welcome`             | `/`                       | Guest           | Landing         | Public landing page; signed-in users are redirected to the dashboard     |
 | `Dashboard`           | `/dashboard`              | Verified        | Landing         | Authenticated home with upcoming workouts, summary, and recent history   |
 | `ProgramIndex`        | `/programs`               | Verified        | Programs        | Browse all programs                                                      |
-| `ProgramShow`         | `/programs/{id}`          | Verified        | Programs        | View one program and its templates                                       |
+| `ProgramShow`         | `/programs/{id}`          | Verified        | Programs        | View one program and its templates; enroll, or unenroll with a confirmation |
 | `WorkoutTemplateShow` | `/workout-templates/{id}` | Verified        | Programs        | View a single workout template                                           |
 | `WorkoutIndex`        | `/workouts`               | Verified        | Workout Logging | Owner-scoped workout history                                             |
 | `WorkoutShow`         | `/workouts/{id}`          | Verified        | Workout Logging | Owner-scoped workout details                                             |
@@ -50,8 +50,8 @@ Access values: Guest (signed-in users are redirected), Auth, Verified, Admin, an
 | Verification link (Universal Link `/verify-email/{id}/{hash}`) | auth, same user | `POST /api/v1/auth/email/verify`, `GET /api/v1/me` |
 | Reset password sheet (Universal Link `/reset-password/{token}`) | any | `POST /api/v1/auth/password/reset` |
 | Dashboard tab | verified | `GET /api/v1/dashboard`, `POST /api/v1/workouts` (start from the schedule) |
-| Programs tab | verified | `GET /api/v1/programs`, `POST /api/v1/programs/{programId}/enroll` |
-| Program detail | verified | `GET /api/v1/programs/{programId}`, `POST /api/v1/programs/{programId}/enroll` |
+| Programs tab | verified | `GET /api/v1/programs`, `PUT /api/v1/programs/{programId}/enrollment` |
+| Program detail | verified | `GET /api/v1/programs/{programId}`, `PUT /api/v1/programs/{programId}/enrollment` |
 | Workout template detail | verified | `GET /api/v1/workout-templates/{workoutTemplateId}`, `POST /api/v1/workouts` (Start Workout) |
 | Workout editor | verified, owner, in progress | `GET /api/v1/workouts/{workoutId}`, `PUT /api/v1/workouts/{workoutId}/activities` (`If-Match`), `POST /api/v1/workouts/{workoutId}/complete`, `GET /api/v1/exercises` (Add activity) |
 | Workouts tab | verified | `GET /api/v1/workouts?page=N&per_page=M`, `DELETE /api/v1/workouts/{workoutId}` |

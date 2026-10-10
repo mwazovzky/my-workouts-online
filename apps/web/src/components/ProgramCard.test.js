@@ -67,4 +67,15 @@ describe('ProgramCard', () => {
     expect(wrapper.text()).toContain('Enrolled');
     expect(wrapper.find('button').exists()).toBe(false);
   });
+
+  it('offers unenroll to enrolled users when allowed', async () => {
+    const wrapper = buildWrapper({ isEnrolled: true, canUnenroll: true });
+    const unenrollButton = wrapper.getComponent({ name: 'Button' });
+
+    expect(unenrollButton.text()).toBe('Unenroll');
+    await unenrollButton.vm.$emit('click');
+
+    expect(wrapper.emitted('unenroll')).toHaveLength(1);
+    expect(wrapper.emitted('enroll')).toBeUndefined();
+  });
 });

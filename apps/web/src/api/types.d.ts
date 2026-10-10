@@ -356,18 +356,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/programs/{programId}/enroll": {
+    "/api/v1/programs/{programId}/enrollment": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                programId: components["parameters"]["ProgramId"];
+            };
             cookie?: never;
         };
         get?: never;
-        put?: never;
-        /** Enroll the caller in a program (idempotent) */
-        post: operations["enrollProgram"];
-        delete?: never;
+        /**
+         * Enroll the caller in a program
+         * @description Idempotent; enrolling twice leaves one enrollment.
+         */
+        put: operations["enrollProgram"];
+        post?: never;
+        /**
+         * Unenroll the caller from a program
+         * @description Idempotent; answers 204 when the caller was not enrolled. The caller's workouts started from the program's templates are kept.
+         */
+        delete: operations["unenrollProgram"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2502,6 +2511,28 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Enrolled */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    unenrollProgram: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                programId: components["parameters"]["ProgramId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Not enrolled */
             204: {
                 headers: {
                     [name: string]: unknown;

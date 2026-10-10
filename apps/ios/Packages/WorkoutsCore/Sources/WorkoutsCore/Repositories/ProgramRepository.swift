@@ -4,7 +4,10 @@ import WorkoutsAPI
 public protocol ProgramRepository: Sendable {
     func programs() async throws -> [Program]
     func program(id: Int) async throws -> ProgramDetail
+    /// `PUT /programs/{programId}/enrollment`; idempotent.
     func enroll(programId: Int) async throws
+    /// `DELETE /programs/{programId}/enrollment`; idempotent, succeeds when not enrolled.
+    func unenroll(programId: Int) async throws
 }
 
 public struct APIProgramRepository: ProgramRepository {
@@ -37,6 +40,17 @@ public struct APIProgramRepository: ProgramRepository {
 
     public func enroll(programId: Int) async throws {
         let output = try await client.enrollProgram(path: .init(programId: programId))
+        switch output {
+        case .noContent: return
+        case .unauthorized(let response):
+            throw APIError(status: 401, envelope: try response.body.applicationProblemJson)
+        case .notFound(let response): throw APIError(status: 404, envelope: try response.body.applicationProblemJson)
+        case .undocumented(let status, let payload): throw await APIError.from(status: status, payload: payload)
+        }
+    }
+
+    public func unenroll(programId: Int) async throws {
+        let output = try await client.unenrollProgram(path: .init(programId: programId))
         switch output {
         case .noContent: return
         case .unauthorized(let response):

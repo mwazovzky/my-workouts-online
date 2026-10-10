@@ -15,9 +15,13 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  canUnenroll: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-defineEmits(['enroll']);
+defineEmits(['enroll', 'unenroll']);
 </script>
 
 <template>
@@ -33,6 +37,9 @@ defineEmits(['enroll']);
     <template #actions>
       <Button v-if="!isEnrolled" variant="default" @click="$emit('enroll')">
         {{ t('Enroll in Program') }}
+      </Button>
+      <Button v-else-if="canUnenroll" variant="outline" @click="$emit('unenroll')">
+        {{ t('Unenroll') }}
       </Button>
     </template>
   </ModelCard>
