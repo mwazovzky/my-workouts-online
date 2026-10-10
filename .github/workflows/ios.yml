@@ -34,7 +34,9 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v4
         with:
-          base: main # for branch pushes; PRs compare against their base automatically
+          # Branch pushes compare against main; PRs compare against their own base, and
+          # passing `base` there only earns an "input ignored" warning.
+          base: ${{ github.event_name == 'push' && 'main' || '' }}
           filters: |
             ios:
               - 'apps/ios/**'
@@ -62,14 +64,34 @@ jobs:
       - name: Install XcodeGen and xcbeautify
         run: brew install xcodegen xcbeautify
 
-      - name: Cache Swift packages
+      # Build caches are only valid for the compiler that produced them, so the
+      # Xcode build number is part of every cache key below.
+      - name: Read Xcode version
+        id: xcode
+        run: echo "build=$(xcodebuild -version | awk '/Build version/ {print $3}')" >> "$GITHUB_OUTPUT"
+
+      # `swift test` products of the local packages: the OpenAPI runtime, generator
+      # plugin and HTTP types compile once per dependency set instead of every run.
+      - name: Cache package builds
+        uses: actions/cache@v6
+        with:
+          path: apps/ios/Packages/*/.build
+          key: spm-${{ runner.os }}-${{ steps.xcode.outputs.build }}-${{ hashFiles('apps/ios/Packages/*/Package.swift', 'apps/ios/Packages/*/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-${{ steps.xcode.outputs.build }}-
+
+      # The app build's DerivedData (fixed path, see App tests): checked-out
+      # dependencies and their compiled products. Our own sources are newer than
+      # the cache after checkout, so they always recompile; only unchanged
+      # dependencies are reused.
+      - name: Cache Xcode build
         uses: actions/cache@v6
         with:
           path: |
-            apps/ios/Packages/*/.build
-            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: spm-${{ runner.os }}-${{ hashFiles('apps/ios/Packages/*/Package.swift', 'apps/ios/Packages/*/Package.resolved') }}
-          restore-keys: spm-${{ runner.os }}-
+            apps/ios/DerivedData/SourcePackages
+            apps/ios/DerivedData/Build
+            apps/ios/DerivedData/ModuleCache.noindex
+          key: xcode-${{ runner.os }}-${{ steps.xcode.outputs.build }}-${{ hashFiles('apps/ios/Packages/*/Package.swift', 'apps/ios/Packages/*/Package.resolved', 'apps/ios/project.yml') }}
+          restore-keys: xcode-${{ runner.os }}-${{ steps.xcode.outputs.build }}-
 
       - name: Lint
         run: swift format lint --strict --recursive apps/ios
@@ -99,8 +121,10 @@ jobs:
             -scheme MyWorkouts \
             -destination "id=${{ steps.simulator.outputs.udid }}" \
             $SKIP_UI_TESTS \
+            -derivedDataPath apps/ios/DerivedData \
             -resultBundlePath TestResults.xcresult \
             -skipPackagePluginValidation -skipMacroValidation \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGNING_ALLOWED=NO | xcbeautify --quiet || exit ${PIPESTATUS[0]}
 
       - name: Upload results
