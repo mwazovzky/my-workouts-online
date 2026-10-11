@@ -29,7 +29,8 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 ## Errors
 
 - Errors **must** be wrapped with `fmt.Errorf("…: %w", err)` and matched with `errors.Is` / `errors.As`, never by comparing strings or with `==` on wrapped errors **(lint: errorlint)**.
-- Business failures **must** be typed `kernel/apperr` errors (kinds `NotFound` and `Conflict` since story 2; story 3 adds the rest); only the HTTP adapter maps them to a status and a Problem Details body. Use cases and domain code never know a status code **(review)**.
+- Business failures **must** be typed `kernel/apperr` errors (`NotFound`, `Conflict`, `Validation`, `Unauthenticated`, `Forbidden`, `RateLimited`, `PreconditionFailed`, `PreconditionRequired`, `BadRequest`), each with the contract's `ErrorCode`; only `httpapi.Responder` maps them to a status and a Problem Details body ([ADR 0006](adr/0006-http-errors-locale-and-request-validation.md)). Use cases and domain code never know a status code **(review)**. A code outside the contract's enum fails a test **(make check)**.
+- An error's `Detail` and a field error's `Detail` **must** be English message keys: a sentence keyed by itself, or a Laravel-style key (`validation.required`); never text built with `fmt.Sprintf`. Placeholders are `:name`, filled from `Args` **(review)**. Every key **must** exist in every `kernel/i18n/locales/*.json` with the same placeholders **(make check)**.
 - Adapters **must** translate driver errors (`pgx`, `pgconn`) into `apperr` before returning, through `platform/postgres.MapError` (no rows is `NotFound`; a unique or foreign-key violation is `Conflict`); no `pgx` type crosses a port. To turn a conflict into a field error, switch on `postgres.ConstraintName(err)`, never on the message **(review)**.
 - Every returned error **must** be handled, and every response body and `sql.Rows` closed **(lint: errcheck, bodyclose, rowserrcheck, sqlclosecheck)**.
 - `github.com/pkg/errors` **must not** be used **(lint: gomodguard_v2)**.
@@ -48,7 +49,7 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 ## Constructors and State
 
 - Constructors **must** take their dependencies explicitly, as parameters or a `Deps` struct of interfaces and values; nothing reaches for a global **(review)**.
-- No package-level mutable state and no `init()` functions; `cmd/workouts` sets the default `slog` logger once and passes loggers on explicitly. The one exception is `platform/testdb`, whose template database lives for one test binary **(review)**.
+- No package-level mutable state and no `init()` functions; `cmd/workouts` sets the default `slog` logger once and passes loggers on explicitly. The exceptions are test infrastructure: `platform/testdb` (the template database lives for one test binary) and `platform/httpapi/apitest` (the `-update` flag) **(review)**.
 - Time **must** come from an injected `kernel/clock.Clock`, never `time.Now()` in use cases or handlers **(review)**.
 
 ## Dependencies
@@ -61,6 +62,13 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 ## Generated Code
 
 - Generated code (oapi-codegen output under `internal/platform/httpapi/gen`, sqlc output under `internal/<module>/adapters/postgres/sqlcgen`) **must** be committed and **must not** be edited; `make generate` rewrites it, and `make check` fails when it is stale **(make check)**. A module's first query adds its `sqlc.yaml` block and its `sqlcgen` path to `GENERATED` in the `Makefile` **(review)**.
+
+## HTTP
+
+- An operation is implemented as a method of the generated `StrictServerInterface` on a module's handler type, which is embedded in `bootstrap/api.go`; the operation's stub in `bootstrap/unimplemented.go` **must** be deleted in the same change. Leaving it makes the method ambiguous and the build fails **(make check)**.
+- Handlers **must not** re-check what the contract already constrains (types, enums, lengths, unknown fields): the request validation middleware rejects those with 422 before the handler runs. Handlers and use cases validate business rules with `kernel/validate` **(review)**.
+- A header the contract does not declare (`Cache-Control`) is set by wrapping the generated response type and overriding its `Visit…Response` method, as `platform/meta` does; handlers never take a `ResponseWriter` **(review)**.
+- Every new user-facing message **must** be added to both locale catalogs **(make check)**.
 
 ## Database
 
@@ -76,9 +84,10 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 - Ports **must** get hand-written fakes in the test package that needs them, not generated mocks **(review)**.
 - Tests **should** be table-driven and call `t.Parallel()`; the suite runs with `-race -shuffle=on`, so tests **must not** depend on order or shared state **(make check)**.
 - Tests **must not** sleep to wait for something; synchronise with channels and inject a fixed `Clock` **(review)**.
-- Response bodies are compared with golden files in `testdata/` (`go test ./internal/<package> -update` rewrites them; review the diff) **(review)**. Reading them by a computed path is the one `gosec` G304 exception.
+- HTTP behaviour **must** be tested through the real handler from `bootstrap.New` with `platform/httpapi/apitest`. It validates every response to a contract operation against the contract and fails the test on a mismatch **(review)**.
+- Response bodies are compared with golden files in `testdata/`, as JSON values (`go test ./internal/<package> -update` rewrites them; review the diff). A golden file copied from the PHP API's response proves parity **(review)**. Reading them by a computed path is the one `gosec` G304 exception.
 - A test that touches the database **must** get its own with `testdb.New(t)` (migrated) or `testdb.NewEmpty(t)` (for migration tests), and its package **must** declare `func TestMain(m *testing.M) { testdb.Main(m) }`; no test shares a database with another **(review)**. Tests use the compose Postgres when `TEST_DATABASE_URL` is set (the `api-go` container sets it) and a testcontainers Postgres otherwise (CI) **(make check)**.
-- Statement coverage, generated code excluded, **must** stay at or above `COVERAGE_MIN` in the `Makefile` **(make check)**.
+- Statement coverage, generated code excluded and measured across packages (`-coverpkg=./...`, so HTTP tests count for the handlers they exercise), **must** stay at or above `COVERAGE_MIN` in the `Makefile` **(make check)**.
 - Each domain story **must** port the PHPUnit feature tests it replaces case by case (owner allowed, other user 404, validation failures) **(review)**.
 
 ## Formatting

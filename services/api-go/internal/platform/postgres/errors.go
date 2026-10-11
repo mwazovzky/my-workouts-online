@@ -9,6 +9,10 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/apperr"
 )
 
+// conflictDetail is the message of a conflict no repository mapped to
+// something more specific.
+const conflictDetail = "The request conflicts with the current state of the resource."
+
 // SQLSTATE codes the mapper translates.
 const (
 	foreignKeyViolation = "23503"
@@ -21,7 +25,7 @@ const (
 // through unchanged.
 func MapError(err error) error {
 	if errors.Is(err, pgx.ErrNoRows) {
-		return apperr.NotFound("record not found", err)
+		return apperr.NotFound(err)
 	}
 
 	var pgErr *pgconn.PgError
@@ -29,11 +33,11 @@ func MapError(err error) error {
 		return err
 	}
 
+	// The constraint name stays in the wrapped cause (logs, ConstraintName);
+	// the detail clients see names no table.
 	switch pgErr.Code {
-	case uniqueViolation:
-		return apperr.Conflict("duplicate key "+pgErr.ConstraintName, err)
-	case foreignKeyViolation:
-		return apperr.Conflict("foreign key "+pgErr.ConstraintName, err)
+	case uniqueViolation, foreignKeyViolation:
+		return apperr.Conflict(apperr.CodeConflict, conflictDetail, err)
 	default:
 		return err
 	}

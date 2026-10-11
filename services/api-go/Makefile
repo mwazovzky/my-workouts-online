@@ -47,11 +47,13 @@ generate-check: generate
 	@untracked="$$(git ls-files --others --exclude-standard -- $(GENERATED))"; \
 	if [ -n "$$untracked" ]; then echo "untracked generated files:"; echo "$$untracked"; exit 1; fi
 
-## test: race detector, shuffled order, coverage threshold. Database tests use
+## test: race detector, shuffled order, coverage threshold. -coverpkg counts a
+## package's statements wherever they run, so the HTTP tests through
+## bootstrap.New cover the handlers and middleware they exercise. Database tests use
 ## TEST_DATABASE_URL when set (the api-go container sets it to the compose
 ## postgres), otherwise a testcontainers Postgres.
 test:
-	go test -race -shuffle=on -coverprofile=coverage.out ./...
+	go test -race -shuffle=on -coverpkg=./... -coverprofile=coverage.out ./...
 	scripts/coverage-check.sh coverage.out $(COVERAGE_MIN) '$(GENERATED_PATTERN)'
 
 vuln:

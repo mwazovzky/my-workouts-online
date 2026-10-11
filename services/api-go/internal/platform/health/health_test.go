@@ -16,6 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
 )
 
 var update = flag.Bool("update", false, "rewrite the golden files in testdata")
@@ -37,7 +38,15 @@ func down(context.Context) error { return errors.New("connection refused") }
 func TestLiveness(t *testing.T) {
 	t.Parallel()
 
-	rec := serve(t, health.NewLiveness(clk, discardLogger()), "/health")
+	response, err := health.NewLiveness(clk).GetHealth(t.Context(), gen.GetHealthRequestObject{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rec := httptest.NewRecorder()
+	if err := response.VisitGetHealthResponse(rec); err != nil {
+		t.Fatal(err)
+	}
 
 	assertResponse(t, rec, http.StatusOK, "application/json", "liveness.golden.json")
 }
@@ -45,7 +54,8 @@ func TestLiveness(t *testing.T) {
 func TestUp(t *testing.T) {
 	t.Parallel()
 
-	rec := serve(t, http.HandlerFunc(health.Up), "/up")
+	rec := httptest.NewRecorder()
+	health.Up(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/up", http.NoBody))
 
 	if rec.Code != http.StatusOK {
 		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
@@ -74,14 +84,14 @@ func TestReadiness(t *testing.T) {
 
 			readiness := health.NewReadiness(clk, discardLogger())
 			for name, check := range tt.checks {
-				readiness.Register(name, check)
+				readiness.AddCheck(name, check)
 			}
 
 			if tt.draining {
 				readiness.StartDraining()
 			}
 
-			rec := serve(t, readiness, "/health/ready")
+			rec := ready(t, readiness)
 
 			assertResponse(t, rec, tt.wantStatus, "application/json", tt.golden)
 		})
@@ -92,7 +102,7 @@ func TestReadinessCheckHasADeadline(t *testing.T) {
 	t.Parallel()
 
 	readiness := health.NewReadiness(clk, discardLogger())
-	readiness.Register("database", func(ctx context.Context) error {
+	readiness.AddCheck("database", func(ctx context.Context) error {
 		if _, ok := ctx.Deadline(); !ok {
 			return errors.New("check ran without a deadline")
 		}
@@ -100,18 +110,26 @@ func TestReadinessCheckHasADeadline(t *testing.T) {
 		return nil
 	})
 
-	rec := serve(t, readiness, "/health/ready")
+	rec := ready(t, readiness)
 
 	if rec.Code != http.StatusOK {
 		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 }
 
-func serve(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder {
+// ready runs the readiness operation and encodes its response.
+func ready(t *testing.T, readiness *health.Readiness) *httptest.ResponseRecorder {
 	t.Helper()
 
+	response, err := readiness.GetReadiness(t.Context(), gen.GetReadinessRequestObject{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, target, http.NoBody))
+	if err := response.VisitGetReadinessResponse(rec); err != nil {
+		t.Fatal(err)
+	}
 
 	return rec
 }

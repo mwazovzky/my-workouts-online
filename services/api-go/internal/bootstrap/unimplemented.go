@@ -1,0 +1,231 @@
+package bootstrap
+
+import (
+	"context"
+
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
+)
+
+// unimplemented answers every contract operation no story has implemented
+// yet with 501 (httpapi.ErrNotImplemented). It sits in api next to the
+// module handlers at the same depth, so a story that implements an
+// operation must delete its stub here: two methods of one name would make
+// the call ambiguous and api would stop compiling.
+type unimplemented struct{}
+
+func (unimplemented) GetJwks(context.Context, gen.GetJwksRequestObject) (gen.GetJwksResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminListCategories(context.Context, gen.AdminListCategoriesRequestObject) (gen.AdminListCategoriesResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminCreateCategory(context.Context, gen.AdminCreateCategoryRequestObject) (gen.AdminCreateCategoryResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminDeleteCategory(context.Context, gen.AdminDeleteCategoryRequestObject) (gen.AdminDeleteCategoryResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminGetCategory(context.Context, gen.AdminGetCategoryRequestObject) (gen.AdminGetCategoryResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminUpdateCategory(context.Context, gen.AdminUpdateCategoryRequestObject) (gen.AdminUpdateCategoryResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminListEquipment(context.Context, gen.AdminListEquipmentRequestObject) (gen.AdminListEquipmentResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminCreateEquipment(context.Context, gen.AdminCreateEquipmentRequestObject) (gen.AdminCreateEquipmentResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminDeleteEquipment(context.Context, gen.AdminDeleteEquipmentRequestObject) (gen.AdminDeleteEquipmentResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminGetEquipment(context.Context, gen.AdminGetEquipmentRequestObject) (gen.AdminGetEquipmentResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminUpdateEquipment(context.Context, gen.AdminUpdateEquipmentRequestObject) (gen.AdminUpdateEquipmentResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminListExercises(context.Context, gen.AdminListExercisesRequestObject) (gen.AdminListExercisesResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminCreateExercise(context.Context, gen.AdminCreateExerciseRequestObject) (gen.AdminCreateExerciseResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminDeleteExercise(context.Context, gen.AdminDeleteExerciseRequestObject) (gen.AdminDeleteExerciseResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminGetExercise(context.Context, gen.AdminGetExerciseRequestObject) (gen.AdminGetExerciseResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminUpdateExercise(context.Context, gen.AdminUpdateExerciseRequestObject) (gen.AdminUpdateExerciseResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminListPrograms(context.Context, gen.AdminListProgramsRequestObject) (gen.AdminListProgramsResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminCreateProgram(context.Context, gen.AdminCreateProgramRequestObject) (gen.AdminCreateProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminDeleteProgram(context.Context, gen.AdminDeleteProgramRequestObject) (gen.AdminDeleteProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminGetProgram(context.Context, gen.AdminGetProgramRequestObject) (gen.AdminGetProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminUpdateProgram(context.Context, gen.AdminUpdateProgramRequestObject) (gen.AdminUpdateProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminListWorkoutTemplates(context.Context, gen.AdminListWorkoutTemplatesRequestObject) (gen.AdminListWorkoutTemplatesResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminCreateWorkoutTemplate(context.Context, gen.AdminCreateWorkoutTemplateRequestObject) (gen.AdminCreateWorkoutTemplateResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminDeleteWorkoutTemplate(context.Context, gen.AdminDeleteWorkoutTemplateRequestObject) (gen.AdminDeleteWorkoutTemplateResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminGetWorkoutTemplate(context.Context, gen.AdminGetWorkoutTemplateRequestObject) (gen.AdminGetWorkoutTemplateResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) AdminUpdateWorkoutTemplate(context.Context, gen.AdminUpdateWorkoutTemplateRequestObject) (gen.AdminUpdateWorkoutTemplateResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ResendVerification(context.Context, gen.ResendVerificationRequestObject) (gen.ResendVerificationResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) VerifyEmail(context.Context, gen.VerifyEmailRequestObject) (gen.VerifyEmailResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) Login(context.Context, gen.LoginRequestObject) (gen.LoginResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) Logout(context.Context, gen.LogoutRequestObject) (gen.LogoutResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ForgotPassword(context.Context, gen.ForgotPasswordRequestObject) (gen.ForgotPasswordResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ResetPassword(context.Context, gen.ResetPasswordRequestObject) (gen.ResetPasswordResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) Reauth(context.Context, gen.ReauthRequestObject) (gen.ReauthResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) Refresh(context.Context, gen.RefreshRequestObject) (gen.RefreshResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) Register(context.Context, gen.RegisterRequestObject) (gen.RegisterResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) SocialLogin(context.Context, gen.SocialLoginRequestObject) (gen.SocialLoginResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) GetDashboard(context.Context, gen.GetDashboardRequestObject) (gen.GetDashboardResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ListExercises(context.Context, gen.ListExercisesRequestObject) (gen.ListExercisesResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) DeleteMe(context.Context, gen.DeleteMeRequestObject) (gen.DeleteMeResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) GetMe(context.Context, gen.GetMeRequestObject) (gen.GetMeResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) UpdateMe(context.Context, gen.UpdateMeRequestObject) (gen.UpdateMeResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) UpdatePassword(context.Context, gen.UpdatePasswordRequestObject) (gen.UpdatePasswordResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ListPrograms(context.Context, gen.ListProgramsRequestObject) (gen.ListProgramsResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) GetProgram(context.Context, gen.GetProgramRequestObject) (gen.GetProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) UnenrollProgram(context.Context, gen.UnenrollProgramRequestObject) (gen.UnenrollProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) EnrollProgram(context.Context, gen.EnrollProgramRequestObject) (gen.EnrollProgramResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) GetWorkoutTemplate(context.Context, gen.GetWorkoutTemplateRequestObject) (gen.GetWorkoutTemplateResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ListWorkouts(context.Context, gen.ListWorkoutsRequestObject) (gen.ListWorkoutsResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) CreateWorkout(context.Context, gen.CreateWorkoutRequestObject) (gen.CreateWorkoutResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) DeleteWorkout(context.Context, gen.DeleteWorkoutRequestObject) (gen.DeleteWorkoutResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) GetWorkout(context.Context, gen.GetWorkoutRequestObject) (gen.GetWorkoutResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) ReplaceWorkoutActivities(context.Context, gen.ReplaceWorkoutActivitiesRequestObject) (gen.ReplaceWorkoutActivitiesResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) CompleteWorkout(context.Context, gen.CompleteWorkoutRequestObject) (gen.CompleteWorkoutResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}
+
+func (unimplemented) RepeatWorkout(context.Context, gen.RepeatWorkoutRequestObject) (gen.RepeatWorkoutResponseObject, error) {
+	return nil, httpapi.ErrNotImplemented
+}

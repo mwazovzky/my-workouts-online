@@ -13,12 +13,18 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/i18n"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/meta"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/ratelimit"
 )
 
 // Deps are the process-level dependencies the application is built from.
 type Deps struct {
+	Config config.Config
 	Logger *slog.Logger
 	Clock  clock.Clock
 	// Pool is the database. New takes ownership: App.Close closes it.
@@ -36,23 +42,43 @@ type App struct {
 	closers []func(context.Context) error
 }
 
-// New wires the application.
-func New(deps Deps) *App {
-	readiness := health.NewReadiness(deps.Clock, deps.Logger)
-	readiness.Register("database", postgres.ReadinessCheck(deps.Pool))
+// New wires the application. It fails only when an embedded asset (the
+// contract, a message catalog) does not load.
+func New(deps Deps) (*App, error) {
+	bundle, err := i18n.NewBundle()
+	if err != nil {
+		return nil, err
+	}
 
-	mux := http.NewServeMux()
-	mux.Handle("GET /health", health.NewLiveness(deps.Clock, deps.Logger))
-	mux.Handle("GET /health/ready", readiness)
-	mux.HandleFunc("GET /up", health.Up)
+	server, err := httpapi.NewServer(httpapi.Options{
+		AppURL:             deps.Config.AppURL,
+		RateLimitPerMinute: deps.Config.RateLimitPerMinute,
+		Bundle:             bundle,
+		Logger:             deps.Logger,
+		Clock:              deps.Clock,
+		Limiter:            ratelimit.NewMemory(deps.Clock),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	readiness := health.NewReadiness(deps.Clock, deps.Logger)
+	readiness.AddCheck("database", postgres.ReadinessCheck(deps.Pool))
+
+	server.Mount(api{
+		Liveness:  health.NewLiveness(deps.Clock),
+		Readiness: readiness,
+		Handler:   meta.NewHandler(bundle),
+	})
+	server.Handle("GET /up", http.HandlerFunc(health.Up))
 
 	return &App{
-		Handler:   mux,
+		Handler:   server.Handler(),
 		Readiness: readiness,
 		closers: []func(context.Context) error{
 			func(context.Context) error { deps.Pool.Close(); return nil },
 		},
-	}
+	}, nil
 }
 
 // Close releases resources in the reverse order of acquisition. It runs after
