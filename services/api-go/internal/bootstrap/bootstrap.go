@@ -10,14 +10,19 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 )
 
 // Deps are the process-level dependencies the application is built from.
 type Deps struct {
 	Logger *slog.Logger
 	Clock  clock.Clock
+	// Pool is the database. New takes ownership: App.Close closes it.
+	Pool *pgxpool.Pool
 }
 
 // App is the wired application.
@@ -34,13 +39,20 @@ type App struct {
 // New wires the application.
 func New(deps Deps) *App {
 	readiness := health.NewReadiness(deps.Clock, deps.Logger)
+	readiness.Register("database", postgres.ReadinessCheck(deps.Pool))
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /health", health.NewLiveness(deps.Clock, deps.Logger))
 	mux.Handle("GET /health/ready", readiness)
 	mux.HandleFunc("GET /up", health.Up)
 
-	return &App{Handler: mux, Readiness: readiness}
+	return &App{
+		Handler:   mux,
+		Readiness: readiness,
+		closers: []func(context.Context) error{
+			func(context.Context) error { deps.Pool.Close(); return nil },
+		},
+	}
 }
 
 // Close releases resources in the reverse order of acquisition. It runs after

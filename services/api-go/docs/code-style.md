@@ -29,8 +29,8 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 ## Errors
 
 - Errors **must** be wrapped with `fmt.Errorf("…: %w", err)` and matched with `errors.Is` / `errors.As`, never by comparing strings or with `==` on wrapped errors **(lint: errorlint)**.
-- Business failures **must** be typed `kernel/apperr` errors (from story 3); only the HTTP adapter maps them to a status and a Problem Details body. Use cases and domain code never know a status code **(review)**.
-- Adapters **must** translate driver errors (`pgx`, `pgconn`) into `apperr` before returning; no `pgx` type crosses a port **(review)**.
+- Business failures **must** be typed `kernel/apperr` errors (kinds `NotFound` and `Conflict` since story 2; story 3 adds the rest); only the HTTP adapter maps them to a status and a Problem Details body. Use cases and domain code never know a status code **(review)**.
+- Adapters **must** translate driver errors (`pgx`, `pgconn`) into `apperr` before returning, through `platform/postgres.MapError` (no rows is `NotFound`; a unique or foreign-key violation is `Conflict`); no `pgx` type crosses a port. To turn a conflict into a field error, switch on `postgres.ConstraintName(err)`, never on the message **(review)**.
 - Every returned error **must** be handled, and every response body and `sql.Rows` closed **(lint: errcheck, bodyclose, rowserrcheck, sqlclosecheck)**.
 - `github.com/pkg/errors` **must not** be used **(lint: gomodguard_v2)**.
 
@@ -48,19 +48,26 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 ## Constructors and State
 
 - Constructors **must** take their dependencies explicitly, as parameters or a `Deps` struct of interfaces and values; nothing reaches for a global **(review)**.
-- No package-level mutable state and no `init()` functions; `cmd/workouts` sets the default `slog` logger once and passes loggers on explicitly **(review)**.
+- No package-level mutable state and no `init()` functions; `cmd/workouts` sets the default `slog` logger once and passes loggers on explicitly. The one exception is `platform/testdb`, whose template database lives for one test binary **(review)**.
 - Time **must** come from an injected `kernel/clock.Clock`, never `time.Now()` in use cases or handlers **(review)**.
 
 ## Dependencies
 
 - A new module dependency **must** be justified in [ADR 0002](adr/0002-library-choices.md) or a new ADR **(review)**.
-- Tools (`oapi-codegen`, `govulncheck`) are pinned as `tool` directives in `go.mod` and run with `go tool`; golangci-lint is pinned in the `Makefile` **(make check)**.
+- Tools (`oapi-codegen`, `govulncheck`) are pinned as `tool` directives in `go.mod` and run with `go tool`; golangci-lint and sqlc are pinned in the `Makefile` and installed into `bin/` **(make check)**.
 - Blocked modules: `github.com/pkg/errors`, `github.com/stretchr/testify`, `github.com/golang/mock`, `go.uber.org/mock` **(lint: gomodguard_v2)**.
 - `go.mod` **must** be tidy **(make check: `go mod tidy -diff`)**; no reachable known vulnerability **(make check: govulncheck)**.
 
 ## Generated Code
 
-- Generated code (oapi-codegen output under `internal/platform/httpapi/gen`, sqlc output from story 2) **must** be committed and **must not** be edited; `make generate` rewrites it, and `make check` fails when it is stale **(make check)**.
+- Generated code (oapi-codegen output under `internal/platform/httpapi/gen`, sqlc output under `internal/<module>/adapters/postgres/sqlcgen`) **must** be committed and **must not** be edited; `make generate` rewrites it, and `make check` fails when it is stale **(make check)**. A module's first query adds its `sqlc.yaml` block and its `sqlcgen` path to `GENERATED` in the `Makefile` **(review)**.
+
+## Database
+
+- The schema changes only through a new goose migration in `migrations/`, numbered after the last one; an applied migration is never edited. Each has a `-- +goose Down` section that undoes it **(review)**; the migration tests apply every migration, go down to zero and up again **(make check)**.
+- Queries **must** be sqlc queries in `sql/<module>/`, touching that module's tables only (`dashboard` reads across) **(review)**. Name `:one` queries `Get…`, `:many` queries `List…`, writes `Create…`, `Update…`, `Delete…` **(review)**.
+- Constraints are named explicitly (`<table>_<columns>_key`, `<table>_<column>_check`) so adapters can map them; closed sets from the contract are `text` with a `CHECK`, not Postgres enum types, so adding a value is a one-line migration **(review)**.
+- A repository **must** take its `DBTX` from `Transactor.Querier(ctx)` on every call, so it joins the transaction a use case opened with `InTx`; repositories never begin transactions themselves **(review)**.
 - Generated code is excluded from linting and from the coverage threshold **(make check)**.
 
 ## Testing
@@ -70,7 +77,7 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 - Tests **should** be table-driven and call `t.Parallel()`; the suite runs with `-race -shuffle=on`, so tests **must not** depend on order or shared state **(make check)**.
 - Tests **must not** sleep to wait for something; synchronise with channels and inject a fixed `Clock` **(review)**.
 - Response bodies are compared with golden files in `testdata/` (`go test ./internal/<package> -update` rewrites them; review the diff) **(review)**. Reading them by a computed path is the one `gosec` G304 exception.
-- Database tests (from story 2) get a template database each; no test shares rows with another **(review)**.
+- A test that touches the database **must** get its own with `testdb.New(t)` (migrated) or `testdb.NewEmpty(t)` (for migration tests), and its package **must** declare `func TestMain(m *testing.M) { testdb.Main(m) }`; no test shares a database with another **(review)**. Tests use the compose Postgres when `TEST_DATABASE_URL` is set (the `api-go` container sets it) and a testcontainers Postgres otherwise (CI) **(make check)**.
 - Statement coverage, generated code excluded, **must** stay at or above `COVERAGE_MIN` in the `Makefile` **(make check)**.
 - Each domain story **must** port the PHPUnit feature tests it replaces case by case (owner allowed, other user 404, validation failures) **(review)**.
 

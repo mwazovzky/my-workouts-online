@@ -1,0 +1,31 @@
+# sqlc: hand-written SQL in sql/<module>/ compiled against the migrations into
+# one typed package per module (internal/<module>/adapters/postgres/sqlcgen).
+# `make generate` runs it; `make check` fails when the committed output is
+# stale. A module gets its block with its first query (sqlc rejects an empty
+# query directory): catalog, training and dashboard join in their stories.
+version: "2"
+sql:
+  - engine: postgresql
+    schema: migrations
+    queries: sql/identity
+    gen:
+      go:
+        package: sqlcgen
+        out: internal/identity/adapters/postgres/sqlcgen
+        sql_package: pgx/v5
+        # Up to two parameters stay positional; more become a Params struct.
+        query_parameter_limit: 2
+        # Queries are built per call from Transactor.Querier(ctx).
+        emit_methods_with_db_argument: false
+        emit_pointers_for_null_types: true
+        # Every module sees the whole schema; emit only the models its queries use.
+        omit_unused_structs: true
+        overrides:
+          - db_type: timestamptz
+            go_type: time.Time
+          - db_type: timestamptz
+            nullable: true
+            go_type:
+              import: time
+              type: Time
+              pointer: true

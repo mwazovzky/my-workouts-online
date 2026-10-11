@@ -10,17 +10,22 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/testdb"
 )
+
+func TestMain(m *testing.M) { testdb.Main(m) }
 
 func TestRunRejectsMissingAndUnknownCommands(t *testing.T) {
 	t.Parallel()
 
-	for _, args := range [][]string{nil, {"launch"}, {"serve", "-unknown-flag"}} {
+	for _, args := range [][]string{nil, {"launch"}, {"serve", "-unknown-flag"}, {"migrate"}, {"migrate", "down"}} {
 		var stderr bytes.Buffer
 
-		err := run(t.Context(), args, nil, &stderr)
+		err := run(t.Context(), args, nil, io.Discard, &stderr)
 		if !errors.Is(err, errUsage) {
 			t.Errorf("run(%q) error = %v, want errUsage", args, err)
 		}
@@ -34,15 +39,63 @@ func TestRunRejectsMissingAndUnknownCommands(t *testing.T) {
 func TestServeFailsWithoutRequiredConfig(t *testing.T) {
 	t.Parallel()
 
-	err := run(t.Context(), []string{"serve"}, map[string]string{}, io.Discard)
-	if err == nil || !strings.Contains(err.Error(), "DATABASE_URL") {
-		t.Errorf("run(serve) error = %v, want it to name DATABASE_URL", err)
+	for _, command := range [][]string{{"serve"}, {"migrate", "up"}} {
+		err := run(t.Context(), command, map[string]string{}, io.Discard, io.Discard)
+		if err == nil || !strings.Contains(err.Error(), "DATABASE_URL") {
+			t.Errorf("run(%q) error = %v, want it to name DATABASE_URL", command, err)
+		}
+	}
+}
+
+func TestServeFailsWhenTheDatabaseIsUnreachable(t *testing.T) {
+	t.Parallel()
+
+	err := run(t.Context(), []string{"serve"}, map[string]string{
+		"DATABASE_URL": "postgres://nobody@127.0.0.1:1/none?connect_timeout=1",
+	}, io.Discard, io.Discard)
+	if err == nil || !strings.Contains(err.Error(), "ping") {
+		t.Errorf("run(serve) error = %v, want a ping error", err)
+	}
+}
+
+func TestMigrateUpAppliesEveryMigrationOnce(t *testing.T) {
+	t.Parallel()
+
+	environ := map[string]string{"DATABASE_URL": testdb.NewEmpty(t).Config().ConnString()}
+
+	var first, second, status bytes.Buffer
+	if err := run(t.Context(), []string{"migrate", "up"}, environ, &first, io.Discard); err != nil {
+		t.Fatalf("migrate up: %v", err)
+	}
+
+	if err := run(t.Context(), []string{"migrate", "up"}, environ, &second, io.Discard); err != nil {
+		t.Fatalf("second migrate up: %v", err)
+	}
+
+	if err := run(t.Context(), []string{"migrate", "status"}, environ, &status, io.Discard); err != nil {
+		t.Fatalf("migrate status: %v", err)
+	}
+
+	migrations := []string{"00001_identity.sql", "00002_catalog.sql", "00003_training.sql", "00004 (go)"}
+	for _, name := range migrations {
+		if !strings.Contains(first.String(), "applied "+name) {
+			t.Errorf("first up output %q does not apply %s", first.String(), name)
+		}
+
+		if !regexp.MustCompile(regexp.QuoteMeta(name) + `\s+applied\s+\d{4}-`).MatchString(status.String()) {
+			t.Errorf("status output %q does not list %s as applied", status.String(), name)
+		}
+	}
+
+	if got := second.String(); got != "no pending migrations\n" {
+		t.Errorf("second up output = %q, want no pending migrations", got)
 	}
 }
 
 func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 	t.Parallel()
 
+	databaseURL := testdb.New(t).Config().ConnString()
 	logs, addrs := listeningAddr(t)
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -50,10 +103,10 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 	done := make(chan error, 1)
 	go func() {
 		done <- run(ctx, []string{"serve"}, map[string]string{
-			"DATABASE_URL":         "postgres://unused",
+			"DATABASE_URL":         databaseURL,
 			"HTTP_ADDR":            "127.0.0.1:0",
 			"SHUTDOWN_DRAIN_DELAY": "0s",
-		}, logs)
+		}, io.Discard, logs)
 	}()
 
 	var addr string
@@ -63,8 +116,10 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 		t.Fatalf("run(serve) returned early: %v", err)
 	}
 
-	if status := statusOf(t, "http://"+addr+"/health"); status != http.StatusOK {
-		t.Errorf("GET /health = %d, want %d", status, http.StatusOK)
+	for _, path := range []string{"/health", "/health/ready"} {
+		if status := statusOf(t, "http://"+addr+path); status != http.StatusOK {
+			t.Errorf("GET %s = %d, want %d", path, status, http.StatusOK)
+		}
 	}
 
 	cancel()
@@ -101,7 +156,7 @@ func TestHealthcheck(t *testing.T) {
 			}))
 			t.Cleanup(srv.Close)
 
-			err := run(t.Context(), []string{"healthcheck"}, environFor(t, srv.Listener.Addr()), io.Discard)
+			err := run(t.Context(), []string{"healthcheck"}, environFor(t, srv.Listener.Addr()), io.Discard, io.Discard)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("run(healthcheck) error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -122,7 +177,7 @@ func TestHealthcheckFailsWhenNothingListens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := run(t.Context(), []string{"healthcheck"}, environFor(t, addr), io.Discard); err == nil {
+	if err := run(t.Context(), []string{"healthcheck"}, environFor(t, addr), io.Discard, io.Discard); err == nil {
 		t.Error("run(healthcheck) error = nil, want a connection error")
 	}
 }
@@ -171,7 +226,11 @@ func statusOf(t *testing.T, url string) int {
 		t.Fatal(err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	// Without keep-alives: a pooled client may dial a spare connection it
+	// never uses, and Shutdown waits up to 5s for such a new connection.
+	client := &http.Client{Transport: &http.Transport{DisableKeepAlives: true}}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
