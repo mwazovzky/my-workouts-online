@@ -58,6 +58,9 @@ services:
       - .env
     environment:
       DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE}?sslmode=disable
+      # Tests create and drop their own databases on this server instead of
+      # starting a testcontainers Postgres (no Docker inside this container).
+      TEST_DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/postgres?sslmode=disable
     ports:
       - "8081:8081"
     volumes:

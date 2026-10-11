@@ -29,11 +29,23 @@ Adopted in story 1:
 | Vulnerabilities | `golang.org/x/vuln/cmd/govulncheck`, a `tool` directive | v1.8.0 |
 | Runtime image | `gcr.io/distroless/static-debian13:nonroot` | — |
 
-Planned, each confirmed or replaced by an ADR in its story: `pgx/v5` + `pgxpool` and `sqlc` (story 2), `pressly/goose` (story 2), `testcontainers-go` (story 2), `kin-openapi` `openapi3filter` for request validation (story 3, already a dependency of the generated code), `lestrrat-go/jwx/v3` and `golang.org/x/crypto/bcrypt` (story 4), `resend-go` and `svix` (story 11), River (story 11), OpenTelemetry (story 12).
+Adopted in story 2:
+
+| Concern | Choice | Version |
+| --- | --- | --- |
+| Postgres driver and pool | `github.com/jackc/pgx/v5` with `pgxpool`; `pgx/v5/stdlib` gives goose a `*sql.DB` over the same pool | v5.11.0 |
+| Typed queries | sqlc (`sqlc.yaml`): hand-written SQL in `sql/<module>/`, the migrations as schema, one `sqlcgen` package per module. Installed as the release binary at `SQLC_VERSION` in the `Makefile`, not a `tool` directive: building it needs cgo and a large dependency tree | v1.31.1 |
+| Migrations | `github.com/pressly/goose/v3` through its `Provider` API (no global registry, no `init()`), SQL files embedded from `migrations/`, a Postgres advisory lock against concurrent runs, `workouts migrate up\|status` | v3.28.0 |
+| Job queue schema | `github.com/riverqueue/river` (`rivermigrate` with the `riverdatabasesql` driver) installs River's tables as goose migration 00004, pinned to River schema version 8; the queue itself arrives in story 11 | v0.49.0 |
+| Test databases | `github.com/testcontainers/testcontainers-go/modules/postgres` (`postgres:17`) when `TEST_DATABASE_URL` is unset; see `internal/platform/testdb` | v0.44.0 |
+
+Upgraded for govulncheck in story 2 (both reached only through testcontainers): `golang.org/x/crypto` v0.56.0, `github.com/moby/go-archive` v0.3.0.
+
+Planned, each confirmed or replaced by an ADR in its story: `kin-openapi` `openapi3filter` for request validation (story 3, already a dependency of the generated code), `lestrrat-go/jwx/v3` and `golang.org/x/crypto/bcrypt` (story 4), `resend-go` and `svix` (story 11), the River client and workers (story 11), OpenTelemetry (story 12).
 
 Rejected: `testify` and generated mocks (blocked by `gomodguard_v2`; tests use `testing`, go-cmp and hand-written fakes), `github.com/pkg/errors` (blocked; `fmt.Errorf` with `%w`), Viper and Cobra (configuration and CLI are small enough for the standard library and caarlos0/env).
 
-Tools are pinned in one place each: `tool` directives in `go.mod` for oapi-codegen and govulncheck; `GOLANGCI_LINT_VERSION` in the `Makefile` for golangci-lint, whose maintainers recommend a binary install over `go install` or `go tool` so its dependencies stay out of `go.mod`.
+Tools are pinned in one place each: `tool` directives in `go.mod` for oapi-codegen and govulncheck; `GOLANGCI_LINT_VERSION` and `SQLC_VERSION` in the `Makefile` for golangci-lint and sqlc, installed as release binaries so their dependencies stay out of `go.mod` (golangci-lint's maintainers recommend this over `go install` or `go tool`).
 
 ## Consequences
 

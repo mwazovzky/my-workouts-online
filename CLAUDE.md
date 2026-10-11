@@ -9,7 +9,7 @@ Workout tracking app: users browse programs, enroll, log workouts, and track set
 - `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
 - `apps/ios/` — native SwiftUI iOS app (Swift 6, iOS 17+, XcodeGen `project.yml`, local packages `WorkoutsCore` and `WorkoutsAPI`) consuming the same API; see `apps/ios/README.md`. Planned in `planning/epics/ios-app/`.
-- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes only so far; not routed by nginx). See `services/api-go/README.md`.
+- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes and its Postgres schema so far; not routed by nginx). See `services/api-go/README.md`.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
 - `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), `api-go` image (Go toolchain dev stage, distroless production stage), dev nginx config.
 
@@ -57,12 +57,13 @@ Runs in the `api-go` container (no Go on the host needed); with Go 1.27 on the h
 ```bash
 docker compose exec -T api-go make check     # the gate CI runs: tidy, fmt, vet, golangci-lint, generated-code diff, race tests + coverage, govulncheck
 docker compose exec -T api-go make fmt       # gofumpt + goimports
-docker compose exec -T api-go make generate  # regenerate internal/platform/httpapi/gen from contracts/openapi.yaml (commit the result)
+docker compose exec -T api-go make generate  # regenerate httpapi/gen from contracts/openapi.yaml and the sqlcgen packages from sql/ (commit the result)
+docker compose exec -T api-go go run ./cmd/workouts migrate status  # migrations applied to the dev database (the container runs `migrate up` on start)
 docker compose exec -T api-go go test -race ./internal/platform/health/  # one package
 docker compose restart api-go                # rebuild and restart after code changes
 ```
 
-After modifying any `.go` file or `contracts/openapi.yaml`, always run `make check` in `services/api-go` before finalizing. Conventions are in `services/api-go/docs/code-style.md`; decisions are ADRs in `services/api-go/docs/adr/`.
+After modifying any `.go` file, `.sql` file or `contracts/openapi.yaml`, always run `make check` in `services/api-go` before finalizing. Database tests run against the compose `postgres` inside the container (`TEST_DATABASE_URL`) and against testcontainers in CI; new files must be `git add`ed before `make check` or the generated-code check flags them. Conventions are in `services/api-go/docs/code-style.md`; decisions are ADRs in `services/api-go/docs/adr/`.
 
 After modifying any `.swift` file, always run `swift format --in-place` on it and the affected package or app tests before finalizing. Views live in the app target; anything testable without UIKit goes in `Packages/`.
 

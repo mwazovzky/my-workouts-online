@@ -9,9 +9,9 @@ FROM golang:${GO_VERSION} AS dev
 # The bind-mounted repository is owned by the host user; `make check` runs git.
 RUN git config --system --add safe.directory '*'
 WORKDIR /src/services/api-go
-# Build, then exec the binary so it is PID 1 and receives SIGTERM itself
-# (`go run` would be killed without forwarding it, skipping the drain).
-CMD ["sh", "-c", "go build -o /tmp/workouts ./cmd/workouts && exec /tmp/workouts serve"]
+# Build, migrate, then exec the binary so it is PID 1 and receives SIGTERM
+# itself (`go run` would be killed without forwarding it, skipping the drain).
+CMD ["sh", "-c", "go build -o /tmp/workouts ./cmd/workouts && /tmp/workouts migrate up && exec /tmp/workouts serve"]
 
 # --- Stage 2: build ---
 FROM dev AS build
