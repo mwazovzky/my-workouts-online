@@ -45,8 +45,20 @@ func newRequestValidator(spec *openapi3.T, rs *Responder) *requestValidator {
 		routes: map[string]*routers.Route{},
 		options: &openapi3filter.Options{
 			MultiError: true,
-			// Authentication is the bearer middleware's job (story 4).
+			// Authentication is the authorize middleware's job.
 			AuthenticationFunc: openapi3filter.NoopAuthenticationFunc,
+			// kin checks no string format unless asked; email is the one the
+			// request schemas rely on.
+			SchemaValidationOptions: []openapi3.SchemaValidationOption{
+				openapi3.EnableFormatValidation(),
+				openapi3.WithStringFormatValidator("email", openapi3.NewCallbackValidator(func(value string) error {
+					if !validate.IsEmail(value) {
+						return errors.New("not an email address")
+					}
+
+					return nil
+				})),
+			},
 		},
 		rs: rs,
 	}

@@ -86,14 +86,19 @@ func accessLog(logger *slog.Logger, clk clock.Clock) func(http.Handler) http.Han
 				status, bytes = sw.status, sw.bytes
 			}
 
-			reqLogger.LogAttrs(ctx, levelFor(status), "request",
+			attrs := []slog.Attr{
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
 				slog.String("route", matched.pattern),
 				slog.Int("status", status),
 				slog.Int("bytes", bytes),
 				slog.Float64("duration_ms", float64(clk.Now().Sub(start).Microseconds())/1000),
-			)
+			}
+			if matched.userID != 0 {
+				attrs = append(attrs, slog.Int64("user_id", matched.userID))
+			}
+
+			reqLogger.LogAttrs(ctx, levelFor(status), "request", attrs...)
 		})
 	}
 }
@@ -171,7 +176,7 @@ func rateLimit(limiter ratelimit.Limiter, perMinute int, rs *Responder) func(htt
 				return
 			}
 
-			decision, err := limiter.Allow(r.Context(), "api:"+clientIP(r), perMinute, time.Minute)
+			decision, err := limiter.Allow(r.Context(), "api:"+ClientIP(r), perMinute, time.Minute)
 			if err != nil {
 				// A broken limiter must not take the API down.
 				Logger(r.Context()).WarnContext(r.Context(), "rate limiter failed", "error", err.Error())
@@ -194,7 +199,9 @@ func rateLimit(limiter ratelimit.Limiter, perMinute int, rs *Responder) func(htt
 	}
 }
 
-func clientIP(r *http.Request) string {
+// ClientIP is the request's client address: the TCP peer, since no proxy is
+// trusted yet (story 13).
+func ClientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr

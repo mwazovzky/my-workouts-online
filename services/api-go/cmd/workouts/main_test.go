@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/testdb"
 )
 
@@ -22,7 +23,18 @@ func TestMain(m *testing.M) { testdb.Main(m) }
 func TestRunRejectsMissingAndUnknownCommands(t *testing.T) {
 	t.Parallel()
 
-	for _, args := range [][]string{nil, {"launch"}, {"serve", "-unknown-flag"}, {"migrate"}, {"migrate", "down"}} {
+	for _, args := range [][]string{
+		nil,
+		{"launch"},
+		{"serve", "-unknown-flag"},
+		{"migrate"},
+		{"migrate", "down"},
+		{"user"},
+		{"user", "grant-admin"},
+		{"user", "revoke-admin", "a@b.c"},
+		{"keys"},
+		{"keys", "rotate"},
+	} {
 		var stderr bytes.Buffer
 
 		err := run(t.Context(), args, nil, io.Discard, &stderr)
@@ -106,6 +118,8 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 			"DATABASE_URL":         databaseURL,
 			"HTTP_ADDR":            "127.0.0.1:0",
 			"SHUTDOWN_DRAIN_DELAY": "0s",
+			"JWT_PRIVATE_KEY":      testPrivateKey,
+			"JWT_PUBLIC_KEY":       testPublicKey,
 		}, io.Discard, logs)
 	}()
 
@@ -240,4 +254,99 @@ func statusOf(t *testing.T, url string) int {
 	}
 
 	return resp.StatusCode
+}
+
+// The phpunit.xml key pair.
+const (
+	testPrivateKey = "SNdNP8JHR4IZdp8IesFeqOLNQr2l8U05g/h7h4l2ho8nsYzYswZYM40Mn8Ez9bAYRKT96SVgnnDdHOK7M+khjg=="
+	testPublicKey  = "J7GM2LMGWDONDJ/BM/WwGESk/eklYJ5w3RziuzPpIY4="
+)
+
+func TestSeedRefusesInProduction(t *testing.T) {
+	t.Parallel()
+
+	environ := map[string]string{"DATABASE_URL": testdb.New(t).Config().ConnString()}
+
+	for _, env := range []string{"", "production"} {
+		if env != "" {
+			environ["APP_ENV"] = env
+		}
+
+		if err := run(t.Context(), []string{"seed"}, environ, io.Discard, io.Discard); !errors.Is(err, errProduction) {
+			t.Errorf("APP_ENV=%q: seed error = %v, want errProduction", env, err)
+		}
+	}
+}
+
+func TestSeedAndGrantAdmin(t *testing.T) {
+	t.Parallel()
+
+	pool := testdb.New(t)
+	environ := map[string]string{"DATABASE_URL": pool.Config().ConnString(), "APP_ENV": "testing", "BCRYPT_ROUNDS": "4"}
+
+	var out bytes.Buffer
+
+	for range 2 { // seeding twice resets the same account
+		if err := run(t.Context(), []string{"seed"}, environ, &out, io.Discard); err != nil {
+			t.Fatalf("seed: %v", err)
+		}
+	}
+
+	if !strings.Contains(out.String(), "seeded the demo admin test@example.com") {
+		t.Errorf("seed output = %q", out.String())
+	}
+
+	var admins int
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM users JOIN role_user ON role_user.user_id = users.id
+		WHERE email = 'test@example.com' AND email_verified_at IS NOT NULL`).Scan(&admins); err != nil || admins != 1 {
+		t.Errorf("verified admins = %d, %v; want 1", admins, err)
+	}
+
+	if _, err := pool.Exec(t.Context(), `INSERT INTO users (name, email, password_hash, email_verified_at) VALUES
+		('Bea', 'bea@example.com', 'x', now()), ('Cy', 'cy@example.com', 'x', NULL)`); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		email   string
+		wantOut string
+		wantErr string
+	}{
+		{"bea@example.com", "bea@example.com is now an admin.", ""},
+		{"bea@example.com", "bea@example.com is already an admin.", ""},
+		{"cy@example.com", "", "not verified"},
+		{"nobody@example.com", "", "no user is registered"},
+	}
+
+	for _, tt := range tests {
+		var stdout bytes.Buffer
+
+		err := run(t.Context(), []string{"user", "grant-admin", tt.email}, environ, &stdout, io.Discard)
+
+		if tt.wantErr == "" && (err != nil || strings.TrimSpace(stdout.String()) != tt.wantOut) {
+			t.Errorf("grant-admin %s = %q, %v; want %q", tt.email, stdout.String(), err, tt.wantOut)
+		}
+
+		if tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)) {
+			t.Errorf("grant-admin %s error = %v, want %q", tt.email, err, tt.wantErr)
+		}
+	}
+}
+
+func TestKeysGenerate(t *testing.T) {
+	t.Parallel()
+
+	var out bytes.Buffer
+	if err := run(t.Context(), []string{"keys", "generate"}, nil, &out, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+
+	match := regexp.MustCompile(`JWT_PRIVATE_KEY=(\S+)\nJWT_PUBLIC_KEY=(\S+)`).FindStringSubmatch(out.String())
+	if match == nil {
+		t.Fatalf("output = %q", out.String())
+	}
+
+	if _, err := jwt.ParseKeys(match[1], match[2], ""); err != nil {
+		t.Errorf("the printed keys do not parse: %v", err)
+	}
 }

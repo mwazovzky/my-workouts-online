@@ -3,6 +3,9 @@
 //	workouts serve           run the HTTP API until SIGINT or SIGTERM
 //	workouts migrate up      apply the pending database migrations
 //	workouts migrate status  list every migration and whether it is applied
+//	workouts seed            create the verified demo admin (refused in production)
+//	workouts user grant-admin <email>  make a verified user an admin
+//	workouts keys generate   print a new JWT key pair for the environment
 //	workouts healthcheck     probe the local /health endpoint (the image's HEALTHCHECK)
 //
 // Configuration comes from the environment; see internal/platform/config.
@@ -29,6 +32,7 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/bootstrap"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
@@ -45,6 +49,10 @@ commands:
   serve           run the HTTP API until SIGINT or SIGTERM
   migrate up      apply the pending database migrations
   migrate status  list every migration and whether it is applied
+  seed            create the verified demo admin test@example.com (not in production)
+  user grant-admin <email>
+                  give a registered, verified user the Admin role
+  keys generate   print a new JWT_PRIVATE_KEY and JWT_PUBLIC_KEY
   healthcheck     exit 0 when the local /health endpoint answers 200
 `
 
@@ -98,6 +106,12 @@ func run(ctx context.Context, args []string, environ map[string]string, stdout, 
 		return serve(ctx, environ, stderr)
 	case "migrate":
 		return migrate(ctx, flags.Args(), environ, stdout, stderr)
+	case "seed":
+		return seed(ctx, environ, stdout, stderr)
+	case "user":
+		return user(ctx, flags.Args(), environ, stdout, stderr)
+	case "keys":
+		return keys(flags.Args(), stdout, stderr)
 	case "healthcheck":
 		return healthcheck(ctx, environ)
 	default:
@@ -226,6 +240,98 @@ func sourceName(source *goose.Source) string {
 	}
 
 	return filepath.Base(source.Path)
+}
+
+// errProduction refuses demo seeding where real users live.
+var errProduction = errors.New("seed creates a demo admin with a known password and must not run in production (APP_ENV=production)")
+
+// seed creates the verified demo admin the contract tests sign in with.
+// Story 7 adds the catalog.
+func seed(ctx context.Context, environ map[string]string, stdout, stderr io.Writer) error {
+	return withApp(ctx, environ, stderr, func(cfg config.Config, app *bootstrap.App) error {
+		if cfg.IsProduction() {
+			return errProduction
+		}
+
+		admin, err := app.Identity.SeedDemoAdmin(ctx)
+		if err != nil {
+			return fmt.Errorf("seed: %w", err)
+		}
+
+		fmt.Fprintf(stdout, "seeded the demo admin %s (verified)\n", admin.Email)
+
+		return nil
+	})
+}
+
+// user runs `user grant-admin <email>`, as the PHP user:grant-admin command.
+func user(ctx context.Context, args []string, environ map[string]string, stdout, stderr io.Writer) error {
+	if len(args) != 2 || args[0] != "grant-admin" {
+		fmt.Fprint(stderr, usage)
+
+		return errUsage
+	}
+
+	email := args[1]
+
+	return withApp(ctx, environ, stderr, func(_ config.Config, app *bootstrap.App) error {
+		already, err := app.Identity.GrantAdmin(ctx, email)
+		if err != nil {
+			return fmt.Errorf("%s: %w", email, err)
+		}
+
+		if already {
+			fmt.Fprintf(stdout, "%s is already an admin.\n", email)
+		} else {
+			fmt.Fprintf(stdout, "%s is now an admin.\n", email)
+		}
+
+		return nil
+	})
+}
+
+// keys runs `keys generate`: a new Ed25519 key pair in the format both
+// backends read.
+func keys(args []string, stdout, stderr io.Writer) error {
+	if len(args) != 1 || args[0] != "generate" {
+		fmt.Fprint(stderr, usage)
+
+		return errUsage
+	}
+
+	private, public, err := jwt.GenerateKeys()
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(stdout, "Add these to your .env (never commit the private key):\n\nJWT_PRIVATE_KEY=%s\nJWT_PUBLIC_KEY=%s\n", private, public)
+
+	return nil
+}
+
+// withApp builds the application for a command that needs the database and
+// closes it afterwards.
+func withApp(ctx context.Context, environ map[string]string, stderr io.Writer, fn func(config.Config, *bootstrap.App) error) error {
+	cfg, err := config.Load(environ)
+	if err != nil {
+		return err
+	}
+
+	logger := slog.New(slog.NewJSONHandler(stderr, &slog.HandlerOptions{Level: cfg.LogLevel}))
+
+	pool, err := postgres.Open(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+
+	app, err := bootstrap.New(bootstrap.Deps{Config: cfg, Logger: logger, Clock: clock.System{}, Pool: pool})
+	if err != nil {
+		pool.Close()
+
+		return err
+	}
+
+	return errors.Join(fn(cfg, app), app.Close(context.WithoutCancel(ctx)))
 }
 
 // healthcheck probes /health on the configured port over loopback. The

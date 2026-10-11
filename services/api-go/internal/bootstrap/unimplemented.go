@@ -14,10 +14,6 @@ import (
 // the call ambiguous and api would stop compiling.
 type unimplemented struct{}
 
-func (unimplemented) GetJwks(context.Context, gen.GetJwksRequestObject) (gen.GetJwksResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
 func (unimplemented) AdminListCategories(context.Context, gen.AdminListCategoriesRequestObject) (gen.AdminListCategoriesResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
@@ -126,31 +122,11 @@ func (unimplemented) VerifyEmail(context.Context, gen.VerifyEmailRequestObject) 
 	return nil, httpapi.ErrNotImplemented
 }
 
-func (unimplemented) Login(context.Context, gen.LoginRequestObject) (gen.LoginResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) Logout(context.Context, gen.LogoutRequestObject) (gen.LogoutResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
 func (unimplemented) ForgotPassword(context.Context, gen.ForgotPasswordRequestObject) (gen.ForgotPasswordResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
 
 func (unimplemented) ResetPassword(context.Context, gen.ResetPasswordRequestObject) (gen.ResetPasswordResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) Reauth(context.Context, gen.ReauthRequestObject) (gen.ReauthResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) Refresh(context.Context, gen.RefreshRequestObject) (gen.RefreshResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) Register(context.Context, gen.RegisterRequestObject) (gen.RegisterResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
 

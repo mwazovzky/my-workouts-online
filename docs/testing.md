@@ -244,6 +244,8 @@ CONTRACT_INCLUDE=getMeta scripts/contract-test.sh http://localhost:8081   # the 
 
 `CONTRACT_INCLUDE` takes comma-separated operationIds and is how the Go API, still being built, is tested on the operations it implements. When every listed operation is public, the login step is skipped.
 
+`.github/workflows/contract-go.yml` does this in CI for the Go API: a Postgres service, `workouts keys generate`, `migrate up` and `seed`, `workouts serve` on `:8081`, then the script with the operations listed in `services/api-go/contract-scope.txt`. The scope grows with each story and the file is deleted in story 13, when the full suite runs. The job is skipped when neither the service nor the contract changed.
+
 The run logs in as the seeded admin (`test@example.com`) and fuzzes writes, so use a disposable database and reseed afterwards (`php artisan migrate:fresh --seed`). Raise `API_RATE_LIMIT_PER_MINUTE` for the run. `.github/workflows/contract.yml` runs it on every push with a fresh MySQL and `php artisan serve`.
 
 Excluded from fuzzing: logout (would revoke the token in use), `deleteMe`/`updateMe` (would remove or rename the account) and the unimplemented social login endpoint.

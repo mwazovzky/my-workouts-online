@@ -1,0 +1,13 @@
+# Contract operations the Go API implements, one operationId per line. The
+# contract-go workflow and scripts/contract-test.sh (CONTRACT_INCLUDE) run
+# Schemathesis on exactly these. Story 13 deletes this file, when every
+# operation is implemented and the full suite runs. logout is excluded by
+# the script itself (it would revoke the token the run uses).
+getHealth
+getReadiness
+getMeta
+getJwks
+register
+login
+refresh
+reauth

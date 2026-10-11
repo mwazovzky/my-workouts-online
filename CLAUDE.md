@@ -9,7 +9,7 @@ Workout tracking app: users browse programs, enroll, log workouts, and track set
 - `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
 - `apps/ios/` — native SwiftUI iOS app (Swift 6, iOS 17+, XcodeGen `project.yml`, local packages `WorkoutsCore` and `WorkoutsAPI`) consuming the same API; see `apps/ios/README.md`. Planned in `planning/epics/ios-app/`.
-- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes, `getMeta` and its Postgres schema so far; every other operation answers 501; not routed by nginx). See `services/api-go/README.md`.
+- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes, `getMeta`, the token operations and its Postgres schema so far; every other operation answers 501; not routed by nginx). See `services/api-go/README.md`.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
 - `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), `api-go` image (Go toolchain dev stage, distroless production stage), dev nginx config.
 
@@ -59,7 +59,8 @@ docker compose exec -T api-go make check     # the gate CI runs: tidy, fmt, vet,
 docker compose exec -T api-go make fmt       # gofumpt + goimports
 docker compose exec -T api-go make generate  # regenerate httpapi/gen from contracts/openapi.yaml and the sqlcgen packages from sql/ (commit the result)
 docker compose exec -T api-go go run ./cmd/workouts migrate status  # migrations applied to the dev database (the container runs `migrate up` on start)
-CONTRACT_INCLUDE=getMeta scripts/contract-test.sh http://localhost:8081  # Schemathesis on the operations Go implements
+docker compose exec -T api-go go run ./cmd/workouts seed   # verified demo admin test@example.com / password (Go database)
+CONTRACT_INCLUDE=$(grep -v '^#' services/api-go/contract-scope.txt | paste -sd, -) scripts/contract-test.sh http://localhost:8081  # Schemathesis on the operations Go implements
 docker compose exec -T api-go go test -race ./internal/platform/health/  # one package
 docker compose restart api-go                # rebuild and restart after code changes
 ```
@@ -121,7 +122,7 @@ Exercise <-M:N-> Category
 
 ### CI
 
-GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `go.yml` (`make check` in `services/api-go`; skipped unless `services/api-go/**`, `docker/api-go/**`, `catalog/**` or the contract changed), `deploy.yml`.
+GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `go.yml` (`make check` in `services/api-go`; skipped unless `services/api-go/**`, `docker/api-go/**`, `catalog/**` or the contract changed), `contract-go.yml` (Schemathesis against the Go API for the operations in `services/api-go/contract-scope.txt`; same kind of path filter), `deploy.yml`.
 
 ### Deployment
 
