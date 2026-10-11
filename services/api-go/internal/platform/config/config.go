@@ -1,6 +1,7 @@
 // Package config loads the service configuration from environment variables.
-// Names shared with the PHP API keep their PHP spelling (LOG_LEVEL, and later
-// APP_ENV, FRONTEND_URL, JWT_*), so one .env file serves both backends.
+// Names shared with the PHP API keep their PHP spelling (APP_URL, LOG_LEVEL,
+// API_RATE_LIMIT_PER_MINUTE, and later FRONTEND_URL, JWT_*), so one .env
+// file serves both backends.
 package config
 
 import (
@@ -8,6 +9,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/url"
 	"strings"
 	"time"
 
@@ -18,9 +20,14 @@ import (
 type Config struct {
 	// HTTPAddr is the listen address of the public HTTP server.
 	HTTPAddr string `env:"HTTP_ADDR" envDefault:":8081"`
-	// DatabaseURL is the Postgres connection string. Required now so a missing
-	// value fails at startup; the connection pool arrives with the schema.
+	// DatabaseURL is the Postgres connection string.
 	DatabaseURL string `env:"DATABASE_URL,required,notEmpty"`
+	// AppURL is the API's public base URL. Problem types are
+	// {AppURL}/problems/{code}, as in the PHP API.
+	AppURL string `env:"APP_URL" envDefault:"http://localhost:8080"`
+	// RateLimitPerMinute is the per-client request limit under /api/. CI sets
+	// it high so contract fuzzing is never throttled.
+	RateLimitPerMinute int `env:"API_RATE_LIMIT_PER_MINUTE" envDefault:"60"`
 	// LogLevel accepts the slog names and the PSR-3 names Laravel uses.
 	LogLevel LogLevel `env:"LOG_LEVEL" envDefault:"info"`
 	// ShutdownDrainDelay is how long /health/ready answers 503 before the
@@ -50,6 +57,14 @@ func (c Config) validate() error {
 
 	if _, _, err := net.SplitHostPort(c.HTTPAddr); err != nil {
 		errs = append(errs, fmt.Errorf("HTTP_ADDR %q: %w", c.HTTPAddr, err))
+	}
+
+	if u, err := url.Parse(c.AppURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		errs = append(errs, fmt.Errorf("APP_URL must be an absolute http(s) URL, got %q", c.AppURL))
+	}
+
+	if c.RateLimitPerMinute <= 0 {
+		errs = append(errs, fmt.Errorf("API_RATE_LIMIT_PER_MINUTE must be positive, got %d", c.RateLimitPerMinute))
 	}
 
 	if c.ShutdownDrainDelay < 0 {

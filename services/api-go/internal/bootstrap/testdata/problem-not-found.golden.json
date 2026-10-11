@@ -1,0 +1,9 @@
+{
+  "code": "not_found",
+  "detail": "Record not found.",
+  "instance": "/api/v1/does-not-exist#00000000-0000-4000-8000-000000000001",
+  "status": 404,
+  "title": "Not found",
+  "type": "http://localhost:8080/problems/not_found"
+}
+

@@ -8,6 +8,11 @@
 # PHP API today, another backend tomorrow). Set SCHEMATHESIS to a local
 # binary to skip Docker. Fuzzing writes data: run it against a disposable
 # database.
+#
+# CONTRACT_INCLUDE limits the run to a comma-separated list of operationIds,
+# for a backend that implements only part of the contract (the Go API while
+# its epic is in progress). When every listed operation is public (security:
+# [] in the contract), the login step is skipped, so no account is needed.
 
 set -euo pipefail
 
@@ -16,22 +21,41 @@ EMAIL="${2:-${CONTRACT_EMAIL:-test@example.com}}"
 PASSWORD="${3:-${CONTRACT_PASSWORD:-password}}"
 MAX_EXAMPLES="${CONTRACT_MAX_EXAMPLES:-5}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+INCLUDE="${CONTRACT_INCLUDE:-}"
 
-token=$(curl --fail --silent --show-error -X POST "${BASE_URL}/api/v1/auth/login" \
-  -H 'Content-Type: application/json' -H 'Accept: application/json' \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"client\":\"native\"}" \
-  | python3 -c 'import sys, json; print(json.load(sys.stdin)["access_token"])')
+include_args=()
+needs_login=true
+if [[ -n "${INCLUDE}" ]]; then
+  public_ops=" $(awk '/operationId:/ { id = $2 } /security: \[\]/ { print id }' "${ROOT}/contracts/openapi.yaml" | tr '\n' ' ') "
+  needs_login=false
+  IFS=',' read -r -a included <<< "${INCLUDE}"
+  for op in "${included[@]}"; do
+    include_args+=(--include-operation-id "${op}")
+    [[ "${public_ops}" == *" ${op} "* ]] || needs_login=true
+  done
+fi
 
-if [[ -z "${token}" ]]; then
-  echo "Could not obtain an access token from ${BASE_URL}." >&2
-  exit 1
+auth_args=()
+if [[ "${needs_login}" == true ]]; then
+  token=$(curl --fail --silent --show-error -X POST "${BASE_URL}/api/v1/auth/login" \
+    -H 'Content-Type: application/json' -H 'Accept: application/json' \
+    -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"client\":\"native\"}" \
+    | python3 -c 'import sys, json; print(json.load(sys.stdin)["access_token"])')
+
+  if [[ -z "${token}" ]]; then
+    echo "Could not obtain an access token from ${BASE_URL}." >&2
+    exit 1
+  fi
+  auth_args=(--header "Authorization: Bearer ${token}")
 fi
 
 # Operations excluded from fuzzing because they would break the run itself:
 # logout revokes the token in use, deleteMe/updateMe removes or renames
 # the account, and the social login endpoint is not implemented yet.
 common_args=(
-  --header "Authorization: Bearer ${token}"
+  # The ${a[@]+...} form keeps bash 3.2 (macOS) happy with an empty array under set -u.
+  ${auth_args[@]+"${auth_args[@]}"}
+  ${include_args[@]+"${include_args[@]}"}
   --header "Accept: application/json"
   --header "X-Requested-With: XMLHttpRequest"
   --checks all

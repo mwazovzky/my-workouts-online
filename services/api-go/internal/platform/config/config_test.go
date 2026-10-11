@@ -23,6 +23,8 @@ func TestLoadAppliesDefaults(t *testing.T) {
 	want := config.Config{
 		HTTPAddr:           ":8081",
 		DatabaseURL:        "postgres://localhost/workouts",
+		AppURL:             "http://localhost:8080",
+		RateLimitPerMinute: 60,
 		LogLevel:           config.LogLevel(slog.LevelInfo),
 		ShutdownDrainDelay: 2 * time.Second,
 		ShutdownTimeout:    5 * time.Second,
@@ -36,11 +38,13 @@ func TestLoadReadsEnvironment(t *testing.T) {
 	t.Parallel()
 
 	cfg, err := config.Load(map[string]string{
-		"DATABASE_URL":         "postgres://db/workouts",
-		"HTTP_ADDR":            "127.0.0.1:9000",
-		"LOG_LEVEL":            "debug",
-		"SHUTDOWN_DRAIN_DELAY": "0s",
-		"SHUTDOWN_TIMEOUT":     "30s",
+		"DATABASE_URL":              "postgres://db/workouts",
+		"HTTP_ADDR":                 "127.0.0.1:9000",
+		"APP_URL":                   "https://my-workouts.online",
+		"API_RATE_LIMIT_PER_MINUTE": "100000",
+		"LOG_LEVEL":                 "debug",
+		"SHUTDOWN_DRAIN_DELAY":      "0s",
+		"SHUTDOWN_TIMEOUT":          "30s",
 	})
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
@@ -49,6 +53,8 @@ func TestLoadReadsEnvironment(t *testing.T) {
 	want := config.Config{
 		HTTPAddr:           "127.0.0.1:9000",
 		DatabaseURL:        "postgres://db/workouts",
+		AppURL:             "https://my-workouts.online",
+		RateLimitPerMinute: 100000,
 		LogLevel:           config.LogLevel(slog.LevelDebug),
 		ShutdownDrainDelay: 0,
 		ShutdownTimeout:    30 * time.Second,
@@ -75,6 +81,8 @@ func TestLoadRejectsInvalidValues(t *testing.T) {
 		{"unparsable duration", with(valid, "SHUTDOWN_TIMEOUT", "soon"), `invalid duration "soon"`},
 		{"negative drain delay", with(valid, "SHUTDOWN_DRAIN_DELAY", "-1s"), "SHUTDOWN_DRAIN_DELAY"},
 		{"zero shutdown timeout", with(valid, "SHUTDOWN_TIMEOUT", "0s"), "SHUTDOWN_TIMEOUT"},
+		{"relative app url", with(valid, "APP_URL", "/api"), "APP_URL"},
+		{"zero rate limit", with(valid, "API_RATE_LIMIT_PER_MINUTE", "0"), "API_RATE_LIMIT_PER_MINUTE"},
 	}
 
 	for _, tt := range tests {

@@ -11,6 +11,7 @@ import (
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/server"
 )
 
@@ -53,7 +54,16 @@ func TestServeAnswers503FromReadinessWhileDraining(t *testing.T) {
 
 	readiness := health.NewReadiness(clock.System{}, discardLogger())
 	mux := http.NewServeMux()
-	mux.Handle("GET /health/ready", readiness)
+	mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) {
+		response, err := readiness.GetReadiness(r.Context(), gen.GetReadinessRequestObject{})
+		if err == nil {
+			err = response.VisitGetReadinessResponse(w)
+		}
+
+		if err != nil {
+			t.Errorf("readiness: %v", err)
+		}
+	})
 
 	drained := make(chan struct{})
 	ln, cancel, done := start(t, mux, server.Options{

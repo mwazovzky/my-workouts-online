@@ -239,7 +239,10 @@ The iOS app (`apps/ios`) is tested on the host with the Xcode toolchain, not in 
 ```bash
 scripts/contract-test.sh http://localhost:8080            # dev stack (Docker image of Schemathesis)
 SCHEMATHESIS=schemathesis scripts/contract-test.sh URL     # local binary
+CONTRACT_INCLUDE=getMeta scripts/contract-test.sh http://localhost:8081   # the Go API: only the listed operations
 ```
+
+`CONTRACT_INCLUDE` takes comma-separated operationIds and is how the Go API, still being built, is tested on the operations it implements. When every listed operation is public, the login step is skipped.
 
 The run logs in as the seeded admin (`test@example.com`) and fuzzes writes, so use a disposable database and reseed afterwards (`php artisan migrate:fresh --seed`). Raise `API_RATE_LIMIT_PER_MINUTE` for the run. `.github/workflows/contract.yml` runs it on every push with a fresh MySQL and `php artisan serve`.
 

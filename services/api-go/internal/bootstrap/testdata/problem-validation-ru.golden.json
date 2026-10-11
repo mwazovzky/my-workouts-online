@@ -1,0 +1,31 @@
+{
+  "code": "validation_failed",
+  "detail": "Выбранное значение client недопустимо. (и ещё ошибок: 3)",
+  "errors": [
+    {
+      "code": "invalid_value",
+      "detail": "Выбранное значение client недопустимо.",
+      "pointer": "/client"
+    },
+    {
+      "code": "invalid_format",
+      "detail": "Поле email должно быть строкой.",
+      "pointer": "/email"
+    },
+    {
+      "code": "unknown_field",
+      "detail": "Это поле не допускается.",
+      "pointer": "/extra"
+    },
+    {
+      "code": "required",
+      "detail": "Поле password обязательно.",
+      "pointer": "/password"
+    }
+  ],
+  "instance": "/api/v1/auth/login#00000000-0000-4000-8000-000000000001",
+  "status": 422,
+  "title": "Validation failed",
+  "type": "http://localhost:8080/problems/validation_failed"
+}
+

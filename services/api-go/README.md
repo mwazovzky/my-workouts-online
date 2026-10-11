@@ -1,6 +1,6 @@
 # Workouts API (Go)
 
-A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers only the health probes and owns its Postgres schema. The PHP API stays the production backend.
+A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes and `GET /api/v1/meta`, owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
 
 ## Run
 
@@ -10,6 +10,7 @@ The dev stack runs it in Docker; Go on the host is optional.
 docker compose up -d api-go          # starts postgres too; http://localhost:8081
 curl -i localhost:8081/health        # {"status":"ok","timestamp":"…"}
 curl -i localhost:8081/health/ready  # 200 with components.database up, or 503 with status degraded
+curl -i localhost:8081/api/v1/meta -H 'Accept-Language: ru'  # the same body as the PHP API
 docker compose restart api-go        # pick up code changes (the dev container builds, migrates, then serves)
 docker compose logs -f api-go        # JSON logs
 ```
@@ -43,7 +44,12 @@ Run every task in `services/api-go`, or through the container: `docker compose e
 
 golangci-lint and sqlc are downloaded into `bin/` at the versions pinned in the `Makefile`; oapi-codegen and govulncheck are `tool` directives in `go.mod` (`go tool …`).
 
-Golden files: `go test ./internal/platform/health -update` rewrites `testdata/*.golden.json`; review the diff before committing.
+### Tests
+
+- **HTTP tests** go through the real handler from `bootstrap.New` with `internal/platform/httpapi/apitest`. `Do` sends a request with a fixed `X-Request-Id`, plus `Accept-Language` and a bearer token when set. It validates every response to a contract operation against `contracts/openapi.yaml` and fails the test on a mismatch.
+- **Golden files** live in the package's `testdata/` and are compared as JSON values, so a body copied from the PHP API is a valid golden file (`internal/bootstrap/testdata/meta.golden.json` is). `go test ./internal/bootstrap -run TestName -update` rewrites the golden files of the tests it runs. Review the diff, and never `-update` a file copied from PHP.
+- **Coverage** is measured across packages (`-coverpkg=./...`), generated code excluded.
+- **Contract tests:** `CONTRACT_INCLUDE=getMeta scripts/contract-test.sh http://localhost:8081` runs Schemathesis against the Go API for the listed operations. It skips the login step when they are all public.
 
 ## Database
 
@@ -72,9 +78,44 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 | --- | --- | --- |
 | `DATABASE_URL` | required | Postgres URL. Compose builds it from `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE`. Pool settings go in the query string (`pool_max_conns=10`). |
 | `HTTP_ADDR` | `:8081` | Listen address. |
+| `APP_URL` | `http://localhost:8080` | Public base URL; a Problem's `type` is `{APP_URL}/problems/{code}`. |
+| `API_RATE_LIMIT_PER_MINUTE` | `60` | Requests per minute per client IP under `/api/`; over it, 429 with `Retry-After`. CI sets `100000`. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`, or Laravel's names (`notice`, `warning`, `critical`, …). |
 | `SHUTDOWN_DRAIN_DELAY` | `2s` | How long `/health/ready` answers 503 before the listener closes. |
 | `SHUTDOWN_TIMEOUT` | `5s` | How long in-flight requests may take to finish after that. |
+
+## HTTP Platform
+
+Every request passes the same chain (`internal/platform/httpapi`):
+
+1. **Request id:** a UUID from `X-Request-Id` is kept, anything else is replaced, and the id is echoed on every response and logged.
+2. **Access log:** one JSON line per request: `request_id`, `method`, `path`, `route`, `status`, `bytes`, `duration_ms`.
+3. **Recover:** a panic becomes a 500 Problem; the stack goes to the log, never to the body.
+4. **Locale:** from `Accept-Language` (`en`, `ru`; anything else is `en`), answered with `Content-Language` and `Vary: Accept-Language`.
+5. **Rate limit** (see `API_RATE_LIMIT_PER_MINUTE`).
+6. **Routing:** an unknown path is a 404 Problem, a wrong method a 405 Problem with `Allow`, and a non-numeric id in a path a 404.
+7. **Request validation:** inside each contract operation, the request is checked against the contract, and failures are a 422 with one `{pointer, code, detail}` per field. Malformed JSON is one `invalid_format` error with the empty pointer.
+8. **Generated strict server:** the module handler runs, and a returned error goes through the responder.
+
+Errors are `kernel/apperr` values, which only the responder turns into Problems:
+
+| `apperr` kind | Status | Codes |
+| --- | --- | --- |
+| NotFound | 404 | `not_found` (detail always "Record not found.") |
+| Conflict | 409 | `conflict`, `in_use` |
+| Validation | 422 | `validation_failed`, with `errors` |
+| Unauthenticated | 401 | `unauthenticated`, `token_expired`, `invalid_credentials`, `refresh_token_*` |
+| Forbidden | 403 | `forbidden`, `email_unverified` |
+| RateLimited | 429 + `Retry-After` | `too_many_requests`, `too_many_attempts` |
+| PreconditionFailed | 412 | `precondition_failed` |
+| PreconditionRequired | 428 | `precondition_required` |
+| BadRequest | 400 | `bad_request` |
+| `httpapi.ErrNotImplemented` | 501 | `internal_error` |
+| anything else | 500 | `internal_error`, detail "Server Error"; the error is logged |
+
+Messages are English keys translated from `internal/kernel/i18n/locales/{en,ru}.json` (ported from the PHP lang files). Where the Go API deliberately answers differently from PHP is listed in [ADR 0006](docs/adr/0006-http-errors-locale-and-request-validation.md).
+
+**Adding an operation:** implement its method on the module's handler type, embed that type in `internal/bootstrap/api.go`, and delete the operation's stub from `internal/bootstrap/unimplemented.go`. The build fails while both exist.
 
 ## Shutdown
 
@@ -87,17 +128,25 @@ cmd/workouts/                 the binary: subcommand dispatch, logger, signal ha
 migrations/                   goose migrations (SQL embedded, River as Go migration 00004); sqlc's schema
 sql/<module>/                 sqlc queries, one directory per module
 sqlc.yaml                     sqlc configuration
-internal/kernel/apperr/       typed application errors (NotFound, Conflict)
-internal/kernel/clock/        Clock interface (tests inject a fixed time)
+internal/kernel/apperr/       typed application errors with the contract's error and field codes
+internal/kernel/auth/         Principal (the authenticated caller) in the context
+internal/kernel/clock/        Clock interface, System and Fake
+internal/kernel/i18n/         locale negotiation and the embedded message catalogs
+internal/kernel/pagination/   page parsing, PageMeta and absolute PageLinks
 internal/kernel/txn/          Transactor port: InTx(ctx, fn)
+internal/kernel/validate/     validation builder producing pointer field errors
 internal/platform/config/     environment configuration
-internal/platform/health/     /health, /health/ready, /up
+internal/platform/health/     getHealth, getReadiness, /up
+internal/platform/httpapi/    middleware chain, request validation, Problem responder, routing
+internal/platform/httpapi/apitest  HTTP test client: contract response validation, golden files
+internal/platform/meta/       getMeta
+internal/platform/ratelimit/  rate-limiter port and in-memory fixed-window adapter
 internal/platform/postgres/   pool, migrator, Transactor, pgx error mapper, readiness check
 internal/platform/server/     http.Server with graceful shutdown
 internal/platform/testdb/     a migrated database per test (template clone)
 internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go)
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
-internal/bootstrap/           composition root: New(deps) -> *App
+internal/bootstrap/           composition root: New(deps) -> *App; api.go assembles the strict server
 docs/adr/                     architecture decision records
 scripts/coverage-check.sh     coverage threshold without generated code
 ```
@@ -112,6 +161,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0003 Generate the HTTP layer with oapi-codegen from the 3.1 contract](docs/adr/0003-openapi-code-generation.md)
 - [0004 Store translations in a jsonb column per row](docs/adr/0004-translations-as-jsonb.md)
 - [0005 Split template and workout activities into their own tables](docs/adr/0005-split-activity-tables.md)
+- [0006 Problem Details, locale and request validation in the HTTP platform](docs/adr/0006-http-errors-locale-and-request-validation.md)
 
 ## Image
 

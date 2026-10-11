@@ -41,7 +41,17 @@ Adopted in story 2:
 
 Upgraded for govulncheck in story 2 (both reached only through testcontainers): `golang.org/x/crypto` v0.56.0, `github.com/moby/go-archive` v0.3.0.
 
-Planned, each confirmed or replaced by an ADR in its story: `kin-openapi` `openapi3filter` for request validation (story 3, already a dependency of the generated code), `lestrrat-go/jwx/v3` and `golang.org/x/crypto/bcrypt` (story 4), `resend-go` and `svix` (story 11), the River client and workers (story 11), OpenTelemetry (story 12).
+Adopted in story 3:
+
+| Concern | Choice | Version |
+| --- | --- | --- |
+| Request and response validation | `github.com/getkin/kin-openapi/openapi3filter` against the embedded contract (ADR 0006); upgraded from v0.142.0 for GO-2026-6112, a panic in request validation | v0.144.0 |
+| Locale negotiation | `golang.org/x/text/language` (`ParseAcceptLanguage`), already in the module graph | v0.42.0 |
+| Request ids | `github.com/google/uuid`, already in the module graph through the generated code | v1.6.0 |
+
+Messages, validation and pagination are hand-written kernel packages (`i18n`, `validate`, `pagination`), and the rate limiter is an in-memory fixed window behind a port (`platform/ratelimit`); no library was needed for any of them.
+
+Planned, each confirmed or replaced by an ADR in its story: `lestrrat-go/jwx/v3` and `golang.org/x/crypto/bcrypt` (story 4), `resend-go` and `svix` (story 11), the River client and workers (story 11), OpenTelemetry (story 12).
 
 Rejected: `testify` and generated mocks (blocked by `gomodguard_v2`; tests use `testing`, go-cmp and hand-written fakes), `github.com/pkg/errors` (blocked; `fmt.Errorf` with `%w`), Viper and Cobra (configuration and CLI are small enough for the standard library and caarlos0/env).
 

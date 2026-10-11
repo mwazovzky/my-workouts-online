@@ -122,7 +122,12 @@ func serve(ctx context.Context, environ map[string]string, stderr io.Writer) err
 		return err
 	}
 
-	app := bootstrap.New(bootstrap.Deps{Logger: logger, Clock: clock.System{}, Pool: pool})
+	app, err := bootstrap.New(bootstrap.Deps{Config: cfg, Logger: logger, Clock: clock.System{}, Pool: pool})
+	if err != nil {
+		pool.Close()
+
+		return err
+	}
 
 	ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", cfg.HTTPAddr)
 	if err != nil {
