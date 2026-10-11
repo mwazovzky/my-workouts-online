@@ -4,6 +4,7 @@
 ![code style](https://github.com/mwazovzky/my-workouts-online/actions/workflows/code-style.yml/badge.svg?branch=main)
 ![lint](https://github.com/mwazovzky/my-workouts-online/actions/workflows/lint.yml/badge.svg?branch=main)
 ![contract](https://github.com/mwazovzky/my-workouts-online/actions/workflows/contract.yml/badge.svg?branch=main)
+![go](https://github.com/mwazovzky/my-workouts-online/actions/workflows/go.yml/badge.svg?branch=main)
 ![backend coverage](https://github.com/mwazovzky/my-workouts-online/raw/badges/backend.svg)
 ![frontend coverage](https://github.com/mwazovzky/my-workouts-online/raw/badges/frontend.svg)
 
@@ -15,6 +16,7 @@
 apps/web/            Vue 3 SPA (vue-router, Pinia) — the user-facing web client
 apps/ios/            SwiftUI iOS app (XcodeGen project, local Swift packages) — the native client
 services/api-php/    Laravel 12 JSON API (php-fpm)
+services/api-go/     Go API in progress, same contract (health probes only so far)
 contracts/           OpenAPI contract shared by every client and backend
 docker/              api + web images, nginx configs, compose support files
 ```
@@ -37,6 +39,8 @@ Logs (including the verification and password-reset emails, which use the `log` 
 
 This mirrors the production topology (nginx in front of the SPA and the API) while keeping code bind-mounted for live edits.
 
+**Go API:** `docker compose up -d` also starts `api-go` on `http://localhost:8081` with its own `postgres`; nginx does not route to it yet. Details in [services/api-go/README.md](services/api-go/README.md).
+
 **iOS app:** needs Xcode and XcodeGen on the Mac (`brew install xcodegen`). `cd apps/ios && xcodegen generate && open MyWorkouts.xcodeproj`; the Debug build talks to the dev stack above. Details in [apps/ios/README.md](apps/ios/README.md).
 
 Useful commands:
@@ -47,6 +51,7 @@ docker compose exec -T app vendor/bin/pint --dirty       # PHP formatting
 docker compose exec -T node npm test                     # SPA tests (apps/web)
 docker compose exec -T node npm run lint:fix             # SPA lint
 swift format lint --strict --recursive apps/ios          # iOS lint (host Xcode toolchain)
+docker compose exec -T api-go make check                 # Go API gate (services/api-go)
 ```
 
 ## Documentation

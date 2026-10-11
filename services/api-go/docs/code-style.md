@@ -1,0 +1,84 @@
+# Go Code Style
+
+Coding standards for the Go API. Repository-wide conventions (commit messages, API design in [`docs/api-design.md`](../../../docs/api-design.md)) still apply; the PHP and web standards are in [`docs/code-style.md`](../../../docs/code-style.md).
+
+Three layers with one job each: `.golangci.yml` enforces what a linter can check, this document states every convention in prose, including the ones no linter can check, and the ADRs in [`adr/`](adr/) record why. Each rule below ends with who enforces it: **(lint: name)** for a linter, **(make check)** for another automated step, **(review)** when only a reviewer can.
+
+- `make check` **must** pass before every commit; CI runs exactly `make check` **(make check)**.
+- A decision **must** get an ADR (copy [`adr/0000-template.md`](adr/0000-template.md)) when it picks a library or tool, changes the module layout or dependency table, departs from the PHP API's behaviour or schema, or disables a lint rule for the whole service **(review)**.
+
+## Module Layout and Dependencies
+
+`internal/` is split into `kernel` (dependency-free shared types), `platform` (infrastructure), one directory per module (`identity`, `catalog`, `training`, `dashboard`) and `bootstrap` (the composition root). A module has `domain/`, `app/` (use cases), `ports/` (interfaces), `adapters/` and an exported `<module>api/` package, its only surface for other modules. [ADR 0001](adr/0001-repository-layout.md) has the reasoning.
+
+| Package | May import (internal) | Enforced by |
+| --- | --- | --- |
+| `kernel/*` | other `kernel` packages only | lint: depguard `kernel` |
+| `platform/*` | `kernel`, other `platform` packages | lint: depguard `platform` |
+| `<module>/domain`, `app`, `ports` | `kernel`, own module's core, other modules' `*api` packages as allowed below; never `platform`, adapters or `bootstrap` | lint: depguard `module-core` |
+| `<module>/adapters/*` | `kernel`, `platform`, own module; never another module, not even its `*api` package | lint: depguard `adapters` |
+| `identity`, `catalog` | no other module | lint: depguard `identity`, `catalog` |
+| `training` | `catalog/catalogapi` only | lint: depguard `training` |
+| `dashboard` | `catalog/catalogapi`, `training/trainingapi` only | lint: depguard `dashboard` |
+| `bootstrap` | everything; imported only by `cmd/` | review |
+
+- A use case **must** write the tables of one module only; no transaction spans two modules. `dashboard` is a read model and may read across tables **(review)**.
+- An `*api` package **must** export plain data types and narrow interfaces, never a module's domain types or its repository **(review)**.
+- Each module **must** have a `doc.go` stating what it owns **(review)**.
+
+## Errors
+
+- Errors **must** be wrapped with `fmt.Errorf("…: %w", err)` and matched with `errors.Is` / `errors.As`, never by comparing strings or with `==` on wrapped errors **(lint: errorlint)**.
+- Business failures **must** be typed `kernel/apperr` errors (from story 3); only the HTTP adapter maps them to a status and a Problem Details body. Use cases and domain code never know a status code **(review)**.
+- Adapters **must** translate driver errors (`pgx`, `pgconn`) into `apperr` before returning; no `pgx` type crosses a port **(review)**.
+- Every returned error **must** be handled, and every response body and `sql.Rows` closed **(lint: errcheck, bodyclose, rowserrcheck, sqlclosecheck)**.
+- `github.com/pkg/errors` **must not** be used **(lint: gomodguard_v2)**.
+
+## Context
+
+- `context.Context` **must** be the first parameter of every function below the HTTP handler that does I/O or may block **(review)**; outbound HTTP requests and listeners take one **(lint: noctx)**.
+- The context **must** carry only infrastructure values: request id, logger, principal, trace. Business inputs **must** be explicit fields of a use-case input struct, never context values **(review)**.
+
+## Types
+
+- Domain invariants **must** live on domain types (constructors and methods that return an error), not in handlers or SQL; a use case orchestrates, a handler translates **(review)**.
+- A `switch` over an enum, including the generated contract enums, **must** list every value; a `default` branch does not count **(lint: exhaustive)**.
+- Request and response types **must** come from the generated package (`internal/platform/httpapi/gen`); hand-written structs mirroring the contract are not allowed **(review)**.
+
+## Constructors and State
+
+- Constructors **must** take their dependencies explicitly, as parameters or a `Deps` struct of interfaces and values; nothing reaches for a global **(review)**.
+- No package-level mutable state and no `init()` functions; `cmd/workouts` sets the default `slog` logger once and passes loggers on explicitly **(review)**.
+- Time **must** come from an injected `kernel/clock.Clock`, never `time.Now()` in use cases or handlers **(review)**.
+
+## Dependencies
+
+- A new module dependency **must** be justified in [ADR 0002](adr/0002-library-choices.md) or a new ADR **(review)**.
+- Tools (`oapi-codegen`, `govulncheck`) are pinned as `tool` directives in `go.mod` and run with `go tool`; golangci-lint is pinned in the `Makefile` **(make check)**.
+- Blocked modules: `github.com/pkg/errors`, `github.com/stretchr/testify`, `github.com/golang/mock`, `go.uber.org/mock` **(lint: gomodguard_v2)**.
+- `go.mod` **must** be tidy **(make check: `go mod tidy -diff`)**; no reachable known vulnerability **(make check: govulncheck)**.
+
+## Generated Code
+
+- Generated code (oapi-codegen output under `internal/platform/httpapi/gen`, sqlc output from story 2) **must** be committed and **must not** be edited; `make generate` rewrites it, and `make check` fails when it is stale **(make check)**.
+- Generated code is excluded from linting and from the coverage threshold **(make check)**.
+
+## Testing
+
+- Tests use the standard library `testing` package and `go-cmp` for diffs; no assertion or mocking frameworks **(lint: gomodguard_v2)**.
+- Ports **must** get hand-written fakes in the test package that needs them, not generated mocks **(review)**.
+- Tests **should** be table-driven and call `t.Parallel()`; the suite runs with `-race -shuffle=on`, so tests **must not** depend on order or shared state **(make check)**.
+- Tests **must not** sleep to wait for something; synchronise with channels and inject a fixed `Clock` **(review)**.
+- Response bodies are compared with golden files in `testdata/` (`go test ./internal/<package> -update` rewrites them; review the diff) **(review)**. Reading them by a computed path is the one `gosec` G304 exception.
+- Database tests (from story 2) get a template database each; no test shares rows with another **(review)**.
+- Statement coverage, generated code excluded, **must** stay at or above `COVERAGE_MIN` in the `Makefile` **(make check)**.
+- Each domain story **must** port the PHPUnit feature tests it replaces case by case (owner allowed, other user 404, validation failures) **(review)**.
+
+## Formatting
+
+- Code is formatted with gofumpt and goimports, with the service's own packages in a separate import group (`make fmt`) **(make check: `golangci-lint fmt --diff`)**.
+
+## Linting
+
+- The standard golangci-lint set (errcheck, govet, ineffassign, staticcheck, unused) plus gocritic, gosec, revive (doc comments on exported names) and unparam **must** pass **(lint)**. A `//nolint` directive **must** name the linter and give the reason **(lint: nolintlint)**.
+- A rule may be disabled or customised only in `.golangci.yml`, with a comment naming the section of this document or the ADR that justifies it **(review)**.

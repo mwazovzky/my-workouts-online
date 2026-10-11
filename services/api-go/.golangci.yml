@@ -1,0 +1,201 @@
+# golangci-lint v2 configuration for services/api-go, run by `make lint` and
+# `make check`. This file is the mechanically enforced half of the Go standard;
+# the prose half, including what no linter can check, is docs/code-style.md
+# (paths in this file are relative to services/api-go). Every rule that is not
+# a linter default names the section or ADR that justifies it.
+version: "2"
+
+linters:
+  # errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    - bodyclose # docs/code-style.md "Errors" (every response body is closed)
+    - depguard # docs/code-style.md "Module Layout and Dependencies"
+    - errorlint # docs/code-style.md "Errors" (wrap with %w, match with errors.Is/As)
+    - exhaustive # docs/code-style.md "Types" (a switch over a contract enum lists every value)
+    - gocritic # docs/code-style.md "Linting" (style and correctness checks)
+    - gomodguard_v2 # docs/code-style.md "Dependencies"
+    - gosec # docs/code-style.md "Linting" (security checks)
+    - nolintlint # docs/code-style.md "Linting" (a //nolint names the linter and the reason)
+    - noctx # docs/code-style.md "Context" (every outbound call carries a context)
+    - revive # docs/code-style.md "Linting" (doc comments on exported names, naming)
+    - rowserrcheck # docs/code-style.md "Errors" (sqlc rows from story 2 on)
+    - sqlclosecheck # docs/code-style.md "Errors" (sqlc rows from story 2 on)
+    - unparam # docs/code-style.md "Linting" (no parameter or result that never varies)
+
+  settings:
+    depguard:
+      # The dependency table in docs/code-style.md "Module Layout and
+      # Dependencies" and ADR 0001. Lax mode: anything not denied is allowed.
+      # A module's own packages may import each other; the rules below stop the
+      # arrows the table forbids.
+      rules:
+        kernel:
+          list-mode: lax
+          files: ["**/internal/kernel/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform
+              desc: kernel imports nothing internal (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/bootstrap
+              desc: kernel imports nothing internal (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
+              desc: kernel imports nothing internal (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog
+              desc: kernel imports nothing internal (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
+              desc: kernel imports nothing internal (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: kernel imports nothing internal (ADR 0001)
+        platform:
+          list-mode: lax
+          files: ["**/internal/platform/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/bootstrap
+              desc: platform imports only kernel (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
+              desc: platform imports only kernel (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog
+              desc: platform imports only kernel (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
+              desc: platform imports only kernel (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: platform imports only kernel (ADR 0001)
+        # The hexagon's inside (domain, use cases, ports) never sees
+        # infrastructure: no platform, no adapters, no composition root.
+        module-core:
+          list-mode: lax
+          files:
+            - "**/internal/*/domain/**"
+            - "**/internal/*/app/**"
+            - "**/internal/*/ports/**"
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform
+              desc: domain, app and ports depend on ports, not on infrastructure (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/bootstrap
+              desc: only cmd imports the composition root (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters
+              desc: the core never imports adapters (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters
+              desc: the core never imports adapters (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters
+              desc: the core never imports adapters (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/adapters
+              desc: the core never imports adapters (ADR 0001)
+        # identity and catalog depend on no other module.
+        identity:
+          list-mode: lax
+          files: ["**/internal/identity/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog
+              desc: identity depends on no other module (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
+              desc: identity depends on no other module (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: identity depends on no other module (ADR 0001)
+        catalog:
+          list-mode: lax
+          files: ["**/internal/catalog/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
+              desc: catalog depends on no other module (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
+              desc: catalog depends on no other module (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: catalog depends on no other module (ADR 0001)
+        # training's use cases may read catalog through catalogapi only.
+        training:
+          list-mode: lax
+          files: ["**/internal/training/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
+              desc: training depends only on catalogapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: training depends only on catalogapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/domain
+              desc: training depends only on catalogapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app
+              desc: training depends only on catalogapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/ports
+              desc: training depends only on catalogapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters
+              desc: training depends only on catalogapi (ADR 0001)
+        # dashboard reads catalog and training through their api packages only.
+        dashboard:
+          list-mode: lax
+          files: ["**/internal/dashboard/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/domain
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/ports
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/domain
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/app
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/ports
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+        # Adapters translate between one module's ports and the outside world;
+        # they never reach into another module, not even through its api package.
+        adapters:
+          list-mode: lax
+          files: ["**/internal/*/adapters/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/catalogapi
+              desc: adapters never cross modules; go through a port (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/trainingapi
+              desc: adapters never cross modules; go through a port (ADR 0001)
+
+    gomodguard_v2:
+      blocked:
+        # docs/code-style.md "Errors"
+        - module: github.com/pkg/errors
+          reason: the standard library wraps errors with fmt.Errorf and %w
+        # docs/code-style.md "Testing"
+        - module: github.com/stretchr/testify
+          reason: tests use the standard library and go-cmp
+        - module: github.com/golang/mock
+          reason: ports get hand-written fakes, not generated mocks
+        - module: go.uber.org/mock
+          reason: ports get hand-written fakes, not generated mocks
+
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+    exhaustive:
+      # docs/code-style.md "Types": a default branch does not excuse a
+      # missing enum value.
+      default-signifies-exhaustive: false
+
+  exclusions:
+    # Generated code (gen.go, sqlc output) is diff-checked, not linted.
+    generated: strict
+    presets:
+      # Standard-library calls whose errors are routinely ignored (fmt.Fprint…).
+      - std-error-handling
+    rules:
+      # docs/code-style.md "Testing": tests read golden files and fixtures
+      # from testdata by a computed path.
+      - path: _test\.go
+        linters: [gosec]
+        text: G304
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      # docs/code-style.md "Formatting": own packages in a separate import group.
+      local-prefixes:
+        - github.com/mwazovzky/my-workouts-online/services/api-go
+  exclusions:
+    generated: strict

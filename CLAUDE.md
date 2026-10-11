@@ -9,14 +9,15 @@ Workout tracking app: users browse programs, enroll, log workouts, and track set
 - `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
 - `apps/ios/` — native SwiftUI iOS app (Swift 6, iOS 17+, XcodeGen `project.yml`, local packages `WorkoutsCore` and `WorkoutsAPI`) consuming the same API; see `apps/ios/README.md`. Planned in `planning/epics/ios-app/`.
+- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes only so far; not routed by nginx). See `services/api-go/README.md`.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
-- `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), dev nginx config.
+- `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), `api-go` image (Go toolchain dev stage, distroless production stage), dev nginx config.
 
 Full product docs in `docs/` — see `docs/README.md` for index. Note: the Laravel Boost guideline sections below that describe Inertia do not apply; this backend renders no pages.
 
 ## Common Commands
 
-The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`. Run tools through the containers unless PHP/Node are installed on the host.
+The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`, `api-go` (the Go API on http://localhost:8081, toolchain container with the repo bind-mounted), `postgres` (used only by the Go API). Run tools through the containers unless PHP/Node are installed on the host.
 
 ### Backend (`services/api-php`)
 ```bash
@@ -50,6 +51,18 @@ swift format lint --strict --recursive apps/ios                            # Swi
 xcodebuild test -project apps/ios/MyWorkouts.xcodeproj -scheme MyWorkouts -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -skip-testing:MyWorkoutsUITests
 swift apps/ios/scripts/seed-string-catalog.swift                           # merge web UI strings into Localizable.xcstrings
 ```
+
+### Go API (`services/api-go`)
+Runs in the `api-go` container (no Go on the host needed); with Go 1.27 on the host, drop the `docker compose exec -T api-go` prefix.
+```bash
+docker compose exec -T api-go make check     # the gate CI runs: tidy, fmt, vet, golangci-lint, generated-code diff, race tests + coverage, govulncheck
+docker compose exec -T api-go make fmt       # gofumpt + goimports
+docker compose exec -T api-go make generate  # regenerate internal/platform/httpapi/gen from contracts/openapi.yaml (commit the result)
+docker compose exec -T api-go go test -race ./internal/platform/health/  # one package
+docker compose restart api-go                # rebuild and restart after code changes
+```
+
+After modifying any `.go` file or `contracts/openapi.yaml`, always run `make check` in `services/api-go` before finalizing. Conventions are in `services/api-go/docs/code-style.md`; decisions are ADRs in `services/api-go/docs/adr/`.
 
 After modifying any `.swift` file, always run `swift format --in-place` on it and the affected package or app tests before finalizing. Views live in the app target; anything testable without UIKit goes in `Packages/`.
 
@@ -106,7 +119,7 @@ Exercise <-M:N-> Category
 
 ### CI
 
-GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `deploy.yml`.
+GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `go.yml` (`make check` in `services/api-go`; skipped unless `services/api-go/**`, `docker/api-go/**`, `catalog/**` or the contract changed), `deploy.yml`.
 
 ### Deployment
 
@@ -114,7 +127,7 @@ Docker Compose: `web` (nginx + SPA) and `api` (php-fpm) images built by the depl
 
 ## Documentation
 
-Project coding standards: `docs/code-style.md`.
+Project coding standards: `docs/code-style.md` (PHP and web); Go: `services/api-go/docs/code-style.md`.
 
 API design standard (naming, envelope, errors, status codes): `docs/api-design.md`.
 

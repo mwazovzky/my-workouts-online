@@ -9,3 +9,6 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Generated from contracts/openapi.yaml by oapi-codegen; collapsed in GitHub diffs.
+services/api-go/internal/platform/httpapi/gen/gen.go linguist-generated=true
