@@ -28,6 +28,16 @@ func TestLoadAppliesDefaults(t *testing.T) {
 		LogLevel:           config.LogLevel(slog.LevelInfo),
 		ShutdownDrainDelay: 2 * time.Second,
 		ShutdownTimeout:    5 * time.Second,
+		AppEnv:             "production",
+		BcryptRounds:       12,
+		JWT: config.JWT{
+			Issuer:            "http://localhost:8080",
+			Audience:          "my-workouts",
+			AccessTTLSeconds:  900,
+			RefreshTTLSeconds: 2592000,
+			LeewaySeconds:     30,
+			CookieSecure:      true,
+		},
 	}
 	if diff := cmp.Diff(want, cfg); diff != "" {
 		t.Errorf("Load() mismatch (-want +got):\n%s", diff)
@@ -45,6 +55,17 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		"LOG_LEVEL":                 "debug",
 		"SHUTDOWN_DRAIN_DELAY":      "0s",
 		"SHUTDOWN_TIMEOUT":          "30s",
+		"APP_ENV":                   "local",
+		"BCRYPT_ROUNDS":             "4",
+		"JWT_ISSUER":                "https://issuer.test",
+		"JWT_AUDIENCE":              "my-workouts-test",
+		"JWT_PRIVATE_KEY":           "private",
+		"JWT_PUBLIC_KEY":            "public",
+		"JWT_KEY_ID":                "kid",
+		"JWT_ACCESS_TTL":            "60",
+		"JWT_REFRESH_TTL":           "120",
+		"JWT_LEEWAY":                "0",
+		"JWT_COOKIE_SECURE":         "false",
 	})
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
@@ -58,6 +79,18 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		LogLevel:           config.LogLevel(slog.LevelDebug),
 		ShutdownDrainDelay: 0,
 		ShutdownTimeout:    30 * time.Second,
+		AppEnv:             "local",
+		BcryptRounds:       4,
+		JWT: config.JWT{
+			Issuer:            "https://issuer.test",
+			Audience:          "my-workouts-test",
+			PrivateKey:        "private",
+			PublicKey:         "public",
+			KeyID:             "kid",
+			AccessTTLSeconds:  60,
+			RefreshTTLSeconds: 120,
+			CookieSecure:      false,
+		},
 	}
 	if diff := cmp.Diff(want, cfg); diff != "" {
 		t.Errorf("Load() mismatch (-want +got):\n%s", diff)
@@ -83,6 +116,10 @@ func TestLoadRejectsInvalidValues(t *testing.T) {
 		{"zero shutdown timeout", with(valid, "SHUTDOWN_TIMEOUT", "0s"), "SHUTDOWN_TIMEOUT"},
 		{"relative app url", with(valid, "APP_URL", "/api"), "APP_URL"},
 		{"zero rate limit", with(valid, "API_RATE_LIMIT_PER_MINUTE", "0"), "API_RATE_LIMIT_PER_MINUTE"},
+		{"bcrypt rounds out of range", with(valid, "BCRYPT_ROUNDS", "3"), "BCRYPT_ROUNDS"},
+		{"one jwt key without the other", with(valid, "JWT_PRIVATE_KEY", "x"), "JWT_PUBLIC_KEY"},
+		{"zero access ttl", with(valid, "JWT_ACCESS_TTL", "0"), "JWT_ACCESS_TTL"},
+		{"negative leeway", with(valid, "JWT_LEEWAY", "-1"), "JWT_LEEWAY"},
 	}
 
 	for _, tt := range tests {
@@ -135,4 +172,25 @@ func with(base map[string]string, key, value string) map[string]string {
 	environ[key] = value
 
 	return environ
+}
+
+func TestDerivedValues(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.Load(map[string]string{"DATABASE_URL": "postgres://localhost/workouts", "APP_URL": "https://my-workouts.online"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cfg.JWT.Issuer != "https://my-workouts.online" {
+		t.Errorf("JWT issuer = %q, want APP_URL", cfg.JWT.Issuer)
+	}
+
+	if !cfg.IsProduction() {
+		t.Error("IsProduction() = false without APP_ENV, want true as in Laravel")
+	}
+
+	if cfg.JWT.AccessTTL() != 15*time.Minute || cfg.JWT.RefreshTTL() != 30*24*time.Hour || cfg.JWT.Leeway() != 30*time.Second {
+		t.Errorf("durations = %v, %v, %v", cfg.JWT.AccessTTL(), cfg.JWT.RefreshTTL(), cfg.JWT.Leeway())
+	}
 }

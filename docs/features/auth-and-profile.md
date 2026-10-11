@@ -55,6 +55,10 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 - Password reset revokes every refresh-token family; `forgot` always answers 202 so it never reveals whether an email exists
 - Re-authentication requires a bearer token (session users use the web confirm-password page)
 
+## Go API (`services/api-go`)
+
+The Go backend implements the token operations (`register`, `login`, `refresh`, `logout`, `reauth`, JWKS) with the same wire behaviour, so the clients need no change. Tokens carry the same claims and `kid`, and with a shared key pair an access token from either backend verifies on both. Users and refresh tokens live in each backend's own database, so switching backends means signing in again. The few deliberate differences (for example, a refresh without `X-Requested-With` is a 422 because the contract makes the header required) are listed in [ADR 0007](../../services/api-go/docs/adr/0007-identity-tokens-and-auth-policy.md). Email verification, password reset and `/me` follow in story 5. Roles there are granted with `workouts user grant-admin {email}`.
+
 ## Known Limitations
 
 - No social/OAuth login

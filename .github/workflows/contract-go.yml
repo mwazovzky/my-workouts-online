@@ -1,0 +1,128 @@
+name: contract-go
+
+# Schemathesis against the Go API for the operations it implements so far
+# (services/api-go/contract-scope.txt). Story 13 drops the scope file and
+# runs the full suite.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read # dorny/paths-filter lists the PR's changed files through the API
+
+jobs:
+  # Cheap job that decides whether the check runs. A job skipped through `if:`
+  # still satisfies branch protection.
+  changes:
+    name: Detect Go changes
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.filter.outputs.go }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          base: ${{ github.event_name == 'push' && 'main' || '' }}
+          filters: |
+            go:
+              - 'services/api-go/**'
+              - 'contracts/**'
+              - 'scripts/contract-test.sh'
+              - '.github/workflows/contract-go.yml'
+
+  contract-tests:
+    name: OpenAPI contract, Go (Schemathesis)
+    needs: changes
+    if: always() && (needs.changes.outputs.go == 'true' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: workouts
+          POSTGRES_USER: workouts
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U workouts"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgres://workouts:secret@127.0.0.1:5432/workouts?sslmode=disable
+      APP_ENV: testing
+      APP_URL: http://127.0.0.1:8081
+      HTTP_ADDR: 127.0.0.1:8081
+      API_RATE_LIMIT_PER_MINUTE: '100000'
+      JWT_COOKIE_SECURE: 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: services/api-go/go.mod
+          cache-dependency-path: services/api-go/go.sum
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install Schemathesis
+        run: pip install --quiet schemathesis
+
+      - name: Build
+        working-directory: services/api-go
+        run: go build -o /tmp/workouts ./cmd/workouts
+
+      - name: Generate keys, migrate and seed
+        run: |
+          /tmp/workouts keys generate | grep '^JWT_' >> "$GITHUB_ENV"
+          /tmp/workouts migrate up
+          /tmp/workouts seed
+
+      - name: Start the API
+        run: |
+          /tmp/workouts serve > /tmp/serve.log 2>&1 &
+          for _ in $(seq 1 30); do
+            curl --silent --fail http://127.0.0.1:8081/health/ready >/dev/null && break
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:8081/health/ready
+
+      - name: Run contract tests
+        env:
+          SCHEMATHESIS: schemathesis
+        run: |
+          CONTRACT_INCLUDE="$(grep -v '^#' services/api-go/contract-scope.txt | paste -sd, -)" \
+            scripts/contract-test.sh http://127.0.0.1:8081
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: contract-go-report
+          path: contracts/.report
+          if-no-files-found: ignore
+
+      - name: Show server log on failure
+        if: failure()
+        run: tail -n 100 /tmp/serve.log

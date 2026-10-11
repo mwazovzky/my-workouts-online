@@ -1,6 +1,6 @@
 # Workouts API (Go)
 
-A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes and `GET /api/v1/meta`, owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
+A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta` and the token operations (register, login, refresh, logout, reauth, JWKS), owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
 
 ## Run
 
@@ -26,9 +26,12 @@ The binary is `workouts` (`cmd/workouts`):
 | `workouts serve` | Opens the database pool (failing fast when it is unreachable), then runs the HTTP API on `HTTP_ADDR` until SIGINT or SIGTERM, then drains (see Shutdown). |
 | `workouts migrate up` | Applies the pending migrations; running it again is a no-op. A deploy runs it before starting the new version. |
 | `workouts migrate status` | Lists every migration with its state and when it was applied. |
+| `workouts seed` | Creates (or resets) the verified demo admin `test@example.com` / `password`. Refused when `APP_ENV` is `production` or unset. Story 7 adds the catalog. |
+| `workouts user grant-admin <email>` | Gives a registered, verified user the Admin role, as `php artisan user:grant-admin`. |
+| `workouts keys generate` | Prints a new `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` pair, in the format `php artisan jwt:keys` prints. |
 | `workouts healthcheck` | Exits 0 when `GET /health` on the local port answers 200. The image's `HEALTHCHECK`; distroless has no shell or curl. |
 
-Later stories add `seed`, `work`, `catalog sync`, `keys generate` and `user grant-admin`.
+Later stories add `work` and `catalog sync`.
 
 ## Develop
 
@@ -49,7 +52,7 @@ golangci-lint and sqlc are downloaded into `bin/` at the versions pinned in the 
 - **HTTP tests** go through the real handler from `bootstrap.New` with `internal/platform/httpapi/apitest`. `Do` sends a request with a fixed `X-Request-Id`, plus `Accept-Language` and a bearer token when set. It validates every response to a contract operation against `contracts/openapi.yaml` and fails the test on a mismatch.
 - **Golden files** live in the package's `testdata/` and are compared as JSON values, so a body copied from the PHP API is a valid golden file (`internal/bootstrap/testdata/meta.golden.json` is). `go test ./internal/bootstrap -run TestName -update` rewrites the golden files of the tests it runs. Review the diff, and never `-update` a file copied from PHP.
 - **Coverage** is measured across packages (`-coverpkg=./...`), generated code excluded.
-- **Contract tests:** `CONTRACT_INCLUDE=getMeta scripts/contract-test.sh http://localhost:8081` runs Schemathesis against the Go API for the listed operations. It skips the login step when they are all public.
+- **Contract tests:** Schemathesis runs against the Go API for the operations in `contract-scope.txt`; the `contract-go` workflow does it on every PR that touches the service or the contract. Locally, seed first (`docker compose exec -T api-go go run ./cmd/workouts seed`), then run `CONTRACT_INCLUDE=$(grep -v '^#' services/api-go/contract-scope.txt | paste -sd, -) scripts/contract-test.sh http://localhost:8081` from the repository root. Add an operation to the scope file in the story that implements it.
 
 ## Database
 
@@ -83,6 +86,13 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`, or Laravel's names (`notice`, `warning`, `critical`, …). |
 | `SHUTDOWN_DRAIN_DELAY` | `2s` | How long `/health/ready` answers 503 before the listener closes. |
 | `SHUTDOWN_TIMEOUT` | `5s` | How long in-flight requests may take to finish after that. |
+| `APP_ENV` | `production` | As in Laravel; `seed` refuses to run in production. |
+| `BCRYPT_ROUNDS` | `12` | Password hashing cost. |
+| `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY` | none | Base64 raw Ed25519 keys (`workouts keys generate` or `php artisan jwt:keys`). Without them the API serves public routes and readiness reports `jwt: down`; malformed keys stop it at startup. The dev stack shares PHP's pair from `.env`, so tokens verify on both backends. |
+| `JWT_KEY_ID` | derived | `kid` override; otherwise the first 16 hex characters of the public key's SHA-256, as PHP derives it. |
+| `JWT_ISSUER`, `JWT_AUDIENCE` | `APP_URL`, `my-workouts` | Checked on every access token. |
+| `JWT_ACCESS_TTL`, `JWT_REFRESH_TTL`, `JWT_LEEWAY` | `900`, `2592000`, `30` | Seconds. |
+| `JWT_COOKIE_SECURE` | `true` | `Secure` on the refresh cookie; `false` only for plain-HTTP dev and CI. |
 
 ## HTTP Platform
 
@@ -94,8 +104,9 @@ Every request passes the same chain (`internal/platform/httpapi`):
 4. **Locale:** from `Accept-Language` (`en`, `ru`; anything else is `en`), answered with `Content-Language` and `Vary: Accept-Language`.
 5. **Rate limit** (see `API_RATE_LIMIT_PER_MINUTE`).
 6. **Routing:** an unknown path is a 404 Problem, a wrong method a 405 Problem with `Allow`, and a non-numeric id in a path a 404.
-7. **Request validation:** inside each contract operation, the request is checked against the contract, and failures are a 422 with one `{pointer, code, detail}` per field. Malformed JSON is one `invalid_format` error with the empty pointer.
-8. **Generated strict server:** the module handler runs, and a returned error goes through the responder.
+7. **Policy:** inside each contract operation, operations with `security: []` are public; any other needs a valid bearer token (401 `unauthenticated` or `token_expired`), and `Admin`-tagged ones an admin (403 `forbidden`). Per-operation throttles follow (register 10/min, reauth 6/min; 429).
+8. **Request validation:** the request is checked against the contract, and failures are a 422 with one `{pointer, code, detail}` per field. Malformed JSON is one `invalid_format` error with the empty pointer.
+9. **Generated strict server:** the module handler runs, and a returned error goes through the responder.
 
 Errors are `kernel/apperr` values, which only the responder turns into Problems:
 
@@ -140,12 +151,14 @@ internal/platform/health/     getHealth, getReadiness, /up
 internal/platform/httpapi/    middleware chain, request validation, Problem responder, routing
 internal/platform/httpapi/apitest  HTTP test client: contract response validation, golden files
 internal/platform/meta/       getMeta
-internal/platform/ratelimit/  rate-limiter port and in-memory fixed-window adapter
+internal/platform/ratelimit/  rate limiter and failure counter (login lockout), in-memory fixed windows
 internal/platform/postgres/   pool, migrator, Transactor, pgx error mapper, readiness check
 internal/platform/server/     http.Server with graceful shutdown
 internal/platform/testdb/     a migrated database per test (template clone)
 internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go)
+internal/identity/             users, roles, tokens: domain/, ports/, app/ (use cases), adapters/{postgres,bcrypt,jwt,http}
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
+contract-scope.txt            the operations the contract-go workflow tests (deleted in story 13)
 internal/bootstrap/           composition root: New(deps) -> *App; api.go assembles the strict server
 docs/adr/                     architecture decision records
 scripts/coverage-check.sh     coverage threshold without generated code
@@ -162,6 +175,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0004 Store translations in a jsonb column per row](docs/adr/0004-translations-as-jsonb.md)
 - [0005 Split template and workout activities into their own tables](docs/adr/0005-split-activity-tables.md)
 - [0006 Problem Details, locale and request validation in the HTTP platform](docs/adr/0006-http-errors-locale-and-request-validation.md)
+- [0007 Token compatibility with the PHP API, and auth policy from the contract](docs/adr/0007-identity-tokens-and-auth-policy.md)
 
 ## Image
 

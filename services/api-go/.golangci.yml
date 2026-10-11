@@ -187,6 +187,11 @@ linters:
       - path: _test\.go
         linters: [gosec]
         text: G304
+      # docs/code-style.md "Testing": test fixtures (passwords, the phpunit
+      # key pair, token claims) are not credentials.
+      - path: _test\.go
+        linters: [gosec]
+        text: G101
 
 formatters:
   enable:

@@ -7,6 +7,7 @@ package sqlcgen
 
 import (
 	"context"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -39,12 +40,114 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, email_verified_at, password_hash, locale, theme_preference, created_at, updated_at FROM users
-WHERE lower(email) = lower($1)
+SELECT users.id, users.name, users.email, users.email_verified_at, users.password_hash, users.locale, users.theme_preference, users.created_at, users.updated_at,
+       EXISTS (
+           SELECT 1 FROM role_user
+           JOIN roles ON roles.id = role_user.role_id
+           WHERE role_user.user_id = users.id AND roles.name = 'Admin'
+       ) AS is_admin
+FROM users
+WHERE lower(users.email) = lower($1)
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	User    User
+	IsAdmin bool
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.Email,
+		&i.User.EmailVerifiedAt,
+		&i.User.PasswordHash,
+		&i.User.Locale,
+		&i.User.ThemePreference,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.IsAdmin,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT users.id, users.name, users.email, users.email_verified_at, users.password_hash, users.locale, users.theme_preference, users.created_at, users.updated_at,
+       EXISTS (
+           SELECT 1 FROM role_user
+           JOIN roles ON roles.id = role_user.role_id
+           WHERE role_user.user_id = users.id AND roles.name = 'Admin'
+       ) AS is_admin
+FROM users
+WHERE users.id = $1
+`
+
+type GetUserByIDRow struct {
+	User    User
+	IsAdmin bool
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i GetUserByIDRow
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.Email,
+		&i.User.EmailVerifiedAt,
+		&i.User.PasswordHash,
+		&i.User.Locale,
+		&i.User.ThemePreference,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.IsAdmin,
+	)
+	return i, err
+}
+
+const grantRole = `-- name: GrantRole :execrows
+INSERT INTO role_user (user_id, role_id)
+SELECT $1, roles.id FROM roles WHERE roles.name = $2
+ON CONFLICT DO NOTHING
+`
+
+func (q *Queries) GrantRole(ctx context.Context, userID int64, roleName string) (int64, error) {
+	result, err := q.db.Exec(ctx, grantRole, userID, roleName)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const upsertVerifiedUser = `-- name: UpsertVerifiedUser :one
+INSERT INTO users (name, email, password_hash, email_verified_at)
+VALUES ($1, $2, $3, $4::timestamptz)
+ON CONFLICT ((lower(email))) DO UPDATE
+SET name = EXCLUDED.name,
+    password_hash = EXCLUDED.password_hash,
+    email_verified_at = EXCLUDED.email_verified_at,
+    updated_at = now()
+RETURNING id, name, email, email_verified_at, password_hash, locale, theme_preference, created_at, updated_at
+`
+
+type UpsertVerifiedUserParams struct {
+	Name         string
+	Email        string
+	PasswordHash string
+	VerifiedAt   time.Time
+}
+
+// The demo admin of `workouts seed`: created, or reset to the known
+// password and verified, matching the email without regard to case.
+func (q *Queries) UpsertVerifiedUser(ctx context.Context, arg UpsertVerifiedUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, upsertVerifiedUser,
+		arg.Name,
+		arg.Email,
+		arg.PasswordHash,
+		arg.VerifiedAt,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,

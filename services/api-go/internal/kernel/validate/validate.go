@@ -80,13 +80,17 @@ func (v *Validator) Required(field, value string) bool {
 	return v.Check(strings.TrimSpace(value) != "", field, apperr.FieldRequired, "validation.required", nil)
 }
 
-// Email fails when value is not a plain address (name@domain, no display
-// name).
+// Email fails when value is not a plain address (see IsEmail).
 func (v *Validator) Email(field, value string) bool {
-	addr, err := mail.ParseAddress(value)
-	ok := err == nil && addr.Name == "" && addr.Address == value
+	return v.Check(IsEmail(value), field, apperr.FieldInvalidFormat, "validation.email", nil)
+}
 
-	return v.Check(ok, field, apperr.FieldInvalidFormat, "validation.email", nil)
+// IsEmail reports whether value is a plain address: name@domain, with no
+// display name or angle brackets. The contract's `format: email` uses it too.
+func IsEmail(value string) bool {
+	addr, err := mail.ParseAddress(value)
+
+	return err == nil && addr.Name == "" && addr.Address == value
 }
 
 // MinLen fails when value has fewer than min characters.

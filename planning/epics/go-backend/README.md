@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: in progress (story 3); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
+**Status: in progress (story 4); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
@@ -26,7 +26,7 @@ Learning value and a codebase that stays pleasant to work with are the constrain
 | 8 | Signed links | Go-native HMAC-SHA256 signature over `verify\|id\|hash\|expires` with `LINK_SIGNING_KEY`; clients only post the four fields back, so Laravel's `APP_KEY` URL signing is not reproduced. |
 | 9 | Catalog data | Shared YAML at repo root `catalog/`, exported once from `services/api-php/database/catalog/*.php`. Go reads it from story 7; a PHP `catalog:export --check` step guards drift until story 14 switches PHP's `CatalogLoader` to the same files and deletes the PHP copies. |
 | 10 | Errors and validation | `kernel/apperr` typed errors wrapped with `%w` and matched at the HTTP boundary only; a hand-written `kernel/validate` builder emitting RFC 9457 Problem Details with JSON Pointer field errors; `openapi3filter` request validation as the shape safety net. Recorded in [ADR 0006](../../../services/api-go/docs/adr/0006-http-errors-locale-and-request-validation.md). |
-| 11 | Auth | `lestrrat-go/jwx/v3` for Ed25519 JWTs and the JWKS document, same claims and `kid` derivation as `TokenService.php`; `x/crypto/bcrypt` cost 12 (verifies Laravel `$2y$` hashes if users are ever imported); refresh-token families with rotation and reuse detection under `SELECT … FOR UPDATE`. |
+| 11 | Auth | `lestrrat-go/jwx/v3` for Ed25519 JWTs and the JWKS document, same claims and `kid` derivation as `TokenService.php`; `x/crypto/bcrypt` cost 12 (verifies Laravel `$2y$` hashes if users are ever imported); refresh-token families with rotation and reuse detection under `SELECT … FOR UPDATE`. Recorded in [ADR 0007](../../../services/api-go/docs/adr/0007-identity-tokens-and-auth-policy.md). |
 | 12 | Jobs | River (Postgres-backed) for the inbound support-email job, enqueued in the same transaction as the webhook record; `workouts work` runs the workers in a `worker-go` container. |
 | 13 | Observability | `log/slog` JSON to stderr with `request_id`; OpenTelemetry (`otelhttp`, `otelpgx`, runtime metrics) with a Prometheus exporter on a private admin port and an OTLP switch; nothing public. |
 | 14 | Testing | stdlib `testing` + `go-cmp`; `testcontainers-go` Postgres with a template database per test (`TEST_DATABASE_URL` reuses the compose database); `httptest` against `bootstrap.New`; `openapi3filter` response validation; golden JSON files; hand-written fakes for ports, no mock generators. Each domain story mirrors the PHPUnit feature tests it replaces. |
@@ -88,8 +88,8 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 | --- | --- | --- | --- |
 | 1 | [Scaffold, Toolchain, CI and Image](stories/01-scaffold-toolchain-ci-and-image.md) | Platform | shipped |
 | 2 | [Schema, Migrations, sqlc and Test Harness](stories/02-schema-migrations-sqlc-and-test-harness.md) | Platform | shipped |
-| 3 | [Shared Kernel, HTTP Platform and Meta](stories/03-shared-kernel-http-platform-and-meta.md) | Platform | in progress |
-| 4 | [Identity: Tokens, Login, Refresh and JWKS](stories/04-identity-tokens-login-refresh-and-jwks.md) | Auth & Profile | planned |
+| 3 | [Shared Kernel, HTTP Platform and Meta](stories/03-shared-kernel-http-platform-and-meta.md) | Platform | shipped |
+| 4 | [Identity: Tokens, Login, Refresh and JWKS](stories/04-identity-tokens-login-refresh-and-jwks.md) | Auth & Profile | in progress |
 | 5 | [Identity: Verification, Reset and Me](stories/05-identity-verification-reset-and-me.md) | Auth & Profile | planned |
 | 6 | [Catalog Read and Enrollment](stories/06-catalog-read-and-enrollment.md) | Programs | planned |
 | 7 | [Shared YAML Catalog and Go Sync CLI](stories/07-shared-yaml-catalog-and-go-sync-cli.md) | Platform | planned |

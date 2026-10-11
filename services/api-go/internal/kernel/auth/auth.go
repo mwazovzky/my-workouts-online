@@ -12,6 +12,8 @@ import (
 type Principal struct {
 	UserID  int64
 	IsAdmin bool
+	// EmailVerified gates the verified-only operations (story 5).
+	EmailVerified bool
 	// AuthTime is when the caller last entered their password (the auth_time
 	// claim); step-up operations require it to be recent.
 	AuthTime time.Time

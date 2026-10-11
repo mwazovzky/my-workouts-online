@@ -6,7 +6,23 @@ package sqlcgen
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
+
+type RefreshToken struct {
+	ID              int64
+	UserID          int64
+	FamilyID        uuid.UUID
+	TokenHash       string
+	DeviceName      *string
+	AuthenticatedAt time.Time
+	ExpiresAt       time.Time
+	RevokedAt       *time.Time
+	ReplacedByID    *int64
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
 
 type User struct {
 	ID              int64

@@ -2,6 +2,7 @@ package bootstrap_test
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -23,11 +24,27 @@ func (c fixedClock) Now() time.Time { return c.now }
 
 func TestMain(m *testing.M) { testdb.Main(m) }
 
+// testJWT is the key pair of services/api-php/phpunit.xml.
+var testJWT = config.JWT{
+	Issuer:            "http://localhost",
+	Audience:          "my-workouts-test",
+	PrivateKey:        "SNdNP8JHR4IZdp8IesFeqOLNQr2l8U05g/h7h4l2ho8nsYzYswZYM40Mn8Ez9bAYRKT96SVgnnDdHOK7M+khjg==",
+	PublicKey:         "J7GM2LMGWDONDJ/BM/WwGESk/eklYJ5w3RziuzPpIY4=",
+	AccessTTLSeconds:  900,
+	RefreshTTLSeconds: 2592000,
+}
+
 func newApp(t *testing.T) *bootstrap.App {
 	t.Helper()
 
+	return newAppWith(t, testJWT)
+}
+
+func newAppWith(t *testing.T, jwt config.JWT) *bootstrap.App {
+	t.Helper()
+
 	app, err := bootstrap.New(bootstrap.Deps{
-		Config: config.Config{AppURL: "http://localhost:8080", RateLimitPerMinute: 100_000},
+		Config: config.Config{AppURL: "http://localhost:8080", RateLimitPerMinute: 100_000, BcryptRounds: 4, JWT: jwt},
 		Logger: slog.New(slog.DiscardHandler),
 		Clock:  fixedClock{now: time.Date(2026, 10, 7, 9, 30, 0, 0, time.UTC)},
 		Pool:   testdb.New(t),
@@ -168,6 +185,7 @@ func TestParameterErrors(t *testing.T) {
 	t.Parallel()
 
 	api := apitest.New(t, newApp(t).Handler)
+	token := signUp(t, api)
 
 	// A non-numeric id is a 404, as the PHP API constrains id routes to digits.
 	if p := api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/workouts/abc"}).
@@ -175,7 +193,7 @@ func TestParameterErrors(t *testing.T) {
 		t.Errorf("non-numeric id: code = %q, want not_found", p.Code)
 	}
 
-	p := api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/workouts?per_page=500"}).
+	p := api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/workouts?per_page=500", Token: token}).
 		AssertStatus(http.StatusUnprocessableEntity).Problem()
 
 	want := []string{"/per_page out_of_range"}
@@ -194,7 +212,7 @@ func TestUnimplementedOperationsAnswer501(t *testing.T) {
 	t.Parallel()
 
 	p := apitest.New(t, newApp(t).Handler).
-		Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/programs", SkipContract: true}).
+		Do(apitest.Request{Method: http.MethodPost, Path: "/api/v1/auth/password/forgot", Body: map[string]any{"email": "ada@example.com"}, SkipContract: true}).
 		AssertStatus(http.StatusNotImplemented).
 		Problem()
 
@@ -221,6 +239,57 @@ func TestReadinessReportsTheDatabase(t *testing.T) {
 	api.Do(apitest.Request{Method: http.MethodGet, Path: "/health/ready"}).
 		AssertStatus(http.StatusServiceUnavailable).
 		AssertGolden("ready-database-down.golden.json")
+}
+
+// Mirrors tests/Feature/Api/Auth/MissingJwtKeysTest.php: without keys the
+// API still serves public routes, protected ones are 401, and readiness
+// reports jwt down.
+func TestWithoutJWTKeys(t *testing.T) {
+	t.Parallel()
+
+	api := apitest.New(t, newAppWith(t, config.JWT{Issuer: "http://localhost", Audience: "a", AccessTTLSeconds: 900, RefreshTTLSeconds: 60}).Handler)
+
+	api.Do(apitest.Request{Method: http.MethodGet, Path: "/health"}).AssertStatus(http.StatusOK)
+	api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/meta"}).AssertStatus(http.StatusOK)
+	api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/programs"}).AssertStatus(http.StatusUnauthorized)
+	api.Do(apitest.Request{Method: http.MethodGet, Path: "/health/ready"}).
+		AssertStatus(http.StatusServiceUnavailable).
+		AssertGolden("ready-jwt-down.golden.json")
+}
+
+func TestMalformedJWTKeysFailToStart(t *testing.T) {
+	t.Parallel()
+
+	bad := testJWT
+	bad.PublicKey = "bm90IGEga2V5"
+
+	_, err := bootstrap.New(bootstrap.Deps{
+		Config: config.Config{AppURL: "http://localhost:8080", RateLimitPerMinute: 1, BcryptRounds: 4, JWT: bad},
+		Logger: slog.New(slog.DiscardHandler),
+		Clock:  fixedClock{},
+		Pool:   testdb.New(t),
+	})
+	if err == nil || !strings.Contains(err.Error(), "JWT_PUBLIC_KEY") {
+		t.Errorf("New() error = %v, want it to name JWT_PUBLIC_KEY", err)
+	}
+}
+
+// signUp registers a user and returns an access token.
+func signUp(t *testing.T, api *apitest.Client) string {
+	t.Helper()
+
+	res := api.Do(apitest.Request{Method: http.MethodPost, Path: "/api/v1/auth/register", Body: map[string]any{
+		"name": "Ada", "email": "ada@example.com", "password": "secret123", "client": "native",
+	}}).AssertStatus(http.StatusCreated)
+
+	var body struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+
+	return body.AccessToken
 }
 
 func contains(values []string, want string) bool {

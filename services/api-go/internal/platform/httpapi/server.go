@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -23,14 +24,19 @@ type Options struct {
 	Logger             *slog.Logger
 	Clock              clock.Clock
 	Limiter            ratelimit.Limiter
+	// Authenticator resolves bearer tokens for every non-public operation.
+	Authenticator Authenticator
+	// Throttles are per-operation limits, keyed by operationId.
+	Throttles map[string]Throttle
 }
 
 // Server is the routing table plus the middleware chain around it.
 type Server struct {
-	opts      Options
-	mux       *http.ServeMux
-	responder *Responder
-	validator *requestValidator
+	opts       Options
+	mux        *http.ServeMux
+	responder  *Responder
+	validator  *requestValidator
+	operations map[string]operation
 }
 
 // NewServer loads the embedded contract and returns a Server with no routes.
@@ -43,10 +49,11 @@ func NewServer(opts Options) (*Server, error) {
 	responder := NewResponder(opts.AppURL, opts.Bundle)
 
 	return &Server{
-		opts:      opts,
-		mux:       http.NewServeMux(),
-		responder: responder,
-		validator: newRequestValidator(spec, responder),
+		opts:       opts,
+		mux:        http.NewServeMux(),
+		responder:  responder,
+		validator:  newRequestValidator(spec, responder),
+		operations: operationsOf(spec),
 	}, nil
 }
 
@@ -73,8 +80,9 @@ func (s *Server) Mount(api gen.StrictServerInterface) {
 
 	gen.HandlerWithOptions(strict, gen.StdHTTPServerOptions{
 		BaseRouter: s.mux,
-		// The last middleware is the outermost; story 4 appends bearer auth.
-		Middlewares:      []gen.MiddlewareFunc{s.validator.middleware},
+		// The last middleware is the outermost: authorize, then throttle (keyed
+		// by the principal), then validate the request.
+		Middlewares:      []gen.MiddlewareFunc{s.validator.middleware, s.throttle, s.authorize},
 		ErrorHandlerFunc: s.paramError,
 	})
 }
@@ -102,7 +110,7 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pattern != "" {
-		s.mux.ServeHTTP(w, r)
+		s.mux.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), requestKey, r)))
 
 		return
 	}
@@ -150,8 +158,12 @@ func (s *Server) paramError(w http.ResponseWriter, r *http.Request, err error) {
 
 	code, detail := apperr.FieldInvalidFormat, "validation.regex"
 
-	var required *gen.RequiredParamError
-	if errors.As(err, &required) {
+	var (
+		required       *gen.RequiredParamError
+		requiredHeader *gen.RequiredHeaderError
+	)
+
+	if errors.As(err, &required) || errors.As(err, &requiredHeader) {
 		code, detail = apperr.FieldRequired, "validation.required"
 	}
 

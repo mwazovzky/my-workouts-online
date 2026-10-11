@@ -15,7 +15,8 @@
 //
 // and per contract operation, inside the mux:
 //
-//	(bearer auth) story 4
+//	authorize     bearer token → principal for non-public operations (401); Admin-tagged ones need an admin (403)
+//	throttle      per-operation limits (register, reauth, …), per user or client IP (429)
 //	Validate      openapi3filter against the embedded contract; failures are 422 pointer errors
 //	strict server generated decoding and encoding; a returned error goes to the responder
 package httpapi

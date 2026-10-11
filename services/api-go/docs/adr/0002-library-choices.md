@@ -51,7 +51,14 @@ Adopted in story 3:
 
 Messages, validation and pagination are hand-written kernel packages (`i18n`, `validate`, `pagination`), and the rate limiter is an in-memory fixed window behind a port (`platform/ratelimit`); no library was needed for any of them.
 
-Planned, each confirmed or replaced by an ADR in its story: `lestrrat-go/jwx/v3` and `golang.org/x/crypto/bcrypt` (story 4), `resend-go` and `svix` (story 11), the River client and workers (story 11), OpenTelemetry (story 12).
+Adopted in story 4:
+
+| Concern | Choice | Version |
+| --- | --- | --- |
+| Access tokens | `github.com/lestrrat-go/jwx/v3` (EdDSA sign and verify, claim validation); ADR 0007 | v3.3.0 |
+| Password hashing | `golang.org/x/crypto/bcrypt`, cost `BCRYPT_ROUNDS` (12); verifies Laravel's `$2y$` hashes | v0.56.0 |
+
+Planned, each confirmed or replaced by an ADR in its story: `resend-go` and `svix` (story 11), the River client and workers (story 11), OpenTelemetry (story 12).
 
 Rejected: `testify` and generated mocks (blocked by `gomodguard_v2`; tests use `testing`, go-cmp and hand-written fakes), `github.com/pkg/errors` (blocked; `fmt.Errorf` with `%w`), Viper and Cobra (configuration and CLI are small enough for the standard library and caarlos0/env).
 

@@ -75,3 +75,56 @@ func TestMemoryDropsExpiredWindows(t *testing.T) {
 		t.Errorf("Len() = %d, want only the new window", got)
 	}
 }
+
+func TestMemoryCounter(t *testing.T) {
+	t.Parallel()
+
+	clk := clock.NewFake(time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC))
+	counter := ratelimit.NewMemory(clk)
+	ctx := t.Context()
+
+	hits := func() (int, time.Duration) {
+		t.Helper()
+
+		n, resetIn, err := counter.Hits(ctx, "ada|127.0.0.1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return n, resetIn
+	}
+
+	if n, _ := hits(); n != 0 {
+		t.Fatalf("Hits() before any hit = %d", n)
+	}
+
+	for range 3 {
+		if err := counter.Hit(ctx, "ada|127.0.0.1", time.Minute); err != nil {
+			t.Fatal(err)
+		}
+
+		clk.Advance(10 * time.Second)
+	}
+
+	if n, resetIn := hits(); n != 3 || resetIn != 30*time.Second {
+		t.Errorf("Hits() = %d, %v; want 3, 30s (the window opened at the first hit)", n, resetIn)
+	}
+
+	if err := counter.Clear(ctx, "ada|127.0.0.1"); err != nil {
+		t.Fatal(err)
+	}
+
+	if n, _ := hits(); n != 0 {
+		t.Errorf("Hits() after Clear = %d", n)
+	}
+
+	if err := counter.Hit(ctx, "ada|127.0.0.1", time.Minute); err != nil {
+		t.Fatal(err)
+	}
+
+	clk.Advance(time.Minute)
+
+	if n, _ := hits(); n != 0 {
+		t.Errorf("Hits() after the window = %d", n)
+	}
+}
