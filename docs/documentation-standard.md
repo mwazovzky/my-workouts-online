@@ -25,7 +25,7 @@ This is a solo-maintained project. The goal is not maximum coverage. The goal is
 | Architecture | Cross-cutting technical patterns, data model, key decisions | `docs/architecture.md` |
 | API Design Standard | Contract rules (naming, envelope, errors, status codes, versioning) and which linter enforces each | `docs/api-design.md` |
 | Runbook | Operational procedure for deployment and recovery | `docs/deployment.md` |
-| Code Style | Project coding standards and conventions | `docs/code-style.md` |
+| Code Style | Project coding standards and conventions; the Go API keeps its own next to its lint config | `docs/code-style.md`, `services/api-go/docs/code-style.md` |
 | Testing Guide | Test suite structure, coverage rules, and project testing patterns | `docs/testing.md` |
 | LLM Context | Condensed project summary for AI tools | `CLAUDE.md` |
 

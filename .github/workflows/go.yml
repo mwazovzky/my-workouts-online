@@ -1,0 +1,68 @@
+name: go
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read # dorny/paths-filter lists the PR's changed files through the API
+
+jobs:
+  # Cheap job that decides whether the check runs. A job skipped through `if:`
+  # still satisfies branch protection, so `go / make check` can be required.
+  changes:
+    name: Detect Go changes
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.filter.outputs.go }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          # Branch pushes compare against main; PRs compare against their own base.
+          base: ${{ github.event_name == 'push' && 'main' || '' }}
+          filters: |
+            go:
+              - 'services/api-go/**'
+              - 'contracts/openapi.yaml'
+              - 'catalog/**'
+              - 'docker/api-go/**'
+              - '.github/workflows/go.yml'
+
+  check:
+    name: make check
+    needs: changes
+    if: always() && (needs.changes.outputs.go == 'true' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-go
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: services/api-go/go.mod
+          cache-dependency-path: services/api-go/go.sum
+
+      - name: Cache golangci-lint
+        uses: actions/cache@v6
+        with:
+          path: services/api-go/bin
+          key: golangci-lint-${{ runner.os }}-${{ hashFiles('services/api-go/Makefile') }}
+
+      - name: make check
+        run: make check

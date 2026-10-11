@@ -91,6 +91,12 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 - User content is not re-translated after creation
 - Workouts copy the translated template name at creation time
 
+## Go API
+
+`services/api-go` is a second backend being built against the same contract (the [Go backend epic](../planning/epics/go-backend/README.md)). The PHP API stays the production backend and nginx does not route to Go yet. In the dev stack it runs as `api-go` on http://localhost:8081 with its own `postgres` (17) service, which nothing else uses; today it answers only the health probes. Its HTTP layer is generated from `contracts/openapi.yaml` and committed, so a contract change that removes or renames a field breaks the Go build, as it breaks the iOS build. CI runs `make check` for it in the path-filtered `go` workflow.
+
+The service's internal architecture (module layout, dependency rules, lifecycle) is documented with the service: [README](../services/api-go/README.md), [code style](../services/api-go/docs/code-style.md) and [decision records](../services/api-go/docs/adr/).
+
 ## Directory Guide
 
 Only non-obvious locations listed.
@@ -100,6 +106,8 @@ Only non-obvious locations listed.
 | `apps/web/`                   | The Vue SPA (vue-router, Pinia) consuming `/api/v1`; served by the `web` nginx image |
 | `apps/ios/`                   | The SwiftUI app: `project.yml`, `App/` (views, `Localizable.xcstrings`, assets), `Config/*.xcconfig`, `Packages/WorkoutsAPI`, `Packages/WorkoutsCore`, `UITests/`, `scripts/` |
 | `services/api-php/`           | The Laravel API; `docker/nginx/api-locations.conf` is the only path from the SPA to it |
+| `services/api-go/`            | The Go API in progress: `cmd/workouts`, `internal/{kernel,platform,bootstrap}`, `docs/adr/`, `Makefile` (`make check`) |
+| `docker/api-go/`              | The Go API image: `dev` toolchain stage (compose) and distroless `api` stage |
 | `docker/nginx/`               | nginx snippets shared by dev and production: API routes, SPA fallback, `/.well-known/apple-app-site-association` for iOS Universal Links (rendered from `APPLE_APP_ID`), security headers |
 | `contracts/`                  | `openapi.yaml`, the API contract every client and backend implements       |
 | `app/Services/{Domain}/`      | Service class + interface per domain (`Workout/`, `Admin/`, `Auth/`, `Catalog/`, `InboundEmail/`) |

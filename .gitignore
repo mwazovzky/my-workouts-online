@@ -39,3 +39,7 @@ DerivedData/
 .swiftpm/
 .phpunit.result.cache
 /contracts/.report
+
+# Go API (services/api-go)
+/services/api-go/bin
+/services/api-go/coverage.out*

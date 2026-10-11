@@ -24,3 +24,6 @@ services/api-php/storage/framework/sessions
 services/api-php/storage/framework/views
 services/api-php/bootstrap/cache/*.php
 services/api-php/tests
+
+services/api-go/bin
+services/api-go/coverage.out*

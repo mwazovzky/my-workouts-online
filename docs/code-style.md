@@ -75,6 +75,10 @@
 - Database transaction rollback tests **should** be added for complex service operations.
 - Test naming and structure **must** be consistent.
 
+## Go API (`services/api-go`)
+
+The Go service has its own standard: [services/api-go/docs/code-style.md](../services/api-go/docs/code-style.md).
+
 ## Commit Messages
 
 - Use conventional commit-style subjects: `feat:`, `fix:`, `docs:`, `test:`, `chore:`.

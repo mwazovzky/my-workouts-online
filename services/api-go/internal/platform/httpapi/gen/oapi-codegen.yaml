@@ -1,0 +1,10 @@
+# oapi-codegen v2 configuration for the HTTP layer generated from
+# contracts/openapi.yaml. Run `make generate`; the output is committed and
+# `make check` fails when it is stale. Why this generator: docs/adr/0003.
+package: gen
+output: gen.go
+generate:
+  models: true
+  std-http-server: true
+  strict-server: true
+  embedded-spec: true

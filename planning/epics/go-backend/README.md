@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: planned; unblocked (the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`).**
+**Status: in progress (story 1); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
@@ -34,7 +34,7 @@ Learning value and a codebase that stays pleasant to work with are the constrain
 | 16 | Delivery | Vertical slices. From story 4, `scripts/contract-test.sh http://localhost:8081` runs with `CONTRACT_INCLUDE` listing the operations covered so far (`services/api-go/contract-scope.txt`), deleted in story 13 so the full suite runs. |
 | 17 | Image and compose | Multi-stage Dockerfile to `distroless/static`, non-root, `workouts healthcheck` for the container healthcheck; dev compose adds `postgres` and `api-go` on host port 8081; prod compose adds `postgres`, `api-go`, `worker-go` with memory limits. |
 | 18 | CLI | One binary `workouts` with stdlib `flag` subcommands: `serve`, `work`, `migrate`, `seed`, `catalog sync`, `keys generate`, `user grant-admin`, `healthcheck`. |
-| 19 | Standards documentation | Three layers with one job each: `.golangci.yml` (with `depguard`) enforces what can be checked mechanically; a Go section in `docs/code-style.md` states every convention in prose, including the ones no linter can check (invariants on domain types, context carries only infrastructure values, hand-written fakes), and says per rule whether a linter or a reviewer enforces it; ADRs under `services/api-go/docs/adr/` record why. Every non-default lint rule carries a comment naming its standard section or ADR. Lands in story 1. |
+| 19 | Standards documentation | Three layers with one job each: `.golangci.yml` (with `depguard`) enforces what can be checked mechanically; `services/api-go/docs/code-style.md` states every convention in prose, including the ones no linter can check (invariants on domain types, context carries only infrastructure values, hand-written fakes), and says per rule whether a linter or a reviewer enforces it; ADRs under `services/api-go/docs/adr/` record why. Every non-default lint rule carries a comment naming its standard section or ADR. Lands in story 1. |
 | 20 | Nothing Go-specific before this epic starts | Until the Contract Hardening epic ships, the only Go-related artifact in the repository is this plan. No `services/api-go`, no Go documentation, no Go mentions in `docs/` or `CLAUDE.md`; the plan is adapted as the hardening stories land. |
 
 ## Target Architecture
@@ -86,7 +86,7 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 
 | # | Story | Primary feature | State |
 | --- | --- | --- | --- |
-| 1 | [Scaffold, Toolchain, CI and Image](stories/01-scaffold-toolchain-ci-and-image.md) | Platform | planned |
+| 1 | [Scaffold, Toolchain, CI and Image](stories/01-scaffold-toolchain-ci-and-image.md) | Platform | in progress |
 | 2 | [Schema, Migrations, sqlc and Test Harness](stories/02-schema-migrations-sqlc-and-test-harness.md) | Platform | planned |
 | 3 | [Shared Kernel, HTTP Platform and Meta](stories/03-shared-kernel-http-platform-and-meta.md) | Platform | planned |
 | 4 | [Identity: Tokens, Login, Refresh and JWKS](stories/04-identity-tokens-login-refresh-and-jwks.md) | Auth & Profile | planned |

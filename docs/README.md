@@ -10,7 +10,7 @@ Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 
 | [Pages & Routes](pages-and-routes.md) | Complete page and endpoint inventory with owning feature |
 | [Architecture](architecture.md) | Technical patterns, key decisions, data model, i18n strategy |
 | [API Design](api-design.md) | Contract rules: naming, envelope, request bodies, status codes, errors, versioning, lint setup |
-| [Code Style](code-style.md) | Project coding standards and conventions |
+| [Code Style](code-style.md) | Project coding standards and conventions (Go: [services/api-go](../services/api-go/docs/code-style.md)) |
 | [Testing](testing.md) | Test suite structure, required coverage, and common test patterns |
 | [Deployment](deployment.md) | Deployment and operational runbook |
 | [Documentation Standard](documentation-standard.md) | Rules for keeping docs concise, scoped, and non-duplicative |
