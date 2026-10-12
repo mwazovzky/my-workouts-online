@@ -6,3 +6,10 @@
 # QUERY with a bare 500, which is not a property of the contract.
 [phases.coverage]
 unexpected-methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+
+# A missing required header is rejected with one of these statuses. The
+# default list lacks 428 Precondition Required (RFC 6585), the contract's
+# answer to a PUT /workouts/{workoutId}/activities without If-Match, which
+# both backends give once the workout is the caller's and in progress.
+[checks.missing_required_header]
+expected-statuses = ["400", "401", "403", "406", "415", "422", "428"]
