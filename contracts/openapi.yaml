@@ -1804,7 +1804,7 @@ components:
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
-        description: { type: [string, 'null'], description: Localized. }
+        description: { type: [string, 'null'], description: Localized., x-omitempty: false }
         equipment_id: { type: integer }
         equipment_name: { type: [string, 'null'] }
         effort_type: { $ref: '#/components/schemas/EffortType' }
@@ -1861,7 +1861,7 @@ components:
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
-        description: { type: [string, 'null'], description: Localized. }
+        description: { type: [string, 'null'], description: Localized., x-omitempty: false }
         is_enrolled: { type: boolean }
       example: { id: 1, name: Strength 5x5, description: Three full-body sessions a week., is_enrolled: true }
     ProgramDetail:
@@ -1953,7 +1953,7 @@ components:
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized. }
-        description: { type: [string, 'null'], description: Localized. }
+        description: { type: [string, 'null'], description: Localized., x-omitempty: false }
         activities:
           type: array
           items: { $ref: '#/components/schemas/Activity' }

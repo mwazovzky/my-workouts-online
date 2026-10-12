@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "description": "Три тренировки в неделю.",
+      "id": 1,
+      "is_enrolled": true,
+      "name": "Сила"
+    },
+    {
+      "description": null,
+      "id": 2,
+      "is_enrolled": false,
+      "name": "Cardio"
+    }
+  ]
+}

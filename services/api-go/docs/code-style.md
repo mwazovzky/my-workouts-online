@@ -65,7 +65,7 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 
 ## HTTP
 
-- An operation is implemented as a method of the generated `StrictServerInterface` on a module's handler type, which is embedded in `bootstrap/api.go`; the operation's stub in `bootstrap/unimplemented.go` **must** be deleted in the same change. Leaving it makes the method ambiguous and the build fails **(make check)**.
+- An operation is implemented as a method of the generated `StrictServerInterface` on a module's handler type, which is embedded in `bootstrap/api.go`; the operation's stub in `bootstrap/unimplemented.go` **must** be deleted in the same change. Leaving it makes the method ambiguous and the build fails **(make check)**. The handler type is named after its module (`Identity`, `Catalog`), since two embedded types of one name collide **(make check)**.
 - Handlers **must not** re-check what the contract already constrains (types, enums, lengths, unknown fields): the request validation middleware rejects those with 422 before the handler runs. Handlers and use cases validate business rules with `kernel/validate` **(review)**.
 - Who may call an operation comes from the contract, never from handler code: `security: []` is public, anything else needs a bearer token, a verified email unless it is tagged `Auth` or `Me`, and the `Admin` tag needs an admin ([ADR 0007](adr/0007-identity-tokens-and-auth-policy.md), [ADR 0008](adr/0008-go-native-signed-links.md)). `TestPolicyMatchesThePHPRouteGroups` pins the result. Handlers read the caller with `auth.FromContext` **(review)**.
 - Email goes through `kernel/mail.Mailer`; templates live with the module that sends them, in every locale, and a mail failure is logged, not returned to the client **(review)**.

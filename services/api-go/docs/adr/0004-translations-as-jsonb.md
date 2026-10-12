@@ -25,7 +25,7 @@ The Go service owns a fresh Postgres schema (epic decision 3), and its queries a
 
 Option 3. Each translatable table has `translations jsonb NOT NULL DEFAULT '{}'`, with a `CHECK (jsonb_typeof(translations) = 'object')`. The English source text stays in `name` and `description` and is never duplicated into the map. Other locales are keyed by locale, then field: `{"ru": {"name": "Присед", "description": "…"}}`.
 
-- A localized read is one expression, with no join: `COALESCE(translations #>> ARRAY[@locale::text, 'name'], name)`. It works unchanged for English (no `en` key, so the column wins) and for a locale with no translation.
+- A localized read needs no join: the row comes with its map, and `LocalizedText.Resolve(locale)` picks the translation or falls back to the column. Story 6 resolves in Go rather than in SQL (`COALESCE(translations #>> ARRAY[@locale::text, 'name'], name)` would also work, unchanged for English and for a missing translation), for three reasons: the admin endpoints need the whole map, so public and admin reads share one query shape and one domain type; the exercise picker must sort like PHP (`mb_strtolower`, then byte order), which no Postgres collation reproduces; and a blank translation falls back in one place instead of in every query.
 - Admin writes replace the row's map in the same `UPDATE` that changes `name`. A blank value is a missing key (`translations #- ARRAY['ru', 'description']`, or simply left out of the rebuilt map), which is exactly the fallback the contract describes.
 - The domain type is `LocalizedText{Source string; Other map[Locale]string}` per field (story 6). The postgres adapter converts it to and from the column; no other layer sees JSON.
 
@@ -38,5 +38,5 @@ Implemented in `migrations/00002_catalog.sql`.
 - Good: a localized list is a single-table query; a row and its translations change atomically in one statement; deleting a row deletes its translations with no cascade to get wrong.
 - Good: adding a locale is data, not schema: no migration, no new column.
 - Bad: the database cannot enforce which fields a locale may hold, or that values are strings. The postgres adapter is the only writer and builds the map from `LocalizedText`, and its tests cover the round trip. Accepted.
-- Bad: searching or sorting by a translated name needs the `COALESCE` expression, which a plain index on `name` does not cover. The catalog is small (hundreds of rows), so sequential scans are fine; an expression index per locale is the remedy if that changes.
-- Follow-up: story 6 adds the `LocalizedText` mapping and the localized queries; story 10 the admin read and write of the full map; story 7 the catalog sync writing `translations` from the shared YAML.
+- Bad: searching or sorting by a translated name happens in Go, or needs the `COALESCE` expression in SQL, which a plain index on `name` does not cover. The catalog is small (hundreds of rows), so loading it and sorting in memory is fine; an expression index per locale is the remedy if that changes.
+- Done in story 6: the `LocalizedText` mapping and the localized public reads. Follow-up: story 10 the admin read and write of the full map; story 7 the catalog sync writing `translations` from the shared YAML.

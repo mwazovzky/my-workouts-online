@@ -56,20 +56,20 @@ type Config struct {
 	Clock        clock.Clock
 }
 
-// Handlers implements identity's operations.
-type Handlers struct {
+// Identity implements identity's operations.
+type Identity struct {
 	service *app.Service
 	keys    KeySet
 	cfg     Config
 }
 
-// NewHandlers returns identity's handlers.
-func NewHandlers(service *app.Service, keys KeySet, cfg Config) Handlers {
-	return Handlers{service: service, keys: keys, cfg: cfg}
+// New returns identity's handlers.
+func New(service *app.Service, keys KeySet, cfg Config) Identity {
+	return Identity{service: service, keys: keys, cfg: cfg}
 }
 
 // GetJwks implements getJwks.
-func (h Handlers) GetJwks(context.Context, gen.GetJwksRequestObject) (gen.GetJwksResponseObject, error) {
+func (h Identity) GetJwks(context.Context, gen.GetJwksRequestObject) (gen.GetJwksResponseObject, error) {
 	keys, err := h.keys.JWKS()
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (h Handlers) GetJwks(context.Context, gen.GetJwksRequestObject) (gen.GetJwk
 }
 
 // Register implements register.
-func (h Handlers) Register(ctx context.Context, req gen.RegisterRequestObject) (gen.RegisterResponseObject, error) {
+func (h Identity) Register(ctx context.Context, req gen.RegisterRequestObject) (gen.RegisterResponseObject, error) {
 	body := req.Body
 
 	session, err := h.service.Register(ctx, app.RegisterInput{
@@ -96,7 +96,7 @@ func (h Handlers) Register(ctx context.Context, req gen.RegisterRequestObject) (
 }
 
 // Login implements login.
-func (h Handlers) Login(ctx context.Context, req gen.LoginRequestObject) (gen.LoginResponseObject, error) {
+func (h Identity) Login(ctx context.Context, req gen.LoginRequestObject) (gen.LoginResponseObject, error) {
 	body := req.Body
 
 	session, err := h.service.Login(ctx, app.LoginInput{
@@ -115,7 +115,7 @@ func (h Handlers) Login(ctx context.Context, req gen.LoginRequestObject) (gen.Lo
 // Refresh implements refresh. A token in the body is the native flow; without
 // one the token comes from the cookie (the web flow), which the contract
 // guards with the required X-Requested-With header.
-func (h Handlers) Refresh(ctx context.Context, req gen.RefreshRequestObject) (gen.RefreshResponseObject, error) {
+func (h Identity) Refresh(ctx context.Context, req gen.RefreshRequestObject) (gen.RefreshResponseObject, error) {
 	client, plain := gen.Native, ""
 
 	if req.Body != nil && req.Body.RefreshToken != nil && *req.Body.RefreshToken != "" {
@@ -140,7 +140,7 @@ func (h Handlers) Refresh(ctx context.Context, req gen.RefreshRequestObject) (ge
 
 // Logout implements logout: the caller's family is revoked and the cookie
 // cleared.
-func (h Handlers) Logout(ctx context.Context, _ gen.LogoutRequestObject) (gen.LogoutResponseObject, error) {
+func (h Identity) Logout(ctx context.Context, _ gen.LogoutRequestObject) (gen.LogoutResponseObject, error) {
 	principal, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, domain.ErrUnauthenticated()
@@ -154,7 +154,7 @@ func (h Handlers) Logout(ctx context.Context, _ gen.LogoutRequestObject) (gen.Lo
 }
 
 // Reauth implements reauth.
-func (h Handlers) Reauth(ctx context.Context, req gen.ReauthRequestObject) (gen.ReauthResponseObject, error) {
+func (h Identity) Reauth(ctx context.Context, req gen.ReauthRequestObject) (gen.ReauthResponseObject, error) {
 	principal, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, apperr.Forbidden(apperr.CodeForbidden, "This action is unauthorized.")
@@ -170,7 +170,7 @@ func (h Handlers) Reauth(ctx context.Context, req gen.ReauthRequestObject) (gen.
 
 // tokenResponse is the AuthResponse body and, for web clients, the refresh
 // cookie; native clients get the refresh token in the body instead.
-func (h Handlers) tokenResponse(session app.Session, client gen.ClientKind) (gen.AuthResponse, *string) {
+func (h Identity) tokenResponse(session app.Session, client gen.ClientKind) (gen.AuthResponse, *string) {
 	body := gen.AuthResponse{
 		AccessToken: session.Pair.AccessToken,
 		TokenType:   gen.Bearer,
@@ -191,7 +191,7 @@ func (h Handlers) tokenResponse(session app.Session, client gen.ClientKind) (gen
 }
 
 // cookie is the Set-Cookie value for the refresh token; maxAge -1 clears it.
-func (h Handlers) cookie(value string, maxAge int) string {
+func (h Identity) cookie(value string, maxAge int) string {
 	c := &http.Cookie{ //nolint:gosec // G124: Secure follows JWT_COOKIE_SECURE, off only for plain-HTTP dev and CI
 		Name:     cookieName,
 		Value:    value,

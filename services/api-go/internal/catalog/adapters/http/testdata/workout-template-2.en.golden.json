@@ -1,0 +1,31 @@
+{
+  "data": {
+    "activities": [
+      {
+        "exercise": {
+          "category_names": [],
+          "difficulty_unit": "none",
+          "effort_type": "duration",
+          "equipment_name": "Bodyweight",
+          "id": 5,
+          "name": "Plank",
+          "rest_time_seconds": null
+        },
+        "exercise_id": 5,
+        "id": 4,
+        "sets": [
+          {
+            "difficulty_value": null,
+            "effort_value": 60,
+            "id": 6,
+            "is_completed": false,
+            "order": 1
+          }
+        ]
+      }
+    ],
+    "description": null,
+    "id": 2,
+    "name": "Core"
+  }
+}

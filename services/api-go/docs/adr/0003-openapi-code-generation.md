@@ -42,6 +42,7 @@ Findings that later stories must handle, none blocking:
 - Enum constants are prefixed only on a name collision, so the readiness component values are `gen.Up` and `gen.Down`.
 - The JWKS `keys` items are `map[string]interface{}` because the contract leaves them untyped; story 4 fills them from jwx.
 - `Problem.Status` is `int32`.
+- An optional nullable field becomes a pointer with `omitempty`, so `null` is dropped, while PHP sends the key with `null`. Story 6 adds the generator hint `x-omitempty: false` to the fields where that shows (the localized `description` of `Program`, `WorkoutTemplate` and `Exercise`), so Go writes `"description": null` too. The hint is a vendor extension: other generators ignore it and the wire format does not change.
 
 Wiring: `internal/platform/httpapi/gen/generate.go` holds the `//go:generate` directive and `oapi-codegen.yaml` the options; `gen.go` is committed, excluded from linting and coverage, and `make check` regenerates it and fails on any diff (`generate-check`). Story 1 uses the generated health types; story 3 wires the strict server through `bootstrap`.
 

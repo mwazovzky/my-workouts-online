@@ -20,3 +20,9 @@ resetPassword
 getMe
 updateMe
 updatePassword
+listPrograms
+getProgram
+enrollProgram
+unenrollProgram
+getWorkoutTemplate
+listExercises

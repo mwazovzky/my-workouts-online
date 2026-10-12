@@ -12,8 +12,8 @@ import (
 )
 
 // Mirrors tests/Feature/Api/Auth/AccessTokenTest.php. GET /api/v1/programs
-// is a verified-only operation no story implements yet: a verified user's
-// token that passes authentication gets the 501 stub, one that fails the 401.
+// is a verified-only operation: a verified user's token that passes
+// authentication gets the 200 list, one that fails the 401.
 
 func (f *fixture) programs(token string) *apitest.Response {
 	return f.api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/programs", Token: token, SkipContract: true})
@@ -23,7 +23,7 @@ func TestValidTokenIsAccepted(t *testing.T) {
 	t.Parallel()
 
 	f := newFixture(t)
-	f.programs(f.verified(t, "ada@example.com").AccessToken).AssertStatus(http.StatusNotImplemented)
+	f.programs(f.verified(t, "ada@example.com").AccessToken).AssertStatus(http.StatusOK)
 }
 
 func TestExpiredTokenReturnsTokenExpiredCode(t *testing.T) {
@@ -47,7 +47,7 @@ func TestTokenWithinLeewayIsStillAccepted(t *testing.T) {
 	token := f.verified(t, "ada@example.com").AccessToken
 
 	f.clock.Advance(15*time.Minute + 10*time.Second)
-	f.programs(token).AssertStatus(http.StatusNotImplemented)
+	f.programs(token).AssertStatus(http.StatusOK)
 }
 
 func TestTamperedTokenIsRejected(t *testing.T) {
