@@ -293,6 +293,7 @@ Production is never seeded with `db:seed`. The catalog (equipment, categories, e
 - The new `api` container starts before `migrate` runs. A release whose migration moves data can therefore serve incomplete admin payloads for the few seconds in between; do not edit catalog content in the admin UI during a deploy.
 - A data migration that finds invalid rows stops before writing and names them (for example, a catalog record without an English name). Fix the rows, then re-run the deploy.
 - The sync runs after all services are recreated. If it fails, the deploy fails, nothing is written, and the stack keeps running on the new release.
+- The Go API (not deployed yet) applies the same content from the repository's `catalog/` YAML with `workouts catalog sync [--dry-run] [--strict]`, which has the same rules, report and exit codes; story 13 of the Go epic adds it to the deploy. Until the PHP API reads that YAML itself, a catalog change edits both `database/catalog/` and `catalog/`, and CI's `catalog:export --check` fails when they differ.
 - To preview a release's catalog changes without writing, run it with `--dry-run`. `adopted` means an existing row was matched by name and keeps its id; `created` for a record that already exists in production means its name differs and needs a `previous_names` entry in the data file.
 
 ```bash

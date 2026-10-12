@@ -1,0 +1,195 @@
+- slug: dumbbell-lateral-raise
+  equipment: dumbbell
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders]
+  translations:
+    en:
+      name: 'Dumbbell Lateral Raise'
+      description: 'Stand with a dumbbell in each hand at your sides, elbows slightly bent. Raise your arms out to the sides until they are level with your shoulders, then lower them slowly. Use a light weight and do not swing.'
+    ru:
+      name: 'Разведение гантелей в стороны'
+      description: 'Встаньте прямо, гантели опущены вдоль тела, локти слегка согнуты. Поднимите руки через стороны до уровня плеч и медленно опустите. Берите небольшой вес и не помогайте себе раскачкой.'
+  previous_names: ['Lateral Raise']
+- slug: dumbbell-shoulder-press
+  equipment: dumbbell
+  effort_type: repetitions
+  rest_time_seconds: 120
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Dumbbell Shoulder Press'
+      description: 'Sit upright with a dumbbell in each hand at shoulder height, palms facing forward. Press the dumbbells overhead until your arms are straight, then lower them back to your shoulders. Keep your lower back against the seat.'
+    ru:
+      name: 'Жим гантелей сидя'
+      description: 'Сядьте прямо, гантели у плеч, ладони направлены вперёд. Выжмите гантели над головой до выпрямления рук и опустите обратно к плечам. Поясница прижата к спинке.'
+  previous_names: ['Shoulder Press. Dumbbell']
+- slug: machine-shoulder-press
+  equipment: shoulder-press-machine
+  effort_type: repetitions
+  rest_time_seconds: 90
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Machine Shoulder Press'
+      description: 'Set the seat so the handles are level with your shoulders. Press the handles up until your arms are almost straight, then lower them slowly to the start. Keep your back against the pad.'
+    ru:
+      name: 'Жим от плеч в тренажёре'
+      description: 'Отрегулируйте сиденье так, чтобы рукояти были на уровне плеч. Выжмите рукояти вверх почти до выпрямления рук и медленно опустите в исходное положение. Спина прижата к спинке.'
+  previous_names: ['Shoulder Press. Machine']
+- slug: barbell-overhead-press
+  equipment: barbell
+  effort_type: repetitions
+  rest_time_seconds: 150
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Barbell Overhead Press'
+      description: 'Stand with the bar on your upper chest, hands just wider than your shoulders. Press the bar straight up until your arms are locked, moving your head back slightly to clear it, then lower it to your chest. Brace your abs and glutes so your lower back does not arch.'
+    ru:
+      name: 'Жим штанги стоя'
+      description: 'Встаньте прямо, штанга на верхней части груди, хват чуть шире плеч. Выжмите штангу вертикально вверх до выпрямления рук, слегка отводя голову назад, и опустите её к груди. Напрягите пресс и ягодицы, чтобы не прогибаться в пояснице.'
+- slug: arnold-press
+  equipment: dumbbell
+  effort_type: repetitions
+  rest_time_seconds: 90
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Arnold Press'
+      description: 'Sit with the dumbbells in front of your shoulders, palms facing you. Press them overhead while turning your palms to face forward, then reverse the movement on the way down.'
+    ru:
+      name: 'Жим Арнольда'
+      description: 'Сядьте, гантели перед плечами, ладони обращены к себе. Выжмите гантели над головой, разворачивая ладони вперёд, и вернитесь, выполняя движение в обратном порядке.'
+- slug: kettlebell-overhead-press
+  equipment: kettlebell
+  effort_type: repetitions
+  rest_time_seconds: 90
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Kettlebell Overhead Press'
+      description: 'Hold the kettlebell at your shoulder with the weight resting on the back of your forearm. Press it overhead until your arm is straight, then lower it to your shoulder. Finish all repetitions before changing sides.'
+    ru:
+      name: 'Жим гири над головой'
+      description: 'Удерживайте гирю у плеча так, чтобы она лежала на тыльной стороне предплечья. Выжмите её над головой до выпрямления руки и опустите к плечу. Выполните все повторения, затем смените сторону.'
+- slug: pike-push-up
+  equipment: bodyweight
+  effort_type: repetitions
+  rest_time_seconds: 90
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Pike Push-up'
+      description: 'From a push-up position, walk your feet toward your hands until your hips are high and your body forms an upside-down V. Bend your elbows to lower the top of your head toward the floor, then push back up.'
+    ru:
+      name: 'Отжимания «уголком»'
+      description: 'Из упора лёжа подойдите стопами к рукам, чтобы таз оказался высоко, а тело образовало перевёрнутую букву V. Согните локти, опуская макушку к полу, и отожмитесь.'
+- slug: band-overhead-press
+  equipment: resistance-band
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders, triceps]
+  translations:
+    en:
+      name: 'Band Overhead Press'
+      description: 'Stand on the middle of the band and hold the ends at your shoulders, palms facing forward. Press your hands overhead until your arms are straight, then lower them slowly.'
+    ru:
+      name: 'Жим эспандера над головой'
+      description: 'Встаньте на середину эспандера и удерживайте концы у плеч, ладони направлены вперёд. Выжмите руки над головой до выпрямления и медленно опустите.'
+- slug: dumbbell-front-raise
+  equipment: dumbbell
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders]
+  translations:
+    en:
+      name: 'Dumbbell Front Raise'
+      description: 'Stand with the dumbbells in front of your thighs, palms facing you. Raise one or both arms forward to shoulder height with your elbows slightly bent, then lower them slowly. Do not lean back.'
+    ru:
+      name: 'Подъём гантелей перед собой'
+      description: 'Встаньте прямо, гантели перед бёдрами, ладони обращены к себе. Поднимите одну или обе руки вперёд до уровня плеч, слегка согнув локти, и медленно опустите. Не отклоняйтесь назад.'
+- slug: plate-front-raise
+  equipment: weight-plate
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders]
+  translations:
+    en:
+      name: 'Plate Front Raise'
+      description: 'Hold a weight plate by its sides in front of your thighs. Raise it forward to shoulder height with your arms almost straight, then lower it slowly.'
+    ru:
+      name: 'Подъём диска перед собой'
+      description: 'Держите диск за края перед бёдрами. Поднимите его вперёд до уровня плеч почти прямыми руками и медленно опустите.'
+- slug: cable-lateral-raise
+  equipment: cable-machine
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders]
+  translations:
+    en:
+      name: 'Cable Lateral Raise'
+      description: 'Stand side-on to the low pulley and hold the handle in the hand furthest from it. Raise your arm out to the side to shoulder height, then lower it slowly. The cable keeps the muscle loaded through the whole movement.'
+    ru:
+      name: 'Отведение руки в сторону на блоке'
+      description: 'Встаньте боком к нижнему блоку и возьмите рукоять дальней от него рукой. Поднимите руку в сторону до уровня плеча и медленно опустите. Блок сохраняет нагрузку на протяжении всего движения.'
+- slug: band-lateral-raise
+  equipment: resistance-band
+  effort_type: repetitions
+  rest_time_seconds: 45
+  categories: [shoulders]
+  translations:
+    en:
+      name: 'Band Lateral Raise'
+      description: 'Stand on the middle of the band and hold the ends at your sides. Raise your arms out to the sides to shoulder height with your elbows slightly bent, then lower them slowly.'
+    ru:
+      name: 'Разведение рук с эспандером'
+      description: 'Встаньте на середину эспандера, концы в опущенных руках. Поднимите руки через стороны до уровня плеч, слегка согнув локти, и медленно опустите.'
+- slug: dumbbell-rear-delt-fly
+  equipment: dumbbell
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders, back]
+  translations:
+    en:
+      name: 'Dumbbell Rear Delt Fly'
+      description: 'Hinge forward at the hips with a flat back and let the dumbbells hang under your chest. Raise your arms out to the sides until they are level with your shoulders, then lower them slowly. Use a light weight.'
+    ru:
+      name: 'Разведение гантелей в наклоне'
+      description: 'Наклонитесь вперёд с прямой спиной, гантели свободно висят под грудью. Поднимите руки через стороны до уровня плеч и медленно опустите. Используйте небольшой вес.'
+- slug: reverse-pec-deck-fly
+  equipment: pec-deck-machine
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders, back]
+  translations:
+    en:
+      name: 'Reverse Pec Deck Fly'
+      description: 'Sit facing the pad and hold the handles in front of you with your arms almost straight. Move your arms back in a wide arc until they are in line with your shoulders, then return slowly.'
+    ru:
+      name: 'Обратные разведения в тренажёре «Бабочка»'
+      description: 'Сядьте лицом к спинке и возьмитесь за рукояти перед собой почти прямыми руками. Отведите руки назад по широкой дуге до линии плеч и медленно вернитесь.'
+- slug: cable-face-pull
+  equipment: cable-machine
+  effort_type: repetitions
+  rest_time_seconds: 60
+  categories: [shoulders, back]
+  translations:
+    en:
+      name: 'Cable Face Pull'
+      description: 'Set the pulley at face height and hold the rope with both hands. Pull the rope toward your face, moving your hands apart and keeping your elbows high, then return slowly.'
+    ru:
+      name: 'Тяга каната к лицу'
+      description: 'Установите блок на уровне лица и возьмитесь за канат обеими руками. Потяните канат к лицу, разводя кисти и удерживая локти высоко, и медленно вернитесь.'
+- slug: band-face-pull
+  equipment: resistance-band
+  effort_type: repetitions
+  rest_time_seconds: 45
+  categories: [shoulders, back]
+  translations:
+    en:
+      name: 'Band Face Pull'
+      description: 'Anchor the band at face height and hold an end in each hand with your arms straight. Pull your hands toward your ears, keeping your elbows high, then return slowly.'
+    ru:
+      name: 'Тяга эспандера к лицу'
+      description: 'Закрепите эспандер на уровне лица и возьмите концы в руки, руки выпрямлены. Потяните кисти к ушам, удерживая локти высоко, и медленно вернитесь.'

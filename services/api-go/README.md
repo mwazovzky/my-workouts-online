@@ -26,12 +26,13 @@ The binary is `workouts` (`cmd/workouts`):
 | `workouts serve` | Opens the database pool (failing fast when it is unreachable), then runs the HTTP API on `HTTP_ADDR` until SIGINT or SIGTERM, then drains (see Shutdown). |
 | `workouts migrate up` | Applies the pending migrations; running it again is a no-op. A deploy runs it before starting the new version. |
 | `workouts migrate status` | Lists every migration with its state and when it was applied. |
-| `workouts seed` | Creates (or resets) the verified demo admin `test@example.com` / `password`. Refused when `APP_ENV` is `production` or unset. Story 7 adds the catalog. |
+| `workouts seed` | Creates (or resets) the verified demo admin `test@example.com` / `password`, then applies the catalog (as `catalog sync`). Refused when `APP_ENV` is `production` or unset. |
+| `workouts catalog sync [--dry-run] [--strict]` | Applies the YAML catalog in `CATALOG_DIR`, as `php artisan catalog:sync`: prints counts per type and outcome, the changes and the warnings. `--dry-run` writes nothing; `--strict` writes nothing when there are warnings and exits 1. An unreadable or invalid catalog lists what is wrong and exits 1. |
 | `workouts user grant-admin <email>` | Gives a registered, verified user the Admin role, as `php artisan user:grant-admin`. |
 | `workouts keys generate` | Prints a new `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` pair, in the format `php artisan jwt:keys` prints. |
 | `workouts healthcheck` | Exits 0 when `GET /health` on the local port answers 200. The image's `HEALTHCHECK`; distroless has no shell or curl. |
 
-Later stories add `work` and `catalog sync`.
+Story 11 adds `work`.
 
 ## Develop
 
@@ -87,6 +88,7 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 | `SHUTDOWN_DRAIN_DELAY` | `2s` | How long `/health/ready` answers 503 before the listener closes. |
 | `SHUTDOWN_TIMEOUT` | `5s` | How long in-flight requests may take to finish after that. |
 | `APP_ENV` | `production` | As in Laravel; `seed` refuses to run in production. |
+| `CATALOG_DIR` | `catalog` | The shared YAML catalog `catalog sync` and `seed` apply: `/src/catalog` in the dev container, `/catalog` in the image, the repository's `catalog/` from its root. |
 | `APP_NAME` | `My Workouts` | Signs off the emails. |
 | `FRONTEND_URL` | `APP_URL` | The SPA; verification and reset links in emails point at it. |
 | `LINK_SIGNING_KEY` | dev key outside production | HMAC key for verification links (ADR 0008); at least 32 characters, required in production. |
@@ -137,6 +139,8 @@ The catalog module serves `listPrograms`, `getProgram`, `enrollProgram`, `unenro
 
 Other modules read the catalog only through `internal/catalog/catalogapi`: `ExerciseLookup` (retired exercises included), `TemplateSnapshot` (a template to copy into a workout) and `EnrolledSchedule` (the dashboard's input). These are plain, already localized DTOs; `catalogapi.Fake` stands in for them in other modules' tests.
 
+**Catalog sync.** The shipped catalog is the repository's [`catalog/`](../../catalog/README.md) YAML, which the PHP API mirrors until story 14 ([ADR 0009](docs/adr/0009-single-yaml-catalog-source.md)). `adapters/catalogfile` loads it (unknown keys are errors); `app/catalogsync` validates it against every rule of PHP's `CatalogValidator` (each with a stable id and a failing fixture in `catalog/testdata/invalid/<rule>/`) and applies it in one transaction with PHP's algorithm: match by slug, adopt an unmanaged row by English name or a previous name, reset managed rows to the files, leave admin-created rows alone, retire what `retired.yaml` lists unless it is still used. The Go counterparts of PHP's `CatalogSyncTest` scenarios assert the same counts, change lines and warnings.
+
 The HTTP tests compare every response, in English and Russian, with golden files captured from the PHP API on the same catalog; `internal/catalog/adapters/http/testdata/README.md` explains how to recapture them. Where Go answers differently from PHP:
 
 - An exercise's categories (`categories`, `category_ids`, `category_names`) are listed by category id. PHP lists them in pivot-row order, which the Go schema does not keep (`category_exercise` has no row id).
@@ -175,7 +179,7 @@ internal/platform/server/     http.Server with graceful shutdown
 internal/platform/testdb/     a migrated database per test (template clone)
 internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go)
 internal/identity/             users, roles, tokens, verification, reset, /me: domain/, ports/, app/, adapters/{postgres,bcrypt,jwt,links,notify,http}
-internal/catalog/              programs, enrollment, templates, exercises: domain/, ports/, app/, catalogapi/, adapters/{postgres,http}
+internal/catalog/              programs, enrollment, templates, exercises, catalog sync: domain/, ports/, app/ (+ app/catalogsync), catalogapi/, adapters/{postgres,http,catalogfile}
 internal/kernel/mail/         the Mailer port
 internal/platform/mail/       Log and Fake mailers
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
@@ -199,6 +203,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0006 Problem Details, locale and request validation in the HTTP platform](docs/adr/0006-http-errors-locale-and-request-validation.md)
 - [0007 Token compatibility with the PHP API, and auth policy from the contract](docs/adr/0007-identity-tokens-and-auth-policy.md)
 - [0008 Go-native signed links, mail behind a port, and the verified gate](docs/adr/0008-go-native-signed-links.md)
+- [0009 One YAML catalog for both backends, and its Go sync](docs/adr/0009-single-yaml-catalog-source.md)
 
 ## Image
 

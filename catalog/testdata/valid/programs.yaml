@@ -1,0 +1,12 @@
+- slug: starter
+  translations:
+    en:
+      name: Starter
+      description: 'Two strength days and one easy ride.'
+    ru:
+      name: Стартовая
+      description: 'Два силовых дня и один лёгкий заезд.'
+  schedule:
+    - { weekday: monday, template: full-body }
+    - { weekday: thursday, template: full-body }
+    - { weekday: saturday, template: easy-spin }

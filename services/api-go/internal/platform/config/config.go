@@ -43,6 +43,9 @@ type Config struct {
 	// LinkSigningKey signs email verification links (ADR 0008). Required in
 	// production; elsewhere a fixed development key is used when it is unset.
 	LinkSigningKey string `env:"LINK_SIGNING_KEY"`
+	// CatalogDir is the shared YAML catalog (the repository's catalog/,
+	// ADR 0009) that `catalog sync` and `seed` apply.
+	CatalogDir string `env:"CATALOG_DIR" envDefault:"catalog"`
 	// AppEnv is Laravel's APP_ENV; unset means production, as in Laravel, so
 	// demo seeding is refused unless an environment says otherwise.
 	AppEnv string `env:"APP_ENV" envDefault:"production"`

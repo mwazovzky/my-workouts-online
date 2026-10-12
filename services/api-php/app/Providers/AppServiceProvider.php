@@ -66,6 +66,14 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Services\Catalog\CatalogExporter::class,
+            fn ($app) => new \App\Services\Catalog\CatalogExporter(
+                $app['config']->get('catalog.path'),
+                $app['config']->get('catalog.export_path'),
+            )
+        );
+
+        $this->app->bind(
             \App\Services\Catalog\CatalogValidator::class,
             fn ($app) => new \App\Services\Catalog\CatalogValidator(
                 array_keys($app['config']->get('app.available_locales'))

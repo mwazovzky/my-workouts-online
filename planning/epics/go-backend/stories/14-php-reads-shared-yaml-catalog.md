@@ -22,7 +22,7 @@ None. `php artisan catalog:sync` on deploy produces the same database state from
 - Delete `services/api-php/database/catalog/` and the `catalog:export` command plus its `--check` job in `.github/workflows/tests.yml`.
 - `tests/Fixtures/catalog/` converted to YAML with the same contents; `tests/Unit/Catalog/{Loader,Validator,DataIntegrity}Test.php` and `tests/Feature/Catalog/*` run unchanged except for fixture paths; `DataIntegrityTest` now validates the shared `catalog/` directory, so it guards both backends.
 - `docker/api/Dockerfile`: `COPY catalog /var/www/catalog` in the `api` target (build context is the repo root already); `.dockerignore` keeps `catalog/` included; the `app-dev` target reads the bind-mounted repo path.
-- The shared invalid fixtures `catalog/testdata/invalid/*` (story 7) are consumed by `CatalogValidatorTest` with the same expected rule ids as the Go suite, so a rule drift fails both.
+- The shared invalid fixtures `catalog/testdata/invalid/*` (story 7) are consumed by `CatalogValidatorTest` with the same expected rule ids as the Go suite, so a rule drift fails both. Each fixture holds only the files that differ from `catalog/testdata/valid/` (overlay them, as the Go test does), and `CatalogValidator` gains the Go rule ids (`internal/catalog/app/catalogsync/validate.go`) on its violations; `catalog/testdata/valid/` replaces `tests/Fixtures/catalog/`.
 - `CLAUDE.md` Catalog Sync paragraph and the Common Commands note point at `catalog/`; `docs/architecture.md` and `docs/features/admin-content-management.md` describe the single source.
 
 ## Non-Goals

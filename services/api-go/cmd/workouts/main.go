@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -32,6 +33,8 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/bootstrap"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app/catalogsync"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/ports"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
@@ -49,7 +52,11 @@ commands:
   serve           run the HTTP API until SIGINT or SIGTERM
   migrate up      apply the pending database migrations
   migrate status  list every migration and whether it is applied
-  seed            create the verified demo admin test@example.com (not in production)
+  seed            create the verified demo admin test@example.com and apply the
+                  catalog (not in production)
+  catalog sync [--dry-run] [--strict]
+                  apply the YAML catalog in CATALOG_DIR; --dry-run writes
+                  nothing, --strict writes nothing when there are warnings
   user grant-admin <email>
                   give a registered, verified user the Admin role
   keys generate   print a new JWT_PRIVATE_KEY and JWT_PUBLIC_KEY
@@ -108,6 +115,8 @@ func run(ctx context.Context, args []string, environ map[string]string, stdout, 
 		return migrate(ctx, flags.Args(), environ, stdout, stderr)
 	case "seed":
 		return seed(ctx, environ, stdout, stderr)
+	case "catalog":
+		return catalog(ctx, flags.Args(), environ, stdout, stderr)
 	case "user":
 		return user(ctx, flags.Args(), environ, stdout, stderr)
 	case "keys":
@@ -245,8 +254,8 @@ func sourceName(source *goose.Source) string {
 // errProduction refuses demo seeding where real users live.
 var errProduction = errors.New("seed creates a demo admin with a known password and must not run in production (APP_ENV=production)")
 
-// seed creates the verified demo admin the contract tests sign in with.
-// Story 7 adds the catalog.
+// seed creates the verified demo admin the contract tests sign in with and
+// applies the catalog, as PHP's DatabaseSeeder runs CatalogSeeder.
 func seed(ctx context.Context, environ map[string]string, stdout, stderr io.Writer) error {
 	return withApp(ctx, environ, stderr, func(cfg config.Config, app *bootstrap.App) error {
 		if cfg.IsProduction() {
@@ -260,8 +269,102 @@ func seed(ctx context.Context, environ map[string]string, stdout, stderr io.Writ
 
 		fmt.Fprintf(stdout, "seeded the demo admin %s (verified)\n", admin.Email)
 
-		return nil
+		return syncCatalog(ctx, app, catalogsync.Options{}, stdout)
 	})
+}
+
+// errCatalog is a sync that wrote nothing: an invalid catalog, or strict
+// mode with warnings. The details are already printed.
+var errCatalog = errors.New("catalog sync failed")
+
+// catalog runs `catalog sync [--dry-run] [--strict]`, as PHP's catalog:sync:
+// exit 0 when synced or on a dry run, 1 when the catalog is invalid or
+// strict mode refused the warnings.
+func catalog(ctx context.Context, args []string, environ map[string]string, stdout, stderr io.Writer) error {
+	if len(args) == 0 || args[0] != "sync" {
+		fmt.Fprint(stderr, usage)
+
+		return errUsage
+	}
+
+	flags := flag.NewFlagSet("catalog sync", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	flags.Usage = func() { fmt.Fprint(stderr, usage) }
+	dryRun := flags.Bool("dry-run", false, "report what would change without writing anything")
+	strict := flags.Bool("strict", false, "write nothing and fail when the sync raises warnings")
+
+	if err := flags.Parse(args[1:]); err != nil || flags.NArg() > 0 {
+		return errUsage
+	}
+
+	return withApp(ctx, environ, stderr, func(_ config.Config, app *bootstrap.App) error {
+		return syncCatalog(ctx, app, catalogsync.Options{DryRun: *dryRun, Strict: *strict}, stdout)
+	})
+}
+
+func syncCatalog(ctx context.Context, app *bootstrap.App, opts catalogsync.Options, stdout io.Writer) error {
+	report, err := app.CatalogSync.Run(ctx, opts)
+
+	var invalid *catalogsync.InvalidError
+	if errors.As(err, &invalid) {
+		fmt.Fprintln(stdout, "The catalog data is invalid. Nothing was written.")
+
+		for _, message := range invalid.Messages() {
+			fmt.Fprintf(stdout, "  - %s\n", message)
+		}
+
+		return errCatalog
+	}
+
+	if err != nil {
+		return fmt.Errorf("catalog sync: %w", err)
+	}
+
+	printReport(report, stdout)
+
+	switch {
+	case report.DryRun:
+		fmt.Fprintln(stdout, "Dry run: nothing was written.")
+	case !report.Committed:
+		fmt.Fprintln(stdout, "Strict mode: the sync raised warnings. Nothing was written.")
+
+		return errCatalog
+	default:
+		fmt.Fprintln(stdout, "Catalog synced.")
+	}
+
+	return nil
+}
+
+// printReport writes the counts table, the changes and the warnings.
+func printReport(report *catalogsync.Report, stdout io.Writer) {
+	w := tabwriter.NewWriter(stdout, 0, 0, 2, ' ', 0)
+
+	fmt.Fprint(w, "TYPE")
+	for _, outcome := range catalogsync.Outcomes {
+		fmt.Fprintf(w, "\t%s", strings.ToUpper(string(outcome)))
+	}
+
+	fmt.Fprintln(w)
+
+	for _, kind := range ports.Kinds {
+		fmt.Fprint(w, kind)
+		for _, outcome := range catalogsync.Outcomes {
+			fmt.Fprintf(w, "\t%d", report.Count(kind, outcome))
+		}
+
+		fmt.Fprintln(w)
+	}
+
+	_ = w.Flush()
+
+	for _, change := range report.Changes {
+		fmt.Fprintf(stdout, "  %s\n", change)
+	}
+
+	for _, warning := range report.Warnings {
+		fmt.Fprintf(stdout, "  Warning: %s\n", warning)
+	}
 }
 
 // user runs `user grant-admin <email>`, as the PHP user:grant-admin command.

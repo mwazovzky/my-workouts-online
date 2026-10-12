@@ -9,13 +9,16 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"slices"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/catalogfile"
 	cataloghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/http"
 	catalogpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/postgres"
 	catalogapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app/catalogsync"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/bcrypt"
 	identityhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/http"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
@@ -56,6 +59,8 @@ type App struct {
 	Readiness *health.Readiness
 	// Identity runs identity's use cases for the CLI (seed, user grant-admin).
 	Identity *identityapp.Service
+	// CatalogSync applies the YAML catalog in CATALOG_DIR (catalog sync, seed).
+	CatalogSync *catalogsync.Syncer
 
 	closers []func(context.Context) error
 }
@@ -120,6 +125,19 @@ func New(deps Deps) (*App, error) {
 		Logger:    deps.Logger,
 	})
 
+	locales := make([]string, 0, len(bundle.Locales()))
+	for _, locale := range bundle.Locales() {
+		locales = append(locales, string(locale))
+	}
+
+	catalogSync := catalogsync.New(catalogsync.Deps{
+		Source:  catalogfile.New(os.DirFS(cfg.CatalogDir)),
+		Store:   catalogpg.NewStore(tx),
+		Tx:      tx,
+		Clock:   deps.Clock,
+		Locales: locales,
+	})
+
 	server, err := httpapi.NewServer(httpapi.Options{
 		AppURL:             cfg.AppURL,
 		RateLimitPerMinute: cfg.RateLimitPerMinute,
@@ -148,9 +166,10 @@ func New(deps Deps) (*App, error) {
 	server.Handle("GET /up", http.HandlerFunc(health.Up))
 
 	return &App{
-		Handler:   server.Handler(),
-		Readiness: readiness,
-		Identity:  identity,
+		Handler:     server.Handler(),
+		Readiness:   readiness,
+		Identity:    identity,
+		CatalogSync: catalogSync,
 		closers: []func(context.Context) error{
 			func(context.Context) error { deps.Pool.Close(); return nil },
 		},

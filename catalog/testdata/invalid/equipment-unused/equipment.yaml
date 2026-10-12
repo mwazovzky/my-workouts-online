@@ -1,0 +1,28 @@
+- slug: barbell
+  difficulty_unit: kilograms
+  translations:
+    en:
+      name: Barbell
+    ru:
+      name: Штанга
+- slug: bodyweight
+  difficulty_unit: none
+  translations:
+    en:
+      name: Bodyweight
+    ru:
+      name: 'Собственный вес'
+- slug: indoor-bike
+  difficulty_unit: heart_rate_zone
+  translations:
+    en:
+      name: 'Indoor Bike'
+    ru:
+      name: Велотренажёр
+- slug: rack
+  difficulty_unit: kilograms
+  translations:
+    en:
+      name: Rack
+    ru:
+      name: Стойка

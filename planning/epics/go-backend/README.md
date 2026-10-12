@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: in progress (story 6); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
+**Status: in progress (story 7); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
@@ -24,7 +24,7 @@ Learning value and a codebase that stays pleasant to work with are the constrain
 | 6 | HTTP layer | `oapi-codegen` v2 strict server on the stdlib `net/http.ServeMux`, generated from the hardened contract, output committed and diff-checked in `make check`. Per-operation auth and throttle policy keyed by `operationId` from the embedded spec. Story 1 spikes the generator against the OpenAPI 3.1 constructs; fallbacks in order are a build-time 3.0 down-convert, then `ogen`. |
 | 7 | Schema departures | No polymorphic `activities`: `template_activities`/`template_sets` in catalog and `workout_activities`/`workout_sets` in training with real foreign keys. No EAV `translations` table: English stays in `name`/`description`, other locales in a `translations jsonb` column; rows are read with their map and the locale is resolved in Go (`LocalizedText.Resolve`), falling back to English. `program_user` and `role_user` gain unique constraints. Recorded in [ADR 0004](../../../services/api-go/docs/adr/0004-translations-as-jsonb.md) and [ADR 0005](../../../services/api-go/docs/adr/0005-split-activity-tables.md). |
 | 8 | Signed links | Go-native HMAC-SHA256 signature over `verify\|id\|hash\|expires` with `LINK_SIGNING_KEY`; clients only post the four fields back, so Laravel's `APP_KEY` URL signing is not reproduced. Recorded in [ADR 0008](../../../services/api-go/docs/adr/0008-go-native-signed-links.md). |
-| 9 | Catalog data | Shared YAML at repo root `catalog/`, exported once from `services/api-php/database/catalog/*.php`. Go reads it from story 7; a PHP `catalog:export --check` step guards drift until story 14 switches PHP's `CatalogLoader` to the same files and deletes the PHP copies. |
+| 9 | Catalog data | Shared YAML at repo root `catalog/`, exported once from `services/api-php/database/catalog/*.php`. Go reads it from story 7; a PHP `catalog:export --check` step guards drift until story 14 switches PHP's `CatalogLoader` to the same files and deletes the PHP copies. Recorded in [ADR 0009](../../../services/api-go/docs/adr/0009-single-yaml-catalog-source.md). |
 | 10 | Errors and validation | `kernel/apperr` typed errors wrapped with `%w` and matched at the HTTP boundary only; a hand-written `kernel/validate` builder emitting RFC 9457 Problem Details with JSON Pointer field errors; `openapi3filter` request validation as the shape safety net. Recorded in [ADR 0006](../../../services/api-go/docs/adr/0006-http-errors-locale-and-request-validation.md). |
 | 11 | Auth | `lestrrat-go/jwx/v3` for Ed25519 JWTs and the JWKS document, same claims and `kid` derivation as `TokenService.php`; `x/crypto/bcrypt` cost 12 (verifies Laravel `$2y$` hashes if users are ever imported); refresh-token families with rotation and reuse detection under `SELECT … FOR UPDATE`. Recorded in [ADR 0007](../../../services/api-go/docs/adr/0007-identity-tokens-and-auth-policy.md). |
 | 12 | Jobs | River (Postgres-backed) for the inbound support-email job, enqueued in the same transaction as the webhook record; `workouts work` runs the workers in a `worker-go` container. |
@@ -91,8 +91,8 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 | 3 | [Shared Kernel, HTTP Platform and Meta](stories/03-shared-kernel-http-platform-and-meta.md) | Platform | shipped |
 | 4 | [Identity: Tokens, Login, Refresh and JWKS](stories/04-identity-tokens-login-refresh-and-jwks.md) | Auth & Profile | shipped |
 | 5 | [Identity: Verification, Reset and Me](stories/05-identity-verification-reset-and-me.md) | Auth & Profile | shipped |
-| 6 | [Catalog Read and Enrollment](stories/06-catalog-read-and-enrollment.md) | Programs | in progress |
-| 7 | [Shared YAML Catalog and Go Sync CLI](stories/07-shared-yaml-catalog-and-go-sync-cli.md) | Platform | planned |
+| 6 | [Catalog Read and Enrollment](stories/06-catalog-read-and-enrollment.md) | Programs | shipped |
+| 7 | [Shared YAML Catalog and Go Sync CLI](stories/07-shared-yaml-catalog-and-go-sync-cli.md) | Platform | in progress |
 | 8 | [Workouts](stories/08-workouts.md) | Workout Logging | planned |
 | 9 | [Dashboard](stories/09-dashboard.md) | Workout Logging | planned |
 | 10 | [Admin Catalog CRUD](stories/10-admin-catalog-crud.md) | Admin Content Management | planned |

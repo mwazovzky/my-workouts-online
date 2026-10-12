@@ -42,6 +42,11 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      # The shared YAML catalog (catalog/) must equal the PHP data files until
+      # the PHP API reads the YAML itself (Go epic story 14).
+      - name: Check the YAML catalog matches the PHP data files
+        run: php artisan catalog:export --check
+
       - name: Run tests with coverage
         run: >
           php artisan test --compact
