@@ -117,7 +117,3 @@ func (unimplemented) AdminUpdateWorkoutTemplate(context.Context, gen.AdminUpdate
 func (unimplemented) SocialLogin(context.Context, gen.SocialLoginRequestObject) (gen.SocialLoginResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
-
-func (unimplemented) GetDashboard(context.Context, gen.GetDashboardRequestObject) (gen.GetDashboardResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}

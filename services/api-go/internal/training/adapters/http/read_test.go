@@ -101,6 +101,15 @@ func TestListWorkoutsPagesNewestUpdatedFirst(t *testing.T) {
 		}
 	}
 
+	// Far past the end, even past any offset Postgres can count, is empty.
+	var beyond page
+
+	decode(t, f.do(u, http.MethodGet, "/api/v1/workouts?page=2147483647&per_page=100", nil).AssertStatus(http.StatusOK), &beyond)
+
+	if len(beyond.Data) != 0 || beyond.Meta.CurrentPage != 2147483647 || beyond.Links["prev"] == nil {
+		t.Errorf("a huge page: %d items, meta %+v", len(beyond.Data), beyond.Meta)
+	}
+
 	var empty page
 
 	decode(t, f.do(u, http.MethodGet, "/api/v1/workouts?page=9", nil).AssertStatus(http.StatusOK), &empty)

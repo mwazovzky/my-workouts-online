@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+const countEnrolledPrograms = `-- name: CountEnrolledPrograms :one
+SELECT count(*)::integer FROM program_user WHERE user_id = $1
+`
+
+func (q *Queries) CountEnrolledPrograms(ctx context.Context, userID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, countEnrolledPrograms, userID)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const enroll = `-- name: Enroll :exec
 INSERT INTO program_user (program_id, user_id, enrolled_at)
 VALUES ($1, $2, $3)

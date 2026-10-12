@@ -14,6 +14,8 @@ type Fake struct {
 	Templates map[int64]Snapshot
 	// Schedules is keyed by user id.
 	Schedules map[int64][]ScheduledTemplate
+	// Enrolled counts programs by user id.
+	Enrolled map[int64]int
 	// Err, when set, is returned by every method.
 	Err error
 }
@@ -64,6 +66,15 @@ func (f *Fake) TemplateHeaders(_ context.Context, ids []int64, _ i18n.Locale) (m
 	}
 
 	return found, nil
+}
+
+// EnrolledPrograms implements Catalog.
+func (f *Fake) EnrolledPrograms(_ context.Context, userID int64) (int, error) {
+	if f.Err != nil {
+		return 0, f.Err
+	}
+
+	return f.Enrolled[userID], nil
 }
 
 // EnrolledSchedule implements Catalog.

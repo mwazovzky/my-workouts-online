@@ -66,6 +66,17 @@ func (f *fakePrograms) EnrolledSchedule(context.Context, int64) ([]ports.Schedul
 	return f.schedule, f.err
 }
 
+func (f *fakePrograms) CountEnrolled(_ context.Context, userID int64) (int, error) {
+	n := 0
+	for key := range f.enrolled {
+		if key[1] == userID {
+			n++
+		}
+	}
+
+	return n, f.err
+}
+
 // fakeTemplates is an in-memory ports.Templates.
 type fakeTemplates map[int64]domain.WorkoutTemplate
 
@@ -237,6 +248,10 @@ func TestEnrollAndUnenrollCheckTheProgramExists(t *testing.T) {
 	entry, err := f.service.GetProgram(t.Context(), ada, 1)
 	if err != nil || !entry.Enrolled {
 		t.Errorf("GetProgram = %+v, %v; want enrolled", entry, err)
+	}
+
+	if n, err := f.service.EnrolledPrograms(t.Context(), 7); err != nil || n != 1 {
+		t.Errorf("EnrolledPrograms = %d, %v; want 1", n, err)
 	}
 
 	if err := f.service.Unenroll(t.Context(), ada, 1); err != nil {

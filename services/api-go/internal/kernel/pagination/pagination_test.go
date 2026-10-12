@@ -1,6 +1,7 @@
 package pagination_test
 
 import (
+	"math"
 	"net/url"
 	"testing"
 
@@ -100,6 +101,10 @@ func TestMetaAndLinks(t *testing.T) {
 				t.Errorf("Links() (-want +got):\n%s", diff)
 			}
 		})
+	}
+
+	if got := (pagination.Page{Number: math.MaxInt, Size: 100}).Offset(); got != math.MaxInt {
+		t.Errorf("Offset() of a huge page = %d, want it saturated", got)
 	}
 
 	if got := (pagination.Page{Number: 3, Size: 20}).Offset(); got != 40 {

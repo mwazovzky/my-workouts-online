@@ -127,6 +127,13 @@ func (r *Programs) EnrolledSchedule(ctx context.Context, userID int64) ([]ports.
 	return schedule, nil
 }
 
+// CountEnrolled implements ports.Programs.
+func (r *Programs) CountEnrolled(ctx context.Context, userID int64) (int, error) {
+	n, err := r.q(ctx).CountEnrolledPrograms(ctx, userID)
+
+	return int(n), postgres.MapError(err)
+}
+
 func toProgram(id int64, source string, description *string, raw []byte) (domain.Program, error) {
 	programName, programDescription, err := named(source, description, raw)
 	if err != nil {

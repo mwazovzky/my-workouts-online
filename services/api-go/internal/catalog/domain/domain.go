@@ -75,16 +75,6 @@ func (w Weekday) Valid() bool {
 	return ok
 }
 
-// Next returns the start of the first day on or after from's day that falls
-// on w, in from's location: today when from is a w. This is the PHP
-// dashboard's nextScheduledDate.
-func (w Weekday) Next(from time.Time) time.Time {
-	day := time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, from.Location())
-	days := (int(weekdays[w]) - int(day.Weekday()) + 7) % 7
-
-	return day.AddDate(0, 0, days)
-}
-
 // Equipment is what an exercise is performed with; its unit decides what a
 // set's difficulty_value means.
 type Equipment struct {

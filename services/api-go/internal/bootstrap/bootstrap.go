@@ -19,6 +19,8 @@ import (
 	catalogpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/postgres"
 	catalogapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app/catalogsync"
+	dashboardhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/adapters/http"
+	dashboardapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/app"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/bcrypt"
 	identityhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/http"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
@@ -64,8 +66,6 @@ type App struct {
 	Identity *identityapp.Service
 	// CatalogSync applies the YAML catalog in CATALOG_DIR (catalog sync, seed).
 	CatalogSync *catalogsync.Syncer
-	// Training serves the dashboard (story 9) through trainingapi.
-	Training *trainingapp.Service
 
 	closers []func(context.Context) error
 }
@@ -138,6 +138,8 @@ func New(deps Deps) (*App, error) {
 		Logger:   deps.Logger,
 	})
 
+	dashboard := dashboardapp.New(dashboardapp.Deps{Catalog: catalog, Training: training, Clock: deps.Clock})
+
 	locales := make([]string, 0, len(bundle.Locales()))
 	for _, locale := range bundle.Locales() {
 		locales = append(locales, string(locale))
@@ -177,6 +179,7 @@ func New(deps Deps) (*App, error) {
 		Identity:  identityhttp.New(identity, signer, identityhttp.Config{CookieSecure: cfg.JWT.CookieSecure, Clock: deps.Clock}),
 		Catalog:   cataloghttp.New(catalog),
 		Training:  traininghttp.New(training),
+		Dashboard: dashboardhttp.New(dashboard),
 	})
 	server.Handle("GET /up", http.HandlerFunc(health.Up))
 
@@ -185,7 +188,6 @@ func New(deps Deps) (*App, error) {
 		Readiness:   readiness,
 		Identity:    identity,
 		CatalogSync: catalogSync,
-		Training:    training,
 		closers: []func(context.Context) error{
 			func(context.Context) error { deps.Pool.Close(); return nil },
 		},

@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	cataloghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/http"
+	dashboardhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/adapters/http"
 	identityhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/http"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
@@ -21,6 +22,7 @@ type api struct {
 	identityhttp.Identity
 	cataloghttp.Catalog
 	traininghttp.Training
+	dashboardhttp.Dashboard
 	unimplemented
 }
 

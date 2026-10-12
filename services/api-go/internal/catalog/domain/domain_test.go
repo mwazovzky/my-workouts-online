@@ -37,35 +37,6 @@ func TestLocalizedTextResolve(t *testing.T) {
 	}
 }
 
-func TestWeekdayNext(t *testing.T) {
-	t.Parallel()
-
-	// Sunday 11 October 2026, mid-afternoon.
-	sunday := time.Date(2026, 10, 11, 15, 30, 0, 0, time.UTC)
-
-	tests := []struct {
-		weekday domain.Weekday
-		want    string
-	}{
-		{domain.Sunday, "2026-10-11"},
-		{domain.Monday, "2026-10-12"},
-		{domain.Wednesday, "2026-10-14"},
-		{domain.Saturday, "2026-10-17"},
-	}
-
-	for _, tt := range tests {
-		got := tt.weekday.Next(sunday)
-		if got.Format(time.DateOnly) != tt.want || got.Hour() != 0 || got.Minute() != 0 {
-			t.Errorf("%s.Next(%s) = %s, want the start of %s", tt.weekday, sunday, got, tt.want)
-		}
-	}
-
-	moscow := time.FixedZone("MSK", 3*60*60)
-	if got := domain.Thursday.Next(time.Date(2026, 10, 15, 1, 0, 0, 0, moscow)); got.Location() != moscow || got.Day() != 15 {
-		t.Errorf("Next keeps the location and counts today: got %s", got)
-	}
-}
-
 func TestWeekdayValid(t *testing.T) {
 	t.Parallel()
 

@@ -28,6 +28,8 @@ Start workouts from templates, edit activities and sets, save progress, complete
 
 The Go backend serves every workout operation (history, start from a template, the editor's save, complete, repeat, delete) with the same responses as the PHP API, including the same `ETag` scheme (`"<id>-<version>"`), `If-Match` handling (428 when missing, 412 when stale) and error codes; the web editor works against it unchanged. It differs only on payloads PHP mishandles: a retired exercise cannot be added to a workout (it stays where it already is), an existing activity may change its exercise, a set id that is not its activity's is reported on that set, and a set order repeated within an activity is a 422 instead of a server error. See [ADR 0010](../../services/api-go/docs/adr/0010-retired-exercises-rejected-on-write.md).
 
+The dashboard (`GET /dashboard`) is served by a Go read model that composes the catalog and training modules; the upcoming schedule, its ids (`{program_id}-{workout_template_id}-{date}`) and dates (next occurrence of each weekday, today included, at UTC midnight), the in-progress and recent workouts and the counts are the same as PHP's ([ADR 0011](../../services/api-go/docs/adr/0011-dashboard-read-model.md)).
+
 ## Business Rules
 
 - Workout creation requires a valid `workout_template_id`.

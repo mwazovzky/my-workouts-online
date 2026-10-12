@@ -1,0 +1,13 @@
+{
+  "data": {
+    "recent_workouts": [],
+    "summary": {
+      "completed_last_7_days_count": 0,
+      "completed_workouts_count": 0,
+      "enrolled_programs_count": 0,
+      "upcoming_workouts_count": 0
+    },
+    "upcoming_schedule": []
+  }
+}
+

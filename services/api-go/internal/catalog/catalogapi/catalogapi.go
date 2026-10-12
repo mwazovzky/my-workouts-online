@@ -26,6 +26,9 @@ type Catalog interface {
 	// EnrolledSchedule returns every weekday assignment of the programs the
 	// user is enrolled in, by program and then in assignment order.
 	EnrolledSchedule(ctx context.Context, userID int64, locale i18n.Locale) ([]ScheduledTemplate, error)
+	// EnrolledPrograms returns how many programs the user is enrolled in,
+	// with or without scheduled templates.
+	EnrolledPrograms(ctx context.Context, userID int64) (int, error)
 }
 
 // ExerciseInfo is an exercise as an activity displays it. Names are in the
