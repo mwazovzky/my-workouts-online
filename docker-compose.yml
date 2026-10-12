@@ -6,8 +6,12 @@ services:
       target: app-dev
     env_file:
       - .env
+    environment:
+      # The shared YAML catalog (catalog:export).
+      CATALOG_EXPORT_PATH: /var/www/catalog
     volumes:
       - ./services/api-php:/var/www/html
+      - ./catalog:/var/www/catalog
     depends_on:
       mysql:
         condition: service_healthy
@@ -61,6 +65,8 @@ services:
       # Tests create and drop their own databases on this server instead of
       # starting a testcontainers Postgres (no Docker inside this container).
       TEST_DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/postgres?sslmode=disable
+      # The shared YAML catalog `catalog sync` and `seed` apply.
+      CATALOG_DIR: /src/catalog
     ports:
       - "8081:8081"
     volumes:

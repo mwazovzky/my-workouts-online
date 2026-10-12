@@ -38,6 +38,7 @@ jobs:
           filters: |
             go:
               - 'services/api-go/**'
+              - 'catalog/**'
               - 'contracts/**'
               - 'scripts/contract-test.sh'
               - '.github/workflows/contract-go.yml'

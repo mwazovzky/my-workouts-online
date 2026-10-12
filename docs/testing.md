@@ -31,7 +31,7 @@ SPA tests run in `apps/web` (`docker compose exec -T node npm test`).
 - `tests/Feature/` covers the full HTTP stack, page rendering, authorization, validation, and database-side outcomes.
 - `tests/Unit/` covers isolated logic such as services, resources, enums, models, and query builders.
 - `apps/web/src/**/*.test.js` covers SPA utilities, composables, stores, guards, and component behavior with Vitest.
-- `tests/Unit/Catalog/CatalogDataIntegrityTest.php` validates the shipped `database/catalog/` data files; it fails on any broken slug, reference, or missing translation. Sync behavior is tested against the small catalog in `tests/Fixtures/catalog/`.
+- `tests/Unit/Catalog/CatalogDataIntegrityTest.php` validates the shipped `database/catalog/` data files; it fails on any broken slug, reference, or missing translation. Sync behavior is tested against the small catalog in `tests/Fixtures/catalog/`. `tests/Feature/Catalog/CatalogExportCommandTest.php` covers `catalog:export` and checks that the shared YAML `catalog/` equals the PHP data files. The Go API tests the same scenarios against `catalog/testdata/valid/` (that fixture, exported) and one fixture per validation rule in `catalog/testdata/invalid/`.
 - `tests/Feature/Migrations/` covers data migrations. These tests use `DatabaseMigrations` instead of `RefreshDatabase`, load the migration file, and call its `up()` / `down()` against rows inserted in the old shape.
 - `tests/TestCase.php` provides shared setup. The suite disables Vite and CSRF in tests, so feature tests can focus on application behavior.
 

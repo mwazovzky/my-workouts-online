@@ -9,7 +9,7 @@ Workout tracking app: users browse programs, enroll, log workouts, and track set
 - `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
 - `apps/ios/` — native SwiftUI iOS app (Swift 6, iOS 17+, XcodeGen `project.yml`, local packages `WorkoutsCore` and `WorkoutsAPI`) consuming the same API; see `apps/ios/README.md`. Planned in `planning/epics/ios-app/`.
-- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes, `getMeta`, every identity operation, the catalog's read side and enrollment, and its Postgres schema so far; every other operation answers 501; not routed by nginx). See `services/api-go/README.md`.
+- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes, `getMeta`, every identity operation, the catalog's read side and enrollment, catalog sync from `catalog/`, and its Postgres schema so far; every other operation answers 501; not routed by nginx). See `services/api-go/README.md`.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
 - `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), `api-go` image (Go toolchain dev stage, distroless production stage), dev nginx config.
 
@@ -27,6 +27,7 @@ docker compose exec -T app php artisan test --compact --filter=testMethodName # 
 docker compose exec -T app vendor/bin/pint --dirty                           # PHP formatting
 docker compose exec -T app php artisan catalog:sync --dry-run                # Preview catalog data file changes
 docker compose exec -T app php artisan catalog:sync                          # Apply database/catalog to the database
+docker compose exec -T app php artisan catalog:export --check                # The shared YAML catalog/ equals database/catalog (CI runs it)
 ```
 Backend tests use SQLite in-memory (`phpunit.xml`, values forced so container env cannot leak in). PHPUnit only — no Pest.
 
@@ -59,7 +60,8 @@ docker compose exec -T api-go make check     # the gate CI runs: tidy, fmt, vet,
 docker compose exec -T api-go make fmt       # gofumpt + goimports
 docker compose exec -T api-go make generate  # regenerate httpapi/gen from contracts/openapi.yaml and the sqlcgen packages from sql/ (commit the result)
 docker compose exec -T api-go go run ./cmd/workouts migrate status  # migrations applied to the dev database (the container runs `migrate up` on start)
-docker compose exec -T api-go go run ./cmd/workouts seed   # verified demo admin test@example.com / password (Go database)
+docker compose exec -T api-go go run ./cmd/workouts seed   # verified demo admin test@example.com / password, then the catalog (Go database)
+docker compose exec -T api-go go run ./cmd/workouts catalog sync --dry-run  # preview applying catalog/ (YAML) to the Go database
 CONTRACT_INCLUDE=$(grep -v '^#' services/api-go/contract-scope.txt | paste -sd, -) scripts/contract-test.sh http://localhost:8081  # Schemathesis on the operations Go implements
 docker compose exec -T api-go go test -race ./internal/platform/health/  # one package
 docker compose restart api-go                # rebuild and restart after code changes
@@ -85,7 +87,7 @@ After modifying `contracts/openapi.yaml` or any API response shape, lint the spe
 - **Form Requests** — Validation in `app/Http/Requests/`. Authorization via policies in `app/Policies/`. Admin `translations` rules come from the `HasTranslationRules` trait, built from `config('app.available_locales')`.
 - **Lazy loading** — `Model::preventLazyLoading()` is on outside production; eager load relations instead of reading them per row.
 - **Role-Based Authorization** — `User::hasRole()`/`isAdmin()` back the `admin` middleware alias (`EnsureUserIsAdmin`, registered in `bootstrap/app.php`) plus per-model policies. `UserResource.is_admin` drives admin-only UI. Admin catalog CRUD (equipment, categories, exercises, workout templates, programs) lives in `app/Http/Controllers/Api/Admin/` with logic in `app/Services/Admin/`; `WorkoutTemplateService` syncs nested activities/sets and `ProgramService` syncs weekday template assignments, both transactionally. `Exercise` uses `SoftDeletes` (delete = retire); `Activity::exercise()` is `->withTrashed()` so history resolves retired exercises; templates/programs are hard-deleted with reference guards.
-- **Catalog Sync** — The shipped catalog lives in PHP data files under `database/catalog/` (records keyed by `slug`; `exercises/` and `workout-templates/` are directories). `catalog:sync` (`app/Services/Catalog/`, run by every deploy and by `CatalogSeeder`) validates, then applies them transactionally: rows match by `slug` or are adopted by English name / `previous_names`; the data files win for managed records; admin-created records (null `slug`) are untouched; removals go in `retired.php`. Change shipped content by editing the data files, not seeders. `UserSeeder`/`WorkoutSeeder` are demo-only and throw in production.
+- **Catalog Sync** — The shipped catalog lives in PHP data files under `database/catalog/`, mirrored as YAML in the repository's `catalog/` (read by the Go API; `catalog:export --check` keeps them equal, so edit both) (records keyed by `slug`; `exercises/` and `workout-templates/` are directories). `catalog:sync` (`app/Services/Catalog/`, run by every deploy and by `CatalogSeeder`) validates, then applies them transactionally: rows match by `slug` or are adopted by English name / `previous_names`; the data files win for managed records; admin-created records (null `slug`) are untouched; removals go in `retired.php`. Change shipped content by editing the data files, not seeders. `UserSeeder`/`WorkoutSeeder` are demo-only and throw in production.
 - **Internationalization** — `NegotiateApiLocale` middleware sets the locale from `Accept-Language`. Translatable models store their source text (`name`, `description`) in their own columns, in `config('app.source_locale')`; the polymorphic `translations` table holds other locales only. The `HasTranslations` trait reads the requested locale and falls back to the column, and writes through `createWithTranslations()` (seed/create) and `updateTranslations()` (edit; blank values removed for fallback). Backend strings embedded in responses live in `lang/*.json`; UI strings live in `apps/web/src/i18n/locales`, accessed via the `useTranslation` composable.
 
 ### Frontend Patterns

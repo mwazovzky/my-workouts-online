@@ -11,8 +11,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/testdb"
@@ -285,7 +288,9 @@ func TestSeedAndGrantAdmin(t *testing.T) {
 	t.Parallel()
 
 	pool := testdb.New(t)
-	environ := map[string]string{"DATABASE_URL": pool.Config().ConnString(), "APP_ENV": "testing", "BCRYPT_ROUNDS": "4"}
+	environ := map[string]string{
+		"DATABASE_URL": pool.Config().ConnString(), "APP_ENV": "testing", "BCRYPT_ROUNDS": "4", "CATALOG_DIR": shippedCatalog,
+	}
 
 	var out bytes.Buffer
 
@@ -295,8 +300,13 @@ func TestSeedAndGrantAdmin(t *testing.T) {
 		}
 	}
 
-	if !strings.Contains(out.String(), "seeded the demo admin test@example.com") {
+	if !strings.Contains(out.String(), "seeded the demo admin test@example.com") || !strings.Contains(out.String(), "Catalog synced.") {
 		t.Errorf("seed output = %q", out.String())
+	}
+
+	var programs int
+	if err := pool.QueryRow(t.Context(), "SELECT count(*) FROM programs WHERE slug IS NOT NULL").Scan(&programs); err != nil || programs == 0 {
+		t.Errorf("seeded programs = %d, %v; want the catalog's", programs, err)
 	}
 
 	var admins int
@@ -351,5 +361,166 @@ func TestKeysGenerate(t *testing.T) {
 
 	if _, err := jwt.ParseKeys(match[1], match[2], ""); err != nil {
 		t.Errorf("the printed keys do not parse: %v", err)
+	}
+}
+
+// shippedCatalog is the repository's catalog/ directory, from this package.
+const shippedCatalog = "../../../../catalog"
+
+// catalogSync runs `catalog sync` with args on its own database.
+func catalogSync(t *testing.T, environ map[string]string, args ...string) (string, error) {
+	t.Helper()
+
+	var out bytes.Buffer
+	err := run(t.Context(), append([]string{"catalog", "sync"}, args...), environ, &out, io.Discard)
+
+	return out.String(), err
+}
+
+func catalogEnviron(t *testing.T) (map[string]string, *pgxpool.Pool) {
+	t.Helper()
+
+	pool := testdb.New(t)
+
+	return map[string]string{"DATABASE_URL": pool.Config().ConnString(), "APP_ENV": "testing", "CATALOG_DIR": shippedCatalog}, pool
+}
+
+func countRows(t *testing.T, pool *pgxpool.Pool, query string) int {
+	t.Helper()
+
+	var n int
+	if err := pool.QueryRow(t.Context(), query).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+
+	return n
+}
+
+// Mirrors CatalogSyncCommandTest::it_syncs_the_shipped_catalog and
+// ::it_can_run_repeatedly.
+func TestCatalogSyncAppliesTheShippedCatalogRepeatedly(t *testing.T) {
+	t.Parallel()
+
+	environ, pool := catalogEnviron(t)
+
+	for range 2 {
+		out, err := catalogSync(t, environ)
+		if err != nil || !strings.Contains(out, "Catalog synced.") {
+			t.Fatalf("catalog sync = %q, %v", out, err)
+		}
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM exercises WHERE slug IS NULL"); n != 0 {
+		t.Errorf("%d exercises without a slug", n)
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM programs"); n != 14 {
+		t.Errorf("programs = %d, want the 14 in catalog/programs.yaml", n)
+	}
+}
+
+// Mirrors CatalogSyncCommandTest::it_adopts_the_cycling_program_renamed_with_a_hyphen_in_production.
+func TestCatalogSyncAdoptsTheCyclingProgramRenamedWithAHyphen(t *testing.T) {
+	t.Parallel()
+
+	environ, pool := catalogEnviron(t)
+
+	var id int64
+	if err := pool.QueryRow(t.Context(),
+		"INSERT INTO programs (name, description) VALUES ('Cycling - Beginner (Week 1)', 'Edited in the admin UI.') RETURNING id").Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := catalogSync(t, environ)
+	if err != nil || !strings.Contains(out, "programs [cycling-beginner-week-1]: adopted") {
+		t.Fatalf("catalog sync = %q, %v", out, err)
+	}
+
+	var slug, name string
+	if err := pool.QueryRow(t.Context(), "SELECT slug, name FROM programs WHERE id = $1", id).Scan(&slug, &name); err != nil ||
+		slug != "cycling-beginner-week-1" || name != "Cycling — Beginner (Week 1)" {
+		t.Errorf("program = %q, %q, %v", slug, name, err)
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM program_workout_template WHERE program_id = "+strconv.FormatInt(id, 10)); n != 6 {
+		t.Errorf("assignments = %d, want 6", n)
+	}
+}
+
+// Mirrors CatalogSyncCommandTest::a_dry_run_writes_nothing.
+func TestCatalogSyncDryRunWritesNothing(t *testing.T) {
+	t.Parallel()
+
+	environ, pool := catalogEnviron(t)
+
+	if out, err := catalogSync(t, environ, "--dry-run"); err != nil || !strings.Contains(out, "Dry run: nothing was written.") {
+		t.Fatalf("catalog sync --dry-run = %q, %v", out, err)
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM equipment"); n != 0 {
+		t.Errorf("equipment = %d after a dry run", n)
+	}
+}
+
+// Mirrors CatalogSyncCommandTest::it_fails_and_lists_the_violations_when_the_catalog_is_invalid.
+func TestCatalogSyncFailsAndListsTheViolations(t *testing.T) {
+	t.Parallel()
+
+	environ, pool := catalogEnviron(t)
+
+	for dir, message := range map[string]string{
+		shippedCatalog + "/missing":                                    "catalog directory does not exist",
+		shippedCatalog + "/testdata/invalid/schedule-template-unknown": "catalog file equipment.yaml does not exist",
+	} {
+		environ["CATALOG_DIR"] = dir
+
+		out, err := catalogSync(t, environ)
+		if !errors.Is(err, errCatalog) || !strings.Contains(out, "The catalog data is invalid. Nothing was written.") || !strings.Contains(out, message) {
+			t.Errorf("%s: %q, %v", dir, out, err)
+		}
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM equipment"); n != 0 {
+		t.Errorf("equipment = %d", n)
+	}
+}
+
+// Mirrors CatalogSyncCommandTest::strict_mode_fails_when_the_sync_raises_warnings
+// and ::without_strict_mode_warnings_do_not_fail_the_sync.
+func TestCatalogSyncStrictModeFailsOnWarnings(t *testing.T) {
+	t.Parallel()
+
+	environ, pool := catalogEnviron(t)
+
+	if _, err := pool.Exec(t.Context(), "INSERT INTO equipment (name) VALUES ('Barbell'), ('Barbell')"); err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := catalogSync(t, environ, "--strict")
+	if !errors.Is(err, errCatalog) || !strings.Contains(out, "Strict mode: the sync raised warnings. Nothing was written.") {
+		t.Fatalf("catalog sync --strict = %q, %v", out, err)
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM equipment WHERE slug IS NULL"); n != 2 {
+		t.Errorf("unmanaged equipment = %d, want 2", n)
+	}
+
+	out, err = catalogSync(t, environ)
+	if err != nil || !strings.Contains(out, "Warning: equipment [barbell]: 2 rows match by name") {
+		t.Fatalf("catalog sync = %q, %v", out, err)
+	}
+
+	if n := countRows(t, pool, "SELECT count(*) FROM equipment WHERE slug IS NULL"); n != 1 {
+		t.Errorf("unmanaged equipment = %d, want 1", n)
+	}
+}
+
+func TestCatalogSyncRejectsBadArguments(t *testing.T) {
+	t.Parallel()
+
+	for _, args := range [][]string{{"catalog"}, {"catalog", "load"}, {"catalog", "sync", "--force"}, {"catalog", "sync", "extra"}} {
+		if err := run(t.Context(), args, map[string]string{}, io.Discard, io.Discard); !errors.Is(err, errUsage) {
+			t.Errorf("run(%q) = %v, want a usage error", args, err)
+		}
 	}
 }

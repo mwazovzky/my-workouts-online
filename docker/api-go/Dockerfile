@@ -25,6 +25,9 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
 # --- Stage 3: production API image ---
 FROM gcr.io/distroless/static-debian13:nonroot AS api
 COPY --from=build /out/workouts /workouts
+# The shared catalog `workouts catalog sync` applies on deploy (ADR 0009).
+COPY catalog/ /catalog/
+ENV CATALOG_DIR=/catalog
 USER nonroot:nonroot
 EXPOSE 8081
 # No shell or curl in distroless: the binary probes its own liveness endpoint.

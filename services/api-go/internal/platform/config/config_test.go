@@ -27,6 +27,7 @@ func TestLoadAppliesDefaults(t *testing.T) {
 		RateLimitPerMinute: 60,
 		LogLevel:           config.LogLevel(slog.LevelInfo),
 		LinkSigningKey:     strings.Repeat("k", 32),
+		CatalogDir:         "catalog",
 		ShutdownDrainDelay: 2 * time.Second,
 		ShutdownTimeout:    5 * time.Second,
 		AppName:            "My Workouts",
@@ -59,6 +60,7 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		"SHUTDOWN_DRAIN_DELAY":      "0s",
 		"SHUTDOWN_TIMEOUT":          "30s",
 		"APP_ENV":                   "local",
+		"CATALOG_DIR":               "/src/catalog",
 		"APP_NAME":                  "Workouts",
 		"FRONTEND_URL":              "https://app.my-workouts.online",
 		"BCRYPT_ROUNDS":             "4",
@@ -87,6 +89,7 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		AppName:            "Workouts",
 		FrontendURL:        "https://app.my-workouts.online",
 		LinkSigningKey:     config.DevLinkSigningKey,
+		CatalogDir:         "/src/catalog",
 		AppEnv:             "local",
 		BcryptRounds:       4,
 		JWT: config.JWT{

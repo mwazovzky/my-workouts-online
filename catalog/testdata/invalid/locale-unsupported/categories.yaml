@@ -1,0 +1,20 @@
+- slug: chest
+  translations:
+    en:
+      name: Chest
+    ru:
+      name: Грудь
+    de:
+      name: Brust
+- slug: legs
+  translations:
+    en:
+      name: Legs
+    ru:
+      name: Ноги
+- slug: cardio
+  translations:
+    en:
+      name: Cardio
+    ru:
+      name: Кардио

@@ -1,0 +1,3 @@
+equipment:
+  - { slug: old-rack, names: ['Old Rack'] }
+  - { slug: old-rack, names: ['Older Rack'] }
