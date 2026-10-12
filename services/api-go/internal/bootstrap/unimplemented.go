@@ -121,31 +121,3 @@ func (unimplemented) SocialLogin(context.Context, gen.SocialLoginRequestObject) 
 func (unimplemented) GetDashboard(context.Context, gen.GetDashboardRequestObject) (gen.GetDashboardResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
-
-func (unimplemented) ListWorkouts(context.Context, gen.ListWorkoutsRequestObject) (gen.ListWorkoutsResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) CreateWorkout(context.Context, gen.CreateWorkoutRequestObject) (gen.CreateWorkoutResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) DeleteWorkout(context.Context, gen.DeleteWorkoutRequestObject) (gen.DeleteWorkoutResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) GetWorkout(context.Context, gen.GetWorkoutRequestObject) (gen.GetWorkoutResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) ReplaceWorkoutActivities(context.Context, gen.ReplaceWorkoutActivitiesRequestObject) (gen.ReplaceWorkoutActivitiesResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) CompleteWorkout(context.Context, gen.CompleteWorkoutRequestObject) (gen.CompleteWorkoutResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) RepeatWorkout(context.Context, gen.RepeatWorkoutRequestObject) (gen.RepeatWorkoutResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}

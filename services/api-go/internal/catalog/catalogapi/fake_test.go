@@ -15,7 +15,7 @@ func TestFake(t *testing.T) {
 	ctx := t.Context()
 	f := &catalogapi.Fake{
 		Exercises: map[int64]catalogapi.ExerciseInfo{1: {ID: 1, Name: "Squat"}},
-		Templates: map[int64]catalogapi.Snapshot{2: {ID: 2, Name: "Full Body A"}},
+		Templates: map[int64]catalogapi.Snapshot{2: {TemplateHeader: catalogapi.TemplateHeader{ID: 2, Name: "Full Body A"}}},
 		Schedules: map[int64][]catalogapi.ScheduledTemplate{7: {{ProgramID: 3, Weekday: "monday"}}},
 	}
 
@@ -29,6 +29,10 @@ func TestFake(t *testing.T) {
 
 	if _, err := f.TemplateSnapshot(ctx, 99, i18n.EN); !apperr.HasKind(err, apperr.KindNotFound) {
 		t.Errorf("unknown template: err = %v, want not found", err)
+	}
+
+	if got, err := f.TemplateHeaders(ctx, []int64{2, 99}, i18n.EN); err != nil || len(got) != 1 || got[2].Name != "Full Body A" {
+		t.Errorf("TemplateHeaders = %v, %v", got, err)
 	}
 
 	if got, err := f.EnrolledSchedule(ctx, 7, i18n.EN); err != nil || len(got) != 1 {
@@ -47,5 +51,9 @@ func TestFake(t *testing.T) {
 
 	if _, err := f.EnrolledSchedule(ctx, 7, i18n.EN); err == nil {
 		t.Error("EnrolledSchedule ignored Err")
+	}
+
+	if _, err := f.TemplateHeaders(ctx, nil, i18n.EN); err == nil {
+		t.Error("TemplateHeaders ignored Err")
 	}
 }

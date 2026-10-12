@@ -1,0 +1,24 @@
+# OpenAPI Overlay applied by oapi-codegen before it generates gen.go (and the
+# embedded spec). It holds Go-only generator hints, so contracts/openapi.yaml
+# stays the same for every client and backend; the wire format does not
+# change. Why each action exists: docs/adr/0003-openapi-code-generation.md.
+overlay: 1.0.0
+info:
+  title: Go code generation hints
+  version: 1.0.0
+actions:
+  # PHP sends these optional nullable fields as null rather than leaving
+  # them out, so Go writes them too instead of omitting them.
+  - target: $.components.schemas.Program.properties.description
+    update: { x-omitempty: false }
+  - target: $.components.schemas.WorkoutTemplate.properties.description
+    update: { x-omitempty: false }
+  - target: $.components.schemas.Exercise.properties.description
+    update: { x-omitempty: false }
+  - target: $.components.schemas.Workout.properties.activities_count
+    update: { x-omitempty: false }
+  # A missing If-Match is a 428 decided by the use case, after the 404 and
+  # 403 checks, as in PHP; bound as required, the generated router would
+  # reject it first.
+  - target: $.components.parameters.IfMatch
+    update: { required: false }

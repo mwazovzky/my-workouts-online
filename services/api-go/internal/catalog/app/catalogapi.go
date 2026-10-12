@@ -52,21 +52,39 @@ func (s *Service) TemplateSnapshot(ctx context.Context, id int64, locale i18n.Lo
 	}
 
 	snapshot := catalogapi.Snapshot{
-		ID:         template.ID,
-		Name:       template.Name.Resolve(locale),
-		Activities: make([]catalogapi.SnapshotActivity, len(template.Activities)),
+		TemplateHeader: header(template, locale),
+		Activities:     make([]catalogapi.SnapshotActivity, len(template.Activities)),
 	}
 
 	for i, a := range template.Activities {
 		sets := make([]catalogapi.SnapshotSet, len(a.Sets))
 		for j, set := range a.Sets {
-			sets[j] = catalogapi.SnapshotSet{Order: set.Order, EffortValue: set.EffortValue, DifficultyValue: set.DifficultyValue}
+			sets[j] = catalogapi.SnapshotSet{ID: set.ID, Order: set.Order, EffortValue: set.EffortValue, DifficultyValue: set.DifficultyValue}
 		}
 
-		snapshot.Activities[i] = catalogapi.SnapshotActivity{ExerciseID: a.Exercise.ID, Order: a.Order, Sets: sets}
+		snapshot.Activities[i] = catalogapi.SnapshotActivity{ID: a.ID, ExerciseID: a.Exercise.ID, Order: a.Order, Sets: sets}
 	}
 
 	return snapshot, nil
+}
+
+// TemplateHeaders implements catalogapi.Catalog.
+func (s *Service) TemplateHeaders(ctx context.Context, ids []int64, locale i18n.Locale) (map[int64]catalogapi.TemplateHeader, error) {
+	templates, err := s.Templates.Headers(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	found := make(map[int64]catalogapi.TemplateHeader, len(templates))
+	for _, t := range templates {
+		found[t.ID] = header(t, locale)
+	}
+
+	return found, nil
+}
+
+func header(t domain.WorkoutTemplate, locale i18n.Locale) catalogapi.TemplateHeader {
+	return catalogapi.TemplateHeader{ID: t.ID, Name: t.Name.Resolve(locale), Description: t.Description.Resolve(locale)}
 }
 
 // EnrolledSchedule implements catalogapi.Catalog.

@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: in progress (story 7); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
+**Status: in progress (story 8); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
@@ -92,8 +92,8 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 | 4 | [Identity: Tokens, Login, Refresh and JWKS](stories/04-identity-tokens-login-refresh-and-jwks.md) | Auth & Profile | shipped |
 | 5 | [Identity: Verification, Reset and Me](stories/05-identity-verification-reset-and-me.md) | Auth & Profile | shipped |
 | 6 | [Catalog Read and Enrollment](stories/06-catalog-read-and-enrollment.md) | Programs | shipped |
-| 7 | [Shared YAML Catalog and Go Sync CLI](stories/07-shared-yaml-catalog-and-go-sync-cli.md) | Platform | in progress |
-| 8 | [Workouts](stories/08-workouts.md) | Workout Logging | planned |
+| 7 | [Shared YAML Catalog and Go Sync CLI](stories/07-shared-yaml-catalog-and-go-sync-cli.md) | Platform | shipped |
+| 8 | [Workouts](stories/08-workouts.md) | Workout Logging | in progress |
 | 9 | [Dashboard](stories/09-dashboard.md) | Workout Logging | planned |
 | 10 | [Admin Catalog CRUD](stories/10-admin-catalog-crud.md) | Admin Content Management | planned |
 | 11 | [Mail, Inbound Webhook and Worker](stories/11-mail-inbound-webhook-and-worker.md) | Platform | planned |

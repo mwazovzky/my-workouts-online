@@ -78,6 +78,18 @@ func (f fakeTemplates) ByID(_ context.Context, id int64) (domain.WorkoutTemplate
 	return t, nil
 }
 
+func (f fakeTemplates) Headers(_ context.Context, ids []int64) ([]domain.WorkoutTemplate, error) {
+	var found []domain.WorkoutTemplate
+
+	for _, id := range ids {
+		if t, ok := f[id]; ok {
+			found = append(found, domain.WorkoutTemplate{ID: t.ID, Name: t.Name, Description: t.Description})
+		}
+	}
+
+	return found, nil
+}
+
 // fakeExercises is an in-memory ports.Exercises, in id order.
 type fakeExercises struct {
 	exercises []domain.Exercise
@@ -146,7 +158,7 @@ func newFixture() fixture {
 	}
 	exercises := &fakeExercises{exercises: catalog}
 	templates := fakeTemplates{1: {
-		ID: 1, Name: text("Full Body A", "Всё тело А"),
+		ID: 1, Name: text("Full Body A", "Всё тело А"), Description: text("Squat and row.", ""),
 		Activities: []domain.TemplateActivity{
 			{ID: 10, Order: 1, Exercise: catalog[0], Sets: []domain.TemplateSet{{ID: 100, Order: 1, EffortValue: 5, DifficultyValue: new(100.0)}}},
 			{ID: 11, Order: 2, Exercise: catalog[2], Sets: []domain.TemplateSet{{ID: 101, Order: 1, EffortValue: 10}}},
@@ -255,10 +267,13 @@ func TestTemplateSnapshotKeepsRetiredExercises(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := catalogapi.Snapshot{ID: 1, Name: "Всё тело А", Activities: []catalogapi.SnapshotActivity{
-		{ExerciseID: 1, Order: 1, Sets: []catalogapi.SnapshotSet{{Order: 1, EffortValue: 5, DifficultyValue: new(100.0)}}},
-		{ExerciseID: 3, Order: 2, Sets: []catalogapi.SnapshotSet{{Order: 1, EffortValue: 10}}},
-	}}
+	want := catalogapi.Snapshot{
+		TemplateHeader: catalogapi.TemplateHeader{ID: 1, Name: "Всё тело А", Description: "Squat and row."},
+		Activities: []catalogapi.SnapshotActivity{
+			{ID: 10, ExerciseID: 1, Order: 1, Sets: []catalogapi.SnapshotSet{{ID: 100, Order: 1, EffortValue: 5, DifficultyValue: new(100.0)}}},
+			{ID: 11, ExerciseID: 3, Order: 2, Sets: []catalogapi.SnapshotSet{{ID: 101, Order: 1, EffortValue: 10}}},
+		},
+	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("snapshot (-want +got):\n%s", diff)
 	}
@@ -269,6 +284,20 @@ func TestTemplateSnapshotKeepsRetiredExercises(t *testing.T) {
 
 	if template, err := f.service.GetWorkoutTemplate(t.Context(), 1); err != nil || len(template.Activities) != 2 {
 		t.Errorf("GetWorkoutTemplate = %+v, %v", template, err)
+	}
+}
+
+func TestTemplateHeadersSkipUnknownIDs(t *testing.T) {
+	t.Parallel()
+
+	got, err := newFixture().service.TemplateHeaders(t.Context(), []int64{1, 99}, i18n.RU)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := map[int64]catalogapi.TemplateHeader{1: {ID: 1, Name: "Всё тело А", Description: "Squat and row."}}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("headers (-want +got):\n%s", diff)
 	}
 }
 

@@ -50,6 +50,22 @@ func (f *Fake) TemplateSnapshot(_ context.Context, id int64, _ i18n.Locale) (Sna
 	return s, nil
 }
 
+// TemplateHeaders implements Catalog: the headers of the Templates set.
+func (f *Fake) TemplateHeaders(_ context.Context, ids []int64, _ i18n.Locale) (map[int64]TemplateHeader, error) {
+	if f.Err != nil {
+		return nil, f.Err
+	}
+
+	found := map[int64]TemplateHeader{}
+	for _, id := range ids {
+		if s, ok := f.Templates[id]; ok {
+			found[id] = s.TemplateHeader
+		}
+	}
+
+	return found, nil
+}
+
 // EnrolledSchedule implements Catalog.
 func (f *Fake) EnrolledSchedule(_ context.Context, userID int64, _ i18n.Locale) ([]ScheduledTemplate, error) {
 	if f.Err != nil {

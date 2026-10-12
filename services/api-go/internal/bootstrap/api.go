@@ -6,6 +6,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/meta"
+	traininghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters/http"
 )
 
 // api is the generated strict server, assembled by embedding: each module
@@ -19,6 +20,7 @@ type api struct {
 	meta.Handler
 	identityhttp.Identity
 	cataloghttp.Catalog
+	traininghttp.Training
 	unimplemented
 }
 

@@ -20,6 +20,9 @@ type Catalog interface {
 	// TemplateSnapshot returns a template to copy into a workout; apperr
 	// NotFound for an unknown id.
 	TemplateSnapshot(ctx context.Context, id int64, locale i18n.Locale) (Snapshot, error)
+	// TemplateHeaders returns the templates with these ids, keyed by id;
+	// unknown (deleted) ids are left out.
+	TemplateHeaders(ctx context.Context, ids []int64, locale i18n.Locale) (map[int64]TemplateHeader, error)
 	// EnrolledSchedule returns every weekday assignment of the programs the
 	// user is enrolled in, by program and then in assignment order.
 	EnrolledSchedule(ctx context.Context, userID int64, locale i18n.Locale) ([]ScheduledTemplate, error)
@@ -38,16 +41,24 @@ type ExerciseInfo struct {
 	Retired         bool
 }
 
-// Snapshot is a template to copy: its name in the requested locale and its
-// activities and sets in order.
+// TemplateHeader is a template's own fields in the requested locale; an
+// empty Name or Description has no text.
+type TemplateHeader struct {
+	ID          int64
+	Name        string
+	Description string
+}
+
+// Snapshot is a template to copy: its header in the requested locale and
+// its activities and sets in order, with their ids for display.
 type Snapshot struct {
-	ID         int64
-	Name       string
+	TemplateHeader
 	Activities []SnapshotActivity
 }
 
 // SnapshotActivity is one exercise of a Snapshot.
 type SnapshotActivity struct {
+	ID         int64
 	ExerciseID int64
 	Order      int
 	Sets       []SnapshotSet
@@ -55,6 +66,7 @@ type SnapshotActivity struct {
 
 // SnapshotSet is one planned set of a SnapshotActivity.
 type SnapshotSet struct {
+	ID              int64
 	Order           int
 	EffortValue     int
 	DifficultyValue *float64

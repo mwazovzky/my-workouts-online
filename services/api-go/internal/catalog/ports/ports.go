@@ -48,6 +48,9 @@ type Templates interface {
 	// activity's exercise resolved even when it is retired; apperr NotFound
 	// otherwise.
 	ByID(ctx context.Context, id int64) (domain.WorkoutTemplate, error)
+	// Headers returns the templates with these ids, their own fields only,
+	// in id order; unknown ids are left out.
+	Headers(ctx context.Context, ids []int64) ([]domain.WorkoutTemplate, error)
 }
 
 // Exercises reads exercises with their equipment and categories.

@@ -22,6 +22,30 @@ func NewTemplates(tx *postgres.Transactor) *Templates {
 	return &Templates{tx: tx, exercises: NewExercises(tx)}
 }
 
+// Headers implements ports.Templates.
+func (r *Templates) Headers(ctx context.Context, ids []int64) ([]domain.WorkoutTemplate, error) {
+	if len(ids) == 0 {
+		return []domain.WorkoutTemplate{}, nil
+	}
+
+	rows, err := sqlcgen.New(r.tx.Querier(ctx)).ListWorkoutTemplatesByID(ctx, ids)
+	if err != nil {
+		return nil, postgres.MapError(err)
+	}
+
+	templates := make([]domain.WorkoutTemplate, 0, len(rows))
+	for _, row := range rows {
+		templateName, description, err := named(row.Name, row.Description, row.Translations)
+		if err != nil {
+			return nil, err
+		}
+
+		templates = append(templates, domain.WorkoutTemplate{ID: row.ID, Name: templateName, Description: description})
+	}
+
+	return templates, nil
+}
+
 // ByID implements ports.Templates: five queries (template, activities, sets,
 // exercises, categories) whatever the template's size.
 func (r *Templates) ByID(ctx context.Context, id int64) (domain.WorkoutTemplate, error) {

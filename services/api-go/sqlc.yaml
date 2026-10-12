@@ -2,7 +2,7 @@
 # one typed package per module (internal/<module>/adapters/postgres/sqlcgen).
 # `make generate` runs it; `make check` fails when the committed output is
 # stale. A module gets its block with its first query (sqlc rejects an empty
-# query directory): training and dashboard join in their stories. The type
+# query directory): dashboard joins in its story. The type
 # overrides are shared through the &overrides anchor.
 version: "2"
 sql:
@@ -51,6 +51,19 @@ sql:
       go:
         package: sqlcgen
         out: internal/catalog/adapters/postgres/sqlcgen
+        sql_package: pgx/v5
+        query_parameter_limit: 2
+        emit_methods_with_db_argument: false
+        emit_pointers_for_null_types: true
+        omit_unused_structs: true
+        overrides: *overrides
+  - engine: postgresql
+    schema: migrations
+    queries: sql/training
+    gen:
+      go:
+        package: sqlcgen
+        out: internal/training/adapters/postgres/sqlcgen
         sql_package: pgx/v5
         query_parameter_limit: 2
         emit_methods_with_db_argument: false

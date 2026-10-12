@@ -15,3 +15,9 @@ FROM template_sets s
 JOIN template_activities a ON a.id = s.activity_id
 WHERE a.template_id = $1
 ORDER BY s.activity_id, s."order";
+
+-- name: ListWorkoutTemplatesByID :many
+SELECT id, name, description, translations
+FROM workout_templates
+WHERE id = ANY (@ids::bigint[])
+ORDER BY id;

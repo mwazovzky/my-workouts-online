@@ -1,0 +1,13 @@
+{
+  "data": {
+    "activities": [],
+    "activities_count": null,
+    "created_at": "2026-10-12T09:00:00Z",
+    "id": 1,
+    "name": "Morning",
+    "status": "completed",
+    "updated_at": "2026-10-12T09:10:00Z",
+    "user_id": 1
+  }
+}
+

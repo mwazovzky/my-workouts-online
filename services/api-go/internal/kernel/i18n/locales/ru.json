@@ -20,6 +20,7 @@
     "Refresh token reuse detected.": "Обнаружено повторное использование токена обновления.",
     "Reps": "Повт.",
     "Send the workout": "Send the workout",
+    "Send the workout's ETag in If-Match.": "Передайте ETag тренировки в заголовке If-Match.",
     "Server Error": "Ошибка сервера",
     "The :attribute field must be an object.": "Поле :attribute должно быть объектом.",
     "The :method method is not supported for this route. Supported methods: :allow.": "Метод :method не поддерживается для этого адреса. Допустимые методы: :allow.",

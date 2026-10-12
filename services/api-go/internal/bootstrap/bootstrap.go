@@ -36,6 +36,9 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/meta"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/ratelimit"
+	traininghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters/http"
+	trainingpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters/postgres"
+	trainingapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/app"
 )
 
 // Deps are the process-level dependencies the application is built from.
@@ -61,6 +64,8 @@ type App struct {
 	Identity *identityapp.Service
 	// CatalogSync applies the YAML catalog in CATALOG_DIR (catalog sync, seed).
 	CatalogSync *catalogsync.Syncer
+	// Training serves the dashboard (story 9) through trainingapi.
+	Training *trainingapp.Service
 
 	closers []func(context.Context) error
 }
@@ -125,6 +130,14 @@ func New(deps Deps) (*App, error) {
 		Logger:    deps.Logger,
 	})
 
+	training := trainingapp.New(trainingapp.Deps{
+		Workouts: trainingpg.NewWorkouts(tx),
+		Catalog:  catalog,
+		Tx:       tx,
+		Clock:    deps.Clock,
+		Logger:   deps.Logger,
+	})
+
 	locales := make([]string, 0, len(bundle.Locales()))
 	for _, locale := range bundle.Locales() {
 		locales = append(locales, string(locale))
@@ -147,6 +160,7 @@ func New(deps Deps) (*App, error) {
 		Limiter:            limiter,
 		Authenticator:      identity,
 		Throttles:          identityhttp.Throttles(),
+		FieldMessages:      traininghttp.FieldMessages(),
 	})
 	if err != nil {
 		return nil, err
@@ -162,6 +176,7 @@ func New(deps Deps) (*App, error) {
 		Handler:   meta.NewHandler(bundle),
 		Identity:  identityhttp.New(identity, signer, identityhttp.Config{CookieSecure: cfg.JWT.CookieSecure, Clock: deps.Clock}),
 		Catalog:   cataloghttp.New(catalog),
+		Training:  traininghttp.New(training),
 	})
 	server.Handle("GET /up", http.HandlerFunc(health.Up))
 
@@ -170,6 +185,7 @@ func New(deps Deps) (*App, error) {
 		Readiness:   readiness,
 		Identity:    identity,
 		CatalogSync: catalogSync,
+		Training:    training,
 		closers: []func(context.Context) error{
 			func(context.Context) error { deps.Pool.Close(); return nil },
 		},
