@@ -35,6 +35,11 @@ type operation struct {
 	public bool
 	// admin: tagged Admin; the caller must be an admin.
 	admin bool
+	// verified: needs a verified email. Every signed-in operation except
+	// those tagged Auth or Me, the same set the PHP API wraps in its
+	// `verified` middleware: the account and session operations stay
+	// reachable so an unverified user can verify, edit or sign out.
+	verified bool
 }
 
 // operationsOf indexes the contract's operations by ServeMux pattern.
@@ -43,10 +48,12 @@ func operationsOf(spec *openapi3.T) map[string]operation {
 
 	for path, item := range spec.Paths.Map() {
 		for method, op := range item.Operations() {
+			public := op.Security != nil && len(*op.Security) == 0
 			ops[method+" "+path] = operation{
-				id:     contractID(op.OperationID),
-				public: op.Security != nil && len(*op.Security) == 0,
-				admin:  slices.Contains(op.Tags, "Admin"),
+				id:       contractID(op.OperationID),
+				public:   public,
+				admin:    slices.Contains(op.Tags, "Admin"),
+				verified: !public && !slices.Contains(op.Tags, "Auth") && !slices.Contains(op.Tags, "Me"),
 			}
 		}
 	}
@@ -67,7 +74,8 @@ func contractID(id string) string {
 
 // authorize enforces each operation's security: public operations pass,
 // others need a valid bearer token (401 unauthenticated or token_expired),
-// and Admin operations an admin (403 forbidden). The principal goes into the
+// most need a verified email (403 email_unverified), and Admin operations
+// an admin (403 forbidden), checked in that order as in the PHP API. The principal goes into the
 // context for handlers (auth.FromContext).
 func (s *Server) authorize(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -94,6 +102,12 @@ func (s *Server) authorize(next http.Handler) http.Handler {
 
 		if info := routeFrom(r.Context()); info != nil {
 			info.userID = principal.UserID
+		}
+
+		if op.verified && !principal.EmailVerified {
+			s.responder.Error(w, r, apperr.Forbidden(apperr.CodeEmailUnverified, "Your email address is not verified."))
+
+			return
 		}
 
 		if op.admin && !principal.IsAdmin {

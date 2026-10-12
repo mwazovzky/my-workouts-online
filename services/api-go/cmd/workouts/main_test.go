@@ -64,6 +64,7 @@ func TestServeFailsWhenTheDatabaseIsUnreachable(t *testing.T) {
 
 	err := run(t.Context(), []string{"serve"}, map[string]string{
 		"DATABASE_URL": "postgres://nobody@127.0.0.1:1/none?connect_timeout=1",
+		"APP_ENV":      "testing",
 	}, io.Discard, io.Discard)
 	if err == nil || !strings.Contains(err.Error(), "ping") {
 		t.Errorf("run(serve) error = %v, want a ping error", err)
@@ -73,7 +74,7 @@ func TestServeFailsWhenTheDatabaseIsUnreachable(t *testing.T) {
 func TestMigrateUpAppliesEveryMigrationOnce(t *testing.T) {
 	t.Parallel()
 
-	environ := map[string]string{"DATABASE_URL": testdb.NewEmpty(t).Config().ConnString()}
+	environ := map[string]string{"DATABASE_URL": testdb.NewEmpty(t).Config().ConnString(), "APP_ENV": "testing"}
 
 	var first, second, status bytes.Buffer
 	if err := run(t.Context(), []string{"migrate", "up"}, environ, &first, io.Discard); err != nil {
@@ -116,6 +117,7 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 	go func() {
 		done <- run(ctx, []string{"serve"}, map[string]string{
 			"DATABASE_URL":         databaseURL,
+			"APP_ENV":              "testing",
 			"HTTP_ADDR":            "127.0.0.1:0",
 			"SHUTDOWN_DRAIN_DELAY": "0s",
 			"JWT_PRIVATE_KEY":      testPrivateKey,
@@ -204,7 +206,7 @@ func environFor(t *testing.T, addr net.Addr) map[string]string {
 		t.Fatal(err)
 	}
 
-	return map[string]string{"DATABASE_URL": "postgres://unused", "HTTP_ADDR": ":" + port}
+	return map[string]string{"DATABASE_URL": "postgres://unused", "HTTP_ADDR": ":" + port, "APP_ENV": "testing"}
 }
 
 // listeningAddr returns a log writer and a channel that receives the address
@@ -265,7 +267,8 @@ const (
 func TestSeedRefusesInProduction(t *testing.T) {
 	t.Parallel()
 
-	environ := map[string]string{"DATABASE_URL": testdb.New(t).Config().ConnString()}
+	// Production requires a real link signing key before anything runs.
+	environ := map[string]string{"DATABASE_URL": testdb.New(t).Config().ConnString(), "LINK_SIGNING_KEY": strings.Repeat("k", 32)}
 
 	for _, env := range []string{"", "production"} {
 		if env != "" {

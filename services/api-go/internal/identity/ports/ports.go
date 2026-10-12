@@ -29,6 +29,15 @@ type Users interface {
 	ByID(ctx context.Context, id int64) (domain.User, error)
 	// GrantRole gives the user the named role; granting it twice is a no-op.
 	GrantRole(ctx context.Context, userID int64, role string) error
+	// Update stores u's name, email, locale, theme and verification time; a
+	// taken email is the conflict IsDuplicateEmail recognises.
+	Update(ctx context.Context, u domain.User) (domain.User, error)
+	// MarkVerified sets the verification time unless one is set.
+	MarkVerified(ctx context.Context, id int64, now time.Time) error
+	// SetPassword replaces the password hash.
+	SetPassword(ctx context.Context, id int64, hash string) error
+	// Delete removes the account; its rows in other tables cascade.
+	Delete(ctx context.Context, id int64) error
 	// IsDuplicateEmail reports whether err is Create's duplicate-email conflict.
 	IsDuplicateEmail(err error) bool
 }
@@ -46,6 +55,38 @@ type RefreshTokens interface {
 	RevokeFamily(ctx context.Context, familyID string, now time.Time) error
 	// StepUp moves the authentication time of the family's live tokens to now.
 	StepUp(ctx context.Context, familyID string, userID int64, now time.Time) error
+	// RevokeUserFamilies revokes every live token of the user except those of
+	// keepFamily ("" keeps none).
+	RevokeUserFamilies(ctx context.Context, userID int64, keepFamily string, now time.Time) error
+}
+
+// PasswordResets stores pending password resets, one per lowercased email.
+type PasswordResets interface {
+	// Put stores r, replacing a pending reset for the same email.
+	Put(ctx context.Context, r domain.PasswordReset) error
+	// ByEmail finds the pending reset; apperr NotFound otherwise.
+	ByEmail(ctx context.Context, email string) (domain.PasswordReset, error)
+	Delete(ctx context.Context, email string) error
+}
+
+// Links builds the links emails carry and checks verification links.
+type Links interface {
+	// VerificationURL is the SPA's /verify-email page for the account,
+	// signed and valid until expires.
+	VerificationURL(userID int64, email string, expires time.Time) string
+	// VerificationValid reports whether a posted-back link's signature
+	// matches; expiry is the caller's check.
+	VerificationValid(id int64, hash string, expires int64, signature string) bool
+	// EmailHash is the hash a verification link carries for email.
+	EmailHash(email string) string
+	// ResetURL is the SPA's /reset-password page for token and email.
+	ResetURL(token, email string) string
+}
+
+// Notifier sends identity's emails in the given locale.
+type Notifier interface {
+	VerifyEmail(ctx context.Context, to, link, locale string) error
+	ResetPassword(ctx context.Context, to, link, locale string, expiresInMinutes int) error
 }
 
 // PasswordHasher hashes and checks passwords.

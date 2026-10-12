@@ -87,3 +87,16 @@ type TokenPair struct {
 	RefreshToken     string
 	RefreshExpiresAt time.Time
 }
+
+// PasswordReset is a pending password reset: one per email, the token
+// stored as HashToken.
+type PasswordReset struct {
+	Email     string
+	TokenHash string
+	CreatedAt time.Time
+}
+
+// IsExpired reports whether the reset is older than ttl at now.
+func (r PasswordReset) IsExpired(now time.Time, ttl time.Duration) bool {
+	return !now.Before(r.CreatedAt.Add(ttl))
+}

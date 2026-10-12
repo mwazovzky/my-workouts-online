@@ -15,7 +15,7 @@ import (
 func TestLoadAppliesDefaults(t *testing.T) {
 	t.Parallel()
 
-	cfg, err := config.Load(map[string]string{"DATABASE_URL": "postgres://localhost/workouts"})
+	cfg, err := config.Load(map[string]string{"DATABASE_URL": "postgres://localhost/workouts", "LINK_SIGNING_KEY": strings.Repeat("k", 32)})
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
@@ -26,8 +26,11 @@ func TestLoadAppliesDefaults(t *testing.T) {
 		AppURL:             "http://localhost:8080",
 		RateLimitPerMinute: 60,
 		LogLevel:           config.LogLevel(slog.LevelInfo),
+		LinkSigningKey:     strings.Repeat("k", 32),
 		ShutdownDrainDelay: 2 * time.Second,
 		ShutdownTimeout:    5 * time.Second,
+		AppName:            "My Workouts",
+		FrontendURL:        "http://localhost:8080",
 		AppEnv:             "production",
 		BcryptRounds:       12,
 		JWT: config.JWT{
@@ -56,6 +59,8 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		"SHUTDOWN_DRAIN_DELAY":      "0s",
 		"SHUTDOWN_TIMEOUT":          "30s",
 		"APP_ENV":                   "local",
+		"APP_NAME":                  "Workouts",
+		"FRONTEND_URL":              "https://app.my-workouts.online",
 		"BCRYPT_ROUNDS":             "4",
 		"JWT_ISSUER":                "https://issuer.test",
 		"JWT_AUDIENCE":              "my-workouts-test",
@@ -79,6 +84,9 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		LogLevel:           config.LogLevel(slog.LevelDebug),
 		ShutdownDrainDelay: 0,
 		ShutdownTimeout:    30 * time.Second,
+		AppName:            "Workouts",
+		FrontendURL:        "https://app.my-workouts.online",
+		LinkSigningKey:     config.DevLinkSigningKey,
 		AppEnv:             "local",
 		BcryptRounds:       4,
 		JWT: config.JWT{
@@ -100,7 +108,7 @@ func TestLoadReadsEnvironment(t *testing.T) {
 func TestLoadRejectsInvalidValues(t *testing.T) {
 	t.Parallel()
 
-	valid := map[string]string{"DATABASE_URL": "postgres://localhost/workouts"}
+	valid := map[string]string{"DATABASE_URL": "postgres://localhost/workouts", "LINK_SIGNING_KEY": strings.Repeat("k", 32)}
 
 	tests := []struct {
 		name    string
@@ -120,6 +128,8 @@ func TestLoadRejectsInvalidValues(t *testing.T) {
 		{"one jwt key without the other", with(valid, "JWT_PRIVATE_KEY", "x"), "JWT_PUBLIC_KEY"},
 		{"zero access ttl", with(valid, "JWT_ACCESS_TTL", "0"), "JWT_ACCESS_TTL"},
 		{"negative leeway", with(valid, "JWT_LEEWAY", "-1"), "JWT_LEEWAY"},
+		{"relative frontend url", with(valid, "FRONTEND_URL", "/app"), "FRONTEND_URL"},
+		{"short link key in production", with(valid, "LINK_SIGNING_KEY", "short"), "LINK_SIGNING_KEY"},
 	}
 
 	for _, tt := range tests {
@@ -177,7 +187,7 @@ func with(base map[string]string, key, value string) map[string]string {
 func TestDerivedValues(t *testing.T) {
 	t.Parallel()
 
-	cfg, err := config.Load(map[string]string{"DATABASE_URL": "postgres://localhost/workouts", "APP_URL": "https://my-workouts.online"})
+	cfg, err := config.Load(map[string]string{"DATABASE_URL": "postgres://localhost/workouts", "APP_URL": "https://my-workouts.online", "APP_ENV": "local"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,8 +196,13 @@ func TestDerivedValues(t *testing.T) {
 		t.Errorf("JWT issuer = %q, want APP_URL", cfg.JWT.Issuer)
 	}
 
-	if !cfg.IsProduction() {
-		t.Error("IsProduction() = false without APP_ENV, want true as in Laravel")
+	if cfg.FrontendURL != "https://my-workouts.online" || cfg.LinkSigningKey != config.DevLinkSigningKey {
+		t.Errorf("FrontendURL, LinkSigningKey = %q, %q; want APP_URL and the development key", cfg.FrontendURL, cfg.LinkSigningKey)
+	}
+
+	prod, err := config.Load(map[string]string{"DATABASE_URL": "postgres://localhost/workouts", "LINK_SIGNING_KEY": strings.Repeat("k", 32)})
+	if err != nil || !prod.IsProduction() {
+		t.Errorf("IsProduction() without APP_ENV = %v (%v), want true as in Laravel", prod.IsProduction(), err)
 	}
 
 	if cfg.JWT.AccessTTL() != 15*time.Minute || cfg.JWT.RefreshTTL() != 30*24*time.Hour || cfg.JWT.Leeway() != 30*time.Second {

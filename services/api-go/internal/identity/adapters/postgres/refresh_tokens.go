@@ -114,3 +114,19 @@ func toRefreshToken(t sqlcgen.RefreshToken) domain.RefreshToken {
 		ReplacedByID:    t.ReplacedByID,
 	}
 }
+
+// RevokeUserFamilies implements ports.RefreshTokens.
+func (r *RefreshTokens) RevokeUserFamilies(ctx context.Context, userID int64, keepFamily string, now time.Time) error {
+	params := sqlcgen.RevokeUserFamiliesParams{Now: now, UserID: userID}
+
+	if keepFamily != "" {
+		family, err := uuid.Parse(keepFamily)
+		if err != nil {
+			return fmt.Errorf("refresh token family: %w", err)
+		}
+
+		params.KeepFamily = &family
+	}
+
+	return postgres.MapError(r.q(ctx).RevokeUserFamilies(ctx, params))
+}

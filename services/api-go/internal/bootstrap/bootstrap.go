@@ -16,13 +16,17 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/bcrypt"
 	identityhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/http"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/links"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/notify"
 	identitypg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/postgres"
 	identityapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/app"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/i18n"
+	kernelmail "github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi"
+	platformmail "github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/meta"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/ratelimit"
@@ -35,6 +39,9 @@ type Deps struct {
 	Clock  clock.Clock
 	// Pool is the database. New takes ownership: App.Close closes it.
 	Pool *pgxpool.Pool
+	// Mailer sends email; nil logs every message instead (the dev stack and
+	// CI). Tests pass a mail.Fake to read what was sent.
+	Mailer kernelmail.Mailer
 }
 
 // App is the wired application.
@@ -73,12 +80,25 @@ func New(deps Deps) (*App, error) {
 		Keys: keys, Issuer: cfg.JWT.Issuer, Audience: cfg.JWT.Audience, Leeway: cfg.JWT.Leeway(), Clock: deps.Clock,
 	})
 
+	mailer := deps.Mailer
+	if mailer == nil {
+		mailer = platformmail.NewLog(deps.Logger)
+	}
+
+	notifier, err := notify.New(mailer, cfg.AppName)
+	if err != nil {
+		return nil, err
+	}
+
 	identity, err := identityapp.New(identityapp.Deps{
 		Users:         identitypg.NewUsers(tx),
 		RefreshTokens: identitypg.NewRefreshTokens(tx),
 		Hasher:        bcrypt.New(cfg.BcryptRounds),
 		Signer:        signer,
 		LoginAttempts: limiter,
+		Resets:        identitypg.NewPasswordResets(tx),
+		Links:         links.New(cfg.FrontendURL, cfg.LinkSigningKey),
+		Notifier:      notifier,
 		Tx:            tx,
 		Clock:         deps.Clock,
 		Logger:        deps.Logger,

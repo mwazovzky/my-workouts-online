@@ -10,6 +10,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type PasswordResetToken struct {
+	Email     string
+	TokenHash string
+	CreatedAt time.Time
+}
+
 type RefreshToken struct {
 	ID              int64
 	UserID          int64

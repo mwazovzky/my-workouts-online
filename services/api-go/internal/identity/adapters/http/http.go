@@ -1,5 +1,7 @@
 // Package http implements identity's contract operations on the generated
-// strict server: getJwks, register, login, refresh, logout and reauth.
+// strict server: getJwks, register, login, refresh, logout, reauth,
+// verifyEmail, resendVerification, forgotPassword, resetPassword, getMe,
+// updateMe, updatePassword and deleteMe.
 // Web clients get the refresh token as an httpOnly cookie scoped to the
 // refresh endpoint; native clients get it in the body.
 package http
@@ -16,6 +18,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/apperr"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/auth"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/i18n"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
 )
@@ -32,8 +35,12 @@ const jwksCacheControl = "public, max-age=3600"
 // Throttles are identity's per-operation limits, as in routes/api.php.
 func Throttles() map[string]httpapi.Throttle {
 	return map[string]httpapi.Throttle{
-		"register": {Limit: 10, Window: time.Minute},
-		"reauth":   {Limit: 6, Window: time.Minute},
+		"register":           {Limit: 10, Window: time.Minute},
+		"reauth":             {Limit: 6, Window: time.Minute},
+		"verifyEmail":        {Limit: 6, Window: time.Minute},
+		"resendVerification": {Limit: 6, Window: time.Minute},
+		"forgotPassword":     {Limit: 6, Window: time.Minute},
+		"resetPassword":      {Limit: 6, Window: time.Minute},
 	}
 }
 
@@ -77,6 +84,7 @@ func (h Handlers) Register(ctx context.Context, req gen.RegisterRequestObject) (
 
 	session, err := h.service.Register(ctx, app.RegisterInput{
 		Name: body.Name, Email: string(body.Email), Password: body.Password, DeviceName: body.DeviceName,
+		Locale: string(i18n.FromContext(ctx)),
 	})
 	if err != nil {
 		return nil, err

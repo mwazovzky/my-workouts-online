@@ -114,22 +114,6 @@ func (unimplemented) AdminUpdateWorkoutTemplate(context.Context, gen.AdminUpdate
 	return nil, httpapi.ErrNotImplemented
 }
 
-func (unimplemented) ResendVerification(context.Context, gen.ResendVerificationRequestObject) (gen.ResendVerificationResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) VerifyEmail(context.Context, gen.VerifyEmailRequestObject) (gen.VerifyEmailResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) ForgotPassword(context.Context, gen.ForgotPasswordRequestObject) (gen.ForgotPasswordResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) ResetPassword(context.Context, gen.ResetPasswordRequestObject) (gen.ResetPasswordResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
 func (unimplemented) SocialLogin(context.Context, gen.SocialLoginRequestObject) (gen.SocialLoginResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
@@ -139,22 +123,6 @@ func (unimplemented) GetDashboard(context.Context, gen.GetDashboardRequestObject
 }
 
 func (unimplemented) ListExercises(context.Context, gen.ListExercisesRequestObject) (gen.ListExercisesResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) DeleteMe(context.Context, gen.DeleteMeRequestObject) (gen.DeleteMeResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) GetMe(context.Context, gen.GetMeRequestObject) (gen.GetMeResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) UpdateMe(context.Context, gen.UpdateMeRequestObject) (gen.UpdateMeResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) UpdatePassword(context.Context, gen.UpdatePasswordRequestObject) (gen.UpdatePasswordResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }
 

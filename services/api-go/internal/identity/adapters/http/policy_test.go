@@ -12,7 +12,7 @@ func TestAdminOperationsNeedAnAdmin(t *testing.T) {
 	t.Parallel()
 
 	f := newFixture(t)
-	user := f.register(t, "ada@example.com").AccessToken
+	user := f.verified(t, "ada@example.com").AccessToken
 
 	res := f.api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/admin/equipment", Token: user}).
 		AssertStatus(http.StatusForbidden)

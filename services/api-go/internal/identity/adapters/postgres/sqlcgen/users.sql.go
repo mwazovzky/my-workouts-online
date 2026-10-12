@@ -39,6 +39,18 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1
+`
+
+// Workouts, enrollments, roles and refresh tokens go with the user
+// (ON DELETE CASCADE).
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT users.id, users.name, users.email, users.email_verified_at, users.password_hash, users.locale, users.theme_preference, users.created_at, users.updated_at,
        EXISTS (
@@ -119,6 +131,73 @@ func (q *Queries) GrantRole(ctx context.Context, userID int64, roleName string) 
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const markUserVerified = `-- name: MarkUserVerified :exec
+UPDATE users
+SET email_verified_at = $1::timestamptz, updated_at = $1::timestamptz
+WHERE id = $2 AND email_verified_at IS NULL
+`
+
+func (q *Queries) MarkUserVerified(ctx context.Context, now time.Time, iD int64) error {
+	_, err := q.db.Exec(ctx, markUserVerified, now, iD)
+	return err
+}
+
+const setUserPassword = `-- name: SetUserPassword :exec
+UPDATE users
+SET password_hash = $1, updated_at = now()
+WHERE id = $2
+`
+
+func (q *Queries) SetUserPassword(ctx context.Context, passwordHash string, iD int64) error {
+	_, err := q.db.Exec(ctx, setUserPassword, passwordHash, iD)
+	return err
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET name = $1,
+    email = $2,
+    locale = $3,
+    theme_preference = $4,
+    email_verified_at = $5::timestamptz,
+    updated_at = now()
+WHERE id = $6
+RETURNING id, name, email, email_verified_at, password_hash, locale, theme_preference, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	Name            string
+	Email           string
+	Locale          string
+	ThemePreference string
+	EmailVerifiedAt *time.Time
+	ID              int64
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.Name,
+		arg.Email,
+		arg.Locale,
+		arg.ThemePreference,
+		arg.EmailVerifiedAt,
+		arg.ID,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.EmailVerifiedAt,
+		&i.PasswordHash,
+		&i.Locale,
+		&i.ThemePreference,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const upsertVerifiedUser = `-- name: UpsertVerifiedUser :one

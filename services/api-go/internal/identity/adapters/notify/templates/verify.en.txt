@@ -1,0 +1,12 @@
+{{define "subject"}}Verify Email Address{{end}}
+{{- define "text"}}Hello!
+
+Please click the link below to verify your email address.
+
+Verify Email Address: {{.Link}}
+
+If you did not create an account, no further action is required.
+
+Regards,
+{{.AppName}}
+{{end}}

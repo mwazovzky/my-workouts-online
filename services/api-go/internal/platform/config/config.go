@@ -35,6 +35,14 @@ type Config struct {
 	ShutdownDrainDelay time.Duration `env:"SHUTDOWN_DRAIN_DELAY" envDefault:"2s"`
 	// ShutdownTimeout bounds how long in-flight requests may take to finish.
 	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"5s"`
+	// AppName signs off the emails (Laravel's APP_NAME).
+	AppName string `env:"APP_NAME" envDefault:"My Workouts"`
+	// FrontendURL is the SPA's base URL; verification and reset links in
+	// emails point at it. Defaults to APP_URL, as in config/app.php.
+	FrontendURL string `env:"FRONTEND_URL"`
+	// LinkSigningKey signs email verification links (ADR 0008). Required in
+	// production; elsewhere a fixed development key is used when it is unset.
+	LinkSigningKey string `env:"LINK_SIGNING_KEY"`
 	// AppEnv is Laravel's APP_ENV; unset means production, as in Laravel, so
 	// demo seeding is refused unless an environment says otherwise.
 	AppEnv string `env:"APP_ENV" envDefault:"production"`
@@ -67,6 +75,10 @@ type JWT struct {
 	CookieSecure bool `env:"COOKIE_SECURE" envDefault:"true"`
 }
 
+// DevLinkSigningKey signs verification links outside production when
+// LINK_SIGNING_KEY is unset, so the dev stack and tests need no secret.
+const DevLinkSigningKey = "development-only-link-signing-key"
+
 // AccessTTL is the access-token lifetime.
 func (j JWT) AccessTTL() time.Duration { return time.Duration(j.AccessTTLSeconds) * time.Second }
 
@@ -89,6 +101,14 @@ func Load(environ map[string]string) (Config, error) {
 
 	if cfg.JWT.Issuer == "" {
 		cfg.JWT.Issuer = cfg.AppURL
+	}
+
+	if cfg.FrontendURL == "" {
+		cfg.FrontendURL = cfg.AppURL
+	}
+
+	if cfg.LinkSigningKey == "" && !cfg.IsProduction() {
+		cfg.LinkSigningKey = DevLinkSigningKey
 	}
 
 	if err := cfg.validate(); err != nil {
@@ -119,6 +139,14 @@ func (c Config) validate() error {
 
 	if c.ShutdownTimeout <= 0 {
 		errs = append(errs, fmt.Errorf("SHUTDOWN_TIMEOUT must be positive, got %s", c.ShutdownTimeout))
+	}
+
+	if u, err := url.Parse(c.FrontendURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		errs = append(errs, fmt.Errorf("FRONTEND_URL must be an absolute http(s) URL, got %q", c.FrontendURL))
+	}
+
+	if c.IsProduction() && len(c.LinkSigningKey) < 32 {
+		errs = append(errs, errors.New("LINK_SIGNING_KEY must be set to at least 32 characters in production"))
 	}
 
 	if c.BcryptRounds < 4 || c.BcryptRounds > 31 {

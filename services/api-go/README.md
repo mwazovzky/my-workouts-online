@@ -1,6 +1,6 @@
 # Workouts API (Go)
 
-A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta` and the token operations (register, login, refresh, logout, reauth, JWKS), owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
+A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta` and every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`), owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
 
 ## Run
 
@@ -87,6 +87,9 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 | `SHUTDOWN_DRAIN_DELAY` | `2s` | How long `/health/ready` answers 503 before the listener closes. |
 | `SHUTDOWN_TIMEOUT` | `5s` | How long in-flight requests may take to finish after that. |
 | `APP_ENV` | `production` | As in Laravel; `seed` refuses to run in production. |
+| `APP_NAME` | `My Workouts` | Signs off the emails. |
+| `FRONTEND_URL` | `APP_URL` | The SPA; verification and reset links in emails point at it. |
+| `LINK_SIGNING_KEY` | dev key outside production | HMAC key for verification links (ADR 0008); at least 32 characters, required in production. |
 | `BCRYPT_ROUNDS` | `12` | Password hashing cost. |
 | `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY` | none | Base64 raw Ed25519 keys (`workouts keys generate` or `php artisan jwt:keys`). Without them the API serves public routes and readiness reports `jwt: down`; malformed keys stop it at startup. The dev stack shares PHP's pair from `.env`, so tokens verify on both backends. |
 | `JWT_KEY_ID` | derived | `kid` override; otherwise the first 16 hex characters of the public key's SHA-256, as PHP derives it. |
@@ -104,7 +107,7 @@ Every request passes the same chain (`internal/platform/httpapi`):
 4. **Locale:** from `Accept-Language` (`en`, `ru`; anything else is `en`), answered with `Content-Language` and `Vary: Accept-Language`.
 5. **Rate limit** (see `API_RATE_LIMIT_PER_MINUTE`).
 6. **Routing:** an unknown path is a 404 Problem, a wrong method a 405 Problem with `Allow`, and a non-numeric id in a path a 404.
-7. **Policy:** inside each contract operation, operations with `security: []` are public; any other needs a valid bearer token (401 `unauthenticated` or `token_expired`), and `Admin`-tagged ones an admin (403 `forbidden`). Per-operation throttles follow (register 10/min, reauth 6/min; 429).
+7. **Policy:** inside each contract operation, operations with `security: []` are public; any other needs a valid bearer token (401 `unauthenticated` or `token_expired`), a verified email unless tagged `Auth` or `Me` (403 `email_unverified`), and `Admin`-tagged ones an admin (403 `forbidden`). Per-operation throttles follow (register 10/min; reauth, verify, resend, forgot and reset 6/min; 429).
 8. **Request validation:** the request is checked against the contract, and failures are a 422 with one `{pointer, code, detail}` per field. Malformed JSON is one `invalid_format` error with the empty pointer.
 9. **Generated strict server:** the module handler runs, and a returned error goes through the responder.
 
@@ -127,6 +130,10 @@ Errors are `kernel/apperr` values, which only the responder turns into Problems:
 Messages are English keys translated from `internal/kernel/i18n/locales/{en,ru}.json` (ported from the PHP lang files). Where the Go API deliberately answers differently from PHP is listed in [ADR 0006](docs/adr/0006-http-errors-locale-and-request-validation.md).
 
 **Adding an operation:** implement its method on the module's handler type, embed that type in `internal/bootstrap/api.go`, and delete the operation's stub from `internal/bootstrap/unimplemented.go`. The build fails while both exist.
+
+## Mail
+
+Identity's emails (verify email, reset password) are rendered from `internal/identity/adapters/notify/templates` in the request's locale and sent through `kernel/mail.Mailer`. Until the Resend adapter (story 11) the only sender is the log mailer: in the dev stack, `docker compose logs api-go | grep '"msg":"mail"'` shows each message with its link. The links point at `FRONTEND_URL`.
 
 ## Shutdown
 
@@ -156,7 +163,9 @@ internal/platform/postgres/   pool, migrator, Transactor, pgx error mapper, read
 internal/platform/server/     http.Server with graceful shutdown
 internal/platform/testdb/     a migrated database per test (template clone)
 internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go)
-internal/identity/             users, roles, tokens: domain/, ports/, app/ (use cases), adapters/{postgres,bcrypt,jwt,http}
+internal/identity/             users, roles, tokens, verification, reset, /me: domain/, ports/, app/, adapters/{postgres,bcrypt,jwt,links,notify,http}
+internal/kernel/mail/         the Mailer port
+internal/platform/mail/       Log and Fake mailers
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
 contract-scope.txt            the operations the contract-go workflow tests (deleted in story 13)
 internal/bootstrap/           composition root: New(deps) -> *App; api.go assembles the strict server
@@ -176,6 +185,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0005 Split template and workout activities into their own tables](docs/adr/0005-split-activity-tables.md)
 - [0006 Problem Details, locale and request validation in the HTTP platform](docs/adr/0006-http-errors-locale-and-request-validation.md)
 - [0007 Token compatibility with the PHP API, and auth policy from the contract](docs/adr/0007-identity-tokens-and-auth-policy.md)
+- [0008 Go-native signed links, mail behind a port, and the verified gate](docs/adr/0008-go-native-signed-links.md)
 
 ## Image
 

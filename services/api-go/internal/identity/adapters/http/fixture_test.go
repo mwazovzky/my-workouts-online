@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +19,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/apitest"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/testdb"
 )
 
@@ -38,20 +42,23 @@ type fixture struct {
 	app   *bootstrap.App
 	pool  *pgxpool.Pool
 	clock *clock.Fake
+	mail  *mail.Fake
 }
 
 func newFixture(t *testing.T) *fixture {
 	t.Helper()
 
-	f := &fixture{pool: testdb.New(t), clock: clock.NewFake(time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC))}
+	f := &fixture{pool: testdb.New(t), clock: clock.NewFake(time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC)), mail: &mail.Fake{}}
 
 	app, err := bootstrap.New(bootstrap.Deps{
 		Config: config.Config{
 			AppURL: "http://localhost:8080", RateLimitPerMinute: 100_000, AppEnv: "testing", BcryptRounds: 4, JWT: testJWT,
+			AppName: "My Workouts", FrontendURL: "https://app.example.test", LinkSigningKey: "test-link-signing-key",
 		},
 		Logger: slog.New(slog.DiscardHandler),
 		Clock:  f.clock,
 		Pool:   f.pool,
+		Mailer: f.mail,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -179,4 +186,51 @@ func fieldErrors(t *testing.T, res *apitest.Response) []string {
 	}
 
 	return out
+}
+
+// lastLink returns the link in the newest email to address.
+func (f *fixture) lastLink(t *testing.T, address string) *url.URL {
+	t.Helper()
+
+	sent := f.mail.Sent(address)
+	if len(sent) == 0 {
+		t.Fatalf("no email to %s", address)
+	}
+
+	raw := regexp.MustCompile(`https://\S+`).FindString(sent[len(sent)-1].Text)
+
+	u, err := url.Parse(raw)
+	if err != nil || raw == "" {
+		t.Fatalf("no link in %q", sent[len(sent)-1].Text)
+	}
+
+	return u
+}
+
+// verifyBody is what the SPA's VerifyEmailLink page posts for a link.
+func verifyBody(t *testing.T, link *url.URL) map[string]any {
+	t.Helper()
+
+	segments := strings.Split(strings.TrimPrefix(link.Path, "/"), "/")
+	if len(segments) != 3 || segments[0] != "verify-email" {
+		t.Fatalf("not a verification link: %s", link)
+	}
+
+	id, _ := strconv.Atoi(segments[1])
+	expires, _ := strconv.Atoi(link.Query().Get("expires"))
+
+	return map[string]any{"id": id, "hash": segments[2], "expires": expires, "signature": link.Query().Get("signature")}
+}
+
+// verified registers email and verifies it through the emailed link.
+func (f *fixture) verified(t *testing.T, email string) authResponse {
+	t.Helper()
+
+	session := f.register(t, email)
+	f.api.Do(apitest.Request{
+		Method: http.MethodPost, Path: "/api/v1/auth/email/verify", Token: session.AccessToken,
+		Body: verifyBody(t, f.lastLink(t, email)),
+	}).AssertStatus(http.StatusNoContent)
+
+	return session
 }

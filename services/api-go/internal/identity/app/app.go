@@ -43,6 +43,9 @@ type Deps struct {
 	Hasher        ports.PasswordHasher
 	Signer        ports.TokenSigner
 	LoginAttempts ports.LoginAttempts
+	Resets        ports.PasswordResets
+	Links         ports.Links
+	Notifier      ports.Notifier
 	Tx            txn.Transactor
 	Clock         clock.Clock
 	Logger        *slog.Logger
@@ -82,10 +85,13 @@ type RegisterInput struct {
 	Email      string
 	Password   string
 	DeviceName *string
+	// Locale is the request's locale, for the verification email.
+	Locale string
 }
 
-// Register creates an account and signs it in. The email must already be
-// lowercase and unused; the password needs at least eight characters.
+// Register creates an account, sends the verification email and signs the
+// account in. The email must already be lowercase and unused; the password
+// needs at least eight characters.
 func (s *Service) Register(ctx context.Context, in RegisterInput) (Session, error) {
 	v := validate.New()
 
@@ -93,15 +99,11 @@ func (s *Service) Register(ctx context.Context, in RegisterInput) (Session, erro
 		v.MaxLen("name", in.Name, 255)
 	}
 
-	if v.Required("email", in.Email) &&
-		v.Check(in.Email == strings.ToLower(in.Email), "email", apperr.FieldInvalidFormat, "validation.lowercase", nil) &&
-		v.Email("email", in.Email) {
-		v.MaxLen("email", in.Email, 255)
+	if v.Required("email", in.Email) {
+		checkEmail(v, in.Email)
 	}
 
-	if v.Required("password", in.Password) {
-		v.MinLen("password", in.Password, minPasswordLength)
-	}
+	checkNewPassword(v, "password", in.Password)
 
 	if err := v.Err(); err != nil {
 		return Session{}, err
@@ -137,6 +139,7 @@ func (s *Service) Register(ctx context.Context, in RegisterInput) (Session, erro
 	}
 
 	s.Logger.InfoContext(ctx, "user.registered", "user_id", session.User.ID)
+	s.sendVerification(ctx, session.User, in.Locale)
 
 	return session, nil
 }
@@ -403,5 +406,21 @@ func (s *Service) claims(userID int64, familyID string, authTime, now time.Time)
 		AuthTime:  authTime,
 		IssuedAt:  now,
 		ExpiresAt: now.Add(s.AccessTTL),
+	}
+}
+
+// checkEmail is the rule for an email an account is created or changed
+// with: lowercase, an address, at most 255 characters.
+func checkEmail(v *validate.Validator, email string) {
+	if v.Check(email == strings.ToLower(email), "email", apperr.FieldInvalidFormat, "validation.lowercase", nil) &&
+		v.Email("email", email) {
+		v.MaxLen("email", email, 255)
+	}
+}
+
+// checkNewPassword is Laravel's Password::defaults(): at least eight characters.
+func checkNewPassword(v *validate.Validator, field, password string) {
+	if v.Required(field, password) {
+		v.MinLen(field, password, minPasswordLength)
 	}
 }
