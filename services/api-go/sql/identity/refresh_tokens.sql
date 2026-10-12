@@ -30,3 +30,12 @@ WHERE family_id = @family_id AND revoked_at IS NULL;
 UPDATE refresh_tokens
 SET authenticated_at = @now, updated_at = @now
 WHERE family_id = @family_id AND user_id = @user_id AND revoked_at IS NULL;
+
+-- name: RevokeUserFamilies :exec
+-- Every live token of the user, except the family the caller keeps (NULL
+-- keeps none).
+UPDATE refresh_tokens
+SET revoked_at = @now::timestamptz, updated_at = @now::timestamptz
+WHERE user_id = @user_id
+  AND revoked_at IS NULL
+  AND (sqlc.narg(keep_family)::uuid IS NULL OR family_id <> sqlc.narg(keep_family)::uuid);

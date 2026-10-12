@@ -57,6 +57,6 @@ oapi-codegen capitalizes operationIds in the spec it embeds (`Register`). The po
 
 - Good: a key pair can be shared between the backends, so an access token from either verifies on both. Refresh tokens and users are per database, so a switch between backends still forces a new login (epic risk, accepted).
 - Good: making an operation public or admin-only is a contract change, and the Go policy follows it with no code change.
-- Bad: the policy knows only public, signed-in and admin. The `verified` gate (story 5) needs a rule the contract does not express yet: a tag, an extension, or a list in code. Story 5 decides.
+- Bad: the policy knows only public, signed-in and admin. The `verified` gate was settled in story 5 by a rule over the tags ([ADR 0008](0008-go-native-signed-links.md)).
 - Bad: the login lockout and the throttles live in process memory (`platform/ratelimit.Memory`), so a restart clears them and two instances would not share them. Accepted for one process; a Postgres-backed counter can replace the adapter.
-- Follow-up: the acceptance checks against the real clients (the web SPA through a Vite proxy, the iOS `AuthSession` replaying Go responses) need `GET /me`, which is story 5; they move there.
+- Follow-up: the acceptance checks against the real clients need `GET /me` and move to story 5. There the web SPA was driven against the Go API (register, verify, profile, logout, reset, sign-in); the iOS replay of Go responses remains open.

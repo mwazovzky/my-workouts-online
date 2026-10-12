@@ -184,8 +184,9 @@ func TestRequestShapeErrorsAreLocalizedPointerErrors(t *testing.T) {
 func TestParameterErrors(t *testing.T) {
 	t.Parallel()
 
-	api := apitest.New(t, newApp(t).Handler)
-	token := signUp(t, api)
+	app := newApp(t)
+	api := apitest.New(t, app.Handler)
+	token := signInAsAdmin(t, app, api)
 
 	// A non-numeric id is a 404, as the PHP API constrains id routes to digits.
 	if p := api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/workouts/abc"}).
@@ -212,7 +213,7 @@ func TestUnimplementedOperationsAnswer501(t *testing.T) {
 	t.Parallel()
 
 	p := apitest.New(t, newApp(t).Handler).
-		Do(apitest.Request{Method: http.MethodPost, Path: "/api/v1/auth/password/forgot", Body: map[string]any{"email": "ada@example.com"}, SkipContract: true}).
+		Do(apitest.Request{Method: http.MethodPost, Path: "/api/v1/auth/social/google", Body: map[string]any{"client": "native", "id_token": "x"}, SkipContract: true}).
 		AssertStatus(http.StatusNotImplemented).
 		Problem()
 
@@ -274,13 +275,17 @@ func TestMalformedJWTKeysFailToStart(t *testing.T) {
 	}
 }
 
-// signUp registers a user and returns an access token.
-func signUp(t *testing.T, api *apitest.Client) string {
+// signInAsAdmin seeds the verified demo admin and returns its access token.
+func signInAsAdmin(t *testing.T, app *bootstrap.App, api *apitest.Client) string {
 	t.Helper()
 
-	res := api.Do(apitest.Request{Method: http.MethodPost, Path: "/api/v1/auth/register", Body: map[string]any{
-		"name": "Ada", "email": "ada@example.com", "password": "secret123", "client": "native",
-	}}).AssertStatus(http.StatusCreated)
+	if _, err := app.Identity.SeedDemoAdmin(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+
+	res := api.Do(apitest.Request{Method: http.MethodPost, Path: "/api/v1/auth/login", Body: map[string]any{
+		"email": "test@example.com", "password": "password", "client": "native",
+	}}).AssertStatus(http.StatusOK)
 
 	var body struct {
 		AccessToken string `json:"access_token"`

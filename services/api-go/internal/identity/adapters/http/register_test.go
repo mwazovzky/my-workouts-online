@@ -8,9 +8,9 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/apitest"
 )
 
-// Mirrors tests/Feature/Api/Auth/RegisterTest.php, except
-// unverified_user_is_blocked_from_verified_routes_with_a_code: the verified
-// gate is story 5.
+// Mirrors tests/Feature/Api/Auth/RegisterTest.php;
+// unverified_user_is_blocked_from_verified_routes_with_a_code is
+// TestPostingTheLinkParametersVerifiesTheEmail.
 
 func registerBody(overrides map[string]any) map[string]any {
 	body := map[string]any{"name": "New User", "email": "new@example.com", "password": "password123", "client": "native"}

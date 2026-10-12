@@ -134,6 +134,27 @@ func (q *Queries) RevokeRefreshFamily(ctx context.Context, now time.Time, family
 	return err
 }
 
+const revokeUserFamilies = `-- name: RevokeUserFamilies :exec
+UPDATE refresh_tokens
+SET revoked_at = $1::timestamptz, updated_at = $1::timestamptz
+WHERE user_id = $2
+  AND revoked_at IS NULL
+  AND ($3::uuid IS NULL OR family_id <> $3::uuid)
+`
+
+type RevokeUserFamiliesParams struct {
+	Now        time.Time
+	UserID     int64
+	KeepFamily *uuid.UUID
+}
+
+// Every live token of the user, except the family the caller keeps (NULL
+// keeps none).
+func (q *Queries) RevokeUserFamilies(ctx context.Context, arg RevokeUserFamiliesParams) error {
+	_, err := q.db.Exec(ctx, revokeUserFamilies, arg.Now, arg.UserID, arg.KeepFamily)
+	return err
+}
+
 const stepUpRefreshFamily = `-- name: StepUpRefreshFamily :exec
 UPDATE refresh_tokens
 SET authenticated_at = $1, updated_at = $1

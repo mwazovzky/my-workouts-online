@@ -39,3 +39,30 @@ WHERE users.id = @id;
 INSERT INTO role_user (user_id, role_id)
 SELECT @user_id, roles.id FROM roles WHERE roles.name = @role_name
 ON CONFLICT DO NOTHING;
+
+-- name: UpdateUser :one
+UPDATE users
+SET name = @name,
+    email = @email,
+    locale = @locale,
+    theme_preference = @theme_preference,
+    email_verified_at = sqlc.narg(email_verified_at)::timestamptz,
+    updated_at = now()
+WHERE id = @id
+RETURNING *;
+
+-- name: MarkUserVerified :exec
+UPDATE users
+SET email_verified_at = @now::timestamptz, updated_at = @now::timestamptz
+WHERE id = @id AND email_verified_at IS NULL;
+
+-- name: SetUserPassword :exec
+UPDATE users
+SET password_hash = @password_hash, updated_at = now()
+WHERE id = @id;
+
+-- name: DeleteUser :exec
+-- Workouts, enrollments, roles and refresh tokens go with the user
+-- (ON DELETE CASCADE).
+DELETE FROM users
+WHERE id = @id;

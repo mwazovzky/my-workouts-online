@@ -180,6 +180,15 @@ func collectSchemaErrors(prefix string, err error, fields *[]apperr.FieldError) 
 func schemaFieldError(pointer string, e *openapi3.SchemaError) apperr.FieldError {
 	s := e.Schema
 
+	// Laravel treats an empty string as a missing value, so a blank enum,
+	// format or length violation is "required", as the PHP API reports it.
+	if value, ok := e.Value.(string); ok && value == "" {
+		switch e.SchemaField {
+		case "enum", "format", "pattern", "minLength":
+			return fieldError(pointer, apperr.FieldRequired, "validation.required", nil)
+		}
+	}
+
 	switch e.SchemaField {
 	case "required":
 		return fieldError(pointer, apperr.FieldRequired, "validation.required", nil)
@@ -210,6 +219,8 @@ func schemaFieldError(pointer string, e *openapi3.SchemaError) apperr.FieldError
 		return fieldError(pointer, apperr.FieldOutOfRange, "validation.min.array", map[string]string{"min": strconv.FormatUint(s.MinItems, 10)})
 	case "maxItems":
 		return fieldError(pointer, apperr.FieldOutOfRange, "validation.max.array", map[string]string{"max": uintPtr(s.MaxItems)})
+	case "minProperties":
+		return fieldError(pointer, apperr.FieldRequired, "validation.required", nil)
 	case "uniqueItems":
 		return fieldError(pointer, apperr.FieldNotUnique, "validation.distinct", nil)
 	default:

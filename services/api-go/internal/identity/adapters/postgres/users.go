@@ -98,3 +98,31 @@ func toUser(u sqlcgen.User, isAdmin bool) domain.User {
 		UpdatedAt:       u.UpdatedAt,
 	}
 }
+
+// Update implements ports.Users.
+func (r *Users) Update(ctx context.Context, u domain.User) (domain.User, error) {
+	row, err := r.q(ctx).UpdateUser(ctx, sqlcgen.UpdateUserParams{
+		ID: u.ID, Name: u.Name, Email: u.Email, Locale: u.Locale, ThemePreference: u.ThemePreference,
+		EmailVerifiedAt: u.EmailVerifiedAt,
+	})
+	if err != nil {
+		return domain.User{}, postgres.MapError(err)
+	}
+
+	return toUser(row, u.IsAdmin), nil
+}
+
+// MarkVerified implements ports.Users.
+func (r *Users) MarkVerified(ctx context.Context, id int64, now time.Time) error {
+	return postgres.MapError(r.q(ctx).MarkUserVerified(ctx, now, id))
+}
+
+// SetPassword implements ports.Users.
+func (r *Users) SetPassword(ctx context.Context, id int64, hash string) error {
+	return postgres.MapError(r.q(ctx).SetUserPassword(ctx, hash, id))
+}
+
+// Delete implements ports.Users.
+func (r *Users) Delete(ctx context.Context, id int64) error {
+	return postgres.MapError(r.q(ctx).DeleteUser(ctx, id))
+}

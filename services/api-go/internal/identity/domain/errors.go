@@ -41,3 +41,20 @@ func ErrRefreshTokenReused() error {
 func ErrInvalidCredentials() error {
 	return apperr.Unauthenticated(apperr.CodeInvalidCredentials, "auth.failed")
 }
+
+// ErrEmailUnverified is a verified-only operation called before the email
+// address is verified.
+func ErrEmailUnverified() error {
+	return apperr.Forbidden(apperr.CodeEmailUnverified, "Your email address is not verified.")
+}
+
+// ErrVerificationLinkForAnotherAccount is a verification link whose id or
+// email hash is not the signed-in user's.
+func ErrVerificationLinkForAnotherAccount() error {
+	return apperr.Forbidden(apperr.CodeInvalidVerificationLink, "This verification link does not belong to the signed-in account.")
+}
+
+// ErrVerificationLinkInvalid is a tampered or expired verification link.
+func ErrVerificationLinkInvalid() error {
+	return apperr.Forbidden(apperr.CodeInvalidSignature, "This verification link is invalid or has expired.")
+}

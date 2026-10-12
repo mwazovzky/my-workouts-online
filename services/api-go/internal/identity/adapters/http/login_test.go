@@ -70,7 +70,7 @@ func TestAccessTokenAuthenticatesAPIRequests(t *testing.T) {
 	t.Parallel()
 
 	f := newFixture(t)
-	f.register(t, "ada@example.com")
+	f.verified(t, "ada@example.com")
 
 	token := decodeAuth(t, f.login("ada@example.com", password, "native", nil)).AccessToken
 	f.programs(token).AssertStatus(http.StatusNotImplemented)
