@@ -108,3 +108,42 @@ func (q *Queries) ListTemplateSets(ctx context.Context, templateID int64) ([]Lis
 	}
 	return items, nil
 }
+
+const listWorkoutTemplatesByID = `-- name: ListWorkoutTemplatesByID :many
+SELECT id, name, description, translations
+FROM workout_templates
+WHERE id = ANY ($1::bigint[])
+ORDER BY id
+`
+
+type ListWorkoutTemplatesByIDRow struct {
+	ID           int64
+	Name         string
+	Description  *string
+	Translations []byte
+}
+
+func (q *Queries) ListWorkoutTemplatesByID(ctx context.Context, ids []int64) ([]ListWorkoutTemplatesByIDRow, error) {
+	rows, err := q.db.Query(ctx, listWorkoutTemplatesByID, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListWorkoutTemplatesByIDRow
+	for rows.Next() {
+		var i ListWorkoutTemplatesByIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Translations,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

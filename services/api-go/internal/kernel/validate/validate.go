@@ -118,7 +118,7 @@ func (v *Validator) Range(field string, value, minimum, maximum float64) bool {
 
 // MinItems fails when an array field has fewer than min elements.
 func (v *Validator) MinItems(field string, count, minimum int) bool {
-	return v.Check(count >= minimum, field, apperr.FieldOutOfRange,
+	return v.Check(count >= minimum, field, apperr.FieldTooShort,
 		"validation.min.array", map[string]string{"min": strconv.Itoa(minimum)})
 }
 

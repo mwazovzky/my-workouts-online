@@ -1,0 +1,53 @@
+{
+  "data": {
+    "activities": [],
+    "activities_count": null,
+    "created_at": "2026-10-12T09:00:00Z",
+    "id": 1,
+    "name": "Всё тело",
+    "status": "in_progress",
+    "updated_at": "2026-10-12T09:00:00Z",
+    "user_id": 1,
+    "workout_template": {
+      "activities": [
+        {
+          "exercise_id": 1,
+          "id": 1,
+          "sets": [
+            {
+              "difficulty_value": 20,
+              "effort_value": 10,
+              "id": 1,
+              "is_completed": false,
+              "order": 1
+            },
+            {
+              "difficulty_value": 22.5,
+              "effort_value": 8,
+              "id": 2,
+              "is_completed": false,
+              "order": 2
+            }
+          ]
+        },
+        {
+          "exercise_id": 3,
+          "id": 2,
+          "sets": [
+            {
+              "difficulty_value": null,
+              "effort_value": 15,
+              "id": 3,
+              "is_completed": false,
+              "order": 1
+            }
+          ]
+        }
+      ],
+      "description": "Жим и отжимания.",
+      "id": 1,
+      "name": "Всё тело"
+    }
+  }
+}
+

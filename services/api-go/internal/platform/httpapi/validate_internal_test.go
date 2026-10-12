@@ -23,7 +23,7 @@ func TestNullableFields(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	v := newRequestValidator(spec, nil)
+	v := newRequestValidator(spec, nil, nil)
 
 	tests := []struct {
 		value string

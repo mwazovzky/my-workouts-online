@@ -67,7 +67,7 @@ func TestValidatorCollectsEveryFailureWithPointers(t *testing.T) {
 		{"/password", apperr.FieldTooShort, "validation.min.string", map[string]string{"attribute": "password", "min": "8"}},
 		{"/title", apperr.FieldTooLong, "validation.max.string", map[string]string{"attribute": "title", "max": "3"}},
 		{"/client", apperr.FieldInvalidValue, "validation.in", map[string]string{"attribute": "client"}},
-		{"/activities", apperr.FieldOutOfRange, "validation.min.array", map[string]string{"attribute": "activities", "min": "1"}},
+		{"/activities", apperr.FieldTooShort, "validation.min.array", map[string]string{"attribute": "activities", "min": "1"}},
 		{"/profile/a~1b~0c", apperr.FieldRequired, "validation.required", map[string]string{"attribute": "a/b~c"}},
 		{"/activities/0/sets/1/effort_value", apperr.FieldOutOfRange, "validation.between.numeric", map[string]string{"attribute": "effort value", "min": "0", "max": "6"}},
 		{"/exercise_id", apperr.FieldNotFound, "The selected :attribute is invalid.", map[string]string{"attribute": "exercise"}},

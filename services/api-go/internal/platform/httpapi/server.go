@@ -28,6 +28,9 @@ type Options struct {
 	Authenticator Authenticator
 	// Throttles are per-operation limits, keyed by operationId.
 	Throttles map[string]Throttle
+	// FieldMessages customise request validation messages, keyed by
+	// operationId.
+	FieldMessages map[string]FieldMessages
 }
 
 // Server is the routing table plus the middleware chain around it.
@@ -52,7 +55,7 @@ func NewServer(opts Options) (*Server, error) {
 		opts:       opts,
 		mux:        http.NewServeMux(),
 		responder:  responder,
-		validator:  newRequestValidator(spec, responder),
+		validator:  newRequestValidator(spec, responder, opts.FieldMessages),
 		operations: operationsOf(spec),
 	}, nil
 }

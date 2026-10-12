@@ -2,8 +2,10 @@ package httpapi
 
 import (
 	"errors"
+	"maps"
 	"net/http"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -22,14 +24,62 @@ import (
 type requestValidator struct {
 	// routes maps a ServeMux pattern ("GET /api/v1/meta") to its operation;
 	// the generated server registers exactly these patterns.
-	routes  map[string]*routers.Route
-	options *openapi3filter.Options
-	rs      *Responder
+	routes   map[string]*routers.Route
+	options  *openapi3filter.Options
+	rs       *Responder
+	messages map[string]FieldMessages
 }
 
-var pathParam = regexp.MustCompile(`\{([^}]+)\}`)
+// FieldMessages are one operation's validation wording, as a Laravel form
+// request's attributes() and messages(). Fields are named by pointer
+// pattern, with * for an array index: "/activities/*/order".
+type FieldMessages struct {
+	// Attributes name fields in messages (:attribute).
+	Attributes map[string]string
+	// Details replace a message, keyed by pattern and field code:
+	// "/activities too_short".
+	Details map[string]string
+}
 
-func newRequestValidator(spec *openapi3.T, rs *Responder) *requestValidator {
+var (
+	pathParam = regexp.MustCompile(`\{([^}]+)\}`)
+	index     = regexp.MustCompile(`/[0-9]+(/|$)`)
+)
+
+// Pattern is a pointer with every array index replaced by *.
+func Pattern(pointer string) string {
+	for {
+		next := index.ReplaceAllString(pointer, "/*$1")
+		if next == pointer {
+			return pointer
+		}
+
+		pointer = next
+	}
+}
+
+// Apply rewrites the attribute and message of each field it names.
+func (m FieldMessages) Apply(fields []apperr.FieldError) {
+	for i, f := range fields {
+		pattern := Pattern(f.Pointer)
+
+		if name, ok := m.Attributes[pattern]; ok {
+			args := map[string]string{}
+			for k, v := range f.Args {
+				args[k] = v
+			}
+
+			args["attribute"] = name
+			fields[i].Args = args
+		}
+
+		if detail, ok := m.Details[pattern+" "+string(f.Code)]; ok {
+			fields[i].Detail = detail
+		}
+	}
+}
+
+func newRequestValidator(spec *openapi3.T, rs *Responder, messages map[string]FieldMessages) *requestValidator {
 	// For a 3.1 document kin-openapi validates with its JSON Schema 2020
 	// validator whenever a schema compiles standalone, and that validator
 	// reports failures as English text without the keyword. Presented as 3.0,
@@ -60,7 +110,8 @@ func newRequestValidator(spec *openapi3.T, rs *Responder) *requestValidator {
 				})),
 			},
 		},
-		rs: rs,
+		rs:       rs,
+		messages: messages,
 	}
 
 	for path, item := range spec.Paths.Map() {
@@ -95,8 +146,23 @@ func (v *requestValidator) middleware(next http.Handler) http.Handler {
 			Route:      route,
 			Options:    v.options,
 		})
+
+		var fields []apperr.FieldError
 		if err != nil {
-			v.rs.Error(w, r, toAppError(err))
+			collectFieldErrors(err, &fields)
+
+			if len(fields) == 0 {
+				v.rs.Error(w, r, apperr.BadRequest("Bad request", err))
+
+				return
+			}
+		}
+
+		fields = append(fields, undeclaredQuery(r, route.Operation)...)
+
+		if len(fields) > 0 {
+			v.messages[contractID(route.Operation.OperationID)].Apply(fields)
+			v.rs.Error(w, r, apperr.Validation(fields...))
 
 			return
 		}
@@ -117,6 +183,33 @@ func toAppError(err error) error {
 	}
 
 	return apperr.Validation(fields...)
+}
+
+// undeclaredQuery rejects query parameters an operation does not declare,
+// as the PHP API's form requests reject unknown input. Operations without
+// query parameters ignore the query string, as their PHP routes do.
+func undeclaredQuery(r *http.Request, operation *openapi3.Operation) []apperr.FieldError {
+	declared := map[string]bool{}
+
+	for _, ref := range operation.Parameters {
+		if ref.Value != nil && ref.Value.In == openapi3.ParameterInQuery {
+			declared[ref.Value.Name] = true
+		}
+	}
+
+	if len(declared) == 0 {
+		return nil
+	}
+
+	var fields []apperr.FieldError
+
+	for _, name := range slices.Sorted(maps.Keys(r.URL.Query())) {
+		if !declared[name] {
+			fields = append(fields, fieldError("/"+validate.Escape(name), apperr.FieldUnknownField, "validation.unknown_field", nil))
+		}
+	}
+
+	return fields
 }
 
 // collectFieldErrors walks openapi3filter's error tree: MultiErrors of
@@ -189,8 +282,14 @@ func schemaFieldError(pointer string, e *openapi3.SchemaError) apperr.FieldError
 		}
 	}
 
+	// An empty array is missing too: Laravel's required fails before min.
+	if items, ok := e.Value.([]any); ok && len(items) == 0 && e.SchemaField == "minItems" {
+		return fieldError(pointer, apperr.FieldRequired, "validation.required", nil)
+	}
+
 	switch e.SchemaField {
-	case "required":
+	case "required", "nullable":
+		// A null where the contract allows none is a missing value to Laravel.
 		return fieldError(pointer, apperr.FieldRequired, "validation.required", nil)
 	case "additionalProperties", "properties":
 		// kin points at the object; the property is named only in the reason.
@@ -216,9 +315,10 @@ func schemaFieldError(pointer string, e *openapi3.SchemaError) apperr.FieldError
 	case "maximum", "exclusiveMaximum":
 		return fieldError(pointer, apperr.FieldOutOfRange, "validation.max.numeric", map[string]string{"max": floatPtr(s.Max)})
 	case "minItems":
-		return fieldError(pointer, apperr.FieldOutOfRange, "validation.min.array", map[string]string{"min": strconv.FormatUint(s.MinItems, 10)})
+		// Laravel's min on an array is a length bound: too_short, like a string.
+		return fieldError(pointer, apperr.FieldTooShort, "validation.min.array", map[string]string{"min": strconv.FormatUint(s.MinItems, 10)})
 	case "maxItems":
-		return fieldError(pointer, apperr.FieldOutOfRange, "validation.max.array", map[string]string{"max": uintPtr(s.MaxItems)})
+		return fieldError(pointer, apperr.FieldTooLong, "validation.max.array", map[string]string{"max": uintPtr(s.MaxItems)})
 	case "minProperties":
 		return fieldError(pointer, apperr.FieldRequired, "validation.required", nil)
 	case "uniqueItems":

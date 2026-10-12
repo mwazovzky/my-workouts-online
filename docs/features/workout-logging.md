@@ -24,6 +24,10 @@ Start workouts from templates, edit activities and sets, save progress, complete
 - **Workouts tab**: the history newest first (`GET /workouts?page=N&per_page=M`), loading the next page when the last row appears and stopping at the last page; pull to refresh; swipe to delete with confirmation, removing the row immediately and restoring it if the API refuses
 - **Workout detail**: read-only activities and sets with the status badge; Edit/Continue only for the user's own in-progress workouts, Repeat workout only for their own completed ones (`POST /workouts/{workoutId}/repeat`, then the editor for the new workout). The dashboard's recent workouts and the editor's Complete land here
 
+## Go API (`services/api-go`)
+
+The Go backend serves every workout operation (history, start from a template, the editor's save, complete, repeat, delete) with the same responses as the PHP API, including the same `ETag` scheme (`"<id>-<version>"`), `If-Match` handling (428 when missing, 412 when stale) and error codes; the web editor works against it unchanged. It differs only on payloads PHP mishandles: a retired exercise cannot be added to a workout (it stays where it already is), an existing activity may change its exercise, a set id that is not its activity's is reported on that set, and a set order repeated within an activity is a 422 instead of a server error. See [ADR 0010](../../services/api-go/docs/adr/0010-retired-exercises-rejected-on-write.md).
+
 ## Business Rules
 
 - Workout creation requires a valid `workout_template_id`.

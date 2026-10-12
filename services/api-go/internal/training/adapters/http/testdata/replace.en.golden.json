@@ -1,0 +1,62 @@
+{
+  "data": {
+    "activities": [
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "kilograms",
+          "effort_type": "repetitions",
+          "equipment_name": "Barbell",
+          "id": 1,
+          "name": "Bench Press",
+          "rest_time_seconds": 120
+        },
+        "exercise_id": 1,
+        "id": 1,
+        "sets": [
+          {
+            "difficulty_value": 50,
+            "effort_value": 5,
+            "id": 1,
+            "is_completed": false,
+            "order": 1
+          }
+        ]
+      },
+      {
+        "exercise": {
+          "category_names": [
+            "Cardio"
+          ],
+          "difficulty_unit": "heart_rate_zone",
+          "effort_type": "duration",
+          "equipment_name": "Indoor Bike",
+          "id": 2,
+          "name": "Easy Ride",
+          "rest_time_seconds": null
+        },
+        "exercise_id": 2,
+        "id": 2,
+        "sets": [
+          {
+            "difficulty_value": 3,
+            "effort_value": 1200,
+            "id": 2,
+            "is_completed": false,
+            "order": 1
+          }
+        ]
+      }
+    ],
+    "activities_count": null,
+    "created_at": "2026-10-12T09:00:00Z",
+    "id": 1,
+    "name": "Morning",
+    "status": "in_progress",
+    "updated_at": "2026-10-12T09:00:00Z",
+    "user_id": 1
+  }
+}
+

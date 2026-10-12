@@ -26,3 +26,10 @@ enrollProgram
 unenrollProgram
 getWorkoutTemplate
 listExercises
+listWorkouts
+createWorkout
+getWorkout
+replaceWorkoutActivities
+completeWorkout
+repeatWorkout
+deleteWorkout

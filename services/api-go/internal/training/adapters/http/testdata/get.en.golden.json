@@ -1,0 +1,99 @@
+{
+  "data": {
+    "activities": [
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "kilograms",
+          "effort_type": "repetitions",
+          "equipment_name": "Barbell",
+          "id": 1,
+          "name": "Bench Press",
+          "rest_time_seconds": 120
+        },
+        "exercise_id": 1,
+        "id": 1,
+        "sets": [
+          {
+            "difficulty_value": 20,
+            "effort_value": 10,
+            "id": 1,
+            "is_completed": false,
+            "order": 1
+          },
+          {
+            "difficulty_value": 22.5,
+            "effort_value": 8,
+            "id": 2,
+            "is_completed": false,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "none",
+          "effort_type": "repetitions",
+          "equipment_name": "Bodyweight",
+          "id": 3,
+          "name": "Push-up",
+          "rest_time_seconds": 60
+        },
+        "exercise_id": 3,
+        "id": 2,
+        "sets": [
+          {
+            "difficulty_value": null,
+            "effort_value": 15,
+            "id": 3,
+            "is_completed": false,
+            "order": 1
+          }
+        ]
+      },
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "kilograms",
+          "effort_type": "repetitions",
+          "equipment_name": "Barbell",
+          "id": 4,
+          "name": "Upright Row",
+          "rest_time_seconds": 90
+        },
+        "exercise_id": 4,
+        "id": 3,
+        "sets": [
+          {
+            "difficulty_value": 30,
+            "effort_value": 12,
+            "id": 4,
+            "is_completed": true,
+            "order": 1
+          }
+        ]
+      }
+    ],
+    "activities_count": 3,
+    "created_at": "2026-10-12T09:00:00Z",
+    "id": 1,
+    "name": "Full Body",
+    "status": "in_progress",
+    "updated_at": "2026-10-12T09:00:00Z",
+    "user_id": 1,
+    "workout_template": {
+      "activities": [],
+      "description": "Press and push-ups.",
+      "id": 1,
+      "name": "Full Body"
+    }
+  }
+}
+

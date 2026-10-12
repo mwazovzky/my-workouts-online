@@ -1,6 +1,6 @@
 # Workouts API (Go)
 
-A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta`, every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`) and the catalog's read side (programs, program detail, enrollment, workout templates, the exercise picker), owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
+A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta`, every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`) the catalog's read side (programs, program detail, enrollment, workout templates, the exercise picker) and every workout operation (history, start, the editor's save, complete, repeat, delete), owns its Postgres schema, and answers every other contract operation with a 501 Problem. The PHP API stays the production backend.
 
 ## Run
 
@@ -146,6 +146,17 @@ The HTTP tests compare every response, in English and Russian, with golden files
 - An exercise's categories (`categories`, `category_ids`, `category_names`) are listed by category id. PHP lists them in pivot-row order, which the Go schema does not keep (`category_exercise` has no row id).
 - Program lists are ordered by id and a program's templates by assignment. PHP relies on the database's unspecified order for the list; both give the same order in practice.
 
+## Workouts
+
+The training module serves `listWorkouts`, `createWorkout`, `getWorkout`, `replaceWorkoutActivities`, `completeWorkout`, `repeatWorkout` and `deleteWorkout`. A workout copies its template when it starts (name in the request's locale, kept as is), so it never reads the template tables again; it reads exercises and template headers through `catalogapi` only. Someone else's workout is a 404 on every operation, exactly like a missing one.
+
+- **ETag.** Every single-workout response carries `ETag: "<id>-<version>"`, as PHP's. The editor's save needs `If-Match` (428 without it, 412 when stale, checked under `SELECT … FOR UPDATE`); the save and complete bump the version.
+- **The save** replaces the activities and sets in one transaction: rows not sent are deleted, rows with an id updated, rows without one created. Kept rows first move to `order = -id`, so reordering never trips the `(parent, order)` unique keys. Its business rules and the departures from PHP (a retired exercise cannot be added; per-id error pointers; repeated set orders are a 422, not a 500) are in [ADR 0010](docs/adr/0010-retired-exercises-rejected-on-write.md).
+- **Responses** show what PHP's show: `getWorkout` and the save include the activities with their exercises (retired ones resolve); `createWorkout` embeds the template it copied, with its activities and sets but not the workout's own; `complete` and `repeat` return the workout alone; the list adds `activities_count` and the template's header (left out once the template is deleted). Pagination links are absolute, built from the request's scheme, host and query.
+- **`trainingapi`** (`RecentWorkouts`, `InProgress`, `Counts`) is what the dashboard (story 9) reads; `trainingapi.Fake` stands in for it in tests.
+
+The tests port `tests/Feature/Workout/*`, `WorkoutApiTest` and `WorkoutAuthorizationTest` case by case, with golden files for one response of each shape, and a scripted flow run against both backends gave identical responses (ids, timestamps and the number of stored workouts aside).
+
 ## Mail
 
 Identity's emails (verify email, reset password) are rendered from `internal/identity/adapters/notify/templates` in the request's locale and sent through `kernel/mail.Mailer`. Until the Resend adapter (story 11) the only sender is the log mailer: in the dev stack, `docker compose logs api-go | grep '"msg":"mail"'` shows each message with its link. The links point at `FRONTEND_URL`.
@@ -177,13 +188,15 @@ internal/platform/ratelimit/  rate limiter and failure counter (login lockout), 
 internal/platform/postgres/   pool, migrator, Transactor, pgx error mapper, readiness check
 internal/platform/server/     http.Server with graceful shutdown
 internal/platform/testdb/     a migrated database per test (template clone)
-internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go)
+internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go); overlay.yaml holds Go-only generator hints
 internal/identity/             users, roles, tokens, verification, reset, /me: domain/, ports/, app/, adapters/{postgres,bcrypt,jwt,links,notify,http}
 internal/catalog/              programs, enrollment, templates, exercises, catalog sync: domain/, ports/, app/ (+ app/catalogsync), catalogapi/, adapters/{postgres,http,catalogfile}
+internal/training/             workouts, the editor's save, complete, repeat: domain/, ports/, app/, trainingapi/, adapters/{postgres,http}
 internal/kernel/mail/         the Mailer port
 internal/platform/mail/       Log and Fake mailers
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
 internal/catalog/adapters/postgres/sqlcgen   generated by sqlc from sql/catalog (never edit)
+internal/training/adapters/postgres/sqlcgen  generated by sqlc from sql/training (never edit)
 contract-scope.txt            the operations the contract-go workflow tests (deleted in story 13)
 internal/bootstrap/           composition root: New(deps) -> *App; api.go assembles the strict server
 docs/adr/                     architecture decision records
@@ -204,6 +217,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0007 Token compatibility with the PHP API, and auth policy from the contract](docs/adr/0007-identity-tokens-and-auth-policy.md)
 - [0008 Go-native signed links, mail behind a port, and the verified gate](docs/adr/0008-go-native-signed-links.md)
 - [0009 One YAML catalog for both backends, and its Go sync](docs/adr/0009-single-yaml-catalog-source.md)
+- [0010 Workout writes: retired exercises rejected, and other departures from PHP](docs/adr/0010-retired-exercises-rejected-on-write.md)
 
 ## Image
 
