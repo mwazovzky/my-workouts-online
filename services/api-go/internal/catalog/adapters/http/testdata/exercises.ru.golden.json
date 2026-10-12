@@ -1,0 +1,109 @@
+{
+  "data": [
+    {
+      "categories": [],
+      "category_ids": [],
+      "description": null,
+      "difficulty_unit": "none",
+      "effort_type": "duration",
+      "equipment_id": 2,
+      "equipment_name": "Собственный вес",
+      "id": 5,
+      "name": "Plank",
+      "rest_time_seconds": null
+    },
+    {
+      "categories": [],
+      "category_ids": [],
+      "description": null,
+      "difficulty_unit": "none",
+      "effort_type": "repetitions",
+      "equipment_id": 2,
+      "equipment_name": "Собственный вес",
+      "id": 7,
+      "name": "Бёрпи",
+      "rest_time_seconds": 30
+    },
+    {
+      "categories": [
+        {
+          "id": 1,
+          "name": "Грудь"
+        }
+      ],
+      "category_ids": [
+        1
+      ],
+      "description": null,
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Штанга",
+      "id": 2,
+      "name": "Жим лёжа",
+      "rest_time_seconds": 90
+    },
+    {
+      "categories": [
+        {
+          "id": 1,
+          "name": "Грудь"
+        }
+      ],
+      "category_ids": [
+        1
+      ],
+      "description": "Keep the body straight.",
+      "difficulty_unit": "none",
+      "effort_type": "repetitions",
+      "equipment_id": 2,
+      "equipment_name": "Собственный вес",
+      "id": 3,
+      "name": "Отжимания",
+      "rest_time_seconds": 60
+    },
+    {
+      "categories": [
+        {
+          "id": 2,
+          "name": "Ноги"
+        }
+      ],
+      "category_ids": [
+        2
+      ],
+      "description": "Ноги на ширине плеч.",
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Штанга",
+      "id": 1,
+      "name": "Приседания",
+      "rest_time_seconds": 120
+    },
+    {
+      "categories": [
+        {
+          "id": 2,
+          "name": "Ноги"
+        },
+        {
+          "id": 3,
+          "name": "Back"
+        }
+      ],
+      "category_ids": [
+        2,
+        3
+      ],
+      "description": null,
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Штанга",
+      "id": 6,
+      "name": "Становая тяга",
+      "rest_time_seconds": 180
+    }
+  ]
+}

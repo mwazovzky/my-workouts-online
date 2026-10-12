@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "description": "Three sessions a week.",
+      "id": 1,
+      "is_enrolled": true,
+      "name": "Strength"
+    },
+    {
+      "description": null,
+      "id": 2,
+      "is_enrolled": false,
+      "name": "Cardio"
+    }
+  ]
+}

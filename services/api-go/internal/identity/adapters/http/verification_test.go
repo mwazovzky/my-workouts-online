@@ -71,7 +71,7 @@ func TestPostingTheLinkParametersVerifiesTheEmail(t *testing.T) {
 		t.Error("the email is not verified")
 	}
 
-	f.programs(session.AccessToken).AssertStatus(http.StatusNotImplemented)
+	f.programs(session.AccessToken).AssertStatus(http.StatusOK)
 }
 
 func TestLinkForAnotherAccountIsRefused(t *testing.T) {

@@ -73,7 +73,7 @@ func TestAccessTokenAuthenticatesAPIRequests(t *testing.T) {
 	f.verified(t, "ada@example.com")
 
 	token := decodeAuth(t, f.login("ada@example.com", password, "native", nil)).AccessToken
-	f.programs(token).AssertStatus(http.StatusNotImplemented)
+	f.programs(token).AssertStatus(http.StatusOK)
 }
 
 func TestRejectsInvalidPasswordWith401(t *testing.T) {

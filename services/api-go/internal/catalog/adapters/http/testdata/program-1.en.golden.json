@@ -1,0 +1,37 @@
+{
+  "data": {
+    "description": "Three sessions a week.",
+    "id": 1,
+    "is_enrolled": true,
+    "name": "Strength",
+    "workout_templates": [
+      {
+        "activities": [],
+        "assignment": {
+          "weekday": "thursday"
+        },
+        "description": "Squat, push-up, row.",
+        "id": 1,
+        "name": "Full Body A"
+      },
+      {
+        "activities": [],
+        "assignment": {
+          "weekday": "wednesday"
+        },
+        "description": null,
+        "id": 2,
+        "name": "Core"
+      },
+      {
+        "activities": [],
+        "assignment": {
+          "weekday": "monday"
+        },
+        "description": "Squat, push-up, row.",
+        "id": 1,
+        "name": "Full Body A"
+      }
+    ]
+  }
+}

@@ -26,7 +26,7 @@ func locale(ctx context.Context) string {
 }
 
 // VerifyEmail implements verifyEmail.
-func (h Handlers) VerifyEmail(ctx context.Context, req gen.VerifyEmailRequestObject) (gen.VerifyEmailResponseObject, error) {
+func (h Identity) VerifyEmail(ctx context.Context, req gen.VerifyEmailRequestObject) (gen.VerifyEmailResponseObject, error) {
 	p, err := caller(ctx)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (h Handlers) VerifyEmail(ctx context.Context, req gen.VerifyEmailRequestObj
 }
 
 // ResendVerification implements resendVerification.
-func (h Handlers) ResendVerification(ctx context.Context, _ gen.ResendVerificationRequestObject) (gen.ResendVerificationResponseObject, error) {
+func (h Identity) ResendVerification(ctx context.Context, _ gen.ResendVerificationRequestObject) (gen.ResendVerificationResponseObject, error) {
 	p, err := caller(ctx)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (h Handlers) ResendVerification(ctx context.Context, _ gen.ResendVerificati
 }
 
 // ForgotPassword implements forgotPassword.
-func (h Handlers) ForgotPassword(ctx context.Context, req gen.ForgotPasswordRequestObject) (gen.ForgotPasswordResponseObject, error) {
+func (h Identity) ForgotPassword(ctx context.Context, req gen.ForgotPasswordRequestObject) (gen.ForgotPasswordResponseObject, error) {
 	if err := h.service.ForgotPassword(ctx, string(req.Body.Email), locale(ctx)); err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (h Handlers) ForgotPassword(ctx context.Context, req gen.ForgotPasswordRequ
 }
 
 // ResetPassword implements resetPassword.
-func (h Handlers) ResetPassword(ctx context.Context, req gen.ResetPasswordRequestObject) (gen.ResetPasswordResponseObject, error) {
+func (h Identity) ResetPassword(ctx context.Context, req gen.ResetPasswordRequestObject) (gen.ResetPasswordResponseObject, error) {
 	b := req.Body
 	if err := h.service.ResetPassword(ctx, app.ResetInput{Token: b.Token, Email: string(b.Email), Password: b.Password}); err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (h Handlers) ResetPassword(ctx context.Context, req gen.ResetPasswordReques
 }
 
 // GetMe implements getMe.
-func (h Handlers) GetMe(ctx context.Context, _ gen.GetMeRequestObject) (gen.GetMeResponseObject, error) {
+func (h Identity) GetMe(ctx context.Context, _ gen.GetMeRequestObject) (gen.GetMeResponseObject, error) {
 	p, err := caller(ctx)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (h Handlers) GetMe(ctx context.Context, _ gen.GetMeRequestObject) (gen.GetM
 }
 
 // UpdateMe implements updateMe.
-func (h Handlers) UpdateMe(ctx context.Context, req gen.UpdateMeRequestObject) (gen.UpdateMeResponseObject, error) {
+func (h Identity) UpdateMe(ctx context.Context, req gen.UpdateMeRequestObject) (gen.UpdateMeResponseObject, error) {
 	p, err := caller(ctx)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (h Handlers) UpdateMe(ctx context.Context, req gen.UpdateMeRequestObject) (
 }
 
 // UpdatePassword implements updatePassword.
-func (h Handlers) UpdatePassword(ctx context.Context, req gen.UpdatePasswordRequestObject) (gen.UpdatePasswordResponseObject, error) {
+func (h Identity) UpdatePassword(ctx context.Context, req gen.UpdatePasswordRequestObject) (gen.UpdatePasswordResponseObject, error) {
 	p, err := caller(ctx)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (h Handlers) UpdatePassword(ctx context.Context, req gen.UpdatePasswordRequ
 }
 
 // DeleteMe implements deleteMe.
-func (h Handlers) DeleteMe(ctx context.Context, req gen.DeleteMeRequestObject) (gen.DeleteMeResponseObject, error) {
+func (h Identity) DeleteMe(ctx context.Context, req gen.DeleteMeRequestObject) (gen.DeleteMeResponseObject, error) {
 	p, err := caller(ctx)
 	if err != nil {
 		return nil, err

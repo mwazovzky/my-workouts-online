@@ -1,0 +1,109 @@
+{
+  "data": [
+    {
+      "categories": [
+        {
+          "id": 1,
+          "name": "Chest"
+        }
+      ],
+      "category_ids": [
+        1
+      ],
+      "description": null,
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Barbell",
+      "id": 2,
+      "name": "bench press",
+      "rest_time_seconds": 90
+    },
+    {
+      "categories": [],
+      "category_ids": [],
+      "description": null,
+      "difficulty_unit": "none",
+      "effort_type": "repetitions",
+      "equipment_id": 2,
+      "equipment_name": "Bodyweight",
+      "id": 7,
+      "name": "Burpee",
+      "rest_time_seconds": 30
+    },
+    {
+      "categories": [
+        {
+          "id": 2,
+          "name": "Legs"
+        },
+        {
+          "id": 3,
+          "name": "Back"
+        }
+      ],
+      "category_ids": [
+        2,
+        3
+      ],
+      "description": null,
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Barbell",
+      "id": 6,
+      "name": "Deadlift",
+      "rest_time_seconds": 180
+    },
+    {
+      "categories": [],
+      "category_ids": [],
+      "description": null,
+      "difficulty_unit": "none",
+      "effort_type": "duration",
+      "equipment_id": 2,
+      "equipment_name": "Bodyweight",
+      "id": 5,
+      "name": "Plank",
+      "rest_time_seconds": null
+    },
+    {
+      "categories": [
+        {
+          "id": 1,
+          "name": "Chest"
+        }
+      ],
+      "category_ids": [
+        1
+      ],
+      "description": "Keep the body straight.",
+      "difficulty_unit": "none",
+      "effort_type": "repetitions",
+      "equipment_id": 2,
+      "equipment_name": "Bodyweight",
+      "id": 3,
+      "name": "Push-up",
+      "rest_time_seconds": 60
+    },
+    {
+      "categories": [
+        {
+          "id": 2,
+          "name": "Legs"
+        }
+      ],
+      "category_ids": [
+        2
+      ],
+      "description": "Feet shoulder-width apart.",
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Barbell",
+      "id": 1,
+      "name": "Squat",
+      "rest_time_seconds": 120
+    }
+  ]
+}

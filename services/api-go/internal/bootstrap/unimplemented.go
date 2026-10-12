@@ -122,30 +122,6 @@ func (unimplemented) GetDashboard(context.Context, gen.GetDashboardRequestObject
 	return nil, httpapi.ErrNotImplemented
 }
 
-func (unimplemented) ListExercises(context.Context, gen.ListExercisesRequestObject) (gen.ListExercisesResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) ListPrograms(context.Context, gen.ListProgramsRequestObject) (gen.ListProgramsResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) GetProgram(context.Context, gen.GetProgramRequestObject) (gen.GetProgramResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) UnenrollProgram(context.Context, gen.UnenrollProgramRequestObject) (gen.UnenrollProgramResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) EnrollProgram(context.Context, gen.EnrollProgramRequestObject) (gen.EnrollProgramResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
-func (unimplemented) GetWorkoutTemplate(context.Context, gen.GetWorkoutTemplateRequestObject) (gen.GetWorkoutTemplateResponseObject, error) {
-	return nil, httpapi.ErrNotImplemented
-}
-
 func (unimplemented) ListWorkouts(context.Context, gen.ListWorkoutsRequestObject) (gen.ListWorkoutsResponseObject, error) {
 	return nil, httpapi.ErrNotImplemented
 }

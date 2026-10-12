@@ -13,6 +13,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	cataloghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/http"
+	catalogpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/postgres"
+	catalogapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/bcrypt"
 	identityhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/http"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
@@ -109,6 +112,14 @@ func New(deps Deps) (*App, error) {
 		return nil, err
 	}
 
+	catalog := catalogapp.New(catalogapp.Deps{
+		Programs:  catalogpg.NewPrograms(tx),
+		Templates: catalogpg.NewTemplates(tx),
+		Exercises: catalogpg.NewExercises(tx),
+		Clock:     deps.Clock,
+		Logger:    deps.Logger,
+	})
+
 	server, err := httpapi.NewServer(httpapi.Options{
 		AppURL:             cfg.AppURL,
 		RateLimitPerMinute: cfg.RateLimitPerMinute,
@@ -131,7 +142,8 @@ func New(deps Deps) (*App, error) {
 		Liveness:  health.NewLiveness(deps.Clock),
 		Readiness: readiness,
 		Handler:   meta.NewHandler(bundle),
-		Handlers:  identityhttp.NewHandlers(identity, signer, identityhttp.Config{CookieSecure: cfg.JWT.CookieSecure, Clock: deps.Clock}),
+		Identity:  identityhttp.New(identity, signer, identityhttp.Config{CookieSecure: cfg.JWT.CookieSecure, Clock: deps.Clock}),
+		Catalog:   cataloghttp.New(catalog),
 	})
 	server.Handle("GET /up", http.HandlerFunc(health.Up))
 

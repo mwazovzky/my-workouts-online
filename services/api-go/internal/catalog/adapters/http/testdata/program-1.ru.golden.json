@@ -1,0 +1,37 @@
+{
+  "data": {
+    "description": "Три тренировки в неделю.",
+    "id": 1,
+    "is_enrolled": true,
+    "name": "Сила",
+    "workout_templates": [
+      {
+        "activities": [],
+        "assignment": {
+          "weekday": "thursday"
+        },
+        "description": "Присед, отжимания, тяга.",
+        "id": 1,
+        "name": "Всё тело А"
+      },
+      {
+        "activities": [],
+        "assignment": {
+          "weekday": "wednesday"
+        },
+        "description": null,
+        "id": 2,
+        "name": "Core"
+      },
+      {
+        "activities": [],
+        "assignment": {
+          "weekday": "monday"
+        },
+        "description": "Присед, отжимания, тяга.",
+        "id": 1,
+        "name": "Всё тело А"
+      }
+    ]
+  }
+}

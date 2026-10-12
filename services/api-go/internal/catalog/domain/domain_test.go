@@ -1,0 +1,92 @@
+package domain_test
+
+import (
+	"testing"
+	"time"
+
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/domain"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/i18n"
+)
+
+func TestLocalizedTextResolve(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		text   domain.LocalizedText
+		locale i18n.Locale
+		want   string
+	}{
+		{"translation present", domain.LocalizedText{Source: "Chest", Other: map[i18n.Locale]string{i18n.RU: "Грудь"}}, i18n.RU, "Грудь"},
+		{"source locale", domain.LocalizedText{Source: "Chest", Other: map[i18n.Locale]string{i18n.RU: "Грудь"}}, i18n.EN, "Chest"},
+		{"blank translation falls back", domain.LocalizedText{Source: "Chest", Other: map[i18n.Locale]string{i18n.RU: ""}}, i18n.RU, "Chest"},
+		{"missing translation falls back", domain.LocalizedText{Source: "Chest"}, i18n.RU, "Chest"},
+		{"unknown locale falls back", domain.LocalizedText{Source: "Chest", Other: map[i18n.Locale]string{i18n.RU: "Грудь"}}, "de", "Chest"},
+		{"translation without source", domain.LocalizedText{Other: map[i18n.Locale]string{i18n.RU: "Описание"}}, i18n.RU, "Описание"},
+		{"no text at all", domain.LocalizedText{}, i18n.RU, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.text.Resolve(tt.locale); got != tt.want {
+				t.Errorf("Resolve(%q) = %q, want %q", tt.locale, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWeekdayNext(t *testing.T) {
+	t.Parallel()
+
+	// Sunday 11 October 2026, mid-afternoon.
+	sunday := time.Date(2026, 10, 11, 15, 30, 0, 0, time.UTC)
+
+	tests := []struct {
+		weekday domain.Weekday
+		want    string
+	}{
+		{domain.Sunday, "2026-10-11"},
+		{domain.Monday, "2026-10-12"},
+		{domain.Wednesday, "2026-10-14"},
+		{domain.Saturday, "2026-10-17"},
+	}
+
+	for _, tt := range tests {
+		got := tt.weekday.Next(sunday)
+		if got.Format(time.DateOnly) != tt.want || got.Hour() != 0 || got.Minute() != 0 {
+			t.Errorf("%s.Next(%s) = %s, want the start of %s", tt.weekday, sunday, got, tt.want)
+		}
+	}
+
+	moscow := time.FixedZone("MSK", 3*60*60)
+	if got := domain.Thursday.Next(time.Date(2026, 10, 15, 1, 0, 0, 0, moscow)); got.Location() != moscow || got.Day() != 15 {
+		t.Errorf("Next keeps the location and counts today: got %s", got)
+	}
+}
+
+func TestWeekdayValid(t *testing.T) {
+	t.Parallel()
+
+	for _, w := range []domain.Weekday{domain.Monday, domain.Tuesday, domain.Wednesday, domain.Thursday, domain.Friday, domain.Saturday, domain.Sunday} {
+		if !w.Valid() {
+			t.Errorf("%s is not valid", w)
+		}
+	}
+
+	for _, w := range []domain.Weekday{"", "Monday", "mon"} {
+		if w.Valid() {
+			t.Errorf("%q is valid", w)
+		}
+	}
+}
+
+func TestExerciseIsRetired(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	if (domain.Exercise{}).IsRetired() || !(domain.Exercise{RetiredAt: &now}).IsRetired() {
+		t.Error("IsRetired does not follow RetiredAt")
+	}
+}
