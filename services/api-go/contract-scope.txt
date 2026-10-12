@@ -33,3 +33,4 @@ replaceWorkoutActivities
 completeWorkout
 repeatWorkout
 deleteWorkout
+getDashboard

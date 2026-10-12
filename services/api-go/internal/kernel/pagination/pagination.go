@@ -4,6 +4,7 @@
 package pagination
 
 import (
+	"math"
 	"net/url"
 	"strconv"
 )
@@ -34,8 +35,15 @@ func NewPage(number, size *int, defaultSize, maxSize int) Page {
 	return p
 }
 
-// Offset is the number of items before the page.
-func (p Page) Offset() int { return (p.Number - 1) * p.Size }
+// Offset is the number of items before the page. It saturates instead of
+// overflowing, so a page far past the end is simply empty.
+func (p Page) Offset() int {
+	if p.Number-1 > math.MaxInt/max(p.Size, 1) {
+		return math.MaxInt
+	}
+
+	return (p.Number - 1) * p.Size
+}
 
 // Result is one page of items plus the total across all pages.
 type Result[T any] struct {

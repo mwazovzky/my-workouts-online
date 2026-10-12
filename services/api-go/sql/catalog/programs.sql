@@ -43,3 +43,6 @@ JOIN program_workout_template pwt ON pwt.program_id = p.id
 JOIN workout_templates t ON t.id = pwt.template_id
 WHERE pu.user_id = $1
 ORDER BY p.id, pwt.id;
+
+-- name: CountEnrolledPrograms :one
+SELECT count(*)::integer FROM program_user WHERE user_id = $1;

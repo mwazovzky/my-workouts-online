@@ -87,6 +87,11 @@ func header(t domain.WorkoutTemplate, locale i18n.Locale) catalogapi.TemplateHea
 	return catalogapi.TemplateHeader{ID: t.ID, Name: t.Name.Resolve(locale), Description: t.Description.Resolve(locale)}
 }
 
+// EnrolledPrograms implements catalogapi.Catalog.
+func (s *Service) EnrolledPrograms(ctx context.Context, userID int64) (int, error) {
+	return s.Programs.CountEnrolled(ctx, userID)
+}
+
 // EnrolledSchedule implements catalogapi.Catalog.
 func (s *Service) EnrolledSchedule(ctx context.Context, userID int64, locale i18n.Locale) ([]catalogapi.ScheduledTemplate, error) {
 	assignments, err := s.Programs.EnrolledSchedule(ctx, userID)

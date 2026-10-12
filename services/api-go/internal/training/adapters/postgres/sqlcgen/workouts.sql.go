@@ -148,12 +148,12 @@ SELECT w.id, w.user_id, w.template_id, w.name, w.status, w.version, w.created_at
 FROM workouts w
 WHERE w.user_id = $1
 ORDER BY w.updated_at DESC, w.id DESC
-LIMIT $3 OFFSET $2
+LIMIT $3 OFFSET $2::bigint
 `
 
 type ListOwnedWorkoutsParams struct {
 	UserID     int64
-	PageOffset int32
+	PageOffset int64
 	PageSize   int32
 }
 

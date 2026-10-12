@@ -152,7 +152,7 @@ func (r *Workouts) List(ctx context.Context, userID int64, page pagination.Page)
 	}
 
 	rows, err := q.ListOwnedWorkouts(ctx, sqlcgen.ListOwnedWorkoutsParams{
-		UserID: userID, PageSize: int32(page.Size), PageOffset: int32(page.Offset()), //nolint:gosec // page bounds come from the contract
+		UserID: userID, PageSize: int32(page.Size), PageOffset: int64(page.Offset()), //nolint:gosec // the contract bounds per_page to 100
 	})
 	if err != nil {
 		return pagination.Result[domain.Workout]{}, postgres.MapError(err)

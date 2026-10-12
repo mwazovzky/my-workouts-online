@@ -40,6 +40,8 @@ type Programs interface {
 	// EnrolledSchedule returns every assignment of the programs the user is
 	// enrolled in, by program id and then in assignment order.
 	EnrolledSchedule(ctx context.Context, userID int64) ([]ScheduledTemplate, error)
+	// CountEnrolled returns how many programs the user is enrolled in.
+	CountEnrolled(ctx context.Context, userID int64) (int, error)
 }
 
 // Templates reads workout templates.

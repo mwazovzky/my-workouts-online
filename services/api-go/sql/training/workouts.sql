@@ -16,7 +16,7 @@ SELECT w.*, (SELECT count(*) FROM workout_activities a WHERE a.workout_id = w.id
 FROM workouts w
 WHERE w.user_id = @user_id
 ORDER BY w.updated_at DESC, w.id DESC
-LIMIT @page_size OFFSET @page_offset;
+LIMIT @page_size OFFSET @page_offset::bigint;
 
 -- name: CountOwnedWorkouts :one
 SELECT count(*)::integer FROM workouts WHERE user_id = $1;

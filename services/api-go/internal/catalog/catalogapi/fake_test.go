@@ -17,6 +17,7 @@ func TestFake(t *testing.T) {
 		Exercises: map[int64]catalogapi.ExerciseInfo{1: {ID: 1, Name: "Squat"}},
 		Templates: map[int64]catalogapi.Snapshot{2: {TemplateHeader: catalogapi.TemplateHeader{ID: 2, Name: "Full Body A"}}},
 		Schedules: map[int64][]catalogapi.ScheduledTemplate{7: {{ProgramID: 3, Weekday: "monday"}}},
+		Enrolled:  map[int64]int{7: 2},
 	}
 
 	if got, err := f.ExerciseLookup(ctx, []int64{1, 99}, i18n.EN); err != nil || len(got) != 1 || got[1].Name != "Squat" {
@@ -35,6 +36,10 @@ func TestFake(t *testing.T) {
 		t.Errorf("TemplateHeaders = %v, %v", got, err)
 	}
 
+	if got, err := f.EnrolledPrograms(ctx, 7); err != nil || got != 2 {
+		t.Errorf("EnrolledPrograms = %v, %v", got, err)
+	}
+
 	if got, err := f.EnrolledSchedule(ctx, 7, i18n.EN); err != nil || len(got) != 1 {
 		t.Errorf("EnrolledSchedule = %v, %v", got, err)
 	}
@@ -51,6 +56,10 @@ func TestFake(t *testing.T) {
 
 	if _, err := f.EnrolledSchedule(ctx, 7, i18n.EN); err == nil {
 		t.Error("EnrolledSchedule ignored Err")
+	}
+
+	if _, err := f.EnrolledPrograms(ctx, 7); err == nil {
+		t.Error("EnrolledPrograms ignored Err")
 	}
 
 	if _, err := f.TemplateHeaders(ctx, nil, i18n.EN); err == nil {
