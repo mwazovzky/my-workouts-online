@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "activities_count": 3,
+      "id": 1,
+      "name": "Всё тело А",
+      "translations": {
+        "description": {
+          "en": "Squat, push-up, row.",
+          "ru": "Присед, отжимания, тяга."
+        },
+        "name": {
+          "en": "Full Body A",
+          "ru": "Всё тело А"
+        }
+      }
+    },
+    {
+      "activities_count": 1,
+      "id": 2,
+      "name": "Core",
+      "translations": {
+        "description": {
+          "en": null,
+          "ru": null
+        },
+        "name": {
+          "en": "Core",
+          "ru": null
+        }
+      }
+    }
+  ]
+}
+

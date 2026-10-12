@@ -30,6 +30,6 @@ func TestAdminOperationsNeedAnAdmin(t *testing.T) {
 		t.Error("the demo admin is not an admin")
 	}
 
-	f.api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/admin/equipment", Token: admin.AccessToken, SkipContract: true}).
-		AssertStatus(http.StatusNotImplemented)
+	f.api.Do(apitest.Request{Method: http.MethodGet, Path: "/api/v1/admin/equipment", Token: admin.AccessToken}).
+		AssertStatus(http.StatusOK)
 }

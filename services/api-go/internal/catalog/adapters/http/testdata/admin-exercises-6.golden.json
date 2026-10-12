@@ -1,0 +1,37 @@
+{
+  "data": {
+    "categories": [
+      {
+        "id": 2,
+        "name": "Legs"
+      },
+      {
+        "id": 3,
+        "name": "Back"
+      }
+    ],
+    "category_ids": [
+      2,
+      3
+    ],
+    "description": null,
+    "difficulty_unit": "kilograms",
+    "effort_type": "repetitions",
+    "equipment_id": 1,
+    "equipment_name": "Barbell",
+    "id": 6,
+    "name": "Deadlift",
+    "rest_time_seconds": 180,
+    "translations": {
+      "description": {
+        "en": null,
+        "ru": null
+      },
+      "name": {
+        "en": "Deadlift",
+        "ru": "Становая тяга"
+      }
+    }
+  }
+}
+

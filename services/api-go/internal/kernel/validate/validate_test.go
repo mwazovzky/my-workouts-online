@@ -78,6 +78,24 @@ func TestValidatorCollectsEveryFailureWithPointers(t *testing.T) {
 	}
 }
 
+func TestCheckItemPointsAtTheElement(t *testing.T) {
+	t.Parallel()
+
+	v := validate.New()
+	v.CheckItem(true, "category_ids", 0, apperr.FieldNotFound, "validation.exists")
+	v.CheckItem(false, "category_ids", 1, apperr.FieldNotFound, "validation.exists")
+
+	appErr, ok := apperr.As(v.Err())
+	if !ok || len(appErr.Fields) != 1 {
+		t.Fatalf("err = %v", v.Err())
+	}
+
+	want := apperr.FieldError{Pointer: "/category_ids/1", Code: apperr.FieldNotFound, Detail: "validation.exists", Args: map[string]string{"attribute": "category_ids.1"}}
+	if diff := cmp.Diff(want, appErr.Fields[0]); diff != "" {
+		t.Errorf("field (-want +got):\n%s", diff)
+	}
+}
+
 func TestValidatorPassesValidInput(t *testing.T) {
 	t.Parallel()
 

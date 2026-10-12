@@ -1,0 +1,170 @@
+{
+  "data": [
+    {
+      "categories": [
+        {
+          "id": 2,
+          "name": "Ноги"
+        }
+      ],
+      "category_ids": [
+        2
+      ],
+      "description": "Ноги на ширине плеч.",
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Штанга",
+      "id": 1,
+      "name": "Приседания",
+      "rest_time_seconds": 120,
+      "translations": {
+        "description": {
+          "en": "Feet shoulder-width apart.",
+          "ru": "Ноги на ширине плеч."
+        },
+        "name": {
+          "en": "Squat",
+          "ru": "Приседания"
+        }
+      }
+    },
+    {
+      "categories": [
+        {
+          "id": 1,
+          "name": "Грудь"
+        }
+      ],
+      "category_ids": [
+        1
+      ],
+      "description": null,
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Штанга",
+      "id": 2,
+      "name": "Жим лёжа",
+      "rest_time_seconds": 90,
+      "translations": {
+        "description": {
+          "en": null,
+          "ru": null
+        },
+        "name": {
+          "en": "bench press",
+          "ru": "Жим лёжа"
+        }
+      }
+    },
+    {
+      "categories": [
+        {
+          "id": 1,
+          "name": "Грудь"
+        }
+      ],
+      "category_ids": [
+        1
+      ],
+      "description": "Keep the body straight.",
+      "difficulty_unit": "none",
+      "effort_type": "repetitions",
+      "equipment_id": 2,
+      "equipment_name": "Собственный вес",
+      "id": 3,
+      "name": "Отжимания",
+      "rest_time_seconds": 60,
+      "translations": {
+        "description": {
+          "en": "Keep the body straight.",
+          "ru": null
+        },
+        "name": {
+          "en": "Push-up",
+          "ru": "Отжимания"
+        }
+      }
+    },
+    {
+      "categories": [],
+      "category_ids": [],
+      "description": null,
+      "difficulty_unit": "none",
+      "effort_type": "duration",
+      "equipment_id": 2,
+      "equipment_name": "Собственный вес",
+      "id": 5,
+      "name": "Plank",
+      "rest_time_seconds": null,
+      "translations": {
+        "description": {
+          "en": null,
+          "ru": null
+        },
+        "name": {
+          "en": "Plank",
+          "ru": null
+        }
+      }
+    },
+    {
+      "categories": [
+        {
+          "id": 2,
+          "name": "Ноги"
+        },
+        {
+          "id": 3,
+          "name": "Back"
+        }
+      ],
+      "category_ids": [
+        2,
+        3
+      ],
+      "description": null,
+      "difficulty_unit": "kilograms",
+      "effort_type": "repetitions",
+      "equipment_id": 1,
+      "equipment_name": "Штанга",
+      "id": 6,
+      "name": "Становая тяга",
+      "rest_time_seconds": 180,
+      "translations": {
+        "description": {
+          "en": null,
+          "ru": null
+        },
+        "name": {
+          "en": "Deadlift",
+          "ru": "Становая тяга"
+        }
+      }
+    },
+    {
+      "categories": [],
+      "category_ids": [],
+      "description": null,
+      "difficulty_unit": "none",
+      "effort_type": "repetitions",
+      "equipment_id": 2,
+      "equipment_name": "Собственный вес",
+      "id": 7,
+      "name": "Бёрпи",
+      "rest_time_seconds": 30,
+      "translations": {
+        "description": {
+          "en": null,
+          "ru": null
+        },
+        "name": {
+          "en": "Burpee",
+          "ru": "Бёрпи"
+        }
+      }
+    }
+  ]
+}
+

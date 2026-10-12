@@ -35,7 +35,7 @@ func (s fixedSource) Load() (ports.RawCatalog, error) { return s.catalog, nil }
 // failingStore fails CreateProgram, the last write of a fresh sync.
 type failingStore struct{ ports.CatalogStore }
 
-func (failingStore) CreateProgram(context.Context, string, ports.ProgramRecord, time.Time) (int64, error) {
+func (failingStore) CreateProgram(context.Context, *string, ports.ProgramRecord, time.Time) (int64, error) {
 	return 0, errors.New("the database went away")
 }
 

@@ -13,6 +13,20 @@ App admins create, edit, and delete the shared content catalog: equipment, categ
 7. On save the record is persisted through the REST API and the admin returns to the section list with a success toast.
 8. Deleting prompts a confirmation dialog before removing the record.
 
+## Go API (`services/api-go`)
+
+The Go backend serves every admin operation with the same responses, validation messages and refusals, so the admin pages work against it unchanged. Its delete guards are PHP's:
+
+| Record | Delete |
+| --- | --- |
+| Equipment | Refused (409 `in_use`) while any exercise uses it, retired ones included |
+| Category | Deleted; its exercises leave it |
+| Exercise | Retired: hidden from the pickers and the admin list, still shown in templates and logged workouts |
+| Workout template | Refused (409 `in_use`) while a program schedules it; workouts started from it keep their copy |
+| Program | Deleted with its weekday assignments and enrollments |
+
+It is stricter only on payloads the admin pages never send: a template cannot gain a retired exercise, and repeated activity or set orders are rejected instead of failing with a server error. See [ADR 0012](../../services/api-go/docs/adr/0012-admin-delete-guards.md).
+
 ## Business Rules
 
 - All admin actions require the authenticated user to have the `Admin` role. Enforced by the `admin` route middleware and by a per-model policy (`EquipmentPolicy`, `CategoryPolicy`, `ExercisePolicy`, `WorkoutTemplatePolicy`, `ProgramPolicy`); non-admins receive `403`.

@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "exercises_count": 2,
+      "id": 1,
+      "name": "Грудь",
+      "translations": {
+        "name": {
+          "en": "Chest",
+          "ru": "Грудь"
+        }
+      }
+    },
+    {
+      "exercises_count": 2,
+      "id": 2,
+      "name": "Ноги",
+      "translations": {
+        "name": {
+          "en": "Legs",
+          "ru": "Ноги"
+        }
+      }
+    },
+    {
+      "exercises_count": 1,
+      "id": 3,
+      "name": "Back",
+      "translations": {
+        "name": {
+          "en": "Back",
+          "ru": null
+        }
+      }
+    }
+  ]
+}
+
