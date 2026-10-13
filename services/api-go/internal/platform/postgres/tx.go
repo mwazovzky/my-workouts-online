@@ -75,6 +75,14 @@ func (t *Transactor) InTx(ctx context.Context, fn func(ctx context.Context) erro
 	return nil
 }
 
+// TxFrom returns the transaction ctx carries, for a library that takes a
+// pgx.Tx itself (River's InsertTx joins the unit of work through it).
+func TxFrom(ctx context.Context) (pgx.Tx, bool) {
+	tx, ok := ctx.Value(txKey{}).(pgx.Tx)
+
+	return tx, ok
+}
+
 // Querier returns the transaction ctx carries, or the pool outside one.
 func (t *Transactor) Querier(ctx context.Context) DBTX {
 	if tx, ok := ctx.Value(txKey{}).(pgx.Tx); ok {

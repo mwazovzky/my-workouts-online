@@ -9,7 +9,7 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 
 ## Module Layout and Dependencies
 
-`internal/` is split into `kernel` (dependency-free shared types), `platform` (infrastructure), one directory per module (`identity`, `catalog`, `training`, `dashboard`) and `bootstrap` (the composition root). A module has `domain/`, `app/` (use cases), `ports/` (interfaces), `adapters/` and an exported `<module>api/` package, its only surface for other modules. [ADR 0001](adr/0001-repository-layout.md) has the reasoning.
+`internal/` is split into `kernel` (dependency-free shared types), `platform` (infrastructure), one directory per module (`identity`, `catalog`, `training`, `dashboard`, `inbox`) and `bootstrap` (the composition root). A module has `domain/`, `app/` (use cases), `ports/` (interfaces), `adapters/` and an exported `<module>api/` package, its only surface for other modules. [ADR 0001](adr/0001-repository-layout.md) has the reasoning.
 
 | Package | May import (internal) | Enforced by |
 | --- | --- | --- |
@@ -17,7 +17,7 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 | `platform/*` | `kernel`, other `platform` packages | lint: depguard `platform` |
 | `<module>/domain`, `app`, `ports` | `kernel`, own module's core, other modules' `*api` packages as allowed below; never `platform`, adapters or `bootstrap` | lint: depguard `module-core` |
 | `<module>/adapters/*` | `kernel`, `platform`, own module; never another module, not even its `*api` package | lint: depguard `adapters` |
-| `identity`, `catalog` | no other module | lint: depguard `identity`, `catalog` |
+| `identity`, `catalog`, `inbox` | no other module | lint: depguard `identity`, `catalog`, `inbox` |
 | `training` | `catalog/catalogapi` only | lint: depguard `training` |
 | `dashboard` | `catalog/catalogapi`, `training/trainingapi` only | lint: depguard `dashboard` |
 | `bootstrap` | everything; imported only by `cmd/` | review |
@@ -69,6 +69,7 @@ Three layers with one job each: `.golangci.yml` enforces what a linter can check
 - Handlers **must not** re-check what the contract already constrains (types, enums, lengths, unknown fields): the request validation middleware rejects those with 422 before the handler runs. Handlers and use cases validate business rules with `kernel/validate` **(review)**.
 - Who may call an operation comes from the contract, never from handler code: `security: []` is public, anything else needs a bearer token, a verified email unless it is tagged `Auth` or `Me`, and the `Admin` tag needs an admin ([ADR 0007](adr/0007-identity-tokens-and-auth-policy.md), [ADR 0008](adr/0008-go-native-signed-links.md)). `TestPolicyMatchesThePHPRouteGroups` pins the result. Handlers read the caller with `auth.FromContext` **(review)**.
 - Email goes through `kernel/mail.Mailer`; templates live with the module that sends them, in every locale, and a mail failure is logged, not returned to the client **(review)**.
+- Background work is a River job. Its args and worker live in the module's `adapters/jobs`, behind a port the use case calls inside its transaction, so the job is inserted with River's `InsertTx` and exists only if the transaction commits ([ADR 0013](adr/0013-support-inbox-and-jobs.md)). A worker returns `river.JobCancel` for an error a retry cannot fix and times retries on the wall clock **(review)**.
 - Per-operation throttles are a map from operationId to limit exported by the module's HTTP adapter (`identityhttp.Throttles`) and passed to the server in `bootstrap` **(review)**.
 - What the contract leaves undeclared (the refresh cookie, the client IP) is read through `httpapi.Request(ctx)`; declared parameters and bodies only through the generated request object **(review)**.
 - A header the contract does not declare (`Cache-Control`) is set by wrapping the generated response type and overriding its `Visit…Response` method, as `platform/meta` does; handlers never take a `ResponseWriter` **(review)**.

@@ -1,6 +1,7 @@
 // Package mail holds the adapters for the kernel/mail port that need no
-// provider: Log writes each message to the structured log (the dev stack
-// and CI, as Laravel's MAIL_MAILER=log does), Fake keeps them for tests.
+// provider: Log writes each message to the structured log (MAIL_MAILER=log:
+// the dev stack and CI, as Laravel's log mailer), Fake keeps them for tests.
+// The Resend sender is platform/resend.
 package mail
 
 import (
@@ -26,7 +27,8 @@ func NewLog(logger *slog.Logger) Log {
 
 // Send implements kernelmail.Mailer.
 func (l Log) Send(ctx context.Context, msg kernelmail.Message) error {
-	l.logger.InfoContext(ctx, "mail", "to", msg.To, "subject", msg.Subject, "text", msg.Text)
+	l.logger.InfoContext(ctx, "mail", "to", msg.To, "subject", msg.Subject, "text", msg.Text,
+		"attachments", len(msg.Attachments))
 
 	return nil
 }

@@ -58,7 +58,14 @@ Adopted in story 4:
 | Access tokens | `github.com/lestrrat-go/jwx/v3` (EdDSA sign and verify, claim validation); ADR 0007 | v3.3.0 |
 | Password hashing | `golang.org/x/crypto/bcrypt`, cost `BCRYPT_ROUNDS` (12); verifies Laravel's `$2y$` hashes | v0.56.0 |
 
-Planned, each confirmed or replaced by an ADR in its story: `resend-go` and `svix` (story 11), the River client and workers (story 11), OpenTelemetry (story 12).
+Adopted in story 11 ([ADR 0013](0013-support-inbox-and-jobs.md)):
+
+| Concern | Choice | Version |
+| --- | --- | --- |
+| Job queue | `github.com/riverqueue/river` client and workers on `riverpgxv5` over the shared pool; `rivertest` in worker tests | v0.49.0 |
+| Resend API and webhook signatures | Hand-written: `platform/resend` on `net/http` and an HMAC-SHA256 Svix check in `inbox/adapters/http`, replacing the planned `resend-go` and `svix`; `resend-go` returns untyped errors, so a 404 could not be told from an outage | — |
+
+Planned, confirmed or replaced by an ADR in its story: OpenTelemetry (story 12).
 
 Rejected: `testify` and generated mocks (blocked by `gomodguard_v2`; tests use `testing`, go-cmp and hand-written fakes), `github.com/pkg/errors` (blocked; `fmt.Errorf` with `%w`), Viper and Cobra (configuration and CLI are small enough for the standard library and caarlos0/env).
 

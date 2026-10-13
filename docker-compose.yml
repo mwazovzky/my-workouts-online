@@ -77,6 +77,28 @@ services:
       postgres:
         condition: service_healthy
 
+  # The Go API's job worker (`workouts work`): forwards support email the Go
+  # webhook queued. Same toolchain image and bind mount as api-go; it migrates
+  # too (goose locks, so the two never apply a migration twice) and execs the
+  # binary so SIGTERM reaches it.
+  worker-go:
+    build:
+      context: .
+      dockerfile: ./docker/api-go/Dockerfile
+      target: dev
+    command: ["sh", "-c", "go build -o /tmp/workouts ./cmd/workouts && /tmp/workouts migrate up && exec /tmp/workouts work"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE}?sslmode=disable
+    volumes:
+      - ./:/src
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: postgres:17
     environment:

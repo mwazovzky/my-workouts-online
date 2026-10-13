@@ -46,6 +46,8 @@ linters:
               desc: kernel imports nothing internal (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
               desc: kernel imports nothing internal (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox
+              desc: kernel imports nothing internal (ADR 0001)
         platform:
           list-mode: lax
           files: ["**/internal/platform/**"]
@@ -59,6 +61,8 @@ linters:
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
               desc: platform imports only kernel (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: platform imports only kernel (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox
               desc: platform imports only kernel (ADR 0001)
         # The hexagon's inside (domain, use cases, ports) never sees
         # infrastructure: no platform, no adapters, no composition root.
@@ -81,11 +85,15 @@ linters:
               desc: the core never imports adapters (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/adapters
               desc: the core never imports adapters (ADR 0001)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters
+              desc: the core never imports adapters (ADR 0001)
         # identity and catalog depend on no other module.
         identity:
           list-mode: lax
           files: ["**/internal/identity/**"]
           deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox
+              desc: identity depends on no other module (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog
               desc: identity depends on no other module (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
@@ -96,6 +104,8 @@ linters:
           list-mode: lax
           files: ["**/internal/catalog/**"]
           deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox
+              desc: catalog depends on no other module (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
               desc: catalog depends on no other module (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
@@ -107,6 +117,8 @@ linters:
           list-mode: lax
           files: ["**/internal/training/**"]
           deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox
+              desc: training depends only on catalogapi (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
               desc: training depends only on catalogapi (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
@@ -124,6 +136,8 @@ linters:
           list-mode: lax
           files: ["**/internal/dashboard/**"]
           deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox
+              desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
               desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/domain
@@ -142,6 +156,19 @@ linters:
               desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
             - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters
               desc: dashboard depends only on catalogapi and trainingapi (ADR 0001)
+        # inbox (the support inbox) depends on no other module.
+        inbox:
+          list-mode: lax
+          files: ["**/internal/inbox/**"]
+          deny:
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity
+              desc: inbox depends on no other module (ADR 0001, ADR 0013)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog
+              desc: inbox depends on no other module (ADR 0001, ADR 0013)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/training
+              desc: inbox depends on no other module (ADR 0001, ADR 0013)
+            - pkg: github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard
+              desc: inbox depends on no other module (ADR 0001, ADR 0013)
         # Adapters translate between one module's ports and the outside world;
         # they never reach into another module, not even through its api package.
         adapters:

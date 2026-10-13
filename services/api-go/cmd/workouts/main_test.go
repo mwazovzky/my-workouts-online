@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -148,6 +149,49 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 	}
 }
 
+func TestWorkRunsUntilCancelledAndStopsCleanly(t *testing.T) {
+	t.Parallel()
+
+	databaseURL := testdb.New(t).Config().ConnString()
+	logs, started := logLine(t, "working jobs")
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	done := make(chan error, 1)
+	go func() {
+		done <- run(ctx, []string{"work"}, map[string]string{
+			"DATABASE_URL":     databaseURL,
+			"APP_ENV":          "testing",
+			"SHUTDOWN_TIMEOUT": "2s",
+		}, io.Discard, logs)
+	}()
+
+	select {
+	case <-started:
+	case err := <-done:
+		t.Fatalf("run(work) returned early: %v", err)
+	}
+
+	cancel()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Errorf("run(work) error = %v, want nil", err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("run(work) did not stop")
+	}
+}
+
+func TestWorkFailsWithoutRequiredConfig(t *testing.T) {
+	t.Parallel()
+
+	if err := run(t.Context(), []string{"work"}, map[string]string{}, io.Discard, io.Discard); err == nil {
+		t.Error("run(work) without DATABASE_URL = nil, want an error")
+	}
+}
+
 func TestHealthcheck(t *testing.T) {
 	t.Parallel()
 
@@ -235,6 +279,34 @@ func listeningAddr(t *testing.T) (io.Writer, <-chan string) {
 	}()
 
 	return writer, addrs
+}
+
+// logLine returns a log writer and a channel closed when a line with msg is
+// logged.
+func logLine(t *testing.T, msg string) (io.Writer, <-chan struct{}) {
+	t.Helper()
+
+	reader, writer := io.Pipe()
+	t.Cleanup(func() { _ = reader.Close() })
+
+	seen := make(chan struct{})
+	go func() {
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			var line struct {
+				Msg string `json:"msg"`
+			}
+			if json.Unmarshal(scanner.Bytes(), &line) == nil && line.Msg == msg {
+				close(seen)
+
+				break
+			}
+		}
+
+		_, _ = io.Copy(io.Discard, reader)
+	}()
+
+	return writer, seen
 }
 
 func statusOf(t *testing.T, url string) int {

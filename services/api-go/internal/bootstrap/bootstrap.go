@@ -14,6 +14,7 @@ import (
 	"slices"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/catalogfile"
 	cataloghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/http"
@@ -30,16 +31,23 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/notify"
 	identitypg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/postgres"
 	identityapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/app"
+	inboxhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters/http"
+	inboxjobs "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters/jobs"
+	inboxpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters/postgres"
+	inboxresend "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters/resend"
+	inboxapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/app"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/i18n"
 	kernelmail "github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/health"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/jobs"
 	platformmail "github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/meta"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/ratelimit"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/resend"
 	traininghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters/http"
 	trainingpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/adapters/postgres"
 	trainingapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/training/app"
@@ -52,9 +60,12 @@ type Deps struct {
 	Clock  clock.Clock
 	// Pool is the database. New takes ownership: App.Close closes it.
 	Pool *pgxpool.Pool
-	// Mailer sends email; nil logs every message instead (the dev stack and
-	// CI). Tests pass a mail.Fake to read what was sent.
+	// Mailer sends email; nil selects it from MAIL_MAILER (log or resend).
+	// Tests pass a mail.Fake to read what was sent.
 	Mailer kernelmail.Mailer
+	// Work builds a job client that works jobs (`workouts work`); without it
+	// the client only inserts them.
+	Work bool
 }
 
 // App is the wired application.
@@ -68,12 +79,14 @@ type App struct {
 	Identity *identityapp.Service
 	// CatalogSync applies the YAML catalog in CATALOG_DIR (catalog sync, seed).
 	CatalogSync *catalogsync.Syncer
+	// Jobs is the River client; `workouts work` runs it with jobs.Run.
+	Jobs *jobs.Client
 
 	closers []func(context.Context) error
 }
 
-// New wires the application. It fails only when an embedded asset (the
-// contract, a message catalog) does not load.
+// New wires the application. It fails when an embedded asset (the contract,
+// a message catalog) does not load or a configured key or URL is malformed.
 func New(deps Deps) (*App, error) {
 	cfg := deps.Config
 
@@ -95,8 +108,21 @@ func New(deps Deps) (*App, error) {
 		Keys: keys, Issuer: cfg.JWT.Issuer, Audience: cfg.JWT.Audience, Leeway: cfg.JWT.Leeway(), Clock: deps.Clock,
 	})
 
+	resendClient, err := resend.New(resend.Config{
+		BaseURL: cfg.Resend.BaseURL,
+		APIKey:  cfg.Resend.Key,
+		From:    kernelmail.Address{Name: cfg.Mail.FromName, Email: cfg.Mail.FromAddress},
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	mailer := deps.Mailer
-	if mailer == nil {
+	switch {
+	case mailer != nil:
+	case cfg.Mail.Mailer == config.MailerResend:
+		mailer = resendClient
+	default:
 		mailer = platformmail.NewLog(deps.Logger)
 	}
 
@@ -148,6 +174,34 @@ func New(deps Deps) (*App, error) {
 
 	dashboard := dashboardapp.New(dashboardapp.Deps{Catalog: catalog, Training: training, Clock: deps.Clock})
 
+	// The inbox's worker forwards through the inbox service, which queues
+	// through the client the worker is registered on; the closure breaks the
+	// cycle and is only called once inbox is set. Retries are timed on the
+	// wall clock, which River schedules by, even when deps.Clock is a fake.
+	var inbox *inboxapp.Service
+
+	workers := river.NewWorkers()
+	river.AddWorker(workers, inboxjobs.NewForwardWorker(func(ctx context.Context, emailID string) error {
+		return inbox.Forward(ctx, emailID)
+	}, clock.System{}))
+
+	jobClient, err := jobs.NewClient(deps.Pool, jobs.Options{Workers: workers, Logger: deps.Logger, Work: deps.Work})
+	if err != nil {
+		return nil, err
+	}
+
+	inbox = inboxapp.New(inboxapp.Deps{
+		Source:    inboxresend.NewSource(resendClient),
+		Receipts:  inboxpg.NewReceipts(tx),
+		Queue:     inboxjobs.NewQueue(jobClient),
+		Mailer:    mailer,
+		Tx:        tx,
+		Clock:     deps.Clock,
+		Logger:    deps.Logger,
+		ForwardTo: cfg.Mail.InboundForwardTo,
+		AppName:   cfg.AppName,
+	})
+
 	locales := make([]string, 0, len(bundle.Locales()))
 	for _, locale := range bundle.Locales() {
 		locales = append(locales, string(locale))
@@ -191,11 +245,21 @@ func New(deps Deps) (*App, error) {
 	})
 	server.Handle("GET /up", http.HandlerFunc(health.Up))
 
+	webhook, err := inboxhttp.New(inbox, inboxhttp.Config{
+		Secret: cfg.Resend.WebhookSecret, Clock: deps.Clock, WriteError: server.Responder().Error,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("bootstrap: %w", err)
+	}
+
+	server.Handle("POST "+inboxhttp.Path, webhook)
+
 	return &App{
 		Handler:     server.Handler(),
 		Readiness:   readiness,
 		Identity:    identity,
 		CatalogSync: catalogSync,
+		Jobs:        jobClient,
 		closers: []func(context.Context) error{
 			func(context.Context) error { deps.Pool.Close(); return nil },
 		},

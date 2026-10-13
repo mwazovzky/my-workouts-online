@@ -1,6 +1,6 @@
 # Workouts API (Go)
 
-A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta`, every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`) the catalog's read side (programs, program detail, enrollment, workout templates, the exercise picker) every workout operation (history, start, the editor's save, complete, repeat, delete), the dashboard and the 25 admin catalog operations, owns its Postgres schema, and answers only social login (`x-status: target` in the contract) with a 501 Problem. The PHP API stays the production backend.
+A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta`, every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`) the catalog's read side (programs, program detail, enrollment, workout templates, the exercise picker) every workout operation (history, start, the editor's save, complete, repeat, delete), the dashboard and the 25 admin catalog operations, sends mail through Resend, accepts Resend's support-inbox webhook and forwards the email from a River worker, owns its Postgres schema, and answers only social login (`x-status: target` in the contract) with a 501 Problem. The PHP API stays the production backend.
 
 ## Run
 
@@ -13,6 +13,7 @@ curl -i localhost:8081/health/ready  # 200 with components.database up, or 503 w
 curl -i localhost:8081/api/v1/meta -H 'Accept-Language: ru'  # the same body as the PHP API
 docker compose restart api-go        # pick up code changes (the dev container builds, migrates, then serves)
 docker compose logs -f api-go        # JSON logs
+docker compose up -d worker-go       # the job worker (`workouts work`); restart it after code changes too
 ```
 
 With Go 1.27 on the host: `DATABASE_URL=postgres://workouts:secret@localhost:5432/workouts?sslmode=disable make run` (run `go run ./cmd/workouts migrate up` with the same URL first).
@@ -24,6 +25,7 @@ The binary is `workouts` (`cmd/workouts`):
 | Command | Does |
 | --- | --- |
 | `workouts serve` | Opens the database pool (failing fast when it is unreachable), then runs the HTTP API on `HTTP_ADDR` until SIGINT or SIGTERM, then drains (see Shutdown). |
+| `workouts work` | Runs the background job workers (today: forwarding support email) until SIGINT or SIGTERM; jobs still running then get `SHUTDOWN_TIMEOUT` to finish before they are cancelled and retried later. The dev stack runs it as `worker-go`. |
 | `workouts migrate up` | Applies the pending migrations; running it again is a no-op. A deploy runs it before starting the new version. |
 | `workouts migrate status` | Lists every migration with its state and when it was applied. |
 | `workouts seed` | Creates (or resets) the verified demo admin `test@example.com` / `password`, then applies the catalog (as `catalog sync`). Refused when `APP_ENV` is `production` or unset. |
@@ -31,8 +33,6 @@ The binary is `workouts` (`cmd/workouts`):
 | `workouts user grant-admin <email>` | Gives a registered, verified user the Admin role, as `php artisan user:grant-admin`. |
 | `workouts keys generate` | Prints a new `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` pair, in the format `php artisan jwt:keys` prints. |
 | `workouts healthcheck` | Exits 0 when `GET /health` on the local port answers 200. The image's `HEALTHCHECK`; distroless has no shell or curl. |
-
-Story 11 adds `work`.
 
 ## Develop
 
@@ -57,7 +57,7 @@ golangci-lint and sqlc are downloaded into `bin/` at the versions pinned in the 
 
 ## Database
 
-Postgres 17, a schema of its own (nothing is shared with the PHP API's MySQL database). Tables are owned by modules: identity (`users`, `roles`, `role_user`, `refresh_tokens`, `password_reset_tokens`), catalog (`equipment`, `categories`, `exercises`, `category_exercise`, `workout_templates`, `template_activities`, `template_sets`, `programs`, `program_workout_template`, `program_user`), training (`workouts`, `workout_activities`, `workout_sets`), plus River's job tables. Two departures from the Laravel schema are recorded in [ADR 0004](docs/adr/0004-translations-as-jsonb.md) (translations in a `jsonb` column) and [ADR 0005](docs/adr/0005-split-activity-tables.md) (template and workout activities in separate tables).
+Postgres 17, a schema of its own (nothing is shared with the PHP API's MySQL database). Tables are owned by modules: identity (`users`, `roles`, `role_user`, `refresh_tokens`, `password_reset_tokens`), catalog (`equipment`, `categories`, `exercises`, `category_exercise`, `workout_templates`, `template_activities`, `template_sets`, `programs`, `program_workout_template`, `program_user`), training (`workouts`, `workout_activities`, `workout_sets`), inbox (`inbound_emails`), plus River's job tables. Two departures from the Laravel schema are recorded in [ADR 0004](docs/adr/0004-translations-as-jsonb.md) (translations in a `jsonb` column) and [ADR 0005](docs/adr/0005-split-activity-tables.md) (template and workout activities in separate tables).
 
 - **Migrations** are goose SQL files in `migrations/`, embedded in the binary, plus Go migration 00004, which installs River's schema through River's own migrator. Add one with the next number and a `-- +goose Down` section; never edit an applied one.
 - **Queries** are hand-written SQL in `sql/<module>/*.sql`. `make generate` compiles them with sqlc against the migrations into `internal/<module>/adapters/postgres/sqlcgen`. A module gets its `sqlc.yaml` block with its first query.
@@ -98,6 +98,12 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 | `JWT_ISSUER`, `JWT_AUDIENCE` | `APP_URL`, `my-workouts` | Checked on every access token. |
 | `JWT_ACCESS_TTL`, `JWT_REFRESH_TTL`, `JWT_LEEWAY` | `900`, `2592000`, `30` | Seconds. |
 | `JWT_COOKIE_SECURE` | `true` | `Secure` on the refresh cookie; `false` only for plain-HTTP dev and CI. |
+| `MAIL_MAILER` | `log` | `log` writes each message to the log; `resend` sends through Resend. Anything else stops start-up. |
+| `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | `hello@example.com`, `APP_NAME` | The sender of every email. |
+| `MAIL_INBOUND_FORWARD_TO` | none | Where support email is forwarded; blank forwards nothing (the worker logs a warning). |
+| `RESEND_KEY` | none | The Resend API key; required with `MAIL_MAILER=resend`, and used by the worker to read received email. |
+| `RESEND_WEBHOOK_SECRET` | none | The webhook signing secret (`whsec_…`); blank rejects every webhook with 403, a malformed one stops start-up. |
+| `RESEND_BASE_URL` | `https://api.resend.com/` | The Resend API root; tests point it at a fake server. |
 
 ## HTTP Platform
 
@@ -167,7 +173,19 @@ The 25 `admin*` operations (equipment, categories, exercises, workout templates,
 
 ## Mail
 
-Identity's emails (verify email, reset password) are rendered from `internal/identity/adapters/notify/templates` in the request's locale and sent through `kernel/mail.Mailer`. Until the Resend adapter (story 11) the only sender is the log mailer: in the dev stack, `docker compose logs api-go | grep '"msg":"mail"'` shows each message with its link. The links point at `FRONTEND_URL`.
+Identity's emails (verify email, reset password) are rendered from `internal/identity/adapters/notify/templates` in the request's locale and sent through `kernel/mail.Mailer`, synchronously as in PHP. `MAIL_MAILER` picks the sender: `log` (the dev stack and CI; `docker compose logs api-go | grep '"msg":"mail"'` shows each message with its link) or `resend` (`internal/platform/resend`). The links point at `FRONTEND_URL`.
+
+## Support inbox and jobs
+
+Resend posts `email.received` events to `POST /api/webhooks/resend` (off the contract, no bearer token). The `inbox` module checks the Svix signature against `RESEND_WEBHOOK_SECRET` and answers 403 Problems with PHP's wording otherwise. For a new email id it records the id in `inbound_emails` and inserts a River job in the same transaction, so a redelivered webhook queues nothing; ids are forgotten after a week. Every signed request is answered 204.
+
+`workouts work` runs the job. It fetches the email and its attachments from Resend's receiving API and sends it to `MAIL_INBOUND_FORWARD_TO`:
+
+- **Sender:** the app's address, named "<sender> via `APP_NAME`".
+- **Reply-To:** the original Reply-To, or else the sender.
+- **Body:** a summary of the original headers above the original body.
+
+Jobs get 5 attempts, with retries 60, 300, then 900 seconds apart; an email Resend does not know (404) cancels the job. River's client lives in `internal/platform/jobs` (insert-only in `serve`). Inspect jobs with `docker compose exec postgres psql -U workouts workouts -c 'SELECT id, kind, state, attempt, errors FROM river_job ORDER BY id DESC LIMIT 5'`. Decisions and departures from PHP: [ADR 0013](docs/adr/0013-support-inbox-and-jobs.md).
 
 ## Shutdown
 
@@ -201,11 +219,15 @@ internal/identity/             users, roles, tokens, verification, reset, /me: d
 internal/catalog/              programs, enrollment, templates, exercises, catalog sync, admin: domain/, ports/, app/ (+ app/catalogsync, app/admin), catalogapi/, adapters/{postgres,http,catalogfile}
 internal/training/             workouts, the editor's save, complete, repeat: domain/, ports/, app/, trainingapi/, adapters/{postgres,http}
 internal/dashboard/            the dashboard read model: app/ (use case, schedule dates), adapters/http
+internal/inbox/                the support inbox: domain/ (the forwarded message), ports/, app/, adapters/{http,postgres,resend,jobs}
 internal/kernel/mail/         the Mailer port
 internal/platform/mail/       Log and Fake mailers
+internal/platform/resend/     Resend API client (send, received email, attachments); resendtest/ is a fake server
+internal/platform/jobs/       River client and the worker run loop
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
 internal/catalog/adapters/postgres/sqlcgen   generated by sqlc from sql/catalog (never edit)
 internal/training/adapters/postgres/sqlcgen  generated by sqlc from sql/training (never edit)
+internal/inbox/adapters/postgres/sqlcgen     generated by sqlc from sql/inbox (never edit)
 contract-scope.txt            the operations the contract-go workflow tests (deleted in story 13)
 internal/bootstrap/           composition root: New(deps) -> *App; api.go assembles the strict server
 docs/adr/                     architecture decision records
@@ -229,6 +251,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0010 Workout writes: retired exercises rejected, and other departures from PHP](docs/adr/0010-retired-exercises-rejected-on-write.md)
 - [0011 The dashboard is a read model over the modules' api packages](docs/adr/0011-dashboard-read-model.md)
 - [0012 Admin catalog writes: delete guards and departures from PHP](docs/adr/0012-admin-delete-guards.md)
+- [0013 Support inbox: Resend client, webhook idempotency and River jobs](docs/adr/0013-support-inbox-and-jobs.md)
 
 ## Image
 

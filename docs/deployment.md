@@ -322,6 +322,8 @@ Mail sent to any address on the domain (for example `support@`) is received by R
 
 The endpoint rejects every request while `RESEND_WEBHOOK_SECRET` is empty and queues a job per email; the `worker` fetches the body and attachments from Resend and sends them on from `MAIL_FROM_ADDRESS` with `Reply-To` set to the original sender. Forwarding failures retry and are logged by the `worker` service. Received emails stay visible in the Resend dashboard either way.
 
+The Go API implements the same endpoint and forward ([ADR 0013](../services/api-go/docs/adr/0013-support-inbox-and-jobs.md)) and reads the same variables (`RESEND_KEY`, `RESEND_WEBHOOK_SECRET`, `MAIL_INBOUND_FORWARD_TO`, `MAIL_FROM_ADDRESS`, `MAIL_MAILER`), so one `.env` serves both. Its queue is River in the Go Postgres database, worked by a `worker-go` container running `workouts work`, and a redelivered webhook is recognised by its email id for a week. It is not deployed yet: nginx sends the webhook to PHP until story 13 of the Go epic adds `worker-go` to the production compose file and the backend switch.
+
 ## 10. Obtain SSL certificate (Let's Encrypt)
 
 **Test with staging first** (avoids rate limits):

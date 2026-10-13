@@ -1,6 +1,7 @@
 // Command workouts is the Go API's single binary. Subcommands:
 //
 //	workouts serve           run the HTTP API until SIGINT or SIGTERM
+//	workouts work            run the background job workers until SIGINT or SIGTERM
 //	workouts migrate up      apply the pending database migrations
 //	workouts migrate status  list every migration and whether it is applied
 //	workouts seed            create the verified demo admin (refused in production)
@@ -38,6 +39,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/identity/adapters/jwt"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/jobs"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/server"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/migrations"
@@ -50,6 +52,8 @@ const usage = `usage: workouts <command>
 
 commands:
   serve           run the HTTP API until SIGINT or SIGTERM
+  work            run the background job workers (the support inbox forward)
+                  until SIGINT or SIGTERM
   migrate up      apply the pending database migrations
   migrate status  list every migration and whether it is applied
   seed            create the verified demo admin test@example.com and apply the
@@ -111,6 +115,8 @@ func run(ctx context.Context, args []string, environ map[string]string, stdout, 
 	switch command {
 	case "serve":
 		return serve(ctx, environ, stderr)
+	case "work":
+		return work(ctx, environ, stderr)
 	case "migrate":
 		return migrate(ctx, flags.Args(), environ, stdout, stderr)
 	case "seed":
@@ -167,6 +173,35 @@ func serve(ctx context.Context, environ map[string]string, stderr io.Writer) err
 	})
 
 	return errors.Join(serveErr, app.Close(context.WithoutCancel(ctx)))
+}
+
+// work runs the job workers until ctx is cancelled; jobs still running then
+// get SHUTDOWN_TIMEOUT to finish before they are cancelled and retried later.
+func work(ctx context.Context, environ map[string]string, stderr io.Writer) error {
+	cfg, err := config.Load(environ)
+	if err != nil {
+		return err
+	}
+
+	logger := slog.New(slog.NewJSONHandler(stderr, &slog.HandlerOptions{Level: cfg.LogLevel})).
+		With("service", "worker-go", "version", version)
+	slog.SetDefault(logger)
+
+	pool, err := postgres.Open(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+
+	app, err := bootstrap.New(bootstrap.Deps{Config: cfg, Logger: logger, Clock: clock.System{}, Pool: pool, Work: true})
+	if err != nil {
+		pool.Close()
+
+		return err
+	}
+
+	runErr := jobs.Run(ctx, app.Jobs, cfg.ShutdownTimeout, logger)
+
+	return errors.Join(runErr, app.Close(context.WithoutCancel(ctx)))
 }
 
 // migrate applies or lists the migrations in the migrations package. The

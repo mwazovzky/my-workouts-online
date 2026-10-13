@@ -9,7 +9,7 @@ Workout tracking app: users browse programs, enroll, log workouts, and track set
 - `services/api-php/` — Laravel 12 JSON API (PHP 8.4, MySQL). No HTML rendering, no sessions; JWT auth (`jwt` is the only guard).
 - `apps/web/` — standalone Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia, Tailwind v3) consuming the API.
 - `apps/ios/` — native SwiftUI iOS app (Swift 6, iOS 17+, XcodeGen `project.yml`, local packages `WorkoutsCore` and `WorkoutsAPI`) consuming the same API; see `apps/ios/README.md`. Planned in `planning/epics/ios-app/`.
-- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes, `getMeta`, every identity operation, the catalog's read side and enrollment, every workout operation, the dashboard, the admin catalog operations, catalog sync from `catalog/`, and its Postgres schema; only social login answers 501; not routed by nginx). See `services/api-go/README.md`.
+- `services/api-go/` — a second backend in Go implementing the same contract, built story by story in `planning/epics/go-backend/` (health probes, `getMeta`, every identity operation, the catalog's read side and enrollment, every workout operation, the dashboard, the admin catalog operations, catalog sync from `catalog/`, Resend mail and the support-inbox webhook with its River worker, and its Postgres schema; only social login answers 501; not routed by nginx). See `services/api-go/README.md`.
 - `contracts/openapi.yaml` — the API contract every client and backend implements.
 - `docker/` — `api` image (php-fpm), `web` image (nginx + SPA build, proxies `/api` to php-fpm), `api-go` image (Go toolchain dev stage, distroless production stage), dev nginx config.
 
@@ -17,7 +17,7 @@ Full product docs in `docs/` — see `docs/README.md` for index. Note: the Larav
 
 ## Common Commands
 
-The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`, `api-go` (the Go API on http://localhost:8081, toolchain container with the repo bind-mounted), `postgres` (used only by the Go API). Run tools through the containers unless PHP/Node are installed on the host.
+The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`, `api-go` (the Go API on http://localhost:8081, toolchain container with the repo bind-mounted), `worker-go` (the Go job worker, `workouts work`), `postgres` (used only by the Go API). Run tools through the containers unless PHP/Node are installed on the host.
 
 ### Backend (`services/api-php`)
 ```bash
@@ -64,7 +64,7 @@ docker compose exec -T api-go go run ./cmd/workouts seed   # verified demo admin
 docker compose exec -T api-go go run ./cmd/workouts catalog sync --dry-run  # preview applying catalog/ (YAML) to the Go database
 CONTRACT_INCLUDE=$(grep -v '^#' services/api-go/contract-scope.txt | paste -sd, -) scripts/contract-test.sh http://localhost:8081  # Schemathesis on the operations Go implements
 docker compose exec -T api-go go test -race ./internal/platform/health/  # one package
-docker compose restart api-go                # rebuild and restart after code changes
+docker compose restart api-go worker-go      # rebuild and restart after code changes
 ```
 
 After modifying any `.go` file, `.sql` file or `contracts/openapi.yaml`, always run `make check` in `services/api-go` before finalizing. Database tests run against the compose `postgres` inside the container (`TEST_DATABASE_URL`) and against testcontainers in CI; new files must be `git add`ed before `make check` or the generated-code check flags them. Conventions are in `services/api-go/docs/code-style.md`; decisions are ADRs in `services/api-go/docs/adr/`.
