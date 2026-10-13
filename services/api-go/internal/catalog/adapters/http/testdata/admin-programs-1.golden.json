@@ -1,0 +1,34 @@
+{
+  "data": {
+    "assignments": [
+      {
+        "weekday": "thursday",
+        "workout_template_id": 1,
+        "workout_template_name": "Full Body A"
+      },
+      {
+        "weekday": "wednesday",
+        "workout_template_id": 2,
+        "workout_template_name": "Core"
+      },
+      {
+        "weekday": "monday",
+        "workout_template_id": 1,
+        "workout_template_name": "Full Body A"
+      }
+    ],
+    "id": 1,
+    "name": "Strength",
+    "translations": {
+      "description": {
+        "en": "Three sessions a week.",
+        "ru": "Три тренировки в неделю."
+      },
+      "name": {
+        "en": "Strength",
+        "ru": "Сила"
+      }
+    }
+  }
+}
+

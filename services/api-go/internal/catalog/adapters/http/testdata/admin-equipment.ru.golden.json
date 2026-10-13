@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "difficulty_unit": "kilograms",
+      "exercises_count": 3,
+      "id": 1,
+      "name": "Штанга",
+      "translations": {
+        "name": {
+          "en": "Barbell",
+          "ru": "Штанга"
+        }
+      }
+    },
+    {
+      "difficulty_unit": "none",
+      "exercises_count": 3,
+      "id": 2,
+      "name": "Собственный вес",
+      "translations": {
+        "name": {
+          "en": "Bodyweight",
+          "ru": "Собственный вес"
+        }
+      }
+    },
+    {
+      "difficulty_unit": "pounds",
+      "exercises_count": 0,
+      "id": 3,
+      "name": "Dumbbell",
+      "translations": {
+        "name": {
+          "en": "Dumbbell",
+          "ru": null
+        }
+      }
+    }
+  ]
+}
+

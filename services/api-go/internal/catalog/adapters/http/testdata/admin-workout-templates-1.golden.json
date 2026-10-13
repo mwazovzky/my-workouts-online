@@ -1,0 +1,105 @@
+{
+  "data": {
+    "activities": [
+      {
+        "exercise": {
+          "category_names": [
+            "Legs"
+          ],
+          "difficulty_unit": "kilograms",
+          "effort_type": "repetitions",
+          "equipment_name": "Barbell",
+          "id": 1,
+          "name": "Squat",
+          "rest_time_seconds": 120
+        },
+        "exercise_id": 1,
+        "id": 2,
+        "sets": [
+          {
+            "difficulty_value": 100,
+            "effort_value": 5,
+            "id": 3,
+            "is_completed": false,
+            "order": 1
+          },
+          {
+            "difficulty_value": 102.5,
+            "effort_value": 5,
+            "id": 4,
+            "is_completed": false,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "none",
+          "effort_type": "repetitions",
+          "equipment_name": "Bodyweight",
+          "id": 3,
+          "name": "Push-up",
+          "rest_time_seconds": 60
+        },
+        "exercise_id": 3,
+        "id": 1,
+        "sets": [
+          {
+            "difficulty_value": null,
+            "effort_value": 15,
+            "id": 2,
+            "is_completed": false,
+            "order": 1
+          },
+          {
+            "difficulty_value": null,
+            "effort_value": 12,
+            "id": 1,
+            "is_completed": false,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "exercise": {
+          "category_names": [
+            "Back"
+          ],
+          "difficulty_unit": "pounds",
+          "effort_type": "repetitions",
+          "equipment_name": "Dumbbell",
+          "id": 4,
+          "name": "Upright Row",
+          "rest_time_seconds": 90
+        },
+        "exercise_id": 4,
+        "id": 3,
+        "sets": [
+          {
+            "difficulty_value": 20,
+            "effort_value": 10,
+            "id": 5,
+            "is_completed": false,
+            "order": 1
+          }
+        ]
+      }
+    ],
+    "id": 1,
+    "name": "Full Body A",
+    "translations": {
+      "description": {
+        "en": "Squat, push-up, row.",
+        "ru": "Присед, отжимания, тяга."
+      },
+      "name": {
+        "en": "Full Body A",
+        "ru": "Всё тело А"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,74 @@
+{
+  "data": {
+    "activities": [
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "kilograms",
+          "effort_type": "repetitions",
+          "equipment_name": "Barbell",
+          "id": 2,
+          "name": "bench press",
+          "rest_time_seconds": 90
+        },
+        "exercise_id": 2,
+        "id": 5,
+        "sets": [
+          {
+            "difficulty_value": null,
+            "effort_value": 8,
+            "id": 7,
+            "is_completed": false,
+            "order": 1
+          },
+          {
+            "difficulty_value": null,
+            "effort_value": 6,
+            "id": 8,
+            "is_completed": false,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "exercise": {
+          "category_names": [
+            "Chest"
+          ],
+          "difficulty_unit": "none",
+          "effort_type": "repetitions",
+          "equipment_name": "Bodyweight",
+          "id": 3,
+          "name": "Push-up",
+          "rest_time_seconds": 60
+        },
+        "exercise_id": 3,
+        "id": 6,
+        "sets": [
+          {
+            "difficulty_value": null,
+            "effort_value": 15,
+            "id": 9,
+            "is_completed": false,
+            "order": 1
+          }
+        ]
+      }
+    ],
+    "id": 3,
+    "name": "Push Day",
+    "translations": {
+      "description": {
+        "en": null,
+        "ru": null
+      },
+      "name": {
+        "en": "Push Day",
+        "ru": null
+      }
+    }
+  }
+}
+

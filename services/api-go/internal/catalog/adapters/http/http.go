@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app/admin"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/domain"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/apperr"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/auth"
@@ -21,11 +22,12 @@ import (
 // struct do not collide.
 type Catalog struct {
 	service *app.Service
+	admin   *admin.Service
 }
 
 // New returns the catalog's handlers.
-func New(service *app.Service) Catalog {
-	return Catalog{service: service}
+func New(service *app.Service, adminService *admin.Service) Catalog {
+	return Catalog{service: service, admin: adminService}
 }
 
 // caller is the authenticated principal; the authorize middleware lets no

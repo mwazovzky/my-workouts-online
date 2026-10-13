@@ -1,0 +1,14 @@
+{
+  "data": {
+    "difficulty_unit": "kilograms",
+    "id": 4,
+    "name": "Sandbag",
+    "translations": {
+      "name": {
+        "en": "Sandbag",
+        "ru": "Мешок"
+      }
+    }
+  }
+}
+

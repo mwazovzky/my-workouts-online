@@ -343,7 +343,7 @@ func (r *run) equipment(ctx context.Context, d definition) error {
 		}
 
 		err := r.persist(ctx, ports.KindEquipment, def.slug, existing(row, found), changed,
-			func() (int64, error) { return r.store.CreateEquipment(ctx, def.slug, record, r.now) },
+			func() (int64, error) { return r.store.CreateEquipment(ctx, &def.slug, record, r.now) },
 			func(id int64) error { return r.store.UpdateEquipment(ctx, id, record, r.now) })
 		if err != nil {
 			return err
@@ -389,7 +389,7 @@ func (r *run) categories(ctx context.Context, d definition) error {
 		}
 
 		err := r.persist(ctx, ports.KindCategories, def.slug, existing(row, found), changed,
-			func() (int64, error) { return r.store.CreateCategory(ctx, def.slug, record, r.now) },
+			func() (int64, error) { return r.store.CreateCategory(ctx, &def.slug, record, r.now) },
 			func(id int64) error { return r.store.UpdateCategory(ctx, id, record, r.now) })
 		if err != nil {
 			return err
@@ -454,7 +454,7 @@ func (r *run) exercises(ctx context.Context, d definition) error {
 		}
 
 		err := r.persist(ctx, ports.KindExercises, def.slug, existing(row, found), changed,
-			func() (int64, error) { return r.store.CreateExercise(ctx, def.slug, record, r.now) },
+			func() (int64, error) { return r.store.CreateExercise(ctx, &def.slug, record, r.now) },
 			func(id int64) error { return r.store.UpdateExercise(ctx, id, record, r.now) })
 		if err != nil {
 			return err
@@ -532,7 +532,7 @@ func (r *run) templates(ctx context.Context, d definition) error {
 		}
 
 		err := r.persist(ctx, ports.KindWorkoutTemplates, def.slug, existing(row, found), changed,
-			func() (int64, error) { return r.store.CreateTemplate(ctx, def.slug, record, r.now) },
+			func() (int64, error) { return r.store.CreateTemplate(ctx, &def.slug, record, r.now) },
 			func(id int64) error { return r.store.UpdateTemplate(ctx, id, record, r.now) })
 		if err != nil {
 			return err
@@ -570,7 +570,7 @@ func (r *run) programs(ctx context.Context, d definition) error {
 		}
 
 		err := r.persist(ctx, ports.KindPrograms, def.slug, existing(row, found), changed,
-			func() (int64, error) { return r.store.CreateProgram(ctx, def.slug, record, r.now) },
+			func() (int64, error) { return r.store.CreateProgram(ctx, &def.slug, record, r.now) },
 			func(id int64) error { return r.store.UpdateProgram(ctx, id, record, r.now) })
 		if err != nil {
 			return err

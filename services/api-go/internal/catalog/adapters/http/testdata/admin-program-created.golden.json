@@ -1,0 +1,29 @@
+{
+  "data": {
+    "assignments": [
+      {
+        "weekday": "monday",
+        "workout_template_id": 2,
+        "workout_template_name": "Core"
+      },
+      {
+        "weekday": "thursday",
+        "workout_template_id": 2,
+        "workout_template_name": "Core"
+      }
+    ],
+    "id": 3,
+    "name": "Twice",
+    "translations": {
+      "description": {
+        "en": "Monday and Thursday.",
+        "ru": null
+      },
+      "name": {
+        "en": "Twice",
+        "ru": null
+      }
+    }
+  }
+}
+

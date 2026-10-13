@@ -210,14 +210,14 @@ func (s *Store) Program(ctx context.Context, id int64) (ports.ProgramRecord, err
 }
 
 // CreateEquipment implements ports.CatalogStore.
-func (s *Store) CreateEquipment(ctx context.Context, slug string, r ports.EquipmentRecord, now time.Time) (int64, error) {
+func (s *Store) CreateEquipment(ctx context.Context, slug *string, r ports.EquipmentRecord, now time.Time) (int64, error) {
 	translations, err := encode(map[string]domain.LocalizedText{"name": r.Name})
 	if err != nil {
 		return 0, err
 	}
 
 	id, err := s.q(ctx).CreateEquipment(ctx, sqlcgen.CreateEquipmentParams{
-		Slug: &slug, Name: r.Name.Source, DifficultyUnit: string(r.DifficultyUnit), Translations: translations, Now: now,
+		Slug: slug, Name: r.Name.Source, DifficultyUnit: string(r.DifficultyUnit), Translations: translations, Now: now,
 	})
 
 	return id, postgres.MapError(err)
@@ -236,13 +236,13 @@ func (s *Store) UpdateEquipment(ctx context.Context, id int64, r ports.Equipment
 }
 
 // CreateCategory implements ports.CatalogStore.
-func (s *Store) CreateCategory(ctx context.Context, slug string, r ports.CategoryRecord, now time.Time) (int64, error) {
+func (s *Store) CreateCategory(ctx context.Context, slug *string, r ports.CategoryRecord, now time.Time) (int64, error) {
 	translations, err := encode(map[string]domain.LocalizedText{"name": r.Name})
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := s.q(ctx).CreateCategory(ctx, sqlcgen.CreateCategoryParams{Slug: &slug, Name: r.Name.Source, Translations: translations, Now: now})
+	id, err := s.q(ctx).CreateCategory(ctx, sqlcgen.CreateCategoryParams{Slug: slug, Name: r.Name.Source, Translations: translations, Now: now})
 
 	return id, postgres.MapError(err)
 }
@@ -258,7 +258,7 @@ func (s *Store) UpdateCategory(ctx context.Context, id int64, r ports.CategoryRe
 }
 
 // CreateExercise implements ports.CatalogStore.
-func (s *Store) CreateExercise(ctx context.Context, slug string, r ports.ExerciseRecord, now time.Time) (int64, error) {
+func (s *Store) CreateExercise(ctx context.Context, slug *string, r ports.ExerciseRecord, now time.Time) (int64, error) {
 	translations, err := encode(map[string]domain.LocalizedText{"name": r.Name, "description": r.Description})
 	if err != nil {
 		return 0, err
@@ -267,7 +267,7 @@ func (s *Store) CreateExercise(ctx context.Context, slug string, r ports.Exercis
 	q := s.q(ctx)
 
 	id, err := q.CreateExercise(ctx, sqlcgen.CreateExerciseParams{
-		Slug: &slug, Name: r.Name.Source, Description: optional(r.Description.Source), EquipmentID: r.EquipmentID,
+		Slug: slug, Name: r.Name.Source, Description: optional(r.Description.Source), EquipmentID: r.EquipmentID,
 		EffortType: string(r.EffortType), RestTimeSeconds: int32Ptr(r.RestTimeSeconds), Translations: translations, Now: now,
 	})
 	if err != nil {
@@ -301,14 +301,14 @@ func (s *Store) UpdateExercise(ctx context.Context, id int64, r ports.ExerciseRe
 }
 
 // CreateTemplate implements ports.CatalogStore.
-func (s *Store) CreateTemplate(ctx context.Context, slug string, r ports.TemplateRecord, now time.Time) (int64, error) {
+func (s *Store) CreateTemplate(ctx context.Context, slug *string, r ports.TemplateRecord, now time.Time) (int64, error) {
 	translations, err := encode(map[string]domain.LocalizedText{"name": r.Name, "description": r.Description})
 	if err != nil {
 		return 0, err
 	}
 
 	id, err := s.q(ctx).CreateWorkoutTemplate(ctx, sqlcgen.CreateWorkoutTemplateParams{
-		Slug: &slug, Name: r.Name.Source, Description: optional(r.Description.Source), Translations: translations, Now: now,
+		Slug: slug, Name: r.Name.Source, Description: optional(r.Description.Source), Translations: translations, Now: now,
 	})
 	if err != nil {
 		return 0, postgres.MapError(err)
@@ -364,14 +364,14 @@ func (s *Store) insertActivities(ctx context.Context, templateID int64, activiti
 }
 
 // CreateProgram implements ports.CatalogStore.
-func (s *Store) CreateProgram(ctx context.Context, slug string, r ports.ProgramRecord, now time.Time) (int64, error) {
+func (s *Store) CreateProgram(ctx context.Context, slug *string, r ports.ProgramRecord, now time.Time) (int64, error) {
 	translations, err := encode(map[string]domain.LocalizedText{"name": r.Name, "description": r.Description})
 	if err != nil {
 		return 0, err
 	}
 
 	id, err := s.q(ctx).CreateProgram(ctx, sqlcgen.CreateProgramParams{
-		Slug: &slug, Name: r.Name.Source, Description: optional(r.Description.Source), Translations: translations, Now: now,
+		Slug: slug, Name: r.Name.Source, Description: optional(r.Description.Source), Translations: translations, Now: now,
 	})
 	if err != nil {
 		return 0, postgres.MapError(err)
@@ -467,6 +467,40 @@ func (s *Store) Delete(ctx context.Context, kind ports.Kind, id int64) error {
 	}
 
 	return postgres.MapError(err)
+}
+
+// Existing implements ports.CatalogStore.
+func (s *Store) Existing(ctx context.Context, kind ports.Kind, ids []int64) (map[int64]bool, error) {
+	found := map[int64]bool{}
+	if len(ids) == 0 {
+		return found, nil
+	}
+
+	q := s.q(ctx)
+
+	var (
+		rows []int64
+		err  error
+	)
+
+	switch kind {
+	case ports.KindEquipment:
+		rows, err = q.ExistingEquipmentIDs(ctx, ids)
+	case ports.KindCategories:
+		rows, err = q.ExistingCategoryIDs(ctx, ids)
+	case ports.KindWorkoutTemplates:
+		rows, err = q.ExistingWorkoutTemplateIDs(ctx, ids)
+	case ports.KindExercises, ports.KindPrograms:
+		return nil, fmt.Errorf("catalog: no existence check for %q", kind)
+	default:
+		return nil, fmt.Errorf("catalog: unknown kind %q", kind)
+	}
+
+	for _, id := range rows {
+		found[id] = true
+	}
+
+	return found, postgres.MapError(err)
 }
 
 // InUse implements ports.CatalogStore.

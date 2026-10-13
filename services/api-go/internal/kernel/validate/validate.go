@@ -75,6 +75,21 @@ func (v *Validator) Check(ok bool, field string, code apperr.FieldCode, detail s
 	return ok
 }
 
+// CheckItem records a failure of element index of the array field (pointer
+// /field/index) when ok is false, and returns ok. Its display name is
+// "field.index", as Laravel names an array element.
+func (v *Validator) CheckItem(ok bool, field string, index int, code apperr.FieldCode, detail string) bool {
+	if !ok {
+		name := field + "." + strconv.Itoa(index)
+		*v.errs = append(*v.errs, apperr.FieldError{
+			Pointer: v.pointer(field) + "/" + strconv.Itoa(index), Code: code, Detail: detail,
+			Args: map[string]string{"attribute": Attribute(name)},
+		})
+	}
+
+	return ok
+}
+
 // Required fails when value is empty or only whitespace.
 func (v *Validator) Required(field, value string) bool {
 	return v.Check(strings.TrimSpace(value) != "", field, apperr.FieldRequired, "validation.required", nil)
@@ -133,9 +148,14 @@ func Escape(segment string) string {
 
 // Attribute is a field's display name in messages, as Laravel derives it:
 // the field name with underscores as spaces (effort_value is "effort
-// value"). The HTTP boundary translates it, so a field can be named
-// by a catalog key.
+// value"), except for a nested name, which Laravel shows as is
+// (category_ids.1). The HTTP boundary translates it, so a field can be
+// named by a catalog key.
 func Attribute(field string) string {
+	if strings.Contains(field, ".") {
+		return field
+	}
+
 	return strings.ReplaceAll(field, "_", " ")
 }
 

@@ -1,6 +1,6 @@
 # Workouts API (Go)
 
-A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta`, every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`) the catalog's read side (programs, program detail, enrollment, workout templates, the exercise picker) every workout operation (history, start, the editor's save, complete, repeat, delete) and the dashboard, owns its Postgres schema, and answers the admin catalog operations (story 10) and social login with a 501 Problem. The PHP API stays the production backend.
+A second backend for My Workouts, implementing the same contract as the Laravel API (`contracts/openapi.yaml`) as a hexagonal modular monolith in Go. It is built story by story in [the Go backend epic](../../planning/epics/go-backend/README.md); today it answers the health probes, `GET /api/v1/meta`, every identity operation (register, login, refresh, logout, reauth, JWKS, email verification, password reset, `/me`) the catalog's read side (programs, program detail, enrollment, workout templates, the exercise picker) every workout operation (history, start, the editor's save, complete, repeat, delete), the dashboard and the 25 admin catalog operations, owns its Postgres schema, and answers only social login (`x-status: target` in the contract) with a 501 Problem. The PHP API stays the production backend.
 
 ## Run
 
@@ -157,6 +157,10 @@ The training module serves `listWorkouts`, `createWorkout`, `getWorkout`, `repla
 
 The tests port `tests/Feature/Workout/*`, `WorkoutApiTest` and `WorkoutAuthorizationTest` case by case, with golden files for one response of each shape, and a scripted flow run against both backends gave identical responses (ids, timestamps and the number of stored workouts aside).
 
+## Admin catalog
+
+The 25 `admin*` operations (equipment, categories, exercises, workout templates, programs) live in `internal/catalog/app/admin`; the `Admin` tag in the contract makes every one admin-only (403 for anyone else). Translations follow PHP: English is required (`An English name is required.`), values are trimmed, a blank value removes that locale's translation, and a locale that is not sent is left alone. Equipment cannot be deleted while any exercise uses it (retired ones included) and a template while a program schedules it (409 `in_use`); deleting an exercise retires it; categories and programs are deleted with their links. Records created here have no slug, so catalog sync leaves them alone. Every response shows what PHP's shows for that endpoint (lists with counts, single records with nested rows); a scripted flow against both backends and the admin lists and records of the real catalog matched. Guards and departures: [ADR 0012](docs/adr/0012-admin-delete-guards.md).
+
 ## Dashboard
 
 `GET /dashboard` is served by `internal/dashboard`, a read model that owns no tables and writes nothing: it composes `catalogapi` (the enrolled schedule, the enrolled-programs count, template headers) and `trainingapi` (the in-progress workout, the 5 most recent, the completion counts). The schedule's dates follow PHP's arithmetic exactly: the next occurrence of each weekday from today (today included) at UTC midnight, ids `"{program_id}-{workout_template_id}-{date}"`, sorted by date with same-day items in assignment order. `in_progress_workout` is left out when there is none. Why no cross-table SQL: [ADR 0011](docs/adr/0011-dashboard-read-model.md).
@@ -194,7 +198,7 @@ internal/platform/server/     http.Server with graceful shutdown
 internal/platform/testdb/     a migrated database per test (template clone)
 internal/platform/httpapi/gen generated from the contract by oapi-codegen (never edit gen.go); overlay.yaml holds Go-only generator hints
 internal/identity/             users, roles, tokens, verification, reset, /me: domain/, ports/, app/, adapters/{postgres,bcrypt,jwt,links,notify,http}
-internal/catalog/              programs, enrollment, templates, exercises, catalog sync: domain/, ports/, app/ (+ app/catalogsync), catalogapi/, adapters/{postgres,http,catalogfile}
+internal/catalog/              programs, enrollment, templates, exercises, catalog sync, admin: domain/, ports/, app/ (+ app/catalogsync, app/admin), catalogapi/, adapters/{postgres,http,catalogfile}
 internal/training/             workouts, the editor's save, complete, repeat: domain/, ports/, app/, trainingapi/, adapters/{postgres,http}
 internal/dashboard/            the dashboard read model: app/ (use case, schedule dates), adapters/http
 internal/kernel/mail/         the Mailer port
@@ -224,6 +228,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0009 One YAML catalog for both backends, and its Go sync](docs/adr/0009-single-yaml-catalog-source.md)
 - [0010 Workout writes: retired exercises rejected, and other departures from PHP](docs/adr/0010-retired-exercises-rejected-on-write.md)
 - [0011 The dashboard is a read model over the modules' api packages](docs/adr/0011-dashboard-read-model.md)
+- [0012 Admin catalog writes: delete guards and departures from PHP](docs/adr/0012-admin-delete-guards.md)
 
 ## Image
 

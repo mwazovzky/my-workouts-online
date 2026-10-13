@@ -121,11 +121,13 @@ type CatalogStore interface {
 	Template(ctx context.Context, id int64) (TemplateRecord, error)
 	Program(ctx context.Context, id int64) (ProgramRecord, error)
 
-	CreateEquipment(ctx context.Context, slug string, r EquipmentRecord, now time.Time) (int64, error)
-	CreateCategory(ctx context.Context, slug string, r CategoryRecord, now time.Time) (int64, error)
-	CreateExercise(ctx context.Context, slug string, r ExerciseRecord, now time.Time) (int64, error)
-	CreateTemplate(ctx context.Context, slug string, r TemplateRecord, now time.Time) (int64, error)
-	CreateProgram(ctx context.Context, slug string, r ProgramRecord, now time.Time) (int64, error)
+	// The creates take the record's slug: a managed row has one, a row
+	// created in the admin UI has none (nil).
+	CreateEquipment(ctx context.Context, slug *string, r EquipmentRecord, now time.Time) (int64, error)
+	CreateCategory(ctx context.Context, slug *string, r CategoryRecord, now time.Time) (int64, error)
+	CreateExercise(ctx context.Context, slug *string, r ExerciseRecord, now time.Time) (int64, error)
+	CreateTemplate(ctx context.Context, slug *string, r TemplateRecord, now time.Time) (int64, error)
+	CreateProgram(ctx context.Context, slug *string, r ProgramRecord, now time.Time) (int64, error)
 
 	// The updates replace every synced field; UpdateExercise also replaces
 	// the categories and restores a retired exercise, UpdateTemplate the
@@ -142,6 +144,10 @@ type CatalogStore interface {
 	RetireExercise(ctx context.Context, id int64, now time.Time) error
 	// Delete removes a row of any other kind.
 	Delete(ctx context.Context, kind Kind, id int64) error
+
+	// Existing returns which of ids exist (equipment, categories, workout
+	// templates).
+	Existing(ctx context.Context, kind Kind, ids []int64) (map[int64]bool, error)
 
 	// InUse reports what still references a row: exercises (retired ones
 	// included) for equipment and categories, program assignments for a

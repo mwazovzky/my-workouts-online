@@ -1,0 +1,13 @@
+{
+  "data": {
+    "id": 1,
+    "name": "Chest",
+    "translations": {
+      "name": {
+        "en": "Chest",
+        "ru": "Грудь"
+      }
+    }
+  }
+}
+

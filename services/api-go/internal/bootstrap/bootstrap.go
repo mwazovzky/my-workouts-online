@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"net/http"
 	"os"
 	"slices"
@@ -18,6 +19,7 @@ import (
 	cataloghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/http"
 	catalogpg "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/postgres"
 	catalogapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app"
+	catalogadmin "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app/admin"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/app/catalogsync"
 	dashboardhttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/adapters/http"
 	dashboardapp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/dashboard/app"
@@ -130,6 +132,12 @@ func New(deps Deps) (*App, error) {
 		Logger:    deps.Logger,
 	})
 
+	catalogStore := catalogpg.NewStore(tx)
+	adminCatalog := catalogadmin.New(catalogadmin.Deps{
+		Store: catalogStore, Lists: catalogpg.NewAdminLists(tx), Exercises: catalogpg.NewExercises(tx),
+		Templates: catalogpg.NewTemplates(tx), Programs: catalogpg.NewPrograms(tx), Tx: tx, Clock: deps.Clock,
+	})
+
 	training := trainingapp.New(trainingapp.Deps{
 		Workouts: trainingpg.NewWorkouts(tx),
 		Catalog:  catalog,
@@ -147,7 +155,7 @@ func New(deps Deps) (*App, error) {
 
 	catalogSync := catalogsync.New(catalogsync.Deps{
 		Source:  catalogfile.New(os.DirFS(cfg.CatalogDir)),
-		Store:   catalogpg.NewStore(tx),
+		Store:   catalogStore,
 		Tx:      tx,
 		Clock:   deps.Clock,
 		Locales: locales,
@@ -162,7 +170,7 @@ func New(deps Deps) (*App, error) {
 		Limiter:            limiter,
 		Authenticator:      identity,
 		Throttles:          identityhttp.Throttles(),
-		FieldMessages:      traininghttp.FieldMessages(),
+		FieldMessages:      fieldMessages(),
 	})
 	if err != nil {
 		return nil, err
@@ -177,7 +185,7 @@ func New(deps Deps) (*App, error) {
 		Readiness: readiness,
 		Handler:   meta.NewHandler(bundle),
 		Identity:  identityhttp.New(identity, signer, identityhttp.Config{CookieSecure: cfg.JWT.CookieSecure, Clock: deps.Clock}),
-		Catalog:   cataloghttp.New(catalog),
+		Catalog:   cataloghttp.New(catalog, adminCatalog),
 		Training:  traininghttp.New(training),
 		Dashboard: dashboardhttp.New(dashboard),
 	})
@@ -192,6 +200,14 @@ func New(deps Deps) (*App, error) {
 			func(context.Context) error { deps.Pool.Close(); return nil },
 		},
 	}, nil
+}
+
+// fieldMessages merges the modules' validation wording.
+func fieldMessages() map[string]httpapi.FieldMessages {
+	out := traininghttp.FieldMessages()
+	maps.Copy(out, cataloghttp.FieldMessages())
+
+	return out
 }
 
 // Close releases resources in the reverse order of acquisition. It runs after

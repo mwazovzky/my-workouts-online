@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Сила",
+      "templates_count": 3,
+      "translations": {
+        "description": {
+          "en": "Three sessions a week.",
+          "ru": "Три тренировки в неделю."
+        },
+        "name": {
+          "en": "Strength",
+          "ru": "Сила"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "Cardio",
+      "templates_count": 0,
+      "translations": {
+        "description": {
+          "en": null,
+          "ru": null
+        },
+        "name": {
+          "en": "Cardio",
+          "ru": null
+        }
+      }
+    }
+  ]
+}
+
