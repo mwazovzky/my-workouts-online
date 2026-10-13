@@ -1,10 +1,11 @@
 // Package config loads the service configuration from environment variables.
 // Names shared with the PHP API keep their PHP spelling (APP_URL, LOG_LEVEL,
-// API_RATE_LIMIT_PER_MINUTE, and later FRONTEND_URL, JWT_*), so one .env
-// file serves both backends.
+// API_RATE_LIMIT_PER_MINUTE, FRONTEND_URL, JWT_*, MAIL_*, RESEND_*), so one
+// .env file serves both backends.
 package config
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -53,6 +54,42 @@ type Config struct {
 	BcryptRounds int `env:"BCRYPT_ROUNDS" envDefault:"12"`
 	// JWT configures access and refresh tokens, with the PHP API's names.
 	JWT JWT `envPrefix:"JWT_"`
+	// Mail configures outgoing mail and the support inbox (MAIL_*).
+	Mail Mail `envPrefix:"MAIL_"`
+	// Resend is the Resend account (RESEND_*).
+	Resend Resend `envPrefix:"RESEND_"`
+}
+
+// Mail configures outgoing mail, with Laravel's names.
+type Mail struct {
+	// Mailer is log (messages go to the log: the dev stack and CI) or
+	// resend.
+	Mailer string `env:"MAILER" envDefault:"log"`
+	// FromAddress and FromName are the sender of every email. FromName
+	// defaults to APP_NAME, as in .env.example.
+	FromAddress string `env:"FROM_ADDRESS" envDefault:"hello@example.com"`
+	FromName    string `env:"FROM_NAME"`
+	// InboundForwardTo receives the email sent to the production domain;
+	// blank forwards nothing (the worker logs a warning instead).
+	InboundForwardTo string `env:"INBOUND_FORWARD_TO"`
+}
+
+// Mailers MAIL_MAILER accepts.
+const (
+	MailerLog    = "log"
+	MailerResend = "resend"
+)
+
+// Resend is the Resend account.
+type Resend struct {
+	// Key is the API key; MAIL_MAILER=resend requires it, and the inbox
+	// worker reads received email with it.
+	Key string `env:"KEY"`
+	// WebhookSecret signs the webhooks Resend posts ("whsec_" plus base64);
+	// blank rejects every webhook.
+	WebhookSecret string `env:"WEBHOOK_SECRET"`
+	// BaseURL is the API root; tests point it at a fake server.
+	BaseURL string `env:"BASE_URL" envDefault:"https://api.resend.com/"`
 }
 
 // JWT is the token configuration. Durations are whole seconds, as the PHP
@@ -108,6 +145,10 @@ func Load(environ map[string]string) (Config, error) {
 
 	if cfg.FrontendURL == "" {
 		cfg.FrontendURL = cfg.AppURL
+	}
+
+	if cfg.Mail.FromName == "" {
+		cfg.Mail.FromName = cfg.AppName
 	}
 
 	if cfg.LinkSigningKey == "" && !cfg.IsProduction() {
@@ -170,7 +211,35 @@ func (c Config) validate() error {
 		errs = append(errs, fmt.Errorf("JWT_LEEWAY must not be negative, got %d", c.JWT.LeewaySeconds))
 	}
 
+	errs = append(errs, c.validateMail()...)
+
 	return errors.Join(errs...)
+}
+
+func (c Config) validateMail() []error {
+	var errs []error
+
+	switch c.Mail.Mailer {
+	case MailerLog:
+	case MailerResend:
+		if c.Resend.Key == "" {
+			errs = append(errs, errors.New("RESEND_KEY must be set when MAIL_MAILER=resend"))
+		}
+	default:
+		errs = append(errs, fmt.Errorf("MAIL_MAILER must be log or resend, got %q", c.Mail.Mailer))
+	}
+
+	if secret := c.Resend.WebhookSecret; secret != "" {
+		if key, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(secret, "whsec_")); err != nil || len(key) == 0 {
+			errs = append(errs, errors.New("RESEND_WEBHOOK_SECRET must be whsec_ followed by base64"))
+		}
+	}
+
+	if u, err := url.Parse(c.Resend.BaseURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		errs = append(errs, fmt.Errorf("RESEND_BASE_URL must be an absolute http(s) URL, got %q", c.Resend.BaseURL))
+	}
+
+	return errs
 }
 
 // LogLevel is a slog level that also accepts Laravel's PSR-3 level names, so

@@ -219,14 +219,14 @@ func TestMigrationsGoDownToZeroAndUpAgain(t *testing.T) {
 	}
 
 	version, err := migrator.GetDBVersion(ctx)
-	if err != nil || version != 4 {
-		t.Errorf("GetDBVersion() = %d, %v; want 4", version, err)
+	if err != nil || version != 5 {
+		t.Errorf("GetDBVersion() = %d, %v; want 5", version, err)
 	}
 }
 
 // allTables are the tables the migrations create, River's included, sorted. goose_db_version is left out: goose keeps it at version 0.
 var allTables = []string{
-	"categories", "category_exercise", "equipment", "exercises",
+	"categories", "category_exercise", "equipment", "exercises", "inbound_emails",
 	"password_reset_tokens", "program_user", "program_workout_template", "programs",
 	"refresh_tokens", "river_job", "river_leader", "river_migration", "river_notification",
 	"river_queue", "role_user", "roles", "template_activities",

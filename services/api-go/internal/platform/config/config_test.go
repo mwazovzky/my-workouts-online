@@ -42,6 +42,8 @@ func TestLoadAppliesDefaults(t *testing.T) {
 			LeewaySeconds:     30,
 			CookieSecure:      true,
 		},
+		Mail:   config.Mail{Mailer: "log", FromAddress: "hello@example.com", FromName: "My Workouts"},
+		Resend: config.Resend{BaseURL: "https://api.resend.com/"},
 	}
 	if diff := cmp.Diff(want, cfg); diff != "" {
 		t.Errorf("Load() mismatch (-want +got):\n%s", diff)
@@ -73,6 +75,13 @@ func TestLoadReadsEnvironment(t *testing.T) {
 		"JWT_REFRESH_TTL":           "120",
 		"JWT_LEEWAY":                "0",
 		"JWT_COOKIE_SECURE":         "false",
+		"MAIL_MAILER":               "resend",
+		"MAIL_FROM_ADDRESS":         "noreply@my-workouts.online",
+		"MAIL_FROM_NAME":            "My Workouts Team",
+		"MAIL_INBOUND_FORWARD_TO":   "owner@example.com",
+		"RESEND_KEY":                "re_test",
+		"RESEND_WEBHOOK_SECRET":     "whsec_dGVzdA==",
+		"RESEND_BASE_URL":           "http://resend.test/",
 	})
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
@@ -102,6 +111,11 @@ func TestLoadReadsEnvironment(t *testing.T) {
 			RefreshTTLSeconds: 120,
 			CookieSecure:      false,
 		},
+		Mail: config.Mail{
+			Mailer: "resend", FromAddress: "noreply@my-workouts.online", FromName: "My Workouts Team",
+			InboundForwardTo: "owner@example.com",
+		},
+		Resend: config.Resend{Key: "re_test", WebhookSecret: "whsec_dGVzdA==", BaseURL: "http://resend.test/"},
 	}
 	if diff := cmp.Diff(want, cfg); diff != "" {
 		t.Errorf("Load() mismatch (-want +got):\n%s", diff)
@@ -133,6 +147,10 @@ func TestLoadRejectsInvalidValues(t *testing.T) {
 		{"negative leeway", with(valid, "JWT_LEEWAY", "-1"), "JWT_LEEWAY"},
 		{"relative frontend url", with(valid, "FRONTEND_URL", "/app"), "FRONTEND_URL"},
 		{"short link key in production", with(valid, "LINK_SIGNING_KEY", "short"), "LINK_SIGNING_KEY"},
+		{"unknown mailer", with(valid, "MAIL_MAILER", "smtp"), "MAIL_MAILER"},
+		{"resend mailer without a key", with(valid, "MAIL_MAILER", "resend"), "RESEND_KEY"},
+		{"webhook secret not base64", with(valid, "RESEND_WEBHOOK_SECRET", "whsec_not base64!"), "RESEND_WEBHOOK_SECRET"},
+		{"relative resend url", with(valid, "RESEND_BASE_URL", "/resend"), "RESEND_BASE_URL"},
 	}
 
 	for _, tt := range tests {

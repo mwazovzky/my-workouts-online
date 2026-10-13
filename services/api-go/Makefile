@@ -8,8 +8,8 @@ SQLC := bin/sqlc-v$(SQLC_VERSION)
 # Minimum statement coverage, generated code excluded (scripts/coverage-check.sh).
 COVERAGE_MIN := 80
 # Directories holding committed generated code: oapi-codegen's HTTP layer and
-# one sqlc package per module (add a module's sqlcgen with its first query).
-GENERATED := internal/platform/httpapi/gen internal/identity/adapters/postgres/sqlcgen
+# every module's sqlc package.
+GENERATED := internal/platform/httpapi/gen internal/*/adapters/postgres/sqlcgen
 # The same, as a coverage-profile pattern.
 GENERATED_PATTERN := /(httpapi/gen|sqlcgen)/
 
