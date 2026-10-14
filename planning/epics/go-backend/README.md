@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: in progress (story 11); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
+**Status: in progress (story 12); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
@@ -28,7 +28,7 @@ Learning value and a codebase that stays pleasant to work with are the constrain
 | 10 | Errors and validation | `kernel/apperr` typed errors wrapped with `%w` and matched at the HTTP boundary only; a hand-written `kernel/validate` builder emitting RFC 9457 Problem Details with JSON Pointer field errors; `openapi3filter` request validation as the shape safety net. Recorded in [ADR 0006](../../../services/api-go/docs/adr/0006-http-errors-locale-and-request-validation.md). |
 | 11 | Auth | `lestrrat-go/jwx/v3` for Ed25519 JWTs and the JWKS document, same claims and `kid` derivation as `TokenService.php`; `x/crypto/bcrypt` cost 12 (verifies Laravel `$2y$` hashes if users are ever imported); refresh-token families with rotation and reuse detection under `SELECT … FOR UPDATE`. Recorded in [ADR 0007](../../../services/api-go/docs/adr/0007-identity-tokens-and-auth-policy.md). |
 | 12 | Jobs | River (Postgres-backed) for the inbound support-email job, enqueued in the same transaction as the webhook record; `workouts work` runs the workers in a `worker-go` container. Resend is called through a small hand-written client instead of `resend-go`, and the Svix signature is checked by hand. Recorded in [ADR 0013](../../../services/api-go/docs/adr/0013-support-inbox-and-jobs.md). |
-| 13 | Observability | `log/slog` JSON to stderr with `request_id`; OpenTelemetry (`otelhttp`, `otelpgx`, runtime metrics) with a Prometheus exporter on a private admin port and an OTLP switch; nothing public. |
+| 13 | Observability | `log/slog` JSON to stderr with `request_id`; OpenTelemetry (`otelhttp`, `otelpgx`, runtime metrics) with a Prometheus exporter on a private admin port and an OTLP switch; nothing public. Request metrics are recorded by the access log, labelled by route, and logs carry the request's fields and trace ids from the context. Recorded in [ADR 0014](../../../services/api-go/docs/adr/0014-observability.md). |
 | 14 | Testing | stdlib `testing` + `go-cmp`; `testcontainers-go` Postgres with a template database per test (`TEST_DATABASE_URL` reuses the compose database); `httptest` against `bootstrap.New`; `openapi3filter` response validation; golden JSON files; hand-written fakes for ports, no mock generators. Each domain story mirrors the PHPUnit feature tests it replaces. |
 | 15 | Quality gate | `make check` = gofumpt, vet, golangci-lint v2 (staticcheck, errorlint, revive, gocritic, exhaustive, gosec, depguard), generated-code diff, sqlc diff, `go test -race -shuffle=on` with a coverage threshold excluding generated code, govulncheck. CI runs exactly `make check`. |
 | 16 | Delivery | Vertical slices. From story 4, `scripts/contract-test.sh http://localhost:8081` runs with `CONTRACT_INCLUDE` listing the operations covered so far (`services/api-go/contract-scope.txt`), deleted in story 13 so the full suite runs. |
@@ -96,8 +96,8 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 | 8 | [Workouts](stories/08-workouts.md) | Workout Logging | shipped |
 | 9 | [Dashboard](stories/09-dashboard.md) | Workout Logging | shipped |
 | 10 | [Admin Catalog CRUD](stories/10-admin-catalog-crud.md) | Admin Content Management | shipped |
-| 11 | [Mail, Inbound Webhook and Worker](stories/11-mail-inbound-webhook-and-worker.md) | Platform | in progress |
-| 12 | [Observability](stories/12-observability.md) | Platform | planned |
+| 11 | [Mail, Inbound Webhook and Worker](stories/11-mail-inbound-webhook-and-worker.md) | Platform | shipped |
+| 12 | [Observability](stories/12-observability.md) | Platform | in progress |
 | 13 | [Deployment Plumbing and Backend Switch](stories/13-deployment-plumbing-and-backend-switch.md) | Platform | planned |
 | 14 | [PHP Reads the Shared YAML Catalog](stories/14-php-reads-shared-yaml-catalog.md) | Platform | planned |
 

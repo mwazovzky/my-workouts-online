@@ -17,6 +17,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivertype"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/noop"
 )
 
 // Client is River's client over pgx.
@@ -39,6 +42,12 @@ type Options struct {
 	// Work makes the client fetch and work jobs; without it the client only
 	// inserts them.
 	Work bool
+	// MeterProvider receives jobs.active and jobs.failed from a working
+	// client; nil records nothing.
+	MeterProvider metric.MeterProvider
+	// Kinds are the job kinds Workers holds; a working client exports their
+	// metric series at zero before any job runs.
+	Kinds []string
 }
 
 // NewClient returns a River client on pool. It starts nothing; a working
@@ -49,6 +58,22 @@ func NewClient(pool *pgxpool.Pool, opts Options) (*Client, error) {
 	cfg := &river.Config{Workers: opts.Workers, Logger: logger}
 	if opts.Work {
 		cfg.Queues = map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: maxWorkers}}
+
+		meterProvider := opts.MeterProvider
+		if meterProvider == nil {
+			meterProvider = noop.NewMeterProvider()
+		}
+
+		metrics, err := newMetricsMiddleware(meterProvider.Meter("github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/jobs"))
+		if err != nil {
+			return nil, fmt.Errorf("jobs: metrics: %w", err)
+		}
+
+		for _, kind := range opts.Kinds {
+			metrics.register(context.Background(), kind)
+		}
+
+		cfg.Middleware = []rivertype.Middleware{metrics}
 	}
 
 	client, err := river.NewClient(riverpgxv5.New(pool), cfg)

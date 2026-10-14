@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/multitracer"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
 	"github.com/pressly/goose/v3/lock"
@@ -19,12 +21,22 @@ import (
 
 // Open connects a pool to url and pings it, so a wrong URL or an unreachable
 // server fails at startup. Pool settings come from the URL
-// (pool_max_conns=…, see pgxpool.ParseConfig).
-func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
+// (pool_max_conns=…, see pgxpool.ParseConfig). tracers see every query
+// (observability.QueryTracer: spans, the operation duration metric and
+// debug query logs).
+func Open(ctx context.Context, url string, tracers ...pgx.QueryTracer) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		// The parse error repeats the URL, password included.
 		return nil, errors.New("postgres: invalid DATABASE_URL")
+	}
+
+	switch len(tracers) {
+	case 0:
+	case 1:
+		cfg.ConnConfig.Tracer = tracers[0]
+	default:
+		cfg.ConnConfig.Tracer = multitracer.New(tracers...)
 	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)

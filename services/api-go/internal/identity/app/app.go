@@ -87,6 +87,8 @@ type RegisterInput struct {
 	DeviceName *string
 	// Locale is the request's locale, for the verification email.
 	Locale string
+	// Client is web or native, logged with user.registered.
+	Client string
 }
 
 // Register creates an account, sends the verification email and signs the
@@ -138,7 +140,7 @@ func (s *Service) Register(ctx context.Context, in RegisterInput) (Session, erro
 		return Session{}, err
 	}
 
-	s.Logger.InfoContext(ctx, "user.registered", "user_id", session.User.ID)
+	s.Logger.InfoContext(ctx, "user.registered", "user_id", session.User.ID, "client", in.Client)
 	s.sendVerification(ctx, session.User, in.Locale)
 
 	return session, nil
@@ -151,6 +153,8 @@ type LoginInput struct {
 	DeviceName *string
 	// ClientIP keys the lockout together with the email.
 	ClientIP string
+	// Client is web or native, logged with auth.login.
+	Client string
 }
 
 // Login checks the credentials and opens a new refresh-token family. Wrong
@@ -203,7 +207,7 @@ func (s *Service) Login(ctx context.Context, in LoginInput) (Session, error) {
 		return Session{}, err
 	}
 
-	s.Logger.InfoContext(ctx, "auth.login", "user_id", user.ID)
+	s.Logger.InfoContext(ctx, "auth.login", "user_id", user.ID, "client", in.Client)
 
 	return Session{User: user, Pair: pair}, nil
 }

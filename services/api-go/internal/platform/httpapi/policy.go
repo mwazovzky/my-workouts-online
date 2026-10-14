@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/apperr"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/auth"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/observability"
 )
 
 // Authenticator resolves a bearer access token to the caller. The identity
@@ -100,9 +102,8 @@ func (s *Server) authorize(next http.Handler) http.Handler {
 			return
 		}
 
-		if info := routeFrom(r.Context()); info != nil {
-			info.userID = principal.UserID
-		}
+		// Every later log line of the request, the access log's included.
+		observability.AddLogFields(r.Context(), slog.Int64("user_id", principal.UserID))
 
 		if op.verified && !principal.EmailVerified {
 			s.responder.Error(w, r, apperr.Forbidden(apperr.CodeEmailUnverified, "Your email address is not verified."))

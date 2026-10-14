@@ -15,6 +15,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/catalogfile"
 	cataloghttp "github.com/mwazovzky/my-workouts-online/services/api-go/internal/catalog/adapters/http"
@@ -45,6 +47,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/jobs"
 	platformmail "github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/meta"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/observability"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/ratelimit"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/resend"
@@ -66,6 +69,10 @@ type Deps struct {
 	// Work builds a job client that works jobs (`workouts work`); without it
 	// the client only inserts them.
 	Work bool
+	// Telemetry traces requests and jobs and receives the metrics; nil
+	// records nothing. New takes ownership: App.Close flushes it before
+	// closing the pool.
+	Telemetry *observability.Telemetry
 }
 
 // App is the wired application.
@@ -89,6 +96,17 @@ type App struct {
 // a message catalog) does not load or a configured key or URL is malformed.
 func New(deps Deps) (*App, error) {
 	cfg := deps.Config
+	// Every log line made with a request's context carries its fields.
+	deps.Logger = observability.Logger(deps.Logger)
+
+	var (
+		tracerProvider trace.TracerProvider
+		meterProvider  metric.MeterProvider
+	)
+
+	if deps.Telemetry != nil {
+		tracerProvider, meterProvider = deps.Telemetry.TracerProvider(), deps.Telemetry.MeterProvider()
+	}
 
 	bundle, err := i18n.NewBundle()
 	if err != nil {
@@ -185,7 +203,10 @@ func New(deps Deps) (*App, error) {
 		return inbox.Forward(ctx, emailID)
 	}, clock.System{}))
 
-	jobClient, err := jobs.NewClient(deps.Pool, jobs.Options{Workers: workers, Logger: deps.Logger, Work: deps.Work})
+	jobClient, err := jobs.NewClient(deps.Pool, jobs.Options{
+		Workers: workers, Logger: deps.Logger, Work: deps.Work,
+		MeterProvider: meterProvider, Kinds: []string{inboxjobs.ForwardArgs{}.Kind()},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -225,6 +246,8 @@ func New(deps Deps) (*App, error) {
 		Authenticator:      identity,
 		Throttles:          identityhttp.Throttles(),
 		FieldMessages:      fieldMessages(),
+		TracerProvider:     tracerProvider,
+		MeterProvider:      meterProvider,
 	})
 	if err != nil {
 		return nil, err
@@ -254,15 +277,19 @@ func New(deps Deps) (*App, error) {
 
 	server.Handle("POST "+inboxhttp.Path, webhook)
 
+	// Closed in reverse: the telemetry is flushed while the pool is open.
+	closers := []func(context.Context) error{func(context.Context) error { deps.Pool.Close(); return nil }}
+	if deps.Telemetry != nil {
+		closers = append(closers, deps.Telemetry.Close)
+	}
+
 	return &App{
 		Handler:     server.Handler(),
 		Readiness:   readiness,
 		Identity:    identity,
 		CatalogSync: catalogSync,
 		Jobs:        jobClient,
-		closers: []func(context.Context) error{
-			func(context.Context) error { deps.Pool.Close(); return nil },
-		},
+		closers:     closers,
 	}, nil
 }
 

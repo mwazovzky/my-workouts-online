@@ -69,6 +69,8 @@ services:
       CATALOG_DIR: /src/catalog
     ports:
       - "8081:8081"
+      # The admin listener: /metrics and /health/ready.
+      - "9090:9090"
     volumes:
       - ./:/src
       - go_mod_cache:/go/pkg/mod
@@ -87,6 +89,9 @@ services:
       dockerfile: ./docker/api-go/Dockerfile
       target: dev
     command: ["sh", "-c", "go build -o /tmp/workouts ./cmd/workouts && /tmp/workouts migrate up && exec /tmp/workouts work"]
+    ports:
+      # The worker's admin listener: /metrics (jobs_active, jobs_failed_total).
+      - "9091:9090"
     env_file:
       - .env
     environment:

@@ -6,11 +6,21 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+	tracenoop "go.opentelemetry.io/otel/trace/noop"
 
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/apperr"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/i18n"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi/gen"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/observability"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/ratelimit"
 )
 
@@ -21,9 +31,11 @@ type Options struct {
 	// RateLimitPerMinute is the per-client limit under /api/.
 	RateLimitPerMinute int
 	Bundle             *i18n.Bundle
-	Logger             *slog.Logger
-	Clock              clock.Clock
-	Limiter            ratelimit.Limiter
+	// Logger is wrapped in an observability.LogHandler, so every line of a
+	// request carries its request_id, user_id and trace ids.
+	Logger  *slog.Logger
+	Clock   clock.Clock
+	Limiter ratelimit.Limiter
 	// Authenticator resolves bearer tokens for every non-public operation.
 	Authenticator Authenticator
 	// Throttles are per-operation limits, keyed by operationId.
@@ -31,6 +43,11 @@ type Options struct {
 	// FieldMessages customise request validation messages, keyed by
 	// operationId.
 	FieldMessages map[string]FieldMessages
+	// TracerProvider traces every request but the probes; nil traces
+	// nothing.
+	TracerProvider trace.TracerProvider
+	// MeterProvider receives the request metrics; nil records nothing.
+	MeterProvider metric.MeterProvider
 }
 
 // Server is the routing table plus the middleware chain around it.
@@ -40,6 +57,7 @@ type Server struct {
 	responder  *Responder
 	validator  *requestValidator
 	operations map[string]operation
+	metrics    requestMetrics
 }
 
 // NewServer loads the embedded contract and returns a Server with no routes.
@@ -50,9 +68,24 @@ func NewServer(opts Options) (*Server, error) {
 	}
 
 	responder := NewResponder(opts.AppURL, opts.Bundle)
+	opts.Logger = observability.Logger(opts.Logger)
+
+	if opts.TracerProvider == nil {
+		opts.TracerProvider = tracenoop.NewTracerProvider()
+	}
+
+	if opts.MeterProvider == nil {
+		opts.MeterProvider = metricnoop.NewMeterProvider()
+	}
+
+	metrics, err := newRequestMetrics(opts.MeterProvider.Meter("github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/httpapi"))
+	if err != nil {
+		return nil, fmt.Errorf("httpapi: metrics: %w", err)
+	}
 
 	return &Server{
 		opts:       opts,
+		metrics:    metrics,
 		mux:        http.NewServeMux(),
 		responder:  responder,
 		validator:  newRequestValidator(spec, responder, opts.FieldMessages),
@@ -97,9 +130,24 @@ func (s *Server) Handler() http.Handler {
 	h = rateLimit(s.opts.Limiter, s.opts.RateLimitPerMinute, s.responder)(h)
 	h = negotiateLocale(s.opts.Bundle)(h)
 	h = recoverPanics(s.responder)(h)
-	h = accessLog(s.opts.Logger, s.opts.Clock)(h)
+	h = accessLog(s.opts.Logger, s.opts.Clock, s.metrics)(h)
+	h = requestID(h)
 
-	return requestID(h)
+	// Outermost, so the access log and every handler log with the span's
+	// trace id. otelhttp's own metrics are off: the access log records the
+	// request metrics with the route label.
+	return otelhttp.NewHandler(h, "http.server",
+		otelhttp.WithTracerProvider(s.opts.TracerProvider),
+		otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
+		otelhttp.WithPropagators(propagation.TraceContext{}),
+		otelhttp.WithFilter(func(r *http.Request) bool { return !isProbe(r.URL.Path) }),
+	)
+}
+
+// isProbe reports the health probes, polled every few seconds and not worth
+// a trace.
+func isProbe(path string) bool {
+	return path == "/up" || path == "/health" || strings.HasPrefix(path, "/health/")
 }
 
 // route dispatches through the mux, answering an unmatched path with a 404
@@ -110,6 +158,14 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 
 	if matched := routeFrom(r.Context()); matched != nil {
 		matched.pattern = pattern
+	}
+
+	// The span starts before routing; name it by the route, never the raw
+	// path, so traces group by endpoint.
+	if pattern != "" {
+		span := trace.SpanFromContext(r.Context())
+		span.SetName(pattern)
+		span.SetAttributes(attribute.String("http.route", routeLabel(pattern)))
 	}
 
 	if pattern != "" {

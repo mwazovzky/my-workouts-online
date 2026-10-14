@@ -7,10 +7,11 @@ discovery.docker "containers" {
 discovery.relabel "containers" {
   targets = []
 
-  // Keep only web and worker containers
+  // Keep only the app containers: PHP (api, web, worker) and Go (api-go,
+  // worker-go). The regex is anchored, so each name is listed whole.
   rule {
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
-    regex         = "api|web|worker"
+    regex         = "api|web|worker|api-go|worker-go"
     action        = "keep"
   }
 
