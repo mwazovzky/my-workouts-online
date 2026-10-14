@@ -100,6 +100,7 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 | 12 | [Observability](stories/12-observability.md) | Platform | planned |
 | 13 | [Deployment Plumbing and Backend Switch](stories/13-deployment-plumbing-and-backend-switch.md) | Platform | planned |
 | 14 | [PHP Reads the Shared YAML Catalog](stories/14-php-reads-shared-yaml-catalog.md) | Platform | planned |
+| 15 | [PHP Parity Fixes](stories/15-php-parity-fixes.md) | Workout Logging | planned |
 
 States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a story's PR opens and when it merges; archive or delete the story file after it ships, per `planning/README.md`.
 
@@ -112,6 +113,7 @@ States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a s
 - Story 10 (admin) is the long tail of 25 similar operations and comes after the read side it mirrors.
 - Stories 11 to 13 are infrastructure: mail and jobs, observability, then deployment plumbing that closes the scope filter and runs the full suite.
 - Story 14 changes PHP last, so the Go sync is proven before the PHP production path changes.
+- Story 15 was added after story 12: it brings PHP up to the Go behaviour where the comparison found PHP bugs (ADRs 0006 to 0013). It is PHP-only and independent of the Go stories; best done before story 13, so switching `API_BACKEND` changes only the deliberate differences.
 
 ## Success Metrics
 
@@ -120,7 +122,7 @@ States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a s
 - zero hand-written request or response structs: every operation goes through the generated strict server
 - a contract change that removes or renames a field fails `go.yml` at compile time, as it does for iOS
 - `docker compose up` with `API_BACKEND=go` serves the web SPA end to end against Go, including register, verify, enroll, log and complete a workout
-- the PHP contract job, web tests and iOS job are unaffected by every story except 7 and 14
+- the PHP contract job, web tests and iOS job are unaffected by every story except 7, 14 and 15
 
 ## Risks
 
@@ -136,7 +138,7 @@ States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a s
 
 This epic is done when:
 
-- all fourteen stories are shipped or explicitly deferred
+- all fifteen stories are shipped or explicitly deferred
 - the full Schemathesis suite is green against Go and `contract-go` is required on `main`
 - `docker compose up` with `API_BACKEND=go` serves the SPA end to end and production compose can start the Go services with `API_BACKEND=php` still the default
 - `catalog/*.yaml` is the only catalog source and both backends read it
