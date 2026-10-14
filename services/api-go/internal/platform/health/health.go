@@ -115,6 +115,13 @@ func (r *Readiness) GetReadiness(ctx context.Context, _ gen.GetReadinessRequestO
 	return gen.GetReadiness200JSONResponse(body), nil
 }
 
+// ServeHTTP serves the probe outside the contract's router, on the admin
+// listener next to /metrics.
+func (r *Readiness) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	res, _ := r.GetReadiness(req.Context(), gen.GetReadinessRequestObject{})
+	_ = res.VisitGetReadinessResponse(w)
+}
+
 func runCheck(ctx context.Context, check Check) error {
 	ctx, cancel := context.WithTimeout(ctx, checkTimeout)
 	defer cancel()

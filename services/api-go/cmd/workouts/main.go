@@ -40,6 +40,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/config"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/jobs"
+	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/observability"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/postgres"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/server"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/migrations"
@@ -137,71 +138,114 @@ func run(ctx context.Context, args []string, environ map[string]string, stdout, 
 }
 
 func serve(ctx context.Context, environ map[string]string, stderr io.Writer) error {
-	cfg, err := config.Load(environ)
+	proc, err := start(ctx, environ, stderr, "api-go", false)
 	if err != nil {
 		return err
 	}
 
-	logger := slog.New(slog.NewJSONHandler(stderr, &slog.HandlerOptions{Level: cfg.LogLevel})).
-		With("service", "api-go", "version", version)
-	slog.SetDefault(logger)
-
-	pool, err := postgres.Open(ctx, cfg.DatabaseURL)
+	ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", proc.cfg.HTTPAddr)
 	if err != nil {
-		return err
+		return errors.Join(fmt.Errorf("listen: %w", err), proc.close(ctx))
 	}
 
-	app, err := bootstrap.New(bootstrap.Deps{Config: cfg, Logger: logger, Clock: clock.System{}, Pool: pool})
-	if err != nil {
-		pool.Close()
+	proc.logger.InfoContext(ctx, "listening", "addr", ln.Addr().String())
 
-		return err
-	}
-
-	ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", cfg.HTTPAddr)
-	if err != nil {
-		return errors.Join(fmt.Errorf("listen: %w", err), app.Close(context.WithoutCancel(ctx)))
-	}
-
-	logger.InfoContext(ctx, "listening", "addr", ln.Addr().String())
-
-	serveErr := server.Serve(ctx, ln, app.Handler, server.Options{
-		DrainDelay:      cfg.ShutdownDrainDelay,
-		ShutdownTimeout: cfg.ShutdownTimeout,
-		OnDrain:         app.Readiness.StartDraining,
-		Logger:          logger,
+	return proc.runWithAdmin(ctx, func() error {
+		return server.Serve(ctx, ln, proc.app.Handler, server.Options{
+			DrainDelay:      proc.cfg.ShutdownDrainDelay,
+			ShutdownTimeout: proc.cfg.ShutdownTimeout,
+			OnDrain:         proc.app.Readiness.StartDraining,
+			Logger:          proc.logger,
+		})
 	})
-
-	return errors.Join(serveErr, app.Close(context.WithoutCancel(ctx)))
 }
 
 // work runs the job workers until ctx is cancelled; jobs still running then
 // get SHUTDOWN_TIMEOUT to finish before they are cancelled and retried later.
 func work(ctx context.Context, environ map[string]string, stderr io.Writer) error {
+	proc, err := start(ctx, environ, stderr, "worker-go", true)
+	if err != nil {
+		return err
+	}
+
+	return proc.runWithAdmin(ctx, func() error {
+		return jobs.Run(ctx, proc.app.Jobs, proc.cfg.ShutdownTimeout, proc.logger)
+	})
+}
+
+// process is what serve and work share: the configuration, the logger, the
+// telemetry and the wired application.
+type process struct {
+	cfg       config.Config
+	logger    *slog.Logger
+	telemetry *observability.Telemetry
+	app       *bootstrap.App
+}
+
+// start loads the configuration and builds the telemetry, the traced pool
+// and the application, as service (the service.name of logs and traces).
+func start(ctx context.Context, environ map[string]string, stderr io.Writer, service string, work bool) (*process, error) {
 	cfg, err := config.Load(environ)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	logger := slog.New(slog.NewJSONHandler(stderr, &slog.HandlerOptions{Level: cfg.LogLevel})).
-		With("service", "worker-go", "version", version)
+	logger := slog.New(observability.NewLogHandler(slog.NewJSONHandler(stderr, &slog.HandlerOptions{Level: cfg.LogLevel}))).
+		With("service", service, "version", version)
 	slog.SetDefault(logger)
 
-	pool, err := postgres.Open(ctx, cfg.DatabaseURL)
+	telemetry, err := observability.New(ctx, observability.Config{
+		ServiceName: service, Version: version, Environment: cfg.AppEnv, OTLPEndpoint: cfg.OTLPEndpoint,
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	app, err := bootstrap.New(bootstrap.Deps{Config: cfg, Logger: logger, Clock: clock.System{}, Pool: pool, Work: true})
+	pool, err := postgres.Open(ctx, cfg.DatabaseURL, telemetry.QueryTracers(ctx, logger)...)
+	if err != nil {
+		return nil, errors.Join(err, telemetry.Close(context.WithoutCancel(ctx)))
+	}
+
+	app, err := bootstrap.New(bootstrap.Deps{
+		Config: cfg, Logger: logger, Clock: clock.System{}, Pool: pool, Work: work, Telemetry: telemetry,
+	})
 	if err != nil {
 		pool.Close()
 
-		return err
+		return nil, errors.Join(err, telemetry.Close(context.WithoutCancel(ctx)))
 	}
 
-	runErr := jobs.Run(ctx, app.Jobs, cfg.ShutdownTimeout, logger)
+	return &process{cfg: cfg, logger: logger, telemetry: telemetry, app: app}, nil
+}
 
-	return errors.Join(runErr, app.Close(context.WithoutCancel(ctx)))
+// runWithAdmin serves the admin listener (ADMIN_ADDR: /metrics and
+// /health/ready, never proxied) while run runs, then closes the application:
+// telemetry flushed, pool closed.
+func (p *process) runWithAdmin(ctx context.Context, run func() error) error {
+	ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", p.cfg.AdminAddr)
+	if err != nil {
+		return errors.Join(fmt.Errorf("admin listen: %w", err), p.close(ctx))
+	}
+
+	p.logger.InfoContext(ctx, "admin listening", "addr", ln.Addr().String())
+
+	mux := http.NewServeMux()
+	mux.Handle("GET /metrics", p.telemetry.MetricsHandler())
+	mux.Handle("GET /health/ready", p.app.Readiness)
+
+	adminErr := make(chan error, 1)
+
+	go func() {
+		adminErr <- server.Serve(ctx, ln, mux, server.Options{ShutdownTimeout: p.cfg.ShutdownTimeout, Logger: p.logger})
+	}()
+
+	runErr := run()
+
+	return errors.Join(runErr, <-adminErr, p.close(ctx))
+}
+
+func (p *process) close(ctx context.Context) error {
+	return p.app.Close(context.WithoutCancel(ctx))
 }
 
 // migrate applies or lists the migrations in the migrations package. The

@@ -466,6 +466,44 @@ docker compose -f docker-compose.prod.yml logs -f --tail=200 alloy    # shipping
 docker compose -f docker-compose.prod.yml logs -f --tail=200 mysql
 ```
 
+### Go API
+
+The Go API is not deployed yet (story 13 of the Go epic adds `api-go` and `worker-go` to the production compose file). Alloy already keeps their containers, so their lines will reach Loki with `service="api-go"` and `service="worker-go"`.
+
+**Log fields.** Each line is one JSON object with `time`, `level` and `msg`, plus `service` and `version`. Lines written during a request also carry:
+
+- `request_id` (the `X-Request-Id` header);
+- `user_id` (after authentication);
+- `trace_id` and `span_id`.
+
+The access line (`msg="request"`) adds `method`, `path`, `route` (the mux pattern, `GET /api/v1/workouts/{workoutId}`), `status`, `bytes` and `duration_ms`. Business events use PHP's names and fields: `auth.login` and `user.registered` (with `client`), `auth.logout`, `auth.password_reset`, `user.email_verified`, `workout.started`, `workout.completed`, `program.enrolled`, and so on. A failed readiness check logs one warning per component.
+
+**Metrics.** Both processes serve Prometheus metrics at `/metrics` on `ADMIN_ADDR` (`:9090` inside the container; in the dev stack, `localhost:9090` for `api-go` and `localhost:9091` for `worker-go`). nginx never proxies this port.
+
+| Metric | Labels | From |
+| --- | --- | --- |
+| `http_server_request_duration_seconds` (histogram) | `method`, `route`, `status` | `api-go` |
+| `http_server_requests_total` | `method`, `route`, `status` | `api-go` |
+| `db_client_operation_duration_seconds` (histogram) | `pgx_operation_type`, `db_operation_name` | both |
+| `jobs_active` | `kind` | `worker-go` |
+| `jobs_failed_total` | `kind`, `reason` (`discarded`: last attempt failed; `cancelled`) | `worker-go` |
+
+Go runtime metrics (`go_*`) and `target_info` (service, version, environment) come with them. `route` is the pattern's path, such as `/api/v1/workouts/{workoutId}`, or `unmatched` when no route matched.
+
+The two SLIs:
+
+```promql
+# p99 latency over 5 minutes
+histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket[5m])))
+
+# 5xx rate
+sum(rate(http_server_requests_total{status=~"5.."}[5m])) / sum(rate(http_server_requests_total[5m]))
+```
+
+Nothing scrapes these in production yet. When the Go API is rolled out, add a `prometheus.scrape` block to `docker/alloy/config.alloy` for `api-go:9090` and `worker-go:9090`, with a `prometheus.remote_write` to Grafana Cloud.
+
+**Traces.** Spans are named by route, and an incoming `traceparent` is continued. They are exported over OTLP/HTTP only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (the collector's base URL; traces go to `/v1/traces`). `LOG_LEVEL=debug` also logs every SQL statement, without its arguments. The decisions are in [ADR 0014](../services/api-go/docs/adr/0014-observability.md).
+
 ## 15. Optional cleanup
 
 ```bash

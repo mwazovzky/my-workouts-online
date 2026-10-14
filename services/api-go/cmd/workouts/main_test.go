@@ -113,7 +113,7 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 	t.Parallel()
 
 	databaseURL := testdb.New(t).Config().ConnString()
-	logs, addrs := listeningAddr(t)
+	logs, addrs, adminAddrs := listeningAddr(t)
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
@@ -123,6 +123,7 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 			"DATABASE_URL":         databaseURL,
 			"APP_ENV":              "testing",
 			"HTTP_ADDR":            "127.0.0.1:0",
+			"ADMIN_ADDR":           "127.0.0.1:0",
 			"SHUTDOWN_DRAIN_DELAY": "0s",
 			"JWT_PRIVATE_KEY":      testPrivateKey,
 			"JWT_PUBLIC_KEY":       testPublicKey,
@@ -140,6 +141,17 @@ func TestServeAnswersHealthAndStopsCleanly(t *testing.T) {
 		if status := statusOf(t, "http://"+addr+path); status != http.StatusOK {
 			t.Errorf("GET %s = %d, want %d", path, status, http.StatusOK)
 		}
+	}
+
+	// The admin listener serves the readiness probe and the metrics, which
+	// by now include the requests above.
+	adminAddr := <-adminAddrs
+	if status := statusOf(t, "http://"+adminAddr+"/health/ready"); status != http.StatusOK {
+		t.Errorf("admin GET /health/ready = %d, want 200", status)
+	}
+
+	if metrics := bodyOf(t, "http://"+adminAddr+"/metrics"); !strings.Contains(metrics, `http_server_requests_total{method="GET",route="/health/ready",status="200"`) {
+		t.Errorf("/metrics lacks the request counter:\n%s", metrics)
 	}
 
 	cancel()
@@ -163,6 +175,7 @@ func TestWorkRunsUntilCancelledAndStopsCleanly(t *testing.T) {
 			"DATABASE_URL":     databaseURL,
 			"APP_ENV":          "testing",
 			"SHUTDOWN_TIMEOUT": "2s",
+			"ADMIN_ADDR":       "127.0.0.1:0",
 		}, io.Discard, logs)
 	}()
 
@@ -256,15 +269,15 @@ func environFor(t *testing.T, addr net.Addr) map[string]string {
 	return map[string]string{"DATABASE_URL": "postgres://unused", "HTTP_ADDR": ":" + port, "APP_ENV": "testing"}
 }
 
-// listeningAddr returns a log writer and a channel that receives the address
-// from the server's "listening" log line.
-func listeningAddr(t *testing.T) (io.Writer, <-chan string) {
+// listeningAddr returns a log writer and channels that receive the
+// addresses from the "listening" and "admin listening" log lines.
+func listeningAddr(t *testing.T) (io.Writer, <-chan string, <-chan string) {
 	t.Helper()
 
 	reader, writer := io.Pipe()
 	t.Cleanup(func() { _ = reader.Close() })
 
-	addrs := make(chan string, 1)
+	addrs, adminAddrs := make(chan string, 1), make(chan string, 1)
 	go func() {
 		scanner := bufio.NewScanner(reader)
 		for scanner.Scan() {
@@ -272,13 +285,21 @@ func listeningAddr(t *testing.T) (io.Writer, <-chan string) {
 				Msg  string `json:"msg"`
 				Addr string `json:"addr"`
 			}
-			if json.Unmarshal(scanner.Bytes(), &line) == nil && line.Msg == "listening" {
+
+			if json.Unmarshal(scanner.Bytes(), &line) != nil {
+				continue
+			}
+
+			switch line.Msg {
+			case "listening":
 				addrs <- line.Addr
+			case "admin listening":
+				adminAddrs <- line.Addr
 			}
 		}
 	}()
 
-	return writer, addrs
+	return writer, addrs, adminAddrs
 }
 
 // logLine returns a log writer and a channel closed when a line with msg is
@@ -307,6 +328,30 @@ func logLine(t *testing.T, msg string) (io.Writer, <-chan struct{}) {
 	}()
 
 	return writer, seen
+}
+
+func bodyOf(t *testing.T, url string) string {
+	t.Helper()
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, url, http.NoBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client := &http.Client{Transport: &http.Transport{DisableKeepAlives: true}}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return string(body)
 }
 
 func statusOf(t *testing.T, url string) int {

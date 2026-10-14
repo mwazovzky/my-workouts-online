@@ -14,6 +14,7 @@ curl -i localhost:8081/api/v1/meta -H 'Accept-Language: ru'  # the same body as 
 docker compose restart api-go        # pick up code changes (the dev container builds, migrates, then serves)
 docker compose logs -f api-go        # JSON logs
 docker compose up -d worker-go       # the job worker (`workouts work`); restart it after code changes too
+curl -s localhost:9090/metrics       # Prometheus metrics of api-go (worker-go: localhost:9091)
 ```
 
 With Go 1.27 on the host: `DATABASE_URL=postgres://workouts:secret@localhost:5432/workouts?sslmode=disable make run` (run `go run ./cmd/workouts migrate up` with the same URL first).
@@ -82,6 +83,8 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 | --- | --- | --- |
 | `DATABASE_URL` | required | Postgres URL. Compose builds it from `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE`. Pool settings go in the query string (`pool_max_conns=10`). |
 | `HTTP_ADDR` | `:8081` | Listen address. |
+| `ADMIN_ADDR` | `:9090` | The admin listener of `serve` and `work`: `/metrics` and `/health/ready`, never proxied. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | none | The OpenTelemetry collector's base URL; traces are exported to `{it}/v1/traces` when set. |
 | `APP_URL` | `http://localhost:8080` | Public base URL; a Problem's `type` is `{APP_URL}/problems/{code}`. |
 | `API_RATE_LIMIT_PER_MINUTE` | `60` | Requests per minute per client IP under `/api/`; over it, 429 with `Retry-After`. CI sets `100000`. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`, or Laravel's names (`notice`, `warning`, `critical`, …). |
@@ -109,15 +112,16 @@ Environment variables, read by `internal/platform/config`. Names shared with the
 
 Every request passes the same chain (`internal/platform/httpapi`):
 
-1. **Request id:** a UUID from `X-Request-Id` is kept, anything else is replaced, and the id is echoed on every response and logged.
-2. **Access log:** one JSON line per request: `request_id`, `method`, `path`, `route`, `status`, `bytes`, `duration_ms`.
-3. **Recover:** a panic becomes a 500 Problem; the stack goes to the log, never to the body.
-4. **Locale:** from `Accept-Language` (`en`, `ru`; anything else is `en`), answered with `Content-Language` and `Vary: Accept-Language`.
-5. **Rate limit** (see `API_RATE_LIMIT_PER_MINUTE`).
-6. **Routing:** an unknown path is a 404 Problem, a wrong method a 405 Problem with `Allow`, and a non-numeric id in a path a 404.
-7. **Policy:** inside each contract operation, operations with `security: []` are public; any other needs a valid bearer token (401 `unauthenticated` or `token_expired`), a verified email unless tagged `Auth` or `Me` (403 `email_unverified`), and `Admin`-tagged ones an admin (403 `forbidden`). Per-operation throttles follow (register 10/min; reauth, verify, resend, forgot and reset 6/min; 429).
-8. **Request validation:** the request is checked against the contract, and failures are a 422 with one `{pointer, code, detail}` per field. Malformed JSON is one `invalid_format` error with the empty pointer.
-9. **Generated strict server:** the module handler runs, and a returned error goes through the responder.
+1. **Trace:** `otelhttp` starts the request's span (continuing an incoming `traceparent`); after routing the span is named by the route pattern. The health probes are not traced.
+2. **Request id:** a UUID from `X-Request-Id` is kept, anything else is replaced, and the id is echoed on every response and logged.
+3. **Access log:** one JSON line per request: `request_id`, `user_id` once authenticated, `trace_id`, `span_id`, `method`, `path`, `route`, `status`, `bytes`, `duration_ms`. It also records the request metrics (see Observability).
+4. **Recover:** a panic becomes a 500 Problem; the stack goes to the log, never to the body.
+5. **Locale:** from `Accept-Language` (`en`, `ru`; anything else is `en`), answered with `Content-Language` and `Vary: Accept-Language`.
+6. **Rate limit** (see `API_RATE_LIMIT_PER_MINUTE`).
+7. **Routing:** an unknown path is a 404 Problem, a wrong method a 405 Problem with `Allow`, and a non-numeric id in a path a 404.
+8. **Policy:** inside each contract operation, operations with `security: []` are public; any other needs a valid bearer token (401 `unauthenticated` or `token_expired`), a verified email unless tagged `Auth` or `Me` (403 `email_unverified`), and `Admin`-tagged ones an admin (403 `forbidden`). Per-operation throttles follow (register 10/min; reauth, verify, resend, forgot and reset 6/min; 429).
+9. **Request validation:** the request is checked against the contract, and failures are a 422 with one `{pointer, code, detail}` per field. Malformed JSON is one `invalid_format` error with the empty pointer.
+10. **Generated strict server:** the module handler runs, and a returned error goes through the responder.
 
 Errors are `kernel/apperr` values, which only the responder turns into Problems:
 
@@ -187,9 +191,22 @@ Resend posts `email.received` events to `POST /api/webhooks/resend` (off the con
 
 Jobs get 5 attempts, with retries 60, 300, then 900 seconds apart; an email Resend does not know (404) cancels the job. River's client lives in `internal/platform/jobs` (insert-only in `serve`). Inspect jobs with `docker compose exec postgres psql -U workouts workouts -c 'SELECT id, kind, state, attempt, errors FROM river_job ORDER BY id DESC LIMIT 5'`. Decisions and departures from PHP: [ADR 0013](docs/adr/0013-support-inbox-and-jobs.md).
 
+## Observability
+
+`internal/platform/observability` builds the OpenTelemetry tracer and meter providers ([ADR 0014](docs/adr/0014-observability.md)). `serve` and `work` each run an admin listener on `ADMIN_ADDR` with `/metrics` (Prometheus text) and `/health/ready`.
+
+- **Metrics:**
+  - `api-go`: `http_server_request_duration_seconds` and `http_server_requests_total`, by `method`, `route` (the pattern's path, or `unmatched`) and `status`.
+  - Both processes: `db_client_operation_duration_seconds` (otelpgx) and the Go runtime.
+  - `worker-go`: `jobs_active` and `jobs_failed_total` by `kind`, the latter also by `reason` (`discarded` or `cancelled`).
+- **Traces:** a span per request and per query, exported over OTLP only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Without it nothing leaves the process, but logs still carry trace ids.
+- **Logs:** every line logged with a request's context carries `request_id`, `user_id` (once authenticated), `trace_id` and `span_id`, added by `observability.LogHandler`; business events (`auth.login`, `workout.started`, …) keep PHP's names. `LOG_LEVEL=debug` also logs each SQL statement without its arguments.
+
+The SLI queries and the field list are in [deployment](../../docs/deployment.md#go-api).
+
 ## Shutdown
 
-On SIGINT or SIGTERM `serve` flips `/health/ready` to 503, waits `SHUTDOWN_DRAIN_DELAY` so a proxy stops routing to it, stops accepting connections, lets in-flight requests finish within `SHUTDOWN_TIMEOUT`, closes resources in reverse order (the database pool last), and exits 0. A second signal kills the process. The defaults finish within Docker's 10-second stop grace period.
+On SIGINT or SIGTERM `serve` flips `/health/ready` to 503, waits `SHUTDOWN_DRAIN_DELAY` so a proxy stops routing to it, stops accepting connections, lets in-flight requests finish within `SHUTDOWN_TIMEOUT`, stops the admin listener, closes resources in reverse order (telemetry flushed, then the database pool), and exits 0. A second signal kills the process. The defaults finish within Docker's 10-second stop grace period.
 
 ## Layout
 
@@ -223,7 +240,8 @@ internal/inbox/                the support inbox: domain/ (the forwarded message
 internal/kernel/mail/         the Mailer port
 internal/platform/mail/       Log and Fake mailers
 internal/platform/resend/     Resend API client (send, received email, attachments); resendtest/ is a fake server
-internal/platform/jobs/       River client and the worker run loop
+internal/platform/jobs/       River client, the worker run loop and the jobs metrics middleware
+internal/platform/observability/  tracer and meter providers, /metrics, OTLP export, the context log handler, pgx tracers
 internal/identity/adapters/postgres/sqlcgen  generated by sqlc from sql/identity (never edit)
 internal/catalog/adapters/postgres/sqlcgen   generated by sqlc from sql/catalog (never edit)
 internal/training/adapters/postgres/sqlcgen  generated by sqlc from sql/training (never edit)
@@ -252,6 +270,7 @@ The module layout and the dependency rules `depguard` enforces are in [ADR 0001]
 - [0011 The dashboard is a read model over the modules' api packages](docs/adr/0011-dashboard-read-model.md)
 - [0012 Admin catalog writes: delete guards and departures from PHP](docs/adr/0012-admin-delete-guards.md)
 - [0013 Support inbox: Resend client, webhook idempotency and River jobs](docs/adr/0013-support-inbox-and-jobs.md)
+- [0014 Observability: OpenTelemetry, Prometheus metrics and request-scoped logs](docs/adr/0014-observability.md)
 
 ## Image
 

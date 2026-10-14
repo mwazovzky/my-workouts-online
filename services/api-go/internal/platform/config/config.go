@@ -21,6 +21,12 @@ import (
 type Config struct {
 	// HTTPAddr is the listen address of the public HTTP server.
 	HTTPAddr string `env:"HTTP_ADDR" envDefault:":8081"`
+	// AdminAddr is the admin listener's address: /metrics and /health/ready
+	// for scrapers and probes, never proxied to the internet.
+	AdminAddr string `env:"ADMIN_ADDR" envDefault:":9090"`
+	// OTLPEndpoint is the OpenTelemetry collector's base URL; traces are
+	// exported to it when set, and stay in the process otherwise.
+	OTLPEndpoint string `env:"OTEL_EXPORTER_OTLP_ENDPOINT"`
 	// DatabaseURL is the Postgres connection string.
 	DatabaseURL string `env:"DATABASE_URL,required,notEmpty"`
 	// AppURL is the API's public base URL. Problem types are
@@ -167,6 +173,16 @@ func (c Config) validate() error {
 
 	if _, _, err := net.SplitHostPort(c.HTTPAddr); err != nil {
 		errs = append(errs, fmt.Errorf("HTTP_ADDR %q: %w", c.HTTPAddr, err))
+	}
+
+	if _, _, err := net.SplitHostPort(c.AdminAddr); err != nil {
+		errs = append(errs, fmt.Errorf("ADMIN_ADDR %q: %w", c.AdminAddr, err))
+	}
+
+	if c.OTLPEndpoint != "" {
+		if u, err := url.Parse(c.OTLPEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+			errs = append(errs, fmt.Errorf("OTEL_EXPORTER_OTLP_ENDPOINT must be an absolute http(s) URL, got %q", c.OTLPEndpoint))
+		}
 	}
 
 	if u, err := url.Parse(c.AppURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {

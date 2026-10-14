@@ -17,7 +17,7 @@ Full product docs in `docs/` — see `docs/README.md` for index. Note: the Larav
 
 ## Common Commands
 
-The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`, `api-go` (the Go API on http://localhost:8081, toolchain container with the repo bind-mounted), `worker-go` (the Go job worker, `workouts work`), `postgres` (used only by the Go API). Run tools through the containers unless PHP/Node are installed on the host.
+The dev stack is Docker Compose (`docker compose up -d`): `app` (php-fpm on `services/api-php`), `node` (Vite dev server for `apps/web`), `nginx` (http://localhost:8080 serves the SPA and `/api`), `mysql`, `api-go` (the Go API on http://localhost:8081, toolchain container with the repo bind-mounted; metrics on :9090), `worker-go` (the Go job worker, `workouts work`; metrics on :9091), `postgres` (used only by the Go API). Run tools through the containers unless PHP/Node are installed on the host.
 
 ### Backend (`services/api-php`)
 ```bash

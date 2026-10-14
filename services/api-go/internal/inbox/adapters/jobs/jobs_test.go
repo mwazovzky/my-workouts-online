@@ -12,10 +12,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivertest"
 	"github.com/riverqueue/river/rivertype"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 
 	inboxjobs "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters/jobs"
 	inboxresend "github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/adapters/resend"
@@ -23,6 +26,7 @@ import (
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/inbox/ports"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/clock"
 	kernelmail "github.com/mwazovzky/my-workouts-online/services/api-go/internal/kernel/mail"
+	platformjobs "github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/jobs"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/mail"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/resend"
 	"github.com/mwazovzky/my-workouts-online/services/api-go/internal/platform/resend/resendtest"
@@ -32,12 +36,14 @@ import (
 func TestMain(m *testing.M) { testdb.Main(m) }
 
 type fixture struct {
-	worker *rivertest.Worker[inboxjobs.ForwardArgs, pgx.Tx]
-	tx     pgx.Tx
-	clock  *clock.Fake
-	mail   *mail.Fake
-	resend *resendtest.Server
-	logs   *bytes.Buffer
+	worker  *rivertest.Worker[inboxjobs.ForwardArgs, pgx.Tx]
+	forward inboxjobs.Forwarder
+	pool    *pgxpool.Pool
+	tx      pgx.Tx
+	clock   *clock.Fake
+	mail    *mail.Fake
+	resend  *resendtest.Server
+	logs    *bytes.Buffer
 }
 
 // newFixture works ForwardArgs jobs inside a transaction rolled back after
@@ -47,6 +53,7 @@ func newFixture(t *testing.T, forwardTo string) *fixture {
 
 	pool := testdb.New(t)
 	f := &fixture{
+		pool:   pool,
 		clock:  clock.NewFake(time.Date(2026, 10, 5, 20, 0, 0, 0, time.UTC)),
 		mail:   &mail.Fake{},
 		resend: resendtest.New(t),
@@ -69,6 +76,7 @@ func newFixture(t *testing.T, forwardTo string) *fixture {
 
 	// Retries are timed on the wall clock, as in production: River rejects a
 	// retry time before its own now.
+	f.forward = inbox.Forward
 	f.worker = rivertest.NewWorker(t, riverpgxv5.New(pool), &river.Config{}, inboxjobs.NewForwardWorker(inbox.Forward, clock.System{}))
 
 	f.tx, err = pool.Begin(t.Context())
@@ -234,5 +242,51 @@ func TestBackoffFollowsThePHPJob(t *testing.T) {
 
 	if got := worker.Timeout(nil); got != 5*time.Minute {
 		t.Errorf("Timeout() = %s", got)
+	}
+}
+
+// TestAForwardThatExhaustsItsRetriesCountsAsFailed is the story-12 check:
+// jobs.failed (jobs_failed_total) counts a forward whose last attempt failed.
+func TestAForwardThatExhaustsItsRetriesCountsAsFailed(t *testing.T) {
+	t.Parallel()
+
+	f := newFixture(t, "owner@example.com")
+	f.resend.FailWith(http.StatusInternalServerError)
+
+	reader := sdkmetric.NewManualReader()
+
+	middleware, err := platformjobs.NewMetricsMiddleware(sdkmetric.NewMeterProvider(sdkmetric.WithReader(reader)).Meter("test"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	worker := rivertest.NewWorker(t, riverpgxv5.New(f.pool), &river.Config{Middleware: []rivertype.Middleware{middleware}},
+		inboxjobs.NewForwardWorker(f.forward, clock.System{}))
+
+	// The fifth and last attempt of a job that failed four times.
+	job, err := worker.Work(t.Context(), t, f.tx, inboxjobs.ForwardArgs{EmailID: "email-1"}, &river.InsertOpts{MaxAttempts: 1})
+	if job == nil || job.Job.State != rivertype.JobStateDiscarded {
+		t.Fatalf("job = %+v, err = %v; want discarded", job, err)
+	}
+
+	var rm metricdata.ResourceMetrics
+	if err := reader.Collect(t.Context(), &rm); err != nil {
+		t.Fatal(err)
+	}
+
+	var failed int64
+
+	for _, scope := range rm.ScopeMetrics {
+		for _, m := range scope.Metrics {
+			if sum, ok := m.Data.(metricdata.Sum[int64]); ok && m.Name == "jobs.failed" {
+				for _, point := range sum.DataPoints {
+					failed += point.Value
+				}
+			}
+		}
+	}
+
+	if failed != 1 {
+		t.Errorf("jobs.failed = %d, want 1", failed)
 	}
 }

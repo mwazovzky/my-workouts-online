@@ -84,7 +84,7 @@ func (h Identity) Register(ctx context.Context, req gen.RegisterRequestObject) (
 
 	session, err := h.service.Register(ctx, app.RegisterInput{
 		Name: body.Name, Email: string(body.Email), Password: body.Password, DeviceName: body.DeviceName,
-		Locale: string(i18n.FromContext(ctx)),
+		Locale: string(i18n.FromContext(ctx)), Client: string(body.Client),
 	})
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (h Identity) Login(ctx context.Context, req gen.LoginRequestObject) (gen.Lo
 
 	session, err := h.service.Login(ctx, app.LoginInput{
 		Email: string(body.Email), Password: body.Password, DeviceName: body.DeviceName,
-		ClientIP: httpapi.ClientIP(httpapi.Request(ctx)),
+		ClientIP: httpapi.ClientIP(httpapi.Request(ctx)), Client: string(body.Client),
 	})
 	if err != nil {
 		return nil, err

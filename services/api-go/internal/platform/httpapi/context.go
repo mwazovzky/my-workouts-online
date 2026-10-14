@@ -22,8 +22,9 @@ func RequestID(ctx context.Context) string {
 	return id
 }
 
-// Logger returns the request-scoped logger (with request_id), or the
-// default logger outside a request.
+// Logger returns the service logger during a request (its handler adds the
+// request's fields, see observability.LogHandler), or the default logger
+// outside one.
 func Logger(ctx context.Context) *slog.Logger {
 	if logger, ok := ctx.Value(loggerKey).(*slog.Logger); ok {
 		return logger
@@ -32,11 +33,10 @@ func Logger(ctx context.Context) *slog.Logger {
 	return slog.Default()
 }
 
-// route is filled in by inner layers so the access log, which runs outside
-// the mux, can name the route and the user.
+// route is filled in by the mux layer so the access log, which runs outside
+// it, can name the route.
 type route struct {
 	pattern string
-	userID  int64
 }
 
 func routeFrom(ctx context.Context) *route {

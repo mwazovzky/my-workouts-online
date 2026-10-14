@@ -65,7 +65,19 @@ Adopted in story 11 ([ADR 0013](0013-support-inbox-and-jobs.md)):
 | Job queue | `github.com/riverqueue/river` client and workers on `riverpgxv5` over the shared pool; `rivertest` in worker tests | v0.49.0 |
 | Resend API and webhook signatures | Hand-written: `platform/resend` on `net/http` and an HMAC-SHA256 Svix check in `inbox/adapters/http`, replacing the planned `resend-go` and `svix`; `resend-go` returns untyped errors, so a 404 could not be told from an outage | — |
 
-Planned, confirmed or replaced by an ADR in its story: OpenTelemetry (story 12).
+Adopted in story 12 ([ADR 0014](0014-observability.md)):
+
+| Concern | Choice | Version |
+| --- | --- | --- |
+| Tracing and metrics API and SDK | `go.opentelemetry.io/otel`, `otel/sdk`, `otel/sdk/metric` | v1.47.0 |
+| Metrics export | `go.opentelemetry.io/otel/exporters/prometheus` into a private `prometheus.Registry` served with `promhttp` (`client_golang` v1.24.1) | v0.69.0 |
+| Trace export | `go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp`, only with `OTEL_EXPORTER_OTLP_ENDPOINT` | v1.47.0 |
+| HTTP tracing | `go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp` (traces only; request metrics are recorded by the access log) | v0.72.0 |
+| Runtime metrics | `go.opentelemetry.io/contrib/instrumentation/runtime` | v0.72.0 |
+| Database tracing and metrics | `github.com/exaring/otelpgx`; `pgx/v5/tracelog` for debug query logs | v0.13.0 |
+| Goroutine leak test | `go.uber.org/goleak` (tests only) | v1.3.0 |
+
+Upgraded for govulncheck in story 12 (reached through the OTLP exporter): `golang.org/x/net` v0.61.0.
 
 Rejected: `testify` and generated mocks (blocked by `gomodguard_v2`; tests use `testing`, go-cmp and hand-written fakes), `github.com/pkg/errors` (blocked; `fmt.Errorf` with `%w`), Viper and Cobra (configuration and CLI are small enough for the standard library and caarlos0/env).
 
