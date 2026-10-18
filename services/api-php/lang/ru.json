@@ -261,5 +261,12 @@
   "Workout template": "Шаблон тренировки",
   "The :attribute field must be an object.": "Поле :attribute должно быть объектом.",
   "This workout was changed elsewhere. Reload it to continue.": "Эта тренировка была изменена в другом месте. Обновите её, чтобы продолжить.",
-  "Send the workout's ETag in If-Match.": "Передайте ETag тренировки в заголовке If-Match."
+  "Send the workout's ETag in If-Match.": "Передайте ETag тренировки в заголовке If-Match.",
+  "(and :count more error)": "(и ещё ошибок: :count)",
+  "(and :count more errors)": "(и ещё ошибок: :count)",
+  "An English name is required.": "Требуется название на английском.",
+  "Record not found.": "Запись не найдена.",
+  "Server Error": "Ошибка сервера",
+  "This action is unauthorized.": "Действие не разрешено.",
+  "Too many attempts.": "Слишком много попыток."
 }

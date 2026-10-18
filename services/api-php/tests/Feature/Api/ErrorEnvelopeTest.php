@@ -81,6 +81,54 @@ class ErrorEnvelopeTest extends TestCase
     }
 
     #[Test]
+    public function the_fixed_details_are_localized(): void
+    {
+        $user = User::factory()->create();
+        $ru = ['Accept-Language' => 'ru'];
+
+        $this->actingAs($user)->getJson('/api/v1/programs/999999', $ru)
+            ->assertProblem(404, 'not_found')
+            ->assertJsonPath('detail', 'Запись не найдена.');
+
+        $this->actingAs($user)->getJson('/api/v1/admin/equipment', $ru)
+            ->assertProblem(403, 'forbidden')
+            ->assertJsonPath('detail', 'Действие не разрешено.');
+
+        $this->postJson('/api/v1/auth/register', [], $ru)
+            ->assertJsonPath('detail', fn (string $detail): bool => str_ends_with($detail, '(и ещё ошибок: 3)'));
+
+        Route::middleware('api')->get('/api/v1/boom', static function (): never {
+            throw new RuntimeException('kaboom');
+        });
+        config(['app.debug' => false]);
+
+        $this->getJson('/api/v1/boom', $ru)
+            ->assertProblem(500, 'internal_error')
+            ->assertJsonPath('detail', 'Ошибка сервера');
+    }
+
+    #[Test]
+    public function every_api_route_is_rate_limited_per_client(): void
+    {
+        config(['app.api_rate_limit' => 2]);
+
+        $this->getJson('/api/v1/meta')->assertOk()
+            ->assertHeader('X-RateLimit-Limit', '2')
+            ->assertHeader('X-RateLimit-Remaining', '1');
+        $this->getJson('/api/v1/meta')->assertOk();
+
+        $this->getJson('/api/v1/meta')
+            ->assertProblem(429, 'too_many_requests')
+            ->assertHeader('Retry-After')
+            ->assertJsonPath('detail', 'Too many attempts.');
+
+        $this->getJson('/api/v1/meta', ['Accept-Language' => 'ru'])
+            ->assertJsonPath('detail', 'Слишком много попыток.');
+
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.2'])->getJson('/api/v1/meta')->assertOk();
+    }
+
+    #[Test]
     public function method_not_allowed(): void
     {
         $this->actingAs(User::factory()->create())->deleteJson('/api/v1/programs')
@@ -139,7 +187,7 @@ class ErrorEnvelopeTest extends TestCase
         $response->assertFieldErrors(['name'], 'required');
         $response->assertFieldErrors(['email'], 'not_unique');
         $response->assertFieldErrors(['client'], 'invalid_value');
-        $this->assertContains($response->fieldError('password')['code'], ['invalid_format', 'too_short']);
+        $response->assertFieldErrors(['password'], 'too_short');
     }
 
     #[Test]

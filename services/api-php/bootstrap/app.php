@@ -25,9 +25,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => null);
 
-        $middleware->api(append: [
-            \App\Http\Middleware\LogContext::class,
+        // Every /api route: API_RATE_LIMIT_PER_MINUTE per client IP (the `api` limiter).
+        $middleware->throttleApi();
+
+        // The locale comes first, so the throttle's 429 and route binding's
+        // 404 are localized too.
+        $middleware->api(prepend: [
             \App\Http\Middleware\NegotiateApiLocale::class,
+        ], append: [
+            \App\Http\Middleware\LogContext::class,
         ]);
 
         $middleware->alias([

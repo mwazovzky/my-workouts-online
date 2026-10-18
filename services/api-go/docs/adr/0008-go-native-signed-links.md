@@ -40,6 +40,8 @@ Departures from the PHP API:
 | Email texts | Laravel's default English texts in every locale | English and Russian templates, chosen by `Accept-Language` |
 | `forgot` while a reset is pending | Laravel throttles a new token for 60 seconds | A new request replaces the pending token; the route throttle (6/min) bounds it |
 
+Aligned in [story 15](../../../../planning/epics/go-backend/stories/15-php-parity-fixes.md): PHP now emails a verification link to a changed address.
+
 ## Consequences
 
 - Good: no secret or URL scheme is shared with Laravel; the link format the clients parse is unchanged.

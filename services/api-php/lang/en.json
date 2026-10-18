@@ -261,5 +261,12 @@
   "Workout template": "Workout template",
   "The :attribute field must be an object.": "The :attribute field must be an object.",
   "This workout was changed elsewhere. Reload it to continue.": "This workout was changed elsewhere. Reload it to continue.",
-  "Send the workout's ETag in If-Match.": "Send the workout's ETag in If-Match."
+  "Send the workout's ETag in If-Match.": "Send the workout's ETag in If-Match.",
+  "(and :count more error)": "(and :count more error)",
+  "(and :count more errors)": "(and :count more errors)",
+  "An English name is required.": "An English name is required.",
+  "Record not found.": "Record not found.",
+  "Server Error": "Server Error",
+  "This action is unauthorized.": "This action is unauthorized.",
+  "Too many attempts.": "Too many attempts."
 }

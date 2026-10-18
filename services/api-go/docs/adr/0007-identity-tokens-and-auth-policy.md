@@ -51,6 +51,8 @@ Departures from the PHP API:
 | Login for an unknown email | Answers faster than a wrong password | Checks a dummy hash, so both take the same time |
 | Reauth without a bearer token | 403 (reachable in PHP tests through `actingAs`) | 401: the authorize middleware stops it first |
 
+Aligned in [story 15](../../../../planning/epics/go-backend/stories/15-php-parity-fixes.md): PHP now answers a wrong reauth password with `mismatch`, a short password with `too_short`, and checks a dummy hash for an unknown email.
+
 oapi-codegen capitalizes operationIds in the spec it embeds (`Register`). The policy index lowercases the first letter, since every contract operationId is lowerCamelCase.
 
 ## Consequences

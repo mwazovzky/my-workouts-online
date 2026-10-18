@@ -2,12 +2,18 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ChecksActivityPayload;
+use App\Models\Activity;
+use App\Models\Set;
 use App\Rules\CompletedSetRequiresEffort;
 use App\Rules\HeartRateZoneWithinRange;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ReplaceWorkoutActivitiesRequest extends ApiFormRequest
 {
+    use ChecksActivityPayload;
+
     public function authorize(): bool
     {
         return true;
@@ -42,6 +48,57 @@ class ReplaceWorkoutActivitiesRequest extends ApiFormRequest
             'activities.*.sets.*.difficulty_value' => ['nullable', 'numeric', 'min:0', 'max:10000', new HeartRateZoneWithinRange],
             'activities.*.sets.*.is_completed' => ['sometimes', 'boolean', new CompletedSetRequiresEffort],
         ];
+    }
+
+    /**
+     * Beyond the rules: an activity keeps a retired exercise only if it
+     * already has it, set orders are unique per activity, and a set id must
+     * be one of its own activity's sets.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        parent::withValidator($validator);
+
+        $validator->after(function (Validator $validator): void {
+            $existing = $this->existingActivities();
+
+            $this->checkActivities($validator, static fn (array $activity, int $exerciseId): bool => is_int($activity['id'] ?? null)
+                && ($existing[$activity['id']]['exercise_id'] ?? null) === $exerciseId);
+
+            foreach ($this->activitiesPayload() as $i => $activity) {
+                $ownSets = is_int($activity['id'] ?? null) ? ($existing[$activity['id']]['set_ids'] ?? []) : [];
+
+                foreach ($this->setsPayload($activity) as $j => $set) {
+                    $setId = $set['id'] ?? null;
+
+                    if (is_int($setId) && ! in_array($setId, $ownSets, true)) {
+                        $validator->addFailure("activities.{$i}.sets.{$j}.id", 'Exists', ['sets', 'id']);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * The workout's activities by id, with their exercise and set ids.
+     *
+     * @return array<int, array{exercise_id: int, set_ids: list<int>}>
+     */
+    private function existingActivities(): array
+    {
+        $workout = $this->route('workout');
+        $activities = Activity::query()
+            ->where('workout_type', 'workout')
+            ->where('workout_id', is_object($workout) ? $workout->getKey() : $workout)
+            ->pluck('exercise_id', 'id');
+
+        $setIds = Set::query()->whereIn('activity_id', $activities->keys())->get(['id', 'activity_id'])
+            ->groupBy('activity_id');
+
+        return $activities->map(fn (int $exerciseId, int $id): array => [
+            'exercise_id' => $exerciseId,
+            'set_ids' => $setIds->get($id)?->pluck('id')->all() ?? [],
+        ])->all();
     }
 
     /**

@@ -85,7 +85,7 @@ The path parameter name is a contract concern only: the URL is the same whatever
 | Well-formed input that fails validation | 422 | `validation_failed` with `errors[]` (see [Errors](#errors)); never used for authentication outcomes |
 | Bad credentials at login | 401 | `invalid_credentials`; the `Problem.detail` is the message to show. 422 on login is only malformed input |
 | Login lockout (5 failures per email and IP within a minute) | 429 | `too_many_attempts` with `Retry-After` in seconds |
-| Per-route throttle exceeded | 429 | `too_many_requests`; always carries `Retry-After` |
+| Per-route throttle, or the global per-IP limit on `/api` (`API_RATE_LIMIT_PER_MINUTE`), exceeded | 429 | `too_many_requests`; always carries `Retry-After` |
 | Write rejected because the client's copy is stale | 412 | `precondition_failed`; nothing is written, the client reloads |
 | Conditional write sent without `If-Match` | 428 | `precondition_required` |
 

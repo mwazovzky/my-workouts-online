@@ -32,4 +32,4 @@ The ordering differs from PHP's in one respect: PHP validates the payload before
 - Good: no 500 from a payload; every rejected id is pointed at; a retired exercise cannot creep back into new training.
 - Good: the editor's ETag flow is identical: the same tags (`"<id>-<version>"`), the same 412 and 428 bodies, verified against PHP with a scripted flow on both backends and with the web SPA's editor against Go.
 - Bad: a client relying on PHP accepting a retired exercise, or ignoring an exercise change, behaves differently. Neither client does either: the pickers hide retired exercises and the editor does not change an existing activity's exercise.
-- Follow-up: the PHP API can adopt the retired-exercise and set-order checks; until then the two backends differ only on those payloads.
+- Done in [story 15](../../../../planning/epics/go-backend/stories/15-php-parity-fixes.md): the PHP API adopted the retired-exercise and set-order checks, stores a changed exercise and points a foreign set id at the set. The backends now differ only in the order of the checks (PHP validates the payload before the 404, 403 and 412).

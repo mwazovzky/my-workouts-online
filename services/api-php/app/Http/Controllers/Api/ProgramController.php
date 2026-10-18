@@ -18,6 +18,7 @@ class ProgramController extends Controller
     {
         $programs = Program::query()
             ->withCount(['users' => fn ($query) => $query->where('users.id', $request->user()->id)])
+            ->orderBy('id')
             ->get();
 
         return ProgramResource::collection($programs);

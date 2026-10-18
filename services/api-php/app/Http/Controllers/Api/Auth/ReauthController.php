@@ -8,6 +8,7 @@ use App\Http\Requests\Api\Auth\ReauthRequest;
 use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -27,9 +28,11 @@ class ReauthController extends Controller
         $user = $request->user();
 
         if (! Hash::check($request->validated('password'), $user->password)) {
-            throw ValidationException::withMessages([
-                'password' => __('auth.password'),
-            ]);
+            // Failed as `current_password`, so the field code is the contract's `mismatch`.
+            $validator = Validator::make([], [], ['password.current_password' => __('auth.password')]);
+            $validator->addFailure('password', 'CurrentPassword');
+
+            throw new ValidationException($validator);
         }
 
         return response()->json([
