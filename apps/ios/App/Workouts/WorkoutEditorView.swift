@@ -278,6 +278,14 @@ struct ActivityEditorCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(verbatim: activity.exerciseName).font(.headline)
+                        if let instructions = activity.instructions {
+                            ExerciseInfoButton(
+                                name: activity.exerciseName, instructions: instructions,
+                                equipmentName: activity.equipmentName, categoryNames: activity.categoryNames,
+                                restTimeSeconds: activity.restTimeSeconds
+                            )
+                            .accessibilityIdentifier("activity.\(activityIndex).info")
+                        }
                         Spacer()
                         if model.isEditable {
                             Button(role: .destructive) {

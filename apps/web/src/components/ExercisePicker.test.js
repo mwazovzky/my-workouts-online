@@ -11,6 +11,7 @@ const exercises = [
   {
     id: 1,
     name: 'Bench Press',
+    description: 'Lower the bar to your chest, then press it up.',
     equipment_name: 'Barbell',
     categories: [{ id: 1, name: 'Chest' }],
   },
@@ -43,6 +44,13 @@ describe('ExercisePicker', () => {
     expect(rows).toHaveLength(3);
     expect(rows[0].text()).toContain('Bench Press');
     expect(rows[0].text()).toContain('Barbell · Chest');
+  });
+
+  it('shows an exercise description when there is one', () => {
+    const rows = buildWrapper().findAll('li button');
+
+    expect(rows[0].text()).toContain('Lower the bar to your chest, then press it up.');
+    expect(rows[1].findAll('span')).toHaveLength(2);
   });
 
   it('filters exercises by the search query, case-insensitively', async () => {

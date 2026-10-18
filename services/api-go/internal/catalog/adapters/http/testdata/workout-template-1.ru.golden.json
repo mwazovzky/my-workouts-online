@@ -6,6 +6,7 @@
           "category_names": [
             "Ноги"
           ],
+          "description": "Ноги на ширине плеч.",
           "difficulty_unit": "kilograms",
           "effort_type": "repetitions",
           "equipment_name": "Штанга",
@@ -37,6 +38,7 @@
           "category_names": [
             "Грудь"
           ],
+          "description": "Keep the body straight.",
           "difficulty_unit": "none",
           "effort_type": "repetitions",
           "equipment_name": "Собственный вес",

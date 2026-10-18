@@ -59,6 +59,12 @@ struct ExercisePickerView: View {
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                                if let instructions = exercise.instructions {
+                                    Text(verbatim: instructions)
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                        .lineLimit(2)
+                                }
                             }
                         }
                         .accessibilityIdentifier("picker.exercise.\(exercise.id)")

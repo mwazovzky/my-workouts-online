@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: My Workouts API
-  version: 2.0.0
+  version: 2.1.0
   description: |
     Contract for the `/api/v1` surface consumed by the web SPA and the iOS app,
     and implemented by the backend. The design rules behind it are written in
@@ -1943,6 +1943,7 @@ components:
             exercise:
               id: 15
               name: Bench press
+              description: Lie on the bench, lower the bar to the chest, press up.
               equipment_name: Barbell
               effort_type: repetitions
               difficulty_unit: kilograms
@@ -1979,6 +1980,7 @@ components:
             exercise:
               id: 15
               name: Bench press
+              description: Lie on the bench, lower the bar to the chest, press up.
               equipment_name: Barbell
               effort_type: repetitions
               difficulty_unit: kilograms
@@ -2051,6 +2053,7 @@ components:
         exercise:
           id: 15
           name: Bench press
+          description: Lie on the bench, lower the bar to the chest, press up.
           equipment_name: Barbell
           effort_type: repetitions
           difficulty_unit: kilograms
@@ -2074,6 +2077,7 @@ components:
       properties:
         id: { type: integer }
         name: { type: [string, 'null'], description: Localized; retired exercises still resolve. }
+        description: { type: [string, 'null'], description: How to perform the exercise. Localized. }
         equipment_name: { type: [string, 'null'], description: Localized. }
         effort_type: { $ref: '#/components/schemas/EffortType' }
         difficulty_unit: { $ref: '#/components/schemas/DifficultyUnit' }
@@ -2082,7 +2086,7 @@ components:
           description: Localized category names.
           items: { type: string }
         rest_time_seconds: { type: [integer, 'null'] }
-      example: { id: 15, name: Bench press, equipment_name: Barbell, effort_type: repetitions, difficulty_unit: kilograms, category_names: [Chest], rest_time_seconds: 120 }
+      example: { id: 15, name: Bench press, description: 'Lie on the bench, lower the bar to the chest, press up.', equipment_name: Barbell, effort_type: repetitions, difficulty_unit: kilograms, category_names: [Chest], rest_time_seconds: 120 }
     Workout:
       type: object
       required: [id, user_id, name, status, created_at, updated_at, activities]
@@ -2105,6 +2109,7 @@ components:
             exercise:
               id: 15
               name: Bench press
+              description: Lie on the bench, lower the bar to the chest, press up.
               equipment_name: Barbell
               effort_type: repetitions
               difficulty_unit: kilograms

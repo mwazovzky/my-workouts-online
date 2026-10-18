@@ -105,6 +105,9 @@ struct APIMappingTests {
         let activity = try #require(template.activities.first)
         #expect(activity.effortType != nil)
         #expect(activity.effortType != nil, "template activities carry the exercise snapshot")
+        #expect(
+            activity.exerciseDescription
+                == "Push the handles forward until your arms are straight, then return slowly.")
         #expect(!activity.sets.isEmpty)
     }
 
@@ -137,6 +140,8 @@ struct APIMappingTests {
         #expect(workout.etag == "\"1-3\"")
         #expect(workout.template != nil)
         #expect(workout.activities.count == 2)
+        #expect(workout.activities[0].instructions == "Ride at a steady pace you could keep up for an hour.")
+        #expect(workout.activities[1].exerciseDescription == nil, "the description is optional")
         #expect(workout.status == .completed)
         #expect(workout.createdAt != nil, "API dates with microseconds must decode")
         #expect(workout.totalSetCount > 0)

@@ -150,6 +150,7 @@ extension Activity {
             id: api.id,
             exerciseId: api.exerciseId,
             exerciseName: exercise?.name,
+            exerciseDescription: exercise?.description,
             restTimeSeconds: exercise?.restTimeSeconds,
             equipmentName: exercise?.equipmentName,
             effortType: try exercise.map { try EffortType(api: $0.effortType) },

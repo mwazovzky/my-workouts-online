@@ -134,6 +134,7 @@ class TranslatedResourceTest extends TestCase
         $response->assertOk();
 
         $response->assertJsonPath('data.activities.0.exercise.name', 'Жим лёжа')
+            ->assertJsonPath('data.activities.0.exercise.description', 'Упражнение на грудь.')
             ->assertJsonPath('data.activities.0.exercise.equipment_name', 'Штанга')
             ->assertJsonPath('data.activities.0.exercise.category_names', ['Грудь'])
             ->assertJsonPath('data.activities.0.exercise.rest_time_seconds', 90);

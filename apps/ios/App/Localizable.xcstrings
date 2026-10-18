@@ -1425,6 +1425,16 @@
         }
       }
     },
+    "How to do this exercise" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как выполнять упражнение"
+          }
+        }
+      }
+    },
     "I have verified my email" : {
       "localizations" : {
         "ru" : {

@@ -35,6 +35,7 @@ func exerciseInfo(e domain.Exercise, locale i18n.Locale) catalogapi.ExerciseInfo
 	return catalogapi.ExerciseInfo{
 		ID:              e.ID,
 		Name:            e.Name.Resolve(locale),
+		Description:     e.Description.Resolve(locale),
 		EquipmentName:   e.Equipment.Name.Resolve(locale),
 		EffortType:      string(e.EffortType),
 		DifficultyUnit:  string(e.Equipment.DifficultyUnit),
