@@ -14,6 +14,7 @@ Current gaps this epic addresses:
 - No starter recommendations
 - No unenroll or switch-program flow
 - No strong next-workout guidance
+- No visible guidance on how to perform an exercise
 
 These gaps matter because acquisition and activation depend on helping users make a good first choice quickly.
 
@@ -49,6 +50,7 @@ This epic includes:
 - starter recommendations
 - unenroll or switch-program flow
 - next-workout guidance
+- exercise instructions where users meet an exercise
 
 ## Non-Goals
 
@@ -67,6 +69,7 @@ This epic does not include:
 4. Starter program recommendation
 5. Unenroll and switch flow
 6. Next-workout prompt
+7. Exercise instructions
 
 ## Sequencing Rationale
 
@@ -74,6 +77,7 @@ This epic does not include:
 - Add filters and search next because they are only useful once metadata exists.
 - Add onboarding and recommendations after the program catalog is easier to reason about.
 - Add switch-flow and next-workout guidance after the core onboarding path is stable.
+- Exercise instructions depend on no other story and can ship at any point; the descriptions already exist in the catalog.
 
 ## Success Metrics
 
