@@ -83,7 +83,15 @@ struct ActivitySummaryCard: View {
     var body: some View {
         Card {
             VStack(alignment: .leading, spacing: 8) {
-                Text(verbatim: activity.exerciseName ?? String(localized: "Workout")).font(.headline)
+                HStack {
+                    Text(verbatim: activity.exerciseName ?? String(localized: "Workout")).font(.headline)
+                    if let instructions = activity.instructions {
+                        ExerciseInfoButton(
+                            name: activity.exerciseName ?? "", instructions: instructions,
+                            equipmentName: activity.equipmentName, categoryNames: activity.categoryNames,
+                            restTimeSeconds: activity.restTimeSeconds)
+                    }
+                }
                 HStack(spacing: 8) {
                     if let equipment = activity.equipmentName {
                         Text(verbatim: equipment)

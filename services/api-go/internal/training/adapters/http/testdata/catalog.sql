@@ -10,11 +10,11 @@ INSERT INTO categories (id, name, translations) OVERRIDING SYSTEM VALUE VALUES
     (1, 'Chest', '{"ru": {"name": "Грудь"}}'),
     (2, 'Cardio', '{}');
 
-INSERT INTO exercises (id, name, equipment_id, effort_type, rest_time_seconds, translations, deleted_at) OVERRIDING SYSTEM VALUE VALUES
-    (1, 'Bench Press', 1, 'repetitions', 120, '{"ru": {"name": "Жим лёжа"}}', NULL),
-    (2, 'Easy Ride', 2, 'duration', NULL, '{"ru": {"name": "Лёгкий заезд"}}', NULL),
-    (3, 'Push-up', 3, 'repetitions', 60, '{}', NULL),
-    (4, 'Upright Row', 1, 'repetitions', 90, '{}', '2026-10-01 00:00:00+00');
+INSERT INTO exercises (id, name, description, equipment_id, effort_type, rest_time_seconds, translations, deleted_at) OVERRIDING SYSTEM VALUE VALUES
+    (1, 'Bench Press', 'Lower the bar to the chest, press up.', 1, 'repetitions', 120, '{"ru": {"name": "Жим лёжа", "description": "Опустите штангу к груди, выжмите вверх."}}', NULL),
+    (2, 'Easy Ride', NULL, 2, 'duration', NULL, '{"ru": {"name": "Лёгкий заезд"}}', NULL),
+    (3, 'Push-up', NULL, 3, 'repetitions', 60, '{}', NULL),
+    (4, 'Upright Row', 'Pull the bar up to the chin.', 1, 'repetitions', 90, '{}', '2026-10-01 00:00:00+00');
 
 INSERT INTO category_exercise (exercise_id, category_id) VALUES (1, 1), (2, 2), (3, 1), (4, 1);
 

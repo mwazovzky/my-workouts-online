@@ -185,6 +185,7 @@ func activityExercise(e domain.Exercise, locale i18n.Locale) *gen.ActivityExerci
 	return &gen.ActivityExercise{
 		Id:              int(e.ID),
 		Name:            text(e.Name, locale),
+		Description:     text(e.Description, locale),
 		EquipmentName:   text(e.Equipment.Name, locale),
 		EffortType:      gen.EffortType(e.EffortType),
 		DifficultyUnit:  gen.DifficultyUnit(e.Equipment.DifficultyUnit),

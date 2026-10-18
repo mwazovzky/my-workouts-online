@@ -10,6 +10,7 @@
                 "exercise": {
                     "id": 44,
                     "name": "Machine Chest Press",
+                    "description": "Push the handles forward until your arms are straight, then return slowly.",
                     "equipment_name": "Chest Press Machine",
                     "effort_type": "repetitions",
                     "difficulty_unit": "plates",

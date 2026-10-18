@@ -1,9 +1,9 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, useId } from 'vue';
 import Set from '@/components/Set.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, GripVertical, Plus, Trash2 } from 'lucide-vue-next';
+import { Clock, GripVertical, Info, Plus, Trash2 } from 'lucide-vue-next';
 import { useTranslation } from '@/composables/useTranslation';
 import {
   difficultyLabel as difficultyLabelFor,
@@ -28,6 +28,12 @@ const emits = defineEmits([
 ]);
 
 const exercise = computed(() => props.activity.exercise ?? {});
+
+const description = computed(() => exercise.value.description?.trim() ?? '');
+
+const isDescriptionOpen = ref(false);
+
+const descriptionId = useId();
 
 const hasDifficulty = computed(
   () => exercise.value.difficulty_unit && exercise.value.difficulty_unit !== 'none'
@@ -98,7 +104,20 @@ function removeActivity() {
             <GripVertical class="h-4 w-4" />
           </button>
           <div class="flex-1 min-w-0">
-            <CardTitle class="text-sm font-semibold">{{ exercise.name }}</CardTitle>
+            <div class="flex items-center gap-1">
+              <CardTitle class="text-sm font-semibold">{{ exercise.name }}</CardTitle>
+              <button
+                v-if="description"
+                type="button"
+                class="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                :aria-label="t('How to do this exercise')"
+                :aria-expanded="isDescriptionOpen"
+                :aria-controls="descriptionId"
+                @click="isDescriptionOpen = !isDescriptionOpen"
+              >
+                <Info class="h-4 w-4" />
+              </button>
+            </div>
 
             <div class="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-muted-foreground">
               <span>{{ (exercise.category_names ?? []).join(', ') || '—' }}</span>
@@ -112,6 +131,14 @@ function removeActivity() {
                 </span>
               </template>
             </div>
+
+            <p
+              v-if="description && isDescriptionOpen"
+              :id="descriptionId"
+              class="mt-2 text-xs leading-relaxed text-foreground"
+            >
+              {{ description }}
+            </p>
           </div>
         </div>
         <div v-if="editable" class="flex items-center gap-1">

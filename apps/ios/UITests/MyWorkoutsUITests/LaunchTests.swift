@@ -71,6 +71,11 @@ final class LaunchTests: XCTestCase {
                 app.staticTexts["editor.progress"].waitForExistence(timeout: 15), "starting a workout opens the editor")
             XCTAssertTrue(app.buttons["editor.save"].exists)
             XCTAssertFalse(app.buttons["editor.save"].isEnabled, "nothing to save yet")
+            app.buttons["activity.0.info"].tap()
+            XCTAssertTrue(
+                app.staticTexts["exerciseInfo.instructions"].waitForExistence(timeout: 5),
+                "the info button shows how to do the exercise")
+            app.buttons["exerciseInfo.done"].tap()
             app.buttons["activity.0.addSet"].tap()
             XCTAssertTrue(app.buttons["editor.save"].isEnabled, "adding a set makes the draft dirty")
             app.buttons["editor.save"].tap()

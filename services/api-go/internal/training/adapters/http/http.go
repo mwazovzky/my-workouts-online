@@ -292,7 +292,7 @@ func exercise(exercises map[int64]app.ExerciseInfo, id int64) *gen.ActivityExerc
 	}
 
 	return &gen.ActivityExercise{
-		Id: int(e.ID), Name: text(e.Name), EquipmentName: text(e.EquipmentName), EffortType: gen.EffortType(e.EffortType),
+		Id: int(e.ID), Name: text(e.Name), Description: text(e.Description), EquipmentName: text(e.EquipmentName), EffortType: gen.EffortType(e.EffortType),
 		DifficultyUnit: gen.DifficultyUnit(e.DifficultyUnit), CategoryNames: e.CategoryNames, RestTimeSeconds: e.RestTimeSeconds,
 	}
 }

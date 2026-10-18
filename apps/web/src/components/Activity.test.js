@@ -156,4 +156,52 @@ describe('Activity', () => {
     expect(findByLabel(wrapper, 'Add set').exists()).toBe(false);
     expect(findByLabel(wrapper, 'Delete activity').exists()).toBe(false);
   });
+
+  describe('description', () => {
+    const description = 'Lower the bar to your chest, then press it up.';
+
+    function withExercise(exercise, props = {}) {
+      return buildWrapper({
+        activity: {
+          clientKey: 'activity-7',
+          id: 42,
+          exercise_id: 3,
+          exercise: { id: 3, name: 'Bench Press', ...exercise },
+          sets: [],
+        },
+        ...props,
+      });
+    }
+
+    it('is hidden until the info button is pressed, then toggles', async () => {
+      const wrapper = withExercise({ description });
+      const info = findByLabel(wrapper, 'How to do this exercise');
+
+      expect(info.attributes('aria-expanded')).toBe('false');
+      expect(wrapper.text()).not.toContain(description);
+
+      await info.trigger('click');
+
+      expect(info.attributes('aria-expanded')).toBe('true');
+      expect(wrapper.find(`#${info.attributes('aria-controls')}`).text()).toBe(description);
+
+      await info.trigger('click');
+
+      expect(wrapper.text()).not.toContain(description);
+    });
+
+    it('is available on read-only cards', async () => {
+      const wrapper = withExercise({ description }, { editable: false });
+
+      await findByLabel(wrapper, 'How to do this exercise').trigger('click');
+
+      expect(wrapper.text()).toContain(description);
+    });
+
+    it.each([null, undefined, '', '   '])('offers no info button for %j', value => {
+      const wrapper = withExercise({ description: value });
+
+      expect(findByLabel(wrapper, 'How to do this exercise').exists()).toBe(false);
+    });
+  });
 });

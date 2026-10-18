@@ -34,6 +34,9 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
     public var serverId: Int?
     public let exerciseId: Int
     public let exerciseName: String
+    /// How to perform the exercise; kept in the stored draft so it is there offline. Drafts
+    /// stored before it existed decode it as nil.
+    public let exerciseDescription: String?
     public let equipmentName: String?
     public let restTimeSeconds: Int?
     public let categoryNames: [String]
@@ -44,14 +47,15 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
     public var id: UUID { localId }
 
     public init(
-        localId: UUID = UUID(), serverId: Int?, exerciseId: Int, exerciseName: String, equipmentName: String?,
-        restTimeSeconds: Int?, categoryNames: [String], effortType: EffortType, difficultyUnit: DifficultyUnit,
-        sets: [DraftSet]
+        localId: UUID = UUID(), serverId: Int?, exerciseId: Int, exerciseName: String,
+        exerciseDescription: String? = nil, equipmentName: String?, restTimeSeconds: Int?, categoryNames: [String],
+        effortType: EffortType, difficultyUnit: DifficultyUnit, sets: [DraftSet]
     ) {
         self.localId = localId
         self.serverId = serverId
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
+        self.exerciseDescription = exerciseDescription
         self.equipmentName = equipmentName
         self.restTimeSeconds = restTimeSeconds
         self.categoryNames = categoryNames
@@ -65,6 +69,7 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
             serverId: activity.id,
             exerciseId: activity.exerciseId,
             exerciseName: activity.exerciseName ?? "",
+            exerciseDescription: activity.exerciseDescription,
             equipmentName: activity.equipmentName,
             restTimeSeconds: activity.restTimeSeconds,
             categoryNames: activity.categoryNames,
@@ -79,6 +84,7 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
             serverId: nil,
             exerciseId: exercise.id,
             exerciseName: exercise.name,
+            exerciseDescription: exercise.description,
             equipmentName: exercise.equipmentName,
             restTimeSeconds: exercise.restTimeSeconds,
             categoryNames: exercise.categories.map(\.name),
@@ -87,6 +93,9 @@ public struct DraftActivity: Sendable, Equatable, Codable, Identifiable {
             sets: [])
         sets = [DraftSet.blank(for: difficultyUnit)]
     }
+
+    /// The description to show, or nil when it is missing or blank.
+    public var instructions: String? { exerciseDescription.nonBlank }
 
     /// Whether the difficulty column is shown at all.
     public var hasDifficulty: Bool { difficultyUnit.hasValue }

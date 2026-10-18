@@ -22,6 +22,8 @@ public struct Activity: Sendable, Equatable, Identifiable {
     public let id: Int
     public let exerciseId: Int
     public let exerciseName: String?
+    /// How to perform the exercise, localized; nil when the exercise has none.
+    public let exerciseDescription: String?
     public let restTimeSeconds: Int?
     public let equipmentName: String?
     public let effortType: EffortType?
@@ -30,12 +32,14 @@ public struct Activity: Sendable, Equatable, Identifiable {
     public var sets: [WorkoutSet]
 
     public init(
-        id: Int, exerciseId: Int, exerciseName: String?, restTimeSeconds: Int?, equipmentName: String?,
-        effortType: EffortType?, difficultyUnit: DifficultyUnit?, categoryNames: [String], sets: [WorkoutSet]
+        id: Int, exerciseId: Int, exerciseName: String?, exerciseDescription: String? = nil, restTimeSeconds: Int?,
+        equipmentName: String?, effortType: EffortType?, difficultyUnit: DifficultyUnit?, categoryNames: [String],
+        sets: [WorkoutSet]
     ) {
         self.id = id
         self.exerciseId = exerciseId
         self.exerciseName = exerciseName
+        self.exerciseDescription = exerciseDescription
         self.restTimeSeconds = restTimeSeconds
         self.equipmentName = equipmentName
         self.effortType = effortType
@@ -45,6 +49,9 @@ public struct Activity: Sendable, Equatable, Identifiable {
     }
 
     public var completedSetCount: Int { sets.filter(\.isCompleted).count }
+
+    /// The description to show, or nil when it is missing or blank.
+    public var instructions: String? { exerciseDescription.nonBlank }
 }
 
 public struct Workout: Sendable, Equatable, Identifiable {

@@ -38,6 +38,19 @@ public struct Exercise: Sendable, Equatable, Identifiable {
     }
 }
 
+extension Exercise {
+    /// The description to show, or nil when it is missing or blank.
+    public var instructions: String? { description.nonBlank }
+}
+
+extension String? {
+    /// The string trimmed, or nil when that leaves nothing.
+    var nonBlank: String? {
+        guard let trimmed = self?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else { return nil }
+        return trimmed
+    }
+}
+
 public struct Program: Sendable, Equatable, Identifiable {
     public let id: Int
     public let name: String

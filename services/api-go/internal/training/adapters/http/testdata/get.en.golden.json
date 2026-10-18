@@ -6,6 +6,7 @@
           "category_names": [
             "Chest"
           ],
+          "description": "Lower the bar to the chest, press up.",
           "difficulty_unit": "kilograms",
           "effort_type": "repetitions",
           "equipment_name": "Barbell",
@@ -61,6 +62,7 @@
           "category_names": [
             "Chest"
           ],
+          "description": "Pull the bar up to the chin.",
           "difficulty_unit": "kilograms",
           "effort_type": "repetitions",
           "equipment_name": "Barbell",

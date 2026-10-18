@@ -275,6 +275,7 @@ function normalizeActivities(payload, existing = []) {
     exercise: {
       id: a.exercise?.id ?? a.exercise_id ?? null,
       name: a.exercise?.name ?? '',
+      description: a.exercise?.description ?? null,
       equipment_name: a.exercise?.equipment_name ?? null,
       effort_type: a.exercise?.effort_type ?? 'repetitions',
       difficulty_unit: a.exercise?.difficulty_unit ?? null,
@@ -558,6 +559,7 @@ function onExerciseSelected(exercise) {
     exercise: {
       id: exercise.id,
       name: exercise.name ?? '',
+      description: exercise.description ?? null,
       equipment_name: exercise.equipment_name ?? null,
       effort_type: exercise.effort_type ?? 'repetitions',
       difficulty_unit: exercise.difficulty_unit ?? null,

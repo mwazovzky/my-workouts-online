@@ -1233,6 +1233,7 @@ export interface components {
          *           "exercise": {
          *             "id": 15,
          *             "name": "Bench press",
+         *             "description": "Lie on the bench, lower the bar to the chest, press up.",
          *             "equipment_name": "Barbell",
          *             "effort_type": "repetitions",
          *             "difficulty_unit": "kilograms",
@@ -1288,6 +1289,7 @@ export interface components {
          *           "exercise": {
          *             "id": 15,
          *             "name": "Bench press",
+         *             "description": "Lie on the bench, lower the bar to the chest, press up.",
          *             "equipment_name": "Barbell",
          *             "effort_type": "repetitions",
          *             "difficulty_unit": "kilograms",
@@ -1360,6 +1362,7 @@ export interface components {
          *       "exercise": {
          *         "id": 15,
          *         "name": "Bench press",
+         *         "description": "Lie on the bench, lower the bar to the chest, press up.",
          *         "equipment_name": "Barbell",
          *         "effort_type": "repetitions",
          *         "difficulty_unit": "kilograms",
@@ -1397,6 +1400,7 @@ export interface components {
          * @example {
          *       "id": 15,
          *       "name": "Bench press",
+         *       "description": "Lie on the bench, lower the bar to the chest, press up.",
          *       "equipment_name": "Barbell",
          *       "effort_type": "repetitions",
          *       "difficulty_unit": "kilograms",
@@ -1410,6 +1414,8 @@ export interface components {
             id: number;
             /** @description Localized; retired exercises still resolve. */
             name: string | null;
+            /** @description How to perform the exercise. Localized. */
+            description?: string | null;
             /** @description Localized. */
             equipment_name: string | null;
             effort_type: components["schemas"]["EffortType"];
@@ -1440,6 +1446,7 @@ export interface components {
          *           "exercise": {
          *             "id": 15,
          *             "name": "Bench press",
+         *             "description": "Lie on the bench, lower the bar to the chest, press up.",
          *             "equipment_name": "Barbell",
          *             "effort_type": "repetitions",
          *             "difficulty_unit": "kilograms",

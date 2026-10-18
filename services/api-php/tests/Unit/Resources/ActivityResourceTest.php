@@ -45,6 +45,7 @@ class ActivityResourceTest extends TestCase
 
         $exercise = Exercise::factory()->withTranslation('name', 'Squat')->create([
             'equipment_id' => $equipment->id,
+            'description' => 'Sit back and down, then stand up.',
         ]);
 
         $exercise->categories()->attach($category);
@@ -63,12 +64,61 @@ class ActivityResourceTest extends TestCase
         $this->assertSame([
             'id' => $exercise->id,
             'name' => 'Squat',
+            'description' => 'Sit back and down, then stand up.',
             'equipment_name' => 'Barbell',
             'effort_type' => 'repetitions',
             'difficulty_unit' => 'kilograms',
             'category_names' => ['Strength'],
             'rest_time_seconds' => $exercise->rest_time_seconds,
         ], $array['exercise']);
+    }
+
+    #[Test]
+    public function the_snapshot_description_is_null_when_the_exercise_has_none(): void
+    {
+        $exercise = Exercise::factory()->create(['description' => null]);
+        $activity = Activity::factory()->create([
+            'exercise_id' => $exercise->id,
+            'workout_id' => Workout::factory()->create()->id,
+            'workout_type' => 'workout',
+        ]);
+
+        $array = (new ActivityResource($activity->load('exercise.equipment', 'exercise.categories')))->resolve();
+
+        $this->assertArrayHasKey('description', $array['exercise']);
+        $this->assertNull($array['exercise']['description']);
+    }
+
+    #[Test]
+    public function the_snapshot_description_falls_back_to_english(): void
+    {
+        $exercise = Exercise::factory()->create(['description' => 'Keep your back straight.']);
+        $activity = Activity::factory()->create([
+            'exercise_id' => $exercise->id,
+            'workout_id' => Workout::factory()->create()->id,
+            'workout_type' => 'workout',
+        ]);
+
+        app()->setLocale('ru');
+        $array = (new ActivityResource($activity->load('exercise.equipment', 'exercise.categories', 'exercise.translations')))->resolve();
+
+        $this->assertSame('Keep your back straight.', $array['exercise']['description']);
+    }
+
+    #[Test]
+    public function the_snapshot_of_a_retired_exercise_keeps_its_description(): void
+    {
+        $exercise = Exercise::factory()->create(['description' => 'Pull the bar to your chest.']);
+        $activity = Activity::factory()->create([
+            'exercise_id' => $exercise->id,
+            'workout_id' => Workout::factory()->create()->id,
+            'workout_type' => 'workout',
+        ]);
+        $exercise->delete();
+
+        $array = (new ActivityResource(Activity::with('exercise.equipment', 'exercise.categories')->find($activity->id)))->resolve();
+
+        $this->assertSame('Pull the bar to your chest.', $array['exercise']['description']);
     }
 
     #[Test]

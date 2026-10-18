@@ -58,6 +58,7 @@ const exercisesPayload = [
   {
     id: 6,
     name: 'Deadlift',
+    description: 'Lift the bar from the floor with a flat back.',
     equipment_name: 'Barbell',
     categories: [{ id: 3, name: 'Back' }],
     effort_type: 'repetitions',
@@ -136,6 +137,24 @@ describe('WorkoutEdit — adding an activity', () => {
     expect(newCard.props('activity').sets).toHaveLength(1);
     expect(newCard.findAll('input[step="0.5"]')).toHaveLength(0);
     expect(newCard.text()).toContain('Bodyweight');
+  });
+
+  it('shows the description of a picked exercise before the first save', async () => {
+    const wrapper = await buildWrapper();
+
+    await findButtonByText(wrapper, 'Add activity').trigger('click');
+    await flushPromises();
+    await wrapper
+      .findAll('li button')
+      .find(button => button.text().includes('Deadlift'))
+      .trigger('click');
+
+    const info = wrapper.findAll('button[aria-label="How to do this exercise"]');
+    expect(info).toHaveLength(1);
+
+    await info[0].trigger('click');
+
+    expect(wrapper.text()).toContain('Lift the bar from the floor with a flat back.');
   });
 
   it('sends the new activity with a null id and sequential order on save', async () => {

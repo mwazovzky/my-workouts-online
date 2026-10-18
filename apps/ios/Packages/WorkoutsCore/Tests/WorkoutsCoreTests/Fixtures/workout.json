@@ -20,6 +20,7 @@
                 "exercise": {
                     "id": 76,
                     "name": "Endurance Ride",
+                    "description": "Ride at a steady pace you could keep up for an hour.",
                     "equipment_name": "Indoor Bike",
                     "effort_type": "duration",
                     "difficulty_unit": "heart_rate_zone",

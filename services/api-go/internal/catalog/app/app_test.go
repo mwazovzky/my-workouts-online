@@ -147,9 +147,9 @@ var retired = now.Add(-time.Hour)
 var barbell = domain.Equipment{ID: 1, Name: text("Barbell", "Штанга"), DifficultyUnit: domain.Kilograms}
 
 var catalog = []domain.Exercise{
-	{ID: 1, Name: text("Squat", "Приседания"), Equipment: barbell, EffortType: domain.Repetitions, Categories: []domain.Category{{ID: 2, Name: text("Legs", "Ноги")}}},
+	{ID: 1, Name: text("Squat", "Приседания"), Description: text("Sit back and down.", "Присядьте назад и вниз."), Equipment: barbell, EffortType: domain.Repetitions, Categories: []domain.Category{{ID: 2, Name: text("Legs", "Ноги")}}},
 	{ID: 2, Name: text("bench press", "Жим лёжа"), Equipment: barbell, EffortType: domain.Repetitions},
-	{ID: 3, Name: text("Upright Row", "Тяга к подбородку"), Equipment: barbell, EffortType: domain.Repetitions, RetiredAt: &retired},
+	{ID: 3, Name: text("Upright Row", "Тяга к подбородку"), Description: text("Pull the bar to the chin.", ""), Equipment: barbell, EffortType: domain.Repetitions, RetiredAt: &retired},
 	{ID: 4, Name: text("Plank", ""), Equipment: barbell, EffortType: domain.Duration},
 	{ID: 5, Name: text("Ёлочка", ""), Equipment: barbell, EffortType: domain.Repetitions},
 	{ID: 6, Name: text("Burpee", "Бёрпи"), Equipment: barbell, EffortType: domain.Repetitions},
@@ -327,8 +327,8 @@ func TestExerciseLookupResolvesRetiredExercisesInTheLocale(t *testing.T) {
 	}
 
 	want := map[int64]catalogapi.ExerciseInfo{
-		1: {ID: 1, Name: "Приседания", EquipmentName: "Штанга", EffortType: "repetitions", DifficultyUnit: "kilograms", CategoryNames: []string{"Ноги"}},
-		3: {ID: 3, Name: "Тяга к подбородку", EquipmentName: "Штанга", EffortType: "repetitions", DifficultyUnit: "kilograms", CategoryNames: []string{}, Retired: true},
+		1: {ID: 1, Name: "Приседания", Description: "Присядьте назад и вниз.", EquipmentName: "Штанга", EffortType: "repetitions", DifficultyUnit: "kilograms", CategoryNames: []string{"Ноги"}},
+		3: {ID: 3, Name: "Тяга к подбородку", Description: "Pull the bar to the chin.", EquipmentName: "Штанга", EffortType: "repetitions", DifficultyUnit: "kilograms", CategoryNames: []string{}, Retired: true},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("lookup (-want +got):\n%s", diff)

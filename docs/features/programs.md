@@ -7,13 +7,13 @@ Browse workout programs, inspect their templates, and enroll.
 1. User opens **ProgramIndex** and sees all programs with enrollment state for the current user.
 2. User opens **ProgramShow** and sees the selected program plus its workout templates grouped by weekday.
 3. User clicks **Enroll** and is enrolled without leaving the page (`PUT /api/v1/programs/{programId}/enrollment`). When enrolled, **Unenroll** asks for confirmation ("Your workouts are kept.") and calls `DELETE` on the same URL.
-4. User opens **WorkoutTemplateShow** to inspect a single template with its activities and sets.
+4. User opens **WorkoutTemplateShow** to inspect a single template with its activities and sets; an info button beside an exercise name expands how to perform it.
 
 ## iOS (`apps/ios`)
 
 - **Programs tab**: all programs with an Enrolled badge and an "Enrolled programs only" switch (client-side filter, like the web); Enroll flips the badge immediately and reverts with an error banner if the API refuses. The list reloads when returning from a detail screen
 - **Program detail**: description, Enroll, and the templates grouped by weekday in calendar order, each weekday (`assignment.weekday`, `monday`…`sunday`) labelled from the app's own string catalog; templates without a slot sit under "Not scheduled"
-- **Template detail**: read-only activities with equipment, rest time, categories and the planned sets in the two-axis layout (difficulty column, labelled on the device from `exercise.difficulty_unit`, hidden when the unit is `none`; the effort header, reps or seconds, from `exercise.effort_type`); Start Workout creates the workout and opens the editor
+- **Template detail**: read-only activities with equipment, rest time, categories, an info button that opens the exercise's description in a sheet, and the planned sets in the two-axis layout (difficulty column, labelled on the device from `exercise.difficulty_unit`, hidden when the unit is `none`; the effort header, reps or seconds, from `exercise.effort_type`); Start Workout creates the workout and opens the editor
 
 ## Go API (`services/api-go`)
 

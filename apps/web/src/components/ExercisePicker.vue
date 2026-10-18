@@ -86,6 +86,11 @@ function describe(exercise) {
               <span class="block text-xs text-muted-foreground">{{
                 describe(exercise) || '—'
               }}</span>
+              <span
+                v-if="exercise.description"
+                class="mt-0.5 block text-xs text-muted-foreground line-clamp-2"
+                >{{ exercise.description }}</span
+              >
             </button>
           </li>
         </ul>

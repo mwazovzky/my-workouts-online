@@ -31,11 +31,12 @@ type Catalog interface {
 	EnrolledPrograms(ctx context.Context, userID int64) (int, error)
 }
 
-// ExerciseInfo is an exercise as an activity displays it. Names are in the
-// requested locale; an empty Name or EquipmentName has no text.
+// ExerciseInfo is an exercise as an activity displays it. Texts are in the
+// requested locale; an empty Name, Description or EquipmentName has no text.
 type ExerciseInfo struct {
 	ID              int64
 	Name            string
+	Description     string
 	EquipmentName   string
 	EffortType      string
 	DifficultyUnit  string

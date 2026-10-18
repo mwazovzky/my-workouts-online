@@ -19,6 +19,7 @@ class ActivityResource extends JsonResource
             'exercise' => $this->when($exercise !== null && $equipment !== null, fn () => [
                 'id' => $exercise->id,
                 'name' => $exercise->name,
+                'description' => $exercise->description,
                 'equipment_name' => $equipment->name,
                 'effort_type' => $exercise->effort_type->value,
                 'difficulty_unit' => $equipment->difficulty_unit->value,
