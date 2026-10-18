@@ -9,6 +9,7 @@ use App\Http\Requests\ApiFormRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -19,6 +20,13 @@ use Illuminate\Validation\Rule;
  */
 class LoginRequest extends ApiFormRequest
 {
+    /**
+     * Checked when no user has the email, so an unknown email costs one
+     * bcrypt check like a wrong password and the timing reveals nothing.
+     * Cost 12, production's BCRYPT_ROUNDS; the password is random and unknown.
+     */
+    private const DUMMY_HASH = '$2y$12$4vghJGebw9CUia09n0CJbuVUcIolO5uldAAGBsM0iiDPurjG7E9n.';
+
     public function authorize(): bool
     {
         return true;
@@ -48,6 +56,10 @@ class LoginRequest extends ApiFormRequest
 
         $provider = Auth::createUserProvider('users');
         $user = $provider->retrieveByCredentials($this->only('email'));
+
+        if (! $user instanceof User) {
+            Hash::check($this->string('password')->toString(), self::DUMMY_HASH);
+        }
 
         if (! $user instanceof User || ! $provider->validateCredentials($user, $this->only('password'))) {
             RateLimiter::hit($this->throttleKey());

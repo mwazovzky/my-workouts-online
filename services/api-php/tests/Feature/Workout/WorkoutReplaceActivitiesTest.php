@@ -1028,7 +1028,111 @@ class WorkoutReplaceActivitiesTest extends TestCase
             ],
         );
 
-        $response->assertUnprocessable();
+        $response->assertFieldErrors(['activities.0.sets.0.id', 'activities.1.sets.0.id'], 'not_found');
+    }
+
+    #[Test]
+    public function save_rejects_a_retired_exercise_on_a_new_activity(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $retired = Exercise::factory()->create();
+        $retired->delete();
+
+        $response = $this->actingAs($user)->putActivities($workout->id, [
+            'activities' => [
+                ['exercise_id' => $retired->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5]]],
+            ],
+        ]);
+
+        $response->assertFieldErrors(['activities.0.exercise_id'], 'not_found');
+        $this->assertSame('The selected exercise is invalid.', $response->fieldError('activities.0.exercise_id')['detail']);
+    }
+
+    #[Test]
+    public function save_rejects_a_retired_exercise_swapped_onto_an_existing_activity(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $activity = Activity::factory()->for($workout, 'workout')->create(['exercise_id' => Exercise::factory(), 'order' => 1]);
+        $retired = Exercise::factory()->create();
+        $retired->delete();
+
+        $this->actingAs($user)->putActivities($workout->id, [
+            'activities' => [
+                ['id' => $activity->id, 'exercise_id' => $retired->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5]]],
+            ],
+        ])->assertFieldErrors(['activities.0.exercise_id'], 'not_found');
+    }
+
+    #[Test]
+    public function save_keeps_a_retired_exercise_the_activity_already_has(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $retired = Exercise::factory()->create();
+        $activity = Activity::factory()->for($workout, 'workout')->create(['exercise_id' => $retired->id, 'order' => 1]);
+        $retired->delete();
+
+        $this->actingAs($user)->putActivities($workout->id, [
+            'activities' => [
+                ['id' => $activity->id, 'exercise_id' => $retired->id, 'order' => 2, 'sets' => [['order' => 1, 'effort_value' => 5]]],
+            ],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('activities', ['id' => $activity->id, 'exercise_id' => $retired->id, 'order' => 2]);
+    }
+
+    #[Test]
+    public function save_stores_a_changed_exercise_on_an_existing_activity(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $activity = Activity::factory()->for($workout, 'workout')->create(['exercise_id' => Exercise::factory(), 'order' => 1]);
+        $other = Exercise::factory()->create();
+
+        $this->actingAs($user)->putActivities($workout->id, [
+            'activities' => [
+                ['id' => $activity->id, 'exercise_id' => $other->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5]]],
+            ],
+        ])->assertOk()->assertJsonPath('data.activities.0.exercise.id', $other->id);
+
+        $this->assertDatabaseHas('activities', ['id' => $activity->id, 'exercise_id' => $other->id]);
+    }
+
+    #[Test]
+    public function save_rejects_a_set_order_repeated_within_an_activity(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $exercise = Exercise::factory()->create();
+
+        $response = $this->actingAs($user)->putActivities($workout->id, [
+            'activities' => [
+                ['exercise_id' => $exercise->id, 'order' => 1, 'sets' => [
+                    ['order' => 1, 'effort_value' => 5],
+                    ['order' => 1, 'effort_value' => 6],
+                ]],
+            ],
+        ]);
+
+        $response->assertFieldErrors(['activities.0.sets.0.order', 'activities.0.sets.1.order'], 'not_unique');
+        $this->assertDatabaseCount('activities', 0);
+    }
+
+    #[Test]
+    public function save_accepts_the_same_set_order_in_two_activities(): void
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);
+        $exercise = Exercise::factory()->create();
+
+        $this->actingAs($user)->putActivities($workout->id, [
+            'activities' => [
+                ['exercise_id' => $exercise->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 5]]],
+                ['exercise_id' => $exercise->id, 'order' => 2, 'sets' => [['order' => 1, 'effort_value' => 5]]],
+            ],
+        ])->assertOk();
     }
 
     #[Test]

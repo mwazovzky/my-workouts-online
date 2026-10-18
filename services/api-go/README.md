@@ -154,14 +154,14 @@ Other modules read the catalog only through `internal/catalog/catalogapi`: `Exer
 The HTTP tests compare every response, in English and Russian, with golden files captured from the PHP API on the same catalog; `internal/catalog/adapters/http/testdata/README.md` explains how to recapture them. Where Go answers differently from PHP:
 
 - An exercise's categories (`categories`, `category_ids`, `category_names`) are listed by category id. PHP lists them in pivot-row order, which the Go schema does not keep (`category_exercise` has no row id).
-- Program lists are ordered by id and a program's templates by assignment. PHP relies on the database's unspecified order for the list; both give the same order in practice.
+- A program's templates are listed by assignment. (Program lists are ordered by id on both backends since story 15.)
 
 ## Workouts
 
 The training module serves `listWorkouts`, `createWorkout`, `getWorkout`, `replaceWorkoutActivities`, `completeWorkout`, `repeatWorkout` and `deleteWorkout`. A workout copies its template when it starts (name in the request's locale, kept as is), so it never reads the template tables again; it reads exercises and template headers through `catalogapi` only. Someone else's workout is a 404 on every operation, exactly like a missing one.
 
 - **ETag.** Every single-workout response carries `ETag: "<id>-<version>"`, as PHP's. The editor's save needs `If-Match` (428 without it, 412 when stale, checked under `SELECT … FOR UPDATE`); the save and complete bump the version.
-- **The save** replaces the activities and sets in one transaction: rows not sent are deleted, rows with an id updated, rows without one created. Kept rows first move to `order = -id`, so reordering never trips the `(parent, order)` unique keys. Its business rules and the departures from PHP (a retired exercise cannot be added; per-id error pointers; repeated set orders are a 422, not a 500) are in [ADR 0010](docs/adr/0010-retired-exercises-rejected-on-write.md).
+- **The save** replaces the activities and sets in one transaction: rows not sent are deleted, rows with an id updated, rows without one created. Kept rows first move to `order = -id`, so reordering never trips the `(parent, order)` unique keys. Its business rules (a retired exercise cannot be added; per-id error pointers; repeated set orders are a 422, not a 500), which PHP adopted in story 15, are in [ADR 0010](docs/adr/0010-retired-exercises-rejected-on-write.md).
 - **Responses** show what PHP's show: `getWorkout` and the save include the activities with their exercises (retired ones resolve); `createWorkout` embeds the template it copied, with its activities and sets but not the workout's own; `complete` and `repeat` return the workout alone; the list adds `activities_count` and the template's header (left out once the template is deleted). Pagination links are absolute, built from the request's scheme, host and query.
 - **`trainingapi`** (`RecentWorkouts`, `InProgress`, `Counts`) is what the dashboard (story 9) reads; `trainingapi.Fake` stands in for it in tests.
 

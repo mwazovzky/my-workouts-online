@@ -26,7 +26,7 @@ Start workouts from templates, edit activities and sets, save progress, complete
 
 ## Go API (`services/api-go`)
 
-The Go backend serves every workout operation (history, start from a template, the editor's save, complete, repeat, delete) with the same responses as the PHP API, including the same `ETag` scheme (`"<id>-<version>"`), `If-Match` handling (428 when missing, 412 when stale) and error codes; the web editor works against it unchanged. It differs only on payloads PHP mishandles: a retired exercise cannot be added to a workout (it stays where it already is), an existing activity may change its exercise, a set id that is not its activity's is reported on that set, and a set order repeated within an activity is a 422 instead of a server error. See [ADR 0010](../../services/api-go/docs/adr/0010-retired-exercises-rejected-on-write.md).
+The Go backend serves every workout operation (history, start from a template, the editor's save, complete, repeat, delete) with the same responses as the PHP API, including the same `ETag` scheme (`"<id>-<version>"`), `If-Match` handling (428 when missing, 412 when stale) and error codes; the web editor works against it unchanged. The business rules above apply to both backends ([ADR 0010](../../services/api-go/docs/adr/0010-retired-exercises-rejected-on-write.md)); the one difference left is the order of the checks: PHP validates the payload before the 404, 403 and 412, Go after them.
 
 The dashboard (`GET /dashboard`) is served by a Go read model that composes the catalog and training modules; the upcoming schedule, its ids (`{program_id}-{workout_template_id}-{date}`) and dates (next occurrence of each weekday, today included, at UTC midnight), the in-progress and recent workouts and the counts are the same as PHP's ([ADR 0011](../../services/api-go/docs/adr/0011-dashboard-read-model.md)).
 
@@ -44,13 +44,14 @@ The dashboard (`GET /dashboard`) is served by a Go read model that composes the 
 - Save receives the full activities-and-sets payload and diffs it against persisted records.
 - Activities omitted from the payload are deleted.
 - Sets omitted from an activity payload are deleted.
-- Activity IDs must belong to the target workout.
+- Activity IDs must belong to the target workout. Activity IDs, activity orders and set IDs must not repeat, and neither may set orders within one activity (422 `not_unique`, never a server error).
 - Each activity is returned as `exercise_id` plus a nested `exercise` snapshot (`name`, `equipment_name`, `effort_type`, `difficulty_unit`, `category_names`, `rest_time_seconds`); the snapshot is omitted when the exercise is not loaded. Workouts carry `status` as the enum value; the clients render "In progress"/"Completed" and the effort and difficulty headers from their own catalogs.
 - Integer ids in request bodies must be JSON integers: `true` or `"5"` is a 422 `invalid_format`.
-- Set IDs must belong to the target activity.
+- Set IDs must belong to the target activity; a foreign one is a 422 `not_found` at that set's `id`.
 - Saves are conditional: the editor sends the workout's `ETag` as `If-Match`. A workout changed elsewhere since it was loaded (another tab, the other app) answers 412 `precondition_failed`, nothing is written, and the editor offers to reload; a save without `If-Match` answers 428. Every save and every completion changes the `ETag`.
 - Activities added during editing have no ID and are created on save. They belong to the workout copy only and never modify the source template.
-- Only active exercises are offered in the picker. Retired (soft-deleted) exercises are excluded so they cannot be added to new activities, while existing activities still resolve them.
+- Only active exercises are offered in the picker. Retired (soft-deleted) exercises are excluded, and the save rejects one (422 `not_found` at `exercise_id`) on a new activity or swapped onto an existing one; an activity that already has a retired exercise keeps it, and history still resolves it.
+- An existing activity sent with a different `exercise_id` is saved with the new exercise.
 - Frontend normalizes activity and set order before sending the payload.
 - The save response returns persisted IDs, so a subsequent save updates the same rows instead of recreating them.
 - A workout must retain at least one activity, and each activity must retain at least one set.
@@ -65,7 +66,7 @@ The dashboard (`GET /dashboard`) is served by a Go read model that composes the 
 - No manual workout creation without a template.
 - No reopen flow after completion.
 - No rename, notes, comments, or duration tracking.
-- No exercise substitution. An existing activity's exercise cannot be changed; it must be removed and re-added.
+- No exercise substitution in the editors: an activity is removed and re-added instead. The API stores a changed `exercise_id`, but neither client sends one.
 - No creating custom exercises. Added activities can only use exercises from the shared catalog.
 - No sorting or filtering on workout history beyond newest updated first.
 - No workout analytics such as volume, PRs, or summaries.

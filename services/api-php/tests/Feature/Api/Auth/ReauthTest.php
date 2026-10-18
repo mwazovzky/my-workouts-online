@@ -44,7 +44,8 @@ class ReauthTest extends TestCase
 
         $this->withToken($pair->accessToken)->postJson('/api/v1/auth/reauth', ['password' => 'nope'])
             ->assertUnprocessable()
-            ->assertFieldErrors(['password']);
+            ->assertFieldErrors(['password'], 'mismatch')
+            ->assertJsonPath('errors.0.detail', __('auth.password'));
     }
 
     #[Test]

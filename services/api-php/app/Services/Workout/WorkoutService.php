@@ -195,7 +195,7 @@ class WorkoutService implements WorkoutServiceInterface
     }
 
     /**
-     * Create or update a single activity.
+     * Create or update a single activity; an existing one may change its exercise.
      *
      * @param  array{id?: int|null, exercise_id: int, order: int}  $data
      */
@@ -206,6 +206,7 @@ class WorkoutService implements WorkoutServiceInterface
         if ($activityId !== null) {
             $activity = Activity::findOrFail($activityId);
             $activity->update([
+                'exercise_id' => $data['exercise_id'],
                 'order' => $data['order'],
             ]);
 

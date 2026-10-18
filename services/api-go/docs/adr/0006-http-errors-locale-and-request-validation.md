@@ -51,6 +51,8 @@ Departures from the PHP API, all deliberate:
 | `Content-Language` on an unmatched route | Absent | Present |
 | "An English name is required." in Russian | Untranslated | "Требуется название на английском." |
 
+Aligned in [story 15](../../../../planning/epics/go-backend/stories/15-php-parity-fixes.md): PHP now localizes the 403, 404, 429 and 500 `detail` and the "(and N more errors)" suffix, translates "An English name is required.", and enforces `API_RATE_LIMIT_PER_MINUTE` per client IP on every `/api` route. The rows above record PHP before that story.
+
 ## Consequences
 
 - Good: a handler never sees a request whose shape contradicts the contract, and the 422 body for a shape error needs no code in the handler. Even an operation that is not implemented yet answers an invalid request with the right 422.

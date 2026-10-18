@@ -1,6 +1,6 @@
 # Epic: Go Backend
 
-**Status: in progress (story 12); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
+**Status: in progress (story 15); the Contract Hardening epic shipped 2026-10-10 with the contract at `2.0.0`.**
 
 Build a second backend in Go under `services/api-go` that implements `contracts/openapi.yaml` next to the Laravel API, as a learning project in modern Go design: hexagonal modular monolith, sqlc on Postgres, generated HTTP layer from the contract, one `make check` gate. The PHP service stays the production default; the Go service is done when it passes the same Schemathesis contract suite with no scope filter.
 
@@ -97,10 +97,10 @@ Errors: use case returns apperr -> http adapter maps to RFC 9457 Problem (applic
 | 9 | [Dashboard](stories/09-dashboard.md) | Workout Logging | shipped |
 | 10 | [Admin Catalog CRUD](stories/10-admin-catalog-crud.md) | Admin Content Management | shipped |
 | 11 | [Mail, Inbound Webhook and Worker](stories/11-mail-inbound-webhook-and-worker.md) | Platform | shipped |
-| 12 | [Observability](stories/12-observability.md) | Platform | in progress |
+| 12 | [Observability](stories/12-observability.md) | Platform | shipped |
 | 13 | [Deployment Plumbing and Backend Switch](stories/13-deployment-plumbing-and-backend-switch.md) | Platform | planned |
 | 14 | [PHP Reads the Shared YAML Catalog](stories/14-php-reads-shared-yaml-catalog.md) | Platform | planned |
-| 15 | [PHP Parity Fixes](stories/15-php-parity-fixes.md) | Workout Logging | planned |
+| 15 | [PHP Parity Fixes](stories/15-php-parity-fixes.md) | Workout Logging | in progress |
 
 States: `planned`, `in progress`, `shipped`, `deferred`. Update the row when a story's PR opens and when it merges; archive or delete the story file after it ships, per `planning/README.md`.
 

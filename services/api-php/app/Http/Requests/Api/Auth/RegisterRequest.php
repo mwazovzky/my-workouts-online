@@ -6,7 +6,6 @@ use App\Enums\ClientKind;
 use App\Http\Requests\ApiFormRequest;
 use App\Models\User;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends ApiFormRequest
 {
@@ -23,7 +22,7 @@ class RegisterRequest extends ApiFormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['bail', 'required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
-            'password' => ['required', Password::defaults()],
+            'password' => ['required', 'string', 'min:8'],
             'client' => ['required', Rule::enum(ClientKind::class)],
             'device_name' => ['nullable', 'string', 'max:255'],
         ];

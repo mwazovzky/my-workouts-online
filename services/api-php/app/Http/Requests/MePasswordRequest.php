@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rules\Password;
-
 class MePasswordRequest extends ApiFormRequest
 {
     public function authorize(): bool
@@ -18,7 +16,7 @@ class MePasswordRequest extends ApiFormRequest
     {
         return [
             'current_password' => ['bail', 'required', 'string', 'current_password'],
-            'password' => ['required', Password::defaults()],
+            'password' => ['required', 'string', 'min:8'],
         ];
     }
 }

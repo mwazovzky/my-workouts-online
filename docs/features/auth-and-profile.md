@@ -5,10 +5,10 @@ Authentication and profile management: JSON auth endpoints issued by the API, pa
 ## Current Behavior
 
 1. **Register** — name, email, password via `POST /api/v1/auth/register`; the SPA lands on the verify-email notice
-2. **Login / Logout** — email + password via `POST /api/v1/auth/login`; tokens, not sessions. Logout revokes the device's refresh-token family
+2. **Login / Logout** — email + password via `POST /api/v1/auth/login`; tokens, not sessions. An unknown email and a wrong password get the same 401 and cost the same password check, so neither the answer nor its timing reveals which emails have accounts. Logout revokes the device's refresh-token family
 3. **Password Reset** — reset link by email, new password via `POST /api/v1/auth/password/reset`
 4. **Email Verification** — signed link, throttled 6/min, enforced for verified API routes (`verified` middleware; JSON clients get 403 `email_unverified`). Accounts created before enforcement were backfilled as verified
-5. **Profile** — update name/email (email change resets verification), change password, switch locale and theme, or delete account (password required)
+5. **Profile** — update name/email (an email change resets verification and sends a verification link to the new address), change password, switch locale and theme, or delete account (password required)
 6. **API tokens** — `POST /api/v1/auth/login` (email, password, `client`) issues a 15-minute JWT access token plus a 30-day rotating refresh token; `POST /api/v1/auth/refresh` rotates it; `POST /api/v1/auth/logout` revokes the current device's token family. Web clients keep the refresh token in an httpOnly cookie, native clients in secure storage
 7. **API account flows** — `POST /api/v1/auth/register` creates the account, sends the verification email and returns tokens; `POST /api/v1/auth/password/forgot` and `/reset` drive password reset; `POST /api/v1/auth/email/verify` accepts the emailed link's `id`, `hash`, `expires`, `signature` and `/resend` re-sends it; `POST /api/v1/auth/reauth` re-checks the password and returns an access token with a fresh `auth_time` for step-up checks
 8. **Bootstrap** — `GET /api/v1/me` returns the signed-in user (`id`, `name`, `email`, `locale`, `theme_preference`, `is_admin`, `email_verified_at`); `GET /api/v1/meta` is public and lists `available_locales` and `theme_preferences`

@@ -5,10 +5,13 @@ namespace Tests\Feature\Api;
 use App\Models\RefreshToken;
 use App\Models\User;
 use App\Services\Auth\TokenServiceInterface;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Tests\TestCase;
 
 class MeApiTest extends TestCase
@@ -144,14 +147,41 @@ class MeApiTest extends TestCase
     }
 
     #[Test]
+    public function changing_the_email_sends_a_verification_link_to_the_new_address(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($user)->patchJson('/api/v1/me', ['email' => 'new@example.com'])->assertOk();
+
+        Notification::assertSentTo($user, VerifyEmail::class, fn (VerifyEmail $notification, array $channels, User $notifiable): bool => $notifiable->email === 'new@example.com');
+        Notification::assertSentTimes(VerifyEmail::class, 1);
+    }
+
+    #[Test]
+    public function a_failed_verification_mail_does_not_fail_the_email_change(): void
+    {
+        Notification::shouldReceive('send')->once()->andThrow(new RuntimeException('SMTP failure'));
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($user)->patchJson('/api/v1/me', ['email' => 'new@example.com'])
+            ->assertOk()
+            ->assertJsonPath('data.email', 'new@example.com');
+
+        $this->assertNull($user->fresh()->email_verified_at);
+    }
+
+    #[Test]
     public function keeping_the_same_email_keeps_the_account_verified(): void
     {
+        Notification::fake();
         $user = User::factory()->create(['email_verified_at' => now()]);
 
         $this->actingAs($user)->patchJson('/api/v1/me', ['name' => 'Updated', 'email' => $user->email])
             ->assertOk();
 
         $this->assertNotNull($user->fresh()->email_verified_at);
+        Notification::assertNothingSent();
     }
 
     #[Test]
@@ -241,7 +271,7 @@ class MeApiTest extends TestCase
         $this->actingAs($user)->putJson('/api/v1/me/password', [
             'current_password' => 'old-password',
             'password' => 'short',
-        ])->assertFieldErrors(['password']);
+        ])->assertFieldErrors(['password'], 'too_short');
     }
 
     #[Test]

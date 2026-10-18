@@ -5,7 +5,9 @@ namespace Tests\Feature\Api\Auth;
 use App\Models\RefreshToken;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -87,6 +89,21 @@ class LoginTest extends TestCase
             ->assertJsonMissingPath('errors');
 
         $this->assertDatabaseCount('refresh_tokens', 0);
+    }
+
+    #[Test]
+    public function an_unknown_email_costs_a_password_check_like_a_wrong_password(): void
+    {
+        Hash::spy();
+
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'nobody@example.com',
+            'password' => 'secret123',
+            'client' => 'native',
+        ])->assertProblem(401, 'invalid_credentials')
+            ->assertJsonPath('detail', trans('auth.failed'));
+
+        Hash::shouldHaveReceived('check')->once()->with('secret123', Mockery::pattern('/^\$2y\$12\$/'));
     }
 
     #[Test]

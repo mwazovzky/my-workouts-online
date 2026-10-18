@@ -22,7 +22,7 @@ Responses show what each PHP endpoint shows, verified field by field against PHP
 Departures, none of which the admin web pages can trigger:
 
 - **A field left out of a sent locale is blank.** PHP leaves an omitted field untouched and clears a `null` one; the generated request types cannot tell the two apart, so Go clears both. A locale left out entirely is still untouched. The admin forms always send every field.
-- **Template payloads are checked like workout payloads (ADR 0010).** A retired exercise is accepted only where the template already uses it, and a repeated activity order, or set order within an activity, is a 422 `not_unique` instead of a server error from the unique keys.
+- **Template payloads are checked like workout payloads (ADR 0010).** A retired exercise is accepted only where the template already uses it, and a repeated activity order, or set order within an activity, is a 422 `not_unique` instead of a server error from the unique keys. PHP adopted the same checks in [story 15](../../../../planning/epics/go-backend/stories/15-php-parity-fixes.md), so this is no longer a departure.
 - **`translations: {en: {}}`** reports the missing name only; PHP also reports the empty `en` object.
 
 ## Consequences

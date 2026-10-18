@@ -36,6 +36,19 @@ class ProgramApiTest extends TestCase
     }
 
     #[Test]
+    public function index_lists_programs_by_id(): void
+    {
+        $user = User::factory()->create();
+        Program::factory()->create(['id' => 3]);
+        Program::factory()->create(['id' => 1]);
+        Program::factory()->create(['id' => 2]);
+
+        $this->actingAs($user)->getJson('/api/v1/programs')
+            ->assertOk()
+            ->assertJsonPath('data.*.id', [1, 2, 3]);
+    }
+
+    #[Test]
     public function index_requires_authentication(): void
     {
         $this->getJson('/api/v1/programs')->assertUnauthorized();

@@ -103,7 +103,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute((int) config('app.api_rate_limit'))
-            ->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
+            ->by($request->ip()));
 
         Auth::extend('jwt', function ($app, string $name, array $config): JwtGuard {
             $guard = new JwtGuard(

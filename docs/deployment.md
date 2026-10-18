@@ -231,7 +231,7 @@ Required values (see `.env.example` in the repo for the full reference):
 - `IMAGE_TAG=initial-tag` (the deploy workflow replaces this on every release)
 - `APP_VERSION=dev` (the deploy script replaces this with the release tag on every release)
 
-Optional: `API_RATE_LIMIT_PER_MINUTE` (default 60 requests per minute per user or IP on `/api`), `LOKI_*` for the `alloy` log shipper, `RESEND_WEBHOOK_SECRET` and `MAIL_INBOUND_FORWARD_TO` for the support inbox (see step 9).
+Optional: `API_RATE_LIMIT_PER_MINUTE` (default 60 requests per minute per client IP on `/api`, both backends), `LOKI_*` for the `alloy` log shipper, `RESEND_WEBHOOK_SECRET` and `MAIL_INBOUND_FORWARD_TO` for the support inbox (see step 9).
 
 ## 7. Verify Docker access on the droplet
 

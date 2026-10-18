@@ -99,6 +99,17 @@ class RegisterTest extends TestCase
     }
 
     #[Test]
+    public function a_short_password_is_too_short(): void
+    {
+        $this->postJson('/api/v1/auth/register', $this->payload(['password' => 'abc']))
+            ->assertFieldErrors(['password'], 'too_short')
+            ->assertJsonPath('errors.0.detail', 'The password field must be at least 8 characters.');
+
+        $this->postJson('/api/v1/auth/register', $this->payload(['password' => 12345678]))
+            ->assertFieldErrors(['password'], 'invalid_format');
+    }
+
+    #[Test]
     public function rejects_a_non_string_email_with_a_validation_error_not_a_crash(): void
     {
         $this->postJson('/api/v1/auth/register', $this->payload(['email' => [['nested' => 1]]]))

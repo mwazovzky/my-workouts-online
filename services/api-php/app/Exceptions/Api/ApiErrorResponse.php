@@ -5,6 +5,7 @@ namespace App\Exceptions\Api;
 use App\Enums\ErrorCode;
 use App\Enums\FieldErrorCode;
 use App\Http\RequestId;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -59,9 +60,10 @@ class ApiErrorResponse
         $status = $e->getStatusCode();
         $code = $e instanceof ApiException ? $e->errorCode : ErrorCode::fromStatus($status);
 
-        $detail = $status === 404 || $e->getMessage() === ''
+        $detail = $status === 404 || $e instanceof ThrottleRequestsException || $e->getMessage() === ''
             ? (self::DETAILS[$status] ?? (Response::$statusTexts[$status] ?? 'Error'))
             : $e->getMessage();
+        $detail = __($detail);
 
         $extensions = $code === ErrorCode::ValidationFailed ? ['errors' => []] : [];
 
@@ -81,9 +83,9 @@ class ApiErrorResponse
      */
     public static function fromThrowable(Throwable $e): JsonResponse
     {
-        $detail = config('app.debug') ? $e->getMessage() : 'Server Error';
+        $detail = config('app.debug') ? $e->getMessage() : '';
 
-        return self::problem(500, ErrorCode::InternalError, $detail !== '' ? $detail : 'Server Error');
+        return self::problem(500, ErrorCode::InternalError, $detail !== '' ? $detail : __('Server Error'));
     }
 
     /**

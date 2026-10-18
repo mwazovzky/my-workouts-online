@@ -180,6 +180,66 @@ class WorkoutTemplateAdminTest extends TestCase
     }
 
     #[Test]
+    public function create_rejects_a_retired_exercise(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $retired = Exercise::factory()->create();
+        $retired->delete();
+
+        $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
+            'activities' => [['exercise_id' => $retired->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 10]]]],
+        ]))->assertFieldErrors(['activities.0.exercise_id'], 'not_found');
+
+        $this->assertDatabaseCount('workout_templates', 0);
+    }
+
+    #[Test]
+    public function update_keeps_a_retired_exercise_the_template_already_uses_but_cannot_add_another(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $kept = Exercise::factory()->create();
+        $id = $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
+            'activities' => [['exercise_id' => $kept->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 10]]]],
+        ]))->assertCreated()->json('data.id');
+
+        $kept->delete();
+        $other = Exercise::factory()->create();
+        $other->delete();
+
+        $payload = fn (array $exerciseIds): array => [
+            'translations' => ['en' => ['name' => 'Full Body']],
+            'activities' => array_map(
+                fn (int $exerciseId, int $i): array => ['exercise_id' => $exerciseId, 'order' => $i + 1, 'sets' => [['order' => 1, 'effort_value' => 10]]],
+                $exerciseIds,
+                array_keys($exerciseIds),
+            ),
+        ];
+
+        $this->actingAs($admin)->putJson("/api/v1/admin/workout-templates/{$id}", $payload([$kept->id, $other->id]))
+            ->assertFieldErrors(['activities.1.exercise_id'], 'not_found')
+            ->assertJsonCount(1, 'errors');
+
+        $this->actingAs($admin)->putJson("/api/v1/admin/workout-templates/{$id}", $payload([$kept->id]))->assertOk();
+    }
+
+    #[Test]
+    public function create_rejects_repeated_activity_and_set_orders(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $exercise = Exercise::factory()->create();
+        $sets = [['order' => 1, 'effort_value' => 10], ['order' => 1, 'effort_value' => 8]];
+
+        $this->actingAs($admin)->postJson('/api/v1/admin/workout-templates', $this->validPayload([
+            'activities' => [
+                ['exercise_id' => $exercise->id, 'order' => 1, 'sets' => $sets],
+                ['exercise_id' => $exercise->id, 'order' => 1, 'sets' => [['order' => 1, 'effort_value' => 10]]],
+            ],
+        ]))->assertFieldErrors(['activities.0.order', 'activities.1.order', 'activities.0.sets.0.order', 'activities.0.sets.1.order'], 'not_unique');
+
+        $this->assertDatabaseCount('workout_templates', 0);
+    }
+
+    #[Test]
     public function admin_can_update_template_replacing_activities(): void
     {
         $admin = User::factory()->admin()->create();
