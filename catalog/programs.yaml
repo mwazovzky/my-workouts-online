@@ -11,6 +11,18 @@
     - { weekday: wednesday, template: gym-full-body-beginner }
     - { weekday: friday, template: gym-full-body-beginner }
   previous_names: [Beginner]
+- slug: gym-full-body-a-b
+  translations:
+    en:
+      name: 'Gym Full Body A / B'
+      description: 'Three full-body sessions a week, alternating two sessions with different exercises: A on Monday and Friday, B on Wednesday. The next step after Gym Beginner Full Body, with free weights and a hip hinge added.'
+    ru:
+      name: 'Тренажёрный зал: всё тело А и Б'
+      description: 'Три тренировки на всё тело в неделю, две тренировки с разными упражнениями чередуются: А в понедельник и пятницу, Б в среду. Следующий шаг после программы «Тренажёрный зал: всё тело для начинающих»: добавлены свободные веса и наклонные тяги.'
+  schedule:
+    - { weekday: monday, template: gym-full-body-a }
+    - { weekday: wednesday, template: gym-full-body-b }
+    - { weekday: friday, template: gym-full-body-a }
 - slug: gym-3-day-split
   translations:
     en:

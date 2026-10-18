@@ -531,8 +531,8 @@ func TestCatalogSyncAppliesTheShippedCatalogRepeatedly(t *testing.T) {
 		t.Errorf("%d exercises without a slug", n)
 	}
 
-	if n := countRows(t, pool, "SELECT count(*) FROM programs"); n != 14 {
-		t.Errorf("programs = %d, want the 14 in catalog/programs.yaml", n)
+	if n := countRows(t, pool, "SELECT count(*) FROM programs"); n != 15 {
+		t.Errorf("programs = %d, want the 15 in catalog/programs.yaml", n)
 	}
 }
 
