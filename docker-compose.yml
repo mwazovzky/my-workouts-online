@@ -7,8 +7,8 @@ services:
     env_file:
       - .env
     environment:
-      # The shared YAML catalog (catalog:export).
-      CATALOG_EXPORT_PATH: /var/www/catalog
+      # The shared YAML catalog catalog:sync applies.
+      CATALOG_PATH: /var/www/catalog
     volumes:
       - ./services/api-php:/var/www/html
       - ./catalog:/var/www/catalog

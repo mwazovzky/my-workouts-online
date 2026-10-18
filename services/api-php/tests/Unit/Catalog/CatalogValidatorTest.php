@@ -2,14 +2,28 @@
 
 namespace Tests\Unit\Catalog;
 
+use App\Enums\CatalogRule;
 use App\Enums\DifficultyUnit;
 use App\Services\Catalog\CatalogLoader;
 use App\Services\Catalog\CatalogValidator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\Concerns\UsesSharedCatalog;
+use Tests\TestCase;
 
 class CatalogValidatorTest extends TestCase
 {
+    use UsesSharedCatalog;
+
+    /**
+     * Rules a shared fixture also breaks because its rule leaves a reference
+     * dangling: equipment with an invalid unit has no unit, so its exercise's
+     * equipment counts as unknown. The Go test lists the same.
+     */
+    private const CONSEQUENCES = [
+        'equipment-unit-invalid' => [CatalogRule::ExerciseEquipmentUnknown],
+    ];
+
     /**
      * Indexes into the fixture catalog, in load order.
      */
@@ -23,7 +37,7 @@ class CatalogValidatorTest extends TestCase
 
     private function catalog(): array
     {
-        return (new CatalogLoader(__DIR__.'/../../Fixtures/catalog'))->load();
+        return (new CatalogLoader($this->validCatalogPath()))->load();
     }
 
     private function validate(array $catalog): array
@@ -154,7 +168,7 @@ class CatalogValidatorTest extends TestCase
         $catalog = $this->catalog();
         $catalog['equipment'][0]['difficulty_unit'] = 'kilograms';
 
-        $this->assertViolation('equipment [barbell]: difficulty_unit must be a DifficultyUnit case', $catalog);
+        $this->assertViolation('equipment [barbell]: difficulty_unit must be one of kilograms, pounds, plates, heart_rate_zone, none.', $catalog);
     }
 
     #[Test]
@@ -163,7 +177,7 @@ class CatalogValidatorTest extends TestCase
         $catalog = $this->catalog();
         $catalog['exercises'][self::BENCH_PRESS]['effort_type'] = 'repetitions';
 
-        $this->assertViolation('exercises [bench-press]: effort_type must be an EffortType case', $catalog);
+        $this->assertViolation('exercises [bench-press]: effort_type must be one of repetitions, duration.', $catalog);
     }
 
     #[Test]
@@ -352,7 +366,7 @@ class CatalogValidatorTest extends TestCase
         $catalog = $this->catalog();
         $catalog['programs'][0]['schedule'][0]['weekday'] = 'Monday';
 
-        $this->assertViolation('programs [starter] schedule entry 1: weekday must be a Weekday case', $catalog);
+        $this->assertViolation('programs [starter] schedule entry 1: weekday must be one of monday, tuesday, wednesday, thursday, friday, saturday, sunday.', $catalog);
     }
 
     #[Test]
@@ -417,5 +431,46 @@ class CatalogValidatorTest extends TestCase
         $catalog['programs'][0]['schedule'][0]['template'] = 'upper-body';
 
         $this->assertCount(2, $this->validate($catalog));
+    }
+
+    #[Test]
+    public function every_rule_has_a_shared_fixture_and_every_fixture_is_a_rule(): void
+    {
+        $fixtures = array_map('basename', glob($this->invalidCatalogsPath().'/*', GLOB_ONLYDIR) ?: []);
+        $rules = array_column(CatalogRule::cases(), 'value');
+        sort($fixtures);
+        sort($rules);
+
+        $this->assertSame($rules, $fixtures);
+    }
+
+    /**
+     * @return array<string, array{CatalogRule}>
+     */
+    public static function rules(): array
+    {
+        return array_combine(
+            array_column(CatalogRule::cases(), 'value'),
+            array_map(fn (CatalogRule $rule) => [$rule], CatalogRule::cases()),
+        );
+    }
+
+    /**
+     * The fixture is the valid catalog with its files replaced by the ones
+     * in catalog/testdata/invalid/<rule>/; it breaks that rule and no other.
+     */
+    #[Test]
+    #[DataProvider('rules')]
+    public function each_shared_fixture_breaks_its_rule(CatalogRule $rule): void
+    {
+        $path = $this->catalogCopy(overlay: $this->invalidCatalogsPath().'/'.$rule->value);
+        $violations = (new CatalogValidator(['en', 'ru']))->check((new CatalogLoader($path))->load());
+
+        $broken = array_values(array_unique(array_map(fn (array $violation) => $violation['rule']->value, $violations)));
+        $expected = array_column([$rule, ...(self::CONSEQUENCES[$rule->value] ?? [])], 'value');
+        sort($broken);
+        sort($expected);
+
+        $this->assertSame($expected, $broken, implode("\n", array_column($violations, 'message')));
     }
 }

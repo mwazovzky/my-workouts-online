@@ -287,13 +287,13 @@ Run them manually only for troubleshooting or if you intentionally bypass the wo
 
 ### Catalog
 
-Production is never seeded with `db:seed`. The catalog (equipment, categories, exercises, workout templates, programs) comes from the data files in `services/api-php/database/catalog/`, applied by `catalog:sync` at the end of every deploy. The `Admin` and `User` roles come from a migration.
+Production is never seeded with `db:seed`. The catalog (equipment, categories, exercises, workout templates, programs) comes from the YAML files in the repository's `catalog/`, which the `api` image carries at `/var/www/catalog` (`CATALOG_PATH`), applied by `catalog:sync` at the end of every deploy. The `Admin` and `User` roles come from a migration.
 
 - The sync resets shipped records to the data files, so an edit made to one of them in the admin UI lasts only until the next deploy. Records created in the admin UI are not touched.
 - The new `api` container starts before `migrate` runs. A release whose migration moves data can therefore serve incomplete admin payloads for the few seconds in between; do not edit catalog content in the admin UI during a deploy.
 - A data migration that finds invalid rows stops before writing and names them (for example, a catalog record without an English name). Fix the rows, then re-run the deploy.
 - The sync runs after all services are recreated. If it fails, the deploy fails, nothing is written, and the stack keeps running on the new release.
-- The Go API (not deployed yet) applies the same content from the repository's `catalog/` YAML with `workouts catalog sync [--dry-run] [--strict]`, which has the same rules, report and exit codes; story 13 of the Go epic adds it to the deploy. Until the PHP API reads that YAML itself, a catalog change edits both `database/catalog/` and `catalog/`, and CI's `catalog:export --check` fails when they differ.
+- The Go API (not deployed yet) applies the same content from the repository's `catalog/` YAML with `workouts catalog sync [--dry-run] [--strict]`, which has the same rules, report and exit codes; story 13 of the Go epic adds it to the deploy.
 - To preview a release's catalog changes without writing, run it with `--dry-run`. `adopted` means an existing row was matched by name and keeps its id; `created` for a record that already exists in production means its name differs and needs a `previous_names` entry in the data file.
 
 ```bash
