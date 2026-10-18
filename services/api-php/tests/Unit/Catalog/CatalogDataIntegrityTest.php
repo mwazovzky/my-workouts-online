@@ -8,7 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Guards the catalog data files shipped in database/catalog.
+ * Guards the shipped catalog, the repository's catalog/ that both backends
+ * apply, with the PHP validator (the Go suite checks it with its own).
  */
 class CatalogDataIntegrityTest extends TestCase
 {

@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Runs the command against the catalog shipped in database/catalog.
+ * Runs the command against the shipped catalog (the repository's catalog/).
  */
 class CatalogSyncCommandTest extends TestCase
 {
@@ -87,7 +87,7 @@ class CatalogSyncCommandTest extends TestCase
     #[Test]
     public function it_fails_and_lists_the_violations_when_the_catalog_is_invalid(): void
     {
-        config(['catalog.path' => base_path('tests/Fixtures/catalog/missing')]);
+        config(['catalog.path' => config('catalog.path').'/testdata/missing']);
 
         $this->artisan('catalog:sync')
             ->expectsOutputToContain('The catalog data is invalid. Nothing was written.')

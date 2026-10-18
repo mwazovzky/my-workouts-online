@@ -1,8 +1,6 @@
 # Catalog
 
-The shipped content of My Workouts: equipment, categories, exercises, workout templates and programs, in English and Russian. Both backends apply it to their databases on deploy and in seeding: the Go API reads these files (`workouts catalog sync`), the PHP API reads its copy in `services/api-php/database/catalog/` (`php artisan catalog:sync`) until the Go epic's story 14 switches it to these files too.
-
-**Until then, every change goes into both copies.** CI runs `php artisan catalog:export --check`, which fails when the two differ in any value (comments and key order do not count).
+The shipped content of My Workouts: equipment, categories, exercises, workout templates and programs, in English and Russian. Both backends read these files and apply them to their databases on deploy and in seeding: the Go API with `workouts catalog sync`, the PHP API with `php artisan catalog:sync`. A content change is made here once.
 
 ## Files
 
@@ -29,11 +27,11 @@ Removing a record from its file deletes nothing. To remove it, list it in `retir
 docker compose exec -T api-go go run ./cmd/workouts catalog sync --dry-run   # Go: preview
 docker compose exec -T api-go go run ./cmd/workouts catalog sync             # Go: apply
 docker compose exec -T app php artisan catalog:sync --dry-run                # PHP: preview
-docker compose exec -T app php artisan catalog:export --check                # both copies agree
+docker compose exec -T app php artisan catalog:sync                          # PHP: apply
 ```
 
 `--strict` writes nothing when the sync raises warnings (several rows match one name, a retirement is blocked, a measurement change would relabel logged workouts). Decisions: [ADR 0009](../services/api-go/docs/adr/0009-single-yaml-catalog-source.md).
 
 ## Test fixtures
 
-`testdata/valid/` is a small valid catalog (PHP's `tests/Fixtures/catalog`, exported). `testdata/invalid/<rule>/` breaks one validation rule each: it holds only the files that differ from `testdata/valid/`, and the Go tests overlay them and require exactly that rule. A new rule needs a new fixture directory named after its id.
+`testdata/valid/` is a small valid catalog. `testdata/invalid/<rule>/` breaks one validation rule each: it holds only the files that differ from `testdata/valid/`, and both test suites (Go's `catalogfile` rules test, PHP's `CatalogValidatorTest`) overlay them and require exactly that rule. A new rule needs a new fixture directory named after its id, and the id in both `catalogsync.Rules` and PHP's `CatalogRule` enum.

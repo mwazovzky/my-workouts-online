@@ -1,7 +1,0 @@
-<?php
-
-return [
-    ['slug' => 'chest', 'translations' => ['en' => ['name' => 'Chest'], 'ru' => ['name' => 'Грудь']]],
-    ['slug' => 'legs', 'translations' => ['en' => ['name' => 'Legs'], 'ru' => ['name' => 'Ноги']]],
-    ['slug' => 'cardio', 'translations' => ['en' => ['name' => 'Cardio'], 'ru' => ['name' => 'Кардио']]],
-];

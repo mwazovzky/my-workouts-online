@@ -42,6 +42,9 @@ ENV APP_ENV=${APP_ENV}
 
 COPY services/api-php /var/www/html
 COPY --from=composer-deps /app/vendor /var/www/html/vendor
+# The shared YAML catalog catalog:sync applies on every deploy.
+COPY catalog /var/www/catalog
+ENV CATALOG_PATH=/var/www/catalog
 
 # Runtime directories are excluded from the build context; create them and
 # never bake local caches into the production image.

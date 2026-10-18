@@ -30,7 +30,7 @@ class CatalogSyncTest extends TestCase
 
     private function catalog(): array
     {
-        return (new CatalogLoader(base_path('tests/Fixtures/catalog')))->load();
+        return (new CatalogLoader(config('catalog.path').'/testdata/valid'))->load();
     }
 
     /**

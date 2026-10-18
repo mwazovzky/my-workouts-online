@@ -2,9 +2,11 @@
 
 namespace App\Services\Catalog;
 
+use App\Enums\CatalogRule;
 use App\Enums\DifficultyUnit;
 use App\Enums\EffortType;
 use App\Enums\Weekday;
+use BackedEnum;
 
 class CatalogValidator
 {
@@ -27,7 +29,7 @@ class CatalogValidator
     ];
 
     /**
-     * @var array<int, string>
+     * @var array<int, array{rule: CatalogRule, message: string}>
      */
     private array $violations = [];
 
@@ -40,9 +42,20 @@ class CatalogValidator
      * Check the catalog definition without touching the database.
      *
      * @param  array<string, mixed>  $catalog  As returned by CatalogLoader::load()
-     * @return array<int, string> Violations; empty when the catalog is valid
+     * @return array<int, string> Violation messages; empty when the catalog is valid
      */
     public function validate(array $catalog): array
+    {
+        return array_column($this->check($catalog), 'message');
+    }
+
+    /**
+     * The violations with the rule each one breaks.
+     *
+     * @param  array<string, mixed>  $catalog  As returned by CatalogLoader::load()
+     * @return array<int, array{rule: CatalogRule, message: string}>
+     */
+    public function check(array $catalog): array
     {
         $this->violations = [];
 
@@ -77,7 +90,7 @@ class CatalogValidator
             $label = $this->label($type, $record, $index);
 
             if (! is_array($record)) {
-                $this->violations[] = "{$label}: record must be an array.";
+                $this->violate(CatalogRule::RecordNotMapping, "{$label}: record must be a mapping.");
 
                 continue;
             }
@@ -91,7 +104,7 @@ class CatalogValidator
                     $key = $locale.'|'.$this->normaliseName($name);
 
                     if (isset($seenNames[$key]) && $seenNames[$key] !== $label) {
-                        $this->violations[] = "{$label}: name \"{$name}\" ({$locale}) is already used by {$seenNames[$key]}.";
+                        $this->violate(CatalogRule::NameDuplicate, "{$label}: name \"{$name}\" ({$locale}) is already used by {$seenNames[$key]}.");
 
                         continue;
                     }
@@ -108,17 +121,17 @@ class CatalogValidator
     private function validateSlug(string $label, mixed $slug, array &$seenSlugs): void
     {
         if (! is_string($slug) || $slug === '') {
-            $this->violations[] = "{$label}: slug is required.";
+            $this->violate(CatalogRule::SlugRequired, "{$label}: slug is required.");
 
             return;
         }
 
         if (strlen($slug) > self::SLUG_MAX_LENGTH || preg_match(self::SLUG_PATTERN, $slug) !== 1) {
-            $this->violations[] = "{$label}: slug must be lowercase words separated by hyphens, up to ".self::SLUG_MAX_LENGTH.' characters.';
+            $this->violate(CatalogRule::SlugFormat, "{$label}: slug must be lowercase words separated by hyphens, up to ".self::SLUG_MAX_LENGTH.' characters.');
         }
 
         if (isset($seenSlugs[$slug])) {
-            $this->violations[] = "{$label}: slug is used more than once.";
+            $this->violate(CatalogRule::SlugDuplicate, "{$label}: slug is used more than once.");
         }
 
         $seenSlugs[$slug] = true;
@@ -127,7 +140,7 @@ class CatalogValidator
     private function validateTranslations(string $type, string $label, mixed $translations): void
     {
         if (! is_array($translations)) {
-            $this->violations[] = "{$label}: translations are required.";
+            $this->violate(CatalogRule::TranslationsRequired, "{$label}: translations are required.");
 
             return;
         }
@@ -135,27 +148,27 @@ class CatalogValidator
         $fields = self::TRANSLATABLE_FIELDS[$type];
 
         foreach (array_diff(array_keys($translations), $this->locales) as $locale) {
-            $this->violations[] = "{$label}: locale \"{$locale}\" is not supported.";
+            $this->violate(CatalogRule::LocaleUnsupported, "{$label}: locale \"{$locale}\" is not supported.");
         }
 
         foreach ($this->locales as $locale) {
             $values = is_array($translations[$locale] ?? null) ? $translations[$locale] : [];
 
             foreach (array_diff(array_keys($values), $fields) as $field) {
-                $this->violations[] = "{$label}: field \"{$field}\" ({$locale}) is not translatable.";
+                $this->violate(CatalogRule::FieldNotTranslatable, "{$label}: field \"{$field}\" ({$locale}) is not translatable.");
             }
 
             foreach ($fields as $field) {
                 $value = $values[$field] ?? null;
 
                 if (! is_string($value) || trim($value) === '') {
-                    $this->violations[] = "{$label}: {$field} ({$locale}) is required.";
+                    $this->violate(CatalogRule::FieldRequired, "{$label}: {$field} ({$locale}) is required.");
 
                     continue;
                 }
 
                 if (mb_strlen($value) > self::FIELD_MAX_LENGTH[$field]) {
-                    $this->violations[] = "{$label}: {$field} ({$locale}) is longer than ".self::FIELD_MAX_LENGTH[$field].' characters.';
+                    $this->violate(CatalogRule::FieldTooLong, "{$label}: {$field} ({$locale}) is longer than ".self::FIELD_MAX_LENGTH[$field].' characters.');
                 }
             }
         }
@@ -164,14 +177,14 @@ class CatalogValidator
     private function validatePreviousNames(string $label, mixed $previousNames): void
     {
         if (! is_array($previousNames)) {
-            $this->violations[] = "{$label}: previous_names must be a list.";
+            $this->violate(CatalogRule::PreviousNamesNotList, "{$label}: previous_names must be a list.");
 
             return;
         }
 
         foreach ($previousNames as $name) {
             if (! is_string($name) || trim($name) === '') {
-                $this->violations[] = "{$label}: previous_names must contain non-empty strings.";
+                $this->violate(CatalogRule::PreviousNamesBlank, "{$label}: previous_names must contain non-empty strings.");
             }
         }
     }
@@ -192,7 +205,7 @@ class CatalogValidator
             $unit = $record['difficulty_unit'] ?? null;
 
             if (! $unit instanceof DifficultyUnit) {
-                $this->violations[] = $this->label('equipment', $record, $index).': difficulty_unit must be a DifficultyUnit case.';
+                $this->violate(CatalogRule::EquipmentUnitInvalid, $this->label('equipment', $record, $index).': difficulty_unit must be one of '.self::cases(DifficultyUnit::cases()).'.');
 
                 continue;
             }
@@ -224,21 +237,21 @@ class CatalogValidator
             $equipment = $record['equipment'] ?? null;
 
             if (! is_string($equipment) || ! isset($equipmentUnits[$equipment])) {
-                $this->violations[] = "{$label}: equipment \"".$this->printable($equipment).'" does not exist.';
+                $this->violate(CatalogRule::ExerciseEquipmentUnknown, "{$label}: equipment \"".$this->printable($equipment).'" does not exist.');
             }
 
             if (! ($record['effort_type'] ?? null) instanceof EffortType) {
-                $this->violations[] = "{$label}: effort_type must be an EffortType case.";
+                $this->violate(CatalogRule::ExerciseEffortTypeInvalid, "{$label}: effort_type must be one of ".self::cases(EffortType::cases()).'.');
             }
 
             $restTime = $record['rest_time_seconds'] ?? null;
 
             if ($restTime !== null && (! is_int($restTime) || $restTime < 0 || $restTime > self::MAX_REST_TIME_SECONDS)) {
-                $this->violations[] = "{$label}: rest_time_seconds must be null or an integer from 0 to ".self::MAX_REST_TIME_SECONDS.'.';
+                $this->violate(CatalogRule::ExerciseRestTimeRange, "{$label}: rest_time_seconds must be null or an integer from 0 to ".self::MAX_REST_TIME_SECONDS.'.');
             }
 
             if ($restTime === null && ($record['effort_type'] ?? null) === EffortType::Repetitions) {
-                $this->violations[] = "{$label}: rest_time_seconds is required for a repetition-based exercise.";
+                $this->violate(CatalogRule::ExerciseRestTimeRequired, "{$label}: rest_time_seconds is required for a repetition-based exercise.");
             }
 
             $this->validateCategories($label, $record['categories'] ?? null, $categorySlugs);
@@ -279,13 +292,13 @@ class CatalogValidator
 
         foreach ($this->slugs($catalog['equipment'] ?? []) as $slug) {
             if (! isset($usedEquipment[$slug])) {
-                $this->violations[] = "equipment [{$slug}]: no exercise uses it.";
+                $this->violate(CatalogRule::EquipmentUnused, "equipment [{$slug}]: no exercise uses it.");
             }
         }
 
         foreach ($this->slugs($catalog['categories'] ?? []) as $slug) {
             if (! isset($usedCategories[$slug])) {
-                $this->violations[] = "categories [{$slug}]: no exercise belongs to it.";
+                $this->violate(CatalogRule::CategoryUnused, "categories [{$slug}]: no exercise belongs to it.");
             }
         }
     }
@@ -296,19 +309,19 @@ class CatalogValidator
     private function validateCategories(string $label, mixed $categories, array $categorySlugs): void
     {
         if (! is_array($categories) || $categories === []) {
-            $this->violations[] = "{$label}: at least one category is required.";
+            $this->violate(CatalogRule::ExerciseCategoriesRequired, "{$label}: at least one category is required.");
 
             return;
         }
 
         foreach ($categories as $category) {
             if (! is_string($category) || ! in_array($category, $categorySlugs, true)) {
-                $this->violations[] = "{$label}: category \"".$this->printable($category).'" does not exist.';
+                $this->violate(CatalogRule::ExerciseCategoryUnknown, "{$label}: category \"".$this->printable($category).'" does not exist.');
             }
         }
 
         if (count($categories) !== count(array_unique($categories, SORT_REGULAR))) {
-            $this->violations[] = "{$label}: categories must not repeat.";
+            $this->violate(CatalogRule::ExerciseCategoryRepeated, "{$label}: categories must not repeat.");
         }
     }
 
@@ -327,7 +340,7 @@ class CatalogValidator
             $activities = $record['activities'] ?? null;
 
             if (! is_array($activities) || $activities === []) {
-                $this->violations[] = "{$label}: at least one activity is required.";
+                $this->violate(CatalogRule::TemplateActivitiesRequired, "{$label}: at least one activity is required.");
 
                 continue;
             }
@@ -337,7 +350,7 @@ class CatalogValidator
                 $exercise = is_array($activity) ? ($activity['exercise'] ?? null) : null;
 
                 if (! is_string($exercise) || ! array_key_exists($exercise, $exerciseUnits)) {
-                    $this->violations[] = "{$activityLabel}: exercise \"".$this->printable($exercise).'" does not exist.';
+                    $this->violate(CatalogRule::ActivityExerciseUnknown, "{$activityLabel}: exercise \"".$this->printable($exercise).'" does not exist.');
 
                     continue;
                 }
@@ -350,7 +363,7 @@ class CatalogValidator
     private function validateSets(string $label, mixed $sets, ?DifficultyUnit $unit): void
     {
         if (! is_array($sets) || $sets === []) {
-            $this->violations[] = "{$label}: at least one set is required.";
+            $this->violate(CatalogRule::ActivitySetsRequired, "{$label}: at least one set is required.");
 
             return;
         }
@@ -361,7 +374,7 @@ class CatalogValidator
             $difficulty = is_array($set) ? ($set['difficulty'] ?? null) : null;
 
             if (! is_int($effort) || $effort < 1) {
-                $this->violations[] = "{$setLabel}: effort must be a positive integer.";
+                $this->violate(CatalogRule::SetEffortInvalid, "{$setLabel}: effort must be a positive integer.");
             }
 
             if ($difficulty === null) {
@@ -369,21 +382,21 @@ class CatalogValidator
             }
 
             if ((! is_int($difficulty) && ! is_float($difficulty)) || $difficulty < 0) {
-                $this->violations[] = "{$setLabel}: difficulty must be null or a non-negative number.";
+                $this->violate(CatalogRule::SetDifficultyInvalid, "{$setLabel}: difficulty must be null or a non-negative number.");
 
                 continue;
             }
 
             if ($unit === DifficultyUnit::None) {
-                $this->violations[] = "{$setLabel}: difficulty must be null because the equipment has no difficulty unit.";
+                $this->violate(CatalogRule::SetDifficultyWithoutUnit, "{$setLabel}: difficulty must be null because the equipment has no difficulty unit.");
             }
 
             if (in_array($unit, self::WEIGHT_UNITS, true)) {
-                $this->violations[] = "{$setLabel}: difficulty must be null because templates do not prescribe a weight.";
+                $this->violate(CatalogRule::SetDifficultyWeight, "{$setLabel}: difficulty must be null because templates do not prescribe a weight.");
             }
 
             if ($unit === DifficultyUnit::HeartRateZone && (! is_int($difficulty) || $difficulty < 1 || $difficulty > 5)) {
-                $this->violations[] = "{$setLabel}: heart-rate zone must be an integer from 1 to 5.";
+                $this->violate(CatalogRule::SetHeartRateZoneRange, "{$setLabel}: heart-rate zone must be an integer from 1 to 5.");
             }
         }
     }
@@ -403,7 +416,7 @@ class CatalogValidator
             $schedule = $record['schedule'] ?? null;
 
             if (! is_array($schedule) || $schedule === []) {
-                $this->violations[] = "{$label}: at least one scheduled workout is required.";
+                $this->violate(CatalogRule::ProgramScheduleRequired, "{$label}: at least one scheduled workout is required.");
 
                 continue;
             }
@@ -416,11 +429,11 @@ class CatalogValidator
                 $template = is_array($entry) ? ($entry['template'] ?? null) : null;
 
                 if (! $weekday instanceof Weekday) {
-                    $this->violations[] = "{$entryLabel}: weekday must be a Weekday case.";
+                    $this->violate(CatalogRule::ScheduleWeekdayInvalid, "{$entryLabel}: weekday must be one of ".self::cases(Weekday::cases()).'.');
                 }
 
                 if (! is_string($template) || ! in_array($template, $templateSlugs, true)) {
-                    $this->violations[] = "{$entryLabel}: workout template \"".$this->printable($template).'" does not exist.';
+                    $this->violate(CatalogRule::ScheduleTemplateUnknown, "{$entryLabel}: workout template \"".$this->printable($template).'" does not exist.');
 
                     continue;
                 }
@@ -429,7 +442,7 @@ class CatalogValidator
                     $key = $weekday->value.'|'.$template;
 
                     if (isset($seen[$key])) {
-                        $this->violations[] = "{$entryLabel}: workout template \"{$template}\" is already scheduled on {$weekday->value}.";
+                        $this->violate(CatalogRule::ScheduleDuplicate, "{$entryLabel}: workout template \"{$template}\" is already scheduled on {$weekday->value}.");
                     }
 
                     $seen[$key] = true;
@@ -446,7 +459,7 @@ class CatalogValidator
         $retired = is_array($catalog['retired'] ?? null) ? $catalog['retired'] : [];
 
         foreach (array_diff(array_keys($retired), CatalogLoader::TYPES) as $type) {
-            $this->violations[] = "retired: \"{$type}\" is not a catalog type.";
+            $this->violate(CatalogRule::RetiredTypeUnknown, "retired: \"{$type}\" is not a catalog type.");
         }
 
         foreach (CatalogLoader::TYPES as $type) {
@@ -458,7 +471,7 @@ class CatalogValidator
                 $label = $this->label("retired {$type}", $entry, $index);
 
                 if (! is_array($entry)) {
-                    $this->violations[] = "{$label}: record must be an array.";
+                    $this->violate(CatalogRule::RetiredRecordNotMapping, "{$label}: record must be a mapping.");
 
                     continue;
                 }
@@ -466,26 +479,26 @@ class CatalogValidator
                 $this->validateSlug($label, $entry['slug'] ?? null, $seenSlugs);
 
                 if (in_array($entry['slug'] ?? null, $activeSlugs, true)) {
-                    $this->violations[] = "{$label}: slug belongs to an active record.";
+                    $this->violate(CatalogRule::RetiredSlugActive, "{$label}: slug belongs to an active record.");
                 }
 
                 $names = $entry['names'] ?? null;
 
                 if (! is_array($names) || $names === []) {
-                    $this->violations[] = "{$label}: names must list at least one English name.";
+                    $this->violate(CatalogRule::RetiredNamesRequired, "{$label}: names must list at least one English name.");
 
                     continue;
                 }
 
                 foreach ($names as $name) {
                     if (! is_string($name) || trim($name) === '') {
-                        $this->violations[] = "{$label}: names must contain non-empty strings.";
+                        $this->violate(CatalogRule::RetiredNamesBlank, "{$label}: names must contain non-empty strings.");
 
                         continue;
                     }
 
                     if (isset($activeNames[$this->normaliseName($name)])) {
-                        $this->violations[] = "{$label}: name \"{$name}\" belongs to an active record.";
+                        $this->violate(CatalogRule::RetiredNameActive, "{$label}: name \"{$name}\" belongs to an active record.");
                     }
                 }
             }
@@ -556,6 +569,19 @@ class CatalogValidator
         }
 
         return $slugs;
+    }
+
+    private function violate(CatalogRule $rule, string $message): void
+    {
+        $this->violations[] = ['rule' => $rule, 'message' => $message];
+    }
+
+    /**
+     * @param  array<int, BackedEnum>  $cases
+     */
+    private static function cases(array $cases): string
+    {
+        return implode(', ', array_map(static fn (BackedEnum $case): string => (string) $case->value, $cases));
     }
 
     private function label(string $type, mixed $record, int|string $index): string
