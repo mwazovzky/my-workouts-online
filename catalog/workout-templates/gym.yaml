@@ -98,6 +98,39 @@
     - { exercise: assisted-pull-up, sets: 3, effort: 8 }
     - { exercise: cable-curl, sets: 2, effort: 15 }
     - { exercise: back-extension, sets: 3, effort: 12 }
+- slug: gym-full-body-a
+  translations:
+    en:
+      name: 'Full Body A'
+      description: 'Leg press, chest press and pulldown, then the Romanian deadlift for the back of the thighs. Work in 8 to 12 repetitions and add weight once every set reaches 12.'
+    ru:
+      name: 'Всё тело А'
+      description: 'Жим ногами, жим от груди и тяга верхнего блока, затем румынская тяга для задней поверхности бедра. Работайте в диапазоне 8–12 повторений и добавляйте вес, когда во всех подходах получается 12.'
+  activities:
+    - { exercise: leg-press, sets: 3, effort: 10 }
+    - { exercise: machine-chest-press, sets: 3, effort: 10 }
+    - { exercise: lat-pulldown, sets: 3, effort: 10 }
+    - { exercise: dumbbell-romanian-deadlift, sets: 3, effort: 10 }
+    - { exercise: dumbbell-lateral-raise, sets: 3, effort: 12 }
+    - { exercise: cable-triceps-pushdown, sets: 3, effort: 12 }
+    - { exercise: plank, sets: 3, effort: 40 }
+- slug: gym-full-body-b
+  translations:
+    en:
+      name: 'Full Body B'
+      description: 'The second full-body session: a squat, a row, an incline press and an overhead press, with face pulls for the rear shoulders. Alternate it with session A.'
+    ru:
+      name: 'Всё тело Б'
+      description: 'Вторая тренировка на всё тело: приседания, тяга, жим на наклонной скамье и жим над головой, а также тяга к лицу для задней дельты. Чередуйте её с тренировкой А.'
+  activities:
+    - { exercise: dumbbell-goblet-squat, sets: 3, effort: 10 }
+    - { exercise: seated-cable-row, sets: 3, effort: 10 }
+    - { exercise: incline-dumbbell-press, sets: 3, effort: 10 }
+    - { exercise: leg-curl, sets: 3, effort: 12 }
+    - { exercise: dumbbell-shoulder-press, sets: 3, effort: 10 }
+    - { exercise: cable-face-pull, sets: 3, effort: 15 }
+    - { exercise: hammer-curl, sets: 3, effort: 12 }
+    - { exercise: hanging-knee-raise, sets: 3, effort: 12 }
 - slug: gym-upper-a
   translations:
     en:
