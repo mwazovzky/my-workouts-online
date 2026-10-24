@@ -39,6 +39,7 @@ Optional GitHub repository secrets:
 Required GitHub repository variables:
 
 - `PRODUCTION_IMAGE_NAME` — for example `YOUR_DOCKERHUB_USER/my-workouts-online`
+- `PRODUCTION_PUBLIC_URL` — the public origin, for example `https://your-domain.com`; the web image build fails without it. `robots.txt`, `sitemap.xml` and other absolute URLs use it
 
 Optional GitHub repository variables:
 
@@ -435,11 +436,27 @@ curl -f https://your-domain.com/health/ready
 curl -fI https://your-domain.com/ | head -1        # the SPA
 curl -f https://your-domain.com/api/v1/meta       # the API through nginx
 curl -fsI https://your-domain.com/.well-known/apple-app-site-association | grep -i content-type   # application/json, no redirect
+curl -f https://your-domain.com/robots.txt                                    # names https://your-domain.com/sitemap.xml
+curl -f https://your-domain.com/sitemap.xml                                   # the public pages, absolute https URLs
+curl -sI https://your-domain.com/missing.xml | head -1                        # 404
+curl -sI https://your-domain.com/dashboard | grep -i x-robots-tag             # noindex
 ```
 
 For iOS Universal Links the `APPLE_APP_ID` in `.env` must be `<Team ID>.online.my-workouts.app` and must match the team that signs the app; the app's Associated Domains entitlement names `applinks:your-domain.com`. Apple's CDN caches the file for up to a day, so after changing it install a fresh build and allow time, or validate with Apple's AASA validator. Verification and reset emails keep linking to the web paths; the app intercepts them only where it is installed.
 
 If `PRODUCTION_HEALTHCHECK_URL` and `PRODUCTION_READYCHECK_URL` are configured in GitHub, the deploy workflow performs these checks automatically and fails the release if they do not pass.
+
+### Search Console
+
+One-time setup, so Google can be told about the site and its indexing measured. It needs the owner's Google account.
+
+1. In [Google Search Console](https://search.google.com/search-console) add a **Domain** property for `your-domain.com`
+2. Add the TXT record it shows at the DNS provider (`@`, `google-site-verification=...`), wait for it to resolve (`dig +short TXT your-domain.com`), then press **Verify**. Keep the record: removing it unverifies the property
+3. **Sitemaps**: submit `https://your-domain.com/sitemap.xml`; the status should become "Success" with the number of public pages
+4. **URL Inspection**: inspect `https://your-domain.com/` and press **Request indexing**; "View crawled page" shows what Google downloaded
+5. Optionally repeat steps 1–3 in [Bing Webmaster Tools](https://www.bing.com/webmasters), which can import the property from Search Console
+
+After a release that adds public pages, resubmitting the sitemap is not required; Google rereads it. **Pages** in Search Console lists what is indexed and why other URLs are not (`noindex` pages appear as "Excluded by 'noindex' tag", which is expected).
 
 ## 14. Logs and Grafana
 

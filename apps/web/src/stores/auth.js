@@ -63,6 +63,11 @@ export const useAuthStore = defineStore('auth', () => {
    * Runs once per page load: silent refresh, then /me. Resolves either way.
    */
   function bootstrap() {
+    // Prerendering renders the signed-out view and never calls the API.
+    if (import.meta.env.SSR) {
+      ready.value = true;
+      return Promise.resolve();
+    }
     if (!bootstrapPromise) {
       bootstrapPromise = (async () => {
         if (await refresh()) {

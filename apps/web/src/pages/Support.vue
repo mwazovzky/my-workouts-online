@@ -2,12 +2,22 @@
 import PublicPageLayout from '@/layouts/PublicPageLayout.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SUPPORT_EMAIL } from '@/lib/contact';
-import { usePageTitle } from '@/composables/usePageTitle';
+import { publicPagePath } from '@/lib/crawl';
+import { useLocaleStore } from '@/stores/locale';
+import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
+const localeStore = useLocaleStore();
 
-usePageTitle(() => t('Support'));
+usePageMeta({
+  title: () => t('Support'),
+  description: () =>
+    t(
+      'Need help with My Workouts Online? Write to support, or find out how to delete your account.'
+    ),
+  page: 'support',
+});
 
 const whatToInclude = [
   'The email address of your account',
@@ -20,7 +30,7 @@ const whatToInclude = [
   <PublicPageLayout>
     <Card class="border-0 shadow-none">
       <CardHeader>
-        <CardTitle>{{ t('Support') }}</CardTitle>
+        <CardTitle as="h1">{{ t('Support') }}</CardTitle>
       </CardHeader>
       <CardContent class="space-y-6">
         <p class="text-muted-foreground">
@@ -54,7 +64,10 @@ const whatToInclude = [
             }}
           </p>
           <p class="text-sm">
-            <RouterLink :to="{ name: 'privacy' }" class="text-primary underline underline-offset-4">
+            <RouterLink
+              :to="publicPagePath('privacy', localeStore.locale)"
+              class="text-primary underline underline-offset-4"
+            >
               {{ t('Privacy Policy') }}
             </RouterLink>
           </p>

@@ -18,11 +18,27 @@ describe('route table', () => {
   }, 30000);
 
   it('coerces id params to numbers', () => {
-    const withId = routes.filter(r => typeof r.props === 'function');
+    const withId = routes.filter(r => typeof r.props === 'function' && r.path.includes(':id'));
 
     expect(withId.length).toBeGreaterThan(0);
     for (const route of withId) {
       expect(route.props({ params: { id: '42' } })).toEqual({ id: 42 });
+    }
+  });
+
+  it('passes the slug to the program and exercise pages in both languages', () => {
+    const withSlug = routes.filter(r => r.path.includes(':slug'));
+
+    expect(withSlug.map(r => r.name)).toEqual([
+      'catalog.programs.show',
+      'catalog.exercises.show',
+      'catalog.programs.show.ru',
+      'catalog.exercises.show.ru',
+    ]);
+    for (const route of withSlug) {
+      expect(route.props({ params: { slug: 'gym-strength-5x5' } })).toEqual({
+        slug: 'gym-strength-5x5',
+      });
     }
   });
 

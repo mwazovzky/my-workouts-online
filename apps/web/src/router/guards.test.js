@@ -71,3 +71,61 @@ describe('installGuards', () => {
     expect(bootstrap).toHaveBeenCalledTimes(2);
   });
 });
+
+import { resolvePublicLocale } from '@/router/guards';
+
+describe('resolvePublicLocale', () => {
+  const page = (path, locale) => ({
+    path,
+    meta: { publicPage: 'any', locale },
+    query: { a: '1' },
+    hash: '#top',
+  });
+  const store = locale => ({ locale, setLocale: vi.fn() });
+
+  it('lets the URL set the language for a guest without a stored choice', () => {
+    const localeStore = store('en');
+
+    expect(resolvePublicLocale(page('/ru/privacy', 'ru'), guest, localeStore, null)).toBeNull();
+    expect(localeStore.setLocale).toHaveBeenCalledWith('ru', { persist: false });
+  });
+
+  it('sends a guest to the version in the language they chose', () => {
+    const localeStore = store('ru');
+
+    expect(resolvePublicLocale(page('/privacy', 'en'), guest, localeStore, 'ru')).toEqual({
+      path: '/ru/privacy',
+      query: { a: '1' },
+      hash: '#top',
+    });
+    expect(localeStore.setLocale).not.toHaveBeenCalled();
+  });
+
+  it('keeps a signed-in user in their profile language', () => {
+    expect(resolvePublicLocale(page('/ru/support', 'ru'), member, store('en'), null)).toEqual({
+      path: '/support',
+      query: { a: '1' },
+      hash: '#top',
+    });
+    expect(resolvePublicLocale(page('/support', 'en'), member, store('en'), 'ru')).toBeNull();
+  });
+
+  it('finds the other version of a program catalog page', () => {
+    expect(
+      resolvePublicLocale(
+        page('/catalog/programs/gym-strength-5x5', 'en'),
+        guest,
+        store('en'),
+        'ru'
+      )
+    ).toEqual({ path: '/ru/catalog/programs/gym-strength-5x5', query: { a: '1' }, hash: '#top' });
+    expect(resolvePublicLocale(page('/ru', 'ru'), member, store('en'), null).path).toBe('/');
+  });
+
+  it('ignores routes that are not public pages', () => {
+    const localeStore = store('en');
+
+    expect(resolvePublicLocale({ meta: {} }, guest, localeStore, 'ru')).toBeNull();
+    expect(localeStore.setLocale).not.toHaveBeenCalled();
+  });
+});

@@ -5,7 +5,8 @@ vi.mock('@/composables/useTranslation', () => ({
   useTranslation: () => ({ t: value => value }),
 }));
 
-import { RouterLinkStub } from '@/test/utils';
+import { RouterLinkStub, withPinia } from '@/test/utils';
+import { useLocaleStore } from '@/stores/locale';
 
 import GuestLayout from '@/layouts/GuestLayout.vue';
 
@@ -14,6 +15,7 @@ describe('GuestLayout', () => {
     return mount(GuestLayout, {
       slots,
       global: {
+        plugins: [withPinia()],
         stubs: {
           RouterLink: RouterLinkStub,
           ApplicationLogo: { template: '<div />' },
@@ -27,6 +29,25 @@ describe('GuestLayout', () => {
     const wrapper = buildWrapper();
     const homeLink = wrapper.find('a[href="/"]');
     expect(homeLink.exists()).toBe(true);
+  });
+
+  it('links the logo to the home page in the current language', () => {
+    const pinia = withPinia();
+    useLocaleStore().setLocale('ru', { persist: false });
+    const wrapper = mount(GuestLayout, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          RouterLink: RouterLinkStub,
+          ApplicationLogo: { template: '<div />' },
+          GuestLocaleSwitcher: { template: '<div />' },
+        },
+      },
+    });
+
+    expect(wrapper.find('a[href="/ru"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/ru/privacy"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/ru/support"]').exists()).toBe(true);
   });
 
   it('renders the app name', () => {

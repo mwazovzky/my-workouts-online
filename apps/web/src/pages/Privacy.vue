@@ -2,12 +2,19 @@
 import PublicPageLayout from '@/layouts/PublicPageLayout.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SUPPORT_EMAIL } from '@/lib/contact';
-import { usePageTitle } from '@/composables/usePageTitle';
+import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
 
-usePageTitle(() => t('Privacy Policy'));
+usePageMeta({
+  title: () => t('Privacy Policy'),
+  description: () =>
+    t(
+      'What My Workouts Online collects, what it is used for, who processes it, how long it is kept, and your rights.'
+    ),
+  page: 'privacy',
+});
 
 // One translation key per sentence, like the rest of the UI catalogs.
 const sections = [
@@ -57,7 +64,7 @@ const sections = [
   <PublicPageLayout>
     <Card class="border-0 shadow-none">
       <CardHeader>
-        <CardTitle>{{ t('Privacy Policy') }}</CardTitle>
+        <CardTitle as="h1">{{ t('Privacy Policy') }}</CardTitle>
       </CardHeader>
       <CardContent class="space-y-6">
         <p class="text-muted-foreground">

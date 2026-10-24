@@ -8,17 +8,26 @@ const messages = { en, ru };
 
 export const SUPPORTED_LOCALES = Object.keys(messages);
 
-function detectLocale() {
+/**
+ * The language the visitor chose (switcher or profile), or null. Always null
+ * when prerendering, where there is no browser.
+ */
+export function storedLocale() {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored && SUPPORTED_LOCALES.includes(stored)) {
-      return stored;
-    }
+    return SUPPORTED_LOCALES.includes(stored) ? stored : null;
   } catch {
-    /* storage unavailable */
+    return null;
+  }
+}
+
+function detectLocale() {
+  const stored = storedLocale();
+  if (stored) {
+    return stored;
   }
 
-  const browser = (navigator.language || 'en').slice(0, 2);
+  const browser = (globalThis.navigator?.language || 'en').slice(0, 2);
   return SUPPORTED_LOCALES.includes(browser) ? browser : 'en';
 }
 
@@ -31,17 +40,25 @@ export const useLocaleStore = defineStore('locale', () => {
 
   const translations = computed(() => messages[locale.value] ?? {});
 
-  function setLocale(value) {
+  /**
+   * `persist: false` switches the language without recording it as the
+   * visitor's choice, as when a public page's URL decides it.
+   */
+  function setLocale(value, { persist = true } = {}) {
     if (!SUPPORTED_LOCALES.includes(value)) {
       return;
     }
     locale.value = value;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, value);
-    } catch {
-      /* storage unavailable */
+    if (persist) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, value);
+      } catch {
+        /* storage unavailable */
+      }
     }
-    document.documentElement.lang = value;
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = value;
+    }
   }
 
   function t(key, replacements = {}) {

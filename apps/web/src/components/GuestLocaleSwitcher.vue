@@ -1,6 +1,8 @@
 <script setup>
 import Dropdown from '@/components/Dropdown.vue';
 import { computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { switchLocalePath } from '@/lib/crawl';
 import { useLocaleStore } from '@/stores/locale';
 import { useMetaStore } from '@/stores/meta';
 
@@ -17,6 +19,8 @@ const props = defineProps({
 
 const localeStore = useLocaleStore();
 const meta = useMetaStore();
+const route = useRoute();
+const router = useRouter();
 
 onMounted(() => meta.load().catch(() => {}));
 
@@ -26,8 +30,13 @@ const currentLocaleLabel = computed(
   () => availableLocales.value[currentLocale.value] ?? currentLocale.value.toUpperCase()
 );
 
+// On a public page the language is part of the URL, so switch to that version.
 function updateLocale(locale) {
   localeStore.setLocale(locale);
+
+  if (route?.meta.publicPage) {
+    router.push(switchLocalePath(route.path, locale));
+  }
 }
 </script>
 

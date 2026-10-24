@@ -8,7 +8,7 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 
 | Page                  | Path                      | Access          | Owning Feature  | Notes                                                                    |
 | --------------------- | ------------------------- | --------------- | --------------- | ------------------------------------------------------------------------ |
-| `Welcome`             | `/`                       | Guest           | Landing         | Public landing page; signed-in users are redirected to the dashboard     |
+| `Welcome`             | `/`                       | Guest           | Public Site     | Public landing page, prerendered; signed-in users are redirected to the dashboard |
 | `Dashboard`           | `/dashboard`              | Verified        | Landing         | Authenticated home with upcoming workouts, summary, and recent history   |
 | `ProgramIndex`        | `/programs`               | Verified        | Programs        | Browse all programs                                                      |
 | `ProgramShow`         | `/programs/{id}`          | Verified        | Programs        | View one program and its templates; enroll, or unenroll with a confirmation |
@@ -17,8 +17,14 @@ Route names mirror the former Laravel route names (`apps/web/src/router/routes.j
 | `WorkoutShow`         | `/workouts/{id}`          | Verified        | Workout Logging | Owner-scoped workout details                                             |
 | `WorkoutEdit`         | `/workouts/{id}/edit`     | Verified        | Workout Logging | Edit an in-progress workout (unsaved-changes guard; reload prompt when the workout changed elsewhere) |
 | `About`               | `/about`                  | Verified        | Landing         | App version (`VITE_APP_VERSION`)                                         |
-| `Privacy`             | `/privacy`                | Public          | Landing         | Privacy policy; linked from the guest and authenticated layout footers, Welcome and the iOS Profile tab; signed-in users keep the app navigation |
-| `Support`             | `/support`                | Public          | Landing         | Support contact (`support@my-workouts.online`); linked like Privacy       |
+| `Privacy`             | `/privacy`                | Public          | Public Site     | Privacy policy; linked from the guest and authenticated layout footers, Welcome and the iOS Profile tab; signed-in users keep the app navigation |
+| `Support`             | `/support`                | Public          | Public Site     | Support contact (`support@my-workouts.online`); linked like Privacy       |
+| `Catalog/ProgramIndex` | `/catalog/programs`      | Public          | Public Site     | Program catalog: every shipped program (`catalog.programs`); prerendered; linked from Welcome and the footer |
+| `Catalog/ProgramShow` | `/catalog/programs/{slug}` | Public        | Public Site     | One shipped program from `catalog/`: schedule, workouts, exercises and planned sets (`catalog.programs.show`); prerendered per program; an unknown slug shows `NotFound` |
+| `Catalog/ExerciseIndex` | `/catalog/exercises`    | Public          | Public Site     | Exercise catalog: every shipped exercise by main category, with a name and equipment filter (`catalog.exercises`); prerendered; linked from Welcome and the footer |
+| `Catalog/ExerciseShow` | `/catalog/exercises/{slug}` | Public       | Public Site     | One shipped exercise from `catalog/`: how to do it, equipment, categories, programs that use it, related exercises (`catalog.exercises.show`); prerendered per exercise; linked from program pages; an unknown slug shows `NotFound` |
+| Russian public pages  | `/ru`, `/ru/privacy`, `/ru/support`, `/ru/catalog/programs`, `/ru/catalog/programs/{slug}`, `/ru/catalog/exercises`, `/ru/catalog/exercises/{slug}` | as above | Public Site | Same pages in Russian (`welcome.ru`, `privacy.ru`, `support.ru`, `catalog.programs.ru`, `catalog.programs.show.ru`, `catalog.exercises.ru`, `catalog.exercises.show.ru`); prerendered like the English ones |
+| `NotFound`            | any other path            | Public          | Public Site     | Client-side 404 page, marked `noindex`                                   |
 | `auth/Register`       | `/register`               | Guest           | Auth & Profile  | Registration, then the verify-email notice                               |
 | `auth/Login`          | `/login`                  | Guest           | Auth & Profile  | Honours `?redirect=`; banner after `?reset=1`; 401 detail under email, 429 lockout countdown |
 | `auth/ForgotPassword` | `/forgot-password`        | Guest           | Auth & Profile  | Request password reset link                                              |
@@ -71,6 +77,16 @@ The root view picks the screen from the session state (`signedOut`, `unverified`
 | Verification link (forwarder) | `GET`  | `/verify-email/{id}/{hash}`        | `verification.verify` | Public  | Auth & Profile |
 
 nginx routes only these paths and `/api/*` to php-fpm; everything else is served as the SPA.
+
+## Crawl files and headers (nginx)
+
+| File or rule | Path | Access | Owning Feature | Notes |
+| --- | --- | --- | --- | --- |
+| `robots.txt` | `/robots.txt` | Public | Public Site | Generated by the web build; allows all, names the sitemap |
+| `sitemap.xml` | `/sitemap.xml` | Public | Public Site | Generated by the web build from `PUBLIC_PATHS` and the program and exercise catalogs; `application/xml` |
+| `X-Robots-Tag: noindex` | signed-in and auth page prefixes | — | Public Site | `docker/nginx/robots-map.conf` |
+| 404 for missing files | any missing path with a file extension | — | Public Site | Production image only; other unknown paths get the SPA |
+| Prerendered pages | `/`, `/privacy`, `/support`, `/catalog/programs`, each `/catalog/programs/{slug}`, `/catalog/exercises`, each `/catalog/exercises/{slug}`, and their `/ru` versions | Public | Public Site | `dist/<path>/index.html`; every other route gets `dist/spa.html` (production image only) |
 
 ## Webhooks (outside the client contract)
 
@@ -134,6 +150,7 @@ The SPA consumes a versioned REST API under `/api/v1`. Protected routes require 
 ## Related
 
 - [Product Overview](product.md)
+- [Public Site](features/public-site.md)
 - [Programs](features/programs.md)
 - [Workout Logging](features/workout-logging.md)
 - [Auth & Profile](features/auth-and-profile.md)

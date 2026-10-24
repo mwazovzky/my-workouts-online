@@ -2,12 +2,22 @@
 import ApplicationLogo from '@/components/ApplicationLogo.vue';
 import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
 import LegalLinks from '@/components/LegalLinks.vue';
-import { usePageTitle } from '@/composables/usePageTitle';
+import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
+import { EXERCISE_CATALOG_PATH, localizedPath, PROGRAM_CATALOG_PATH } from '@/lib/crawl';
+import { useLocaleStore } from '@/stores/locale';
 
 const { t } = useTranslation();
+const localeStore = useLocaleStore();
 
-usePageTitle('My Workouts Online');
+usePageMeta({
+  title: () => t('Workout Tracker & Training Programs'),
+  description: () =>
+    t(
+      'Log your sets and reps, follow ready-made training programs for the gym, at home and on the bike, and always know which workout comes next.'
+    ),
+  page: 'welcome',
+});
 
 const productSteps = [
   {
@@ -79,15 +89,22 @@ const appHighlights = [
         <div class="grid w-full gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <section class="space-y-8">
             <div class="space-y-5">
-              <h1
-                class="max-w-3xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl"
-              >
-                {{ t('Know what to train next') }}
+              <h1 class="max-w-3xl">
+                <span
+                  class="block text-sm font-semibold uppercase tracking-[0.18em] text-primary sm:text-base"
+                >
+                  My Workouts Online
+                </span>
+                <span
+                  class="mt-4 block text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl"
+                >
+                  {{ t('Know what to train next') }}
+                </span>
               </h1>
               <p class="max-w-2xl text-lg leading-8 text-muted-foreground">
                 {{
                   t(
-                    'Follow your program, start the right workout, and keep your training history in one place.'
+                    'A workout tracker with ready-made training programs: follow a program, log every set, and keep your training history in one place.'
                   )
                 }}
               </p>
@@ -109,6 +126,21 @@ const appHighlights = [
                 class="inline-flex items-center justify-center rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground"
               >
                 {{ t('Log in') }}
+              </RouterLink>
+            </div>
+
+            <div class="flex flex-wrap gap-x-6 gap-y-2">
+              <RouterLink
+                :to="localizedPath(PROGRAM_CATALOG_PATH, localeStore.locale)"
+                class="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {{ t('Browse the program catalog') }} →
+              </RouterLink>
+              <RouterLink
+                :to="localizedPath(EXERCISE_CATALOG_PATH, localeStore.locale)"
+                class="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {{ t('Browse the exercise catalog') }} →
               </RouterLink>
             </div>
 

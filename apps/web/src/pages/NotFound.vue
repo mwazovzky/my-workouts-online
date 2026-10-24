@@ -1,7 +1,10 @@
 <script setup>
+import { useNoindex } from '@/composables/useNoindex';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
+
+useNoindex();
 </script>
 
 <template>
