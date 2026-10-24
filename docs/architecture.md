@@ -2,7 +2,7 @@
 
 ## Stack
 
-Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia) · Tailwind v3 · MySQL · Vite · Docker Compose (nginx `web` image + php-fpm `api` image). The API renders no HTML; every page is the SPA.
+Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (Composition API, `<script setup>`, vue-router, Pinia) · Tailwind v3 · MySQL · Vite · Docker Compose (nginx `web` image + php-fpm `api` image). The API renders no HTML; the public pages are prerendered to HTML when the web app is built, and every other page is rendered by the SPA in the browser.
 
 ## Key Patterns
 
@@ -25,6 +25,8 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 **Form Requests** — Validation via dedicated request classes, all extending `App\Http\Requests\ApiFormRequest`, which rejects any key the rules do not declare (422, field code `unknown_field`, nested pointers included) so request bodies are as strict as the contract's `additionalProperties: false`. Authorization via policies separately.
 
 **Role-Based Authorization** — `User::hasRole()` / `User::isAdmin()` check the `roles` relation. The `admin` middleware alias (`EnsureUserIsAdmin`, registered in `bootstrap/app.php`) gates admin web and API route groups; per-model policies (`EquipmentPolicy`, `CategoryPolicy`, `ExercisePolicy`, `WorkoutTemplatePolicy`, `ProgramPolicy`) provide defense-in-depth. `UserResource` exposes `is_admin`, so the shared `auth.user` prop drives admin-only navigation. Admin write endpoints live under `App\Http\Controllers\Api\Admin` with business logic in `App\Services\Admin` (`WorkoutTemplateService` syncs a template's nested activities and sets; `ProgramService` syncs a program's weekday template assignments — both transactionally).
+
+**Prerendered public pages** — The web build (`npm run build`) runs `vite build`, then `vite build --ssr src/entry-server.js` and `prerender.js`, which renders every page in `PUBLIC_PAGES` (`src/lib/crawl.js`; `/`, `/privacy`, `/support` and their `/ru` versions) as a signed-out visitor and writes `dist/<path>/index.html`: the page's markup inside `<div id="app" data-prerendered="<path>">`, and its language, title and head tags from `usePageMeta`. The untouched shell is kept as `dist/spa.html`; nginx serves a prerendered file when one exists and `spa.html` otherwise. The build fails if a page redirects, has no `<h1>` or head, or the pages and the sitemap differ. In the browser, `main.js` first restores the session and resolves the route; it hydrates the markup only when the visitor is a guest still on the prerendered page, and otherwise renders from scratch and resets the head (`resetHead`). Code that runs while prerendering must not touch `window`, `document` or `localStorage` at import or in setup (`import.meta.env.SSR` is true there, and `auth.bootstrap()` resolves signed out without calling the API).
 
 **Client Bootstrap** — Clients restore their session from the refresh cookie (`POST /api/v1/auth/refresh`), then load `GET /api/v1/me` (`UserResource`, includes `is_admin` and `email_verified_at`) and the public `GET /api/v1/meta` (locales, theme preferences).
 
@@ -50,6 +52,8 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 
 **Repeat breaks template linkage** — Repeated workouts set `workout_template_id` to `null` so the repeated workout is treated as a user-owned copy, not a live projection of the original template.
 
+**Prerendering with Vue's own server renderer** — Public pages are rendered at build time by a small script around `vue/server-renderer` (part of `vue`) and Vite's SSR build, not by `vite-ssg` or a Node server: no new dependency, no process in production, the router and `usePageMeta` stay as they are, and the signed-in app is unchanged. A page that needs to be found by search engines is added to `PUBLIC_PAGES` and must render without the API.
+
 **Content is translated by the API, UI strings by the client** — Catalog content is stored once in its source language with per-locale overrides, and the API returns the value for the negotiated locale. UI strings belong to each client (`apps/web/src/i18n/locales`).
 
 ## iOS Client
@@ -70,6 +74,7 @@ Monorepo — `services/api-php`: Laravel 12 JSON API · `apps/web`: Vue 3 SPA (C
 - User preference is stored in `users.locale`
 - API requests: `NegotiateApiLocale` uses only `Accept-Language` (negotiated against `available_locales`, fallback `en`). The stored profile locale is a synced preference the client sends back as the header. Responses carry `Content-Language` and `Vary: Accept-Language`
 - `GET /api/v1/meta` lists `available_locales`; the SPA sends its active locale as `Accept-Language`
+- Public pages exist once per language (`/privacy`, `/ru/privacy`). For a guest the URL sets the language without recording it as a choice; a guest who chose a language (switcher or a past sign-in) and a signed-in user are sent to the version in their language (`resolvePublicLocale` in `router/guards.js`)
 
 ### Translation Sources
 

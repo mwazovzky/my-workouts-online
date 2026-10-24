@@ -13,7 +13,7 @@ usePageMeta({
     t(
       'What My Workouts Online collects, what it is used for, who processes it, how long it is kept, and your rights.'
     ),
-  path: '/privacy',
+  page: 'privacy',
 });
 
 // One translation key per sentence, like the rest of the UI catalogs.
@@ -64,7 +64,7 @@ const sections = [
   <PublicPageLayout>
     <Card class="border-0 shadow-none">
       <CardHeader>
-        <CardTitle>{{ t('Privacy Policy') }}</CardTitle>
+        <CardTitle as="h1">{{ t('Privacy Policy') }}</CardTitle>
       </CardHeader>
       <CardContent class="space-y-6">
         <p class="text-muted-foreground">

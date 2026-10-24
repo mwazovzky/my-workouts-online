@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import { RouterLinkStub } from '@/test/utils';
+import { RouterLinkStub, withPinia } from '@/test/utils';
 
 vi.mock('@/composables/useTranslation', () => ({
   useTranslation: () => ({
@@ -15,6 +15,7 @@ describe('Welcome', () => {
   function buildWrapper() {
     return mount(Welcome, {
       global: {
+        plugins: [withPinia()],
         config: {
           globalProperties: {
             route: name => `/${name}`,

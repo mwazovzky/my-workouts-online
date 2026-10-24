@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { describe, expect, it } from 'vitest';
-import { buildRobots, buildSitemap, PUBLIC_PATHS } from '@/lib/crawl';
+import { buildRobots, buildSitemap, PUBLIC_PATHS, publicPagePath } from '@/lib/crawl';
 import { routes } from '@/router/routes';
 
 describe('buildSitemap', () => {
@@ -14,8 +14,11 @@ describe('buildSitemap', () => {
     expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
     expect(locs).toEqual([
       'https://my-workouts.online/',
+      'https://my-workouts.online/ru',
       'https://my-workouts.online/privacy',
+      'https://my-workouts.online/ru/privacy',
       'https://my-workouts.online/support',
+      'https://my-workouts.online/ru/support',
     ]);
   });
 
@@ -23,6 +26,14 @@ describe('buildSitemap', () => {
     expect(buildSitemap('https://example.test', ['/a?b=1&c=2'])).toContain(
       '<loc>https://example.test/a?b=1&amp;c=2</loc>'
     );
+  });
+});
+
+describe('publicPagePath', () => {
+  it('returns the page in a language, falling back to English', () => {
+    expect(publicPagePath('privacy', 'ru')).toBe('/ru/privacy');
+    expect(publicPagePath('welcome', 'en')).toBe('/');
+    expect(publicPagePath('support', 'de')).toBe('/support');
   });
 });
 

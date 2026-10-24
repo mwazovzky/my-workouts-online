@@ -1,8 +1,34 @@
 /**
- * Paths search engines may index. The sitemap lists exactly these; pages
- * prerendered or published later are added here so the two never drift.
+ * Public pages by route name, with their path in each language. The build
+ * prerenders exactly these, the sitemap lists them, and each page's
+ * `hreflang` links point at its other versions; English is the default.
  */
-export const PUBLIC_PATHS = ['/', '/privacy', '/support'];
+export const PUBLIC_PAGES = {
+  welcome: { en: '/', ru: '/ru' },
+  privacy: { en: '/privacy', ru: '/ru/privacy' },
+  support: { en: '/support', ru: '/ru/support' },
+};
+
+export const DEFAULT_LOCALE = 'en';
+
+/**
+ * Paths search engines may index: every language version of every public page.
+ */
+export const PUBLIC_PATHS = Object.values(PUBLIC_PAGES).flatMap(paths => Object.values(paths));
+
+/**
+ * The path of a public page in a language, falling back to the default one.
+ */
+export function publicPagePath(page, locale) {
+  const paths = PUBLIC_PAGES[page];
+
+  return paths[locale] ?? paths[DEFAULT_LOCALE];
+}
+
+/**
+ * The origin used when `VITE_PUBLIC_URL` is not set (dev and CI builds).
+ */
+export const DEV_SITE_URL = 'http://localhost:8080';
 
 /**
  * The site origin without a trailing slash, e.g. `https://my-workouts.online`.

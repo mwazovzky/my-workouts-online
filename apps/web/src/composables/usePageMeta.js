@@ -1,71 +1,143 @@
-import { onUnmounted, toValue, watchEffect } from 'vue';
+import { onUnmounted, toValue, useSSRContext, watchEffect } from 'vue';
 import { fullPageTitle, usePageTitle } from '@/composables/usePageTitle';
+import { DEFAULT_LOCALE, DEV_SITE_URL, normalizeSiteUrl, PUBLIC_PAGES } from '@/lib/crawl';
+import { useLocaleStore } from '@/stores/locale';
+
+const OG_LOCALES = { en: 'en_US', ru: 'ru_RU' };
 
 /**
  * The public origin for absolute URLs: the build's `VITE_PUBLIC_URL`, or the
- * current origin when it is not set (dev and tests).
+ * current origin when it is not set (dev and tests; the dev origin when
+ * prerendering).
  */
 export function siteUrl() {
-  return (import.meta.env.VITE_PUBLIC_URL || window.location.origin).replace(/\/+$/, '');
+  const configured = import.meta.env.VITE_PUBLIC_URL;
+
+  if (configured) {
+    return normalizeSiteUrl(configured);
+  }
+
+  return import.meta.env.SSR ? DEV_SITE_URL : window.location.origin;
 }
 
+const meta = (key, name, content) => ({
+  selector: `meta[${key}="${name}"]`,
+  tag: 'meta',
+  attributes: { [key]: name, content },
+});
+
+const alternate = (hreflang, href) => ({
+  selector: `link[rel="alternate"][hreflang="${hreflang}"]`,
+  tag: 'link',
+  attributes: { rel: 'alternate', hreflang, href },
+});
+
 /**
- * Finds the head element for `selector`, creating it from `attributes` when
- * `index.html` has none.
+ * The full title and head tags of a public page (`src/lib/crawl.js`) in a
+ * language: description, canonical URL, Open Graph, and an `hreflang` link
+ * per language plus `x-default`.
  */
-function headElement(tag, selector, attributes) {
+export function pageHead({ title, description, page, locale }) {
+  const origin = siteUrl();
+  const paths = PUBLIC_PAGES[page];
+  const url = origin + (paths[locale] ?? paths[DEFAULT_LOCALE]);
+  const fullTitle = fullPageTitle(title);
+
+  return {
+    title: fullTitle,
+    tags: [
+      meta('name', 'description', description),
+      meta('property', 'og:title', fullTitle),
+      meta('property', 'og:description', description),
+      meta('property', 'og:url', url),
+      meta('property', 'og:locale', OG_LOCALES[locale] ?? OG_LOCALES[DEFAULT_LOCALE]),
+      {
+        selector: 'link[rel="canonical"]',
+        tag: 'link',
+        attributes: { rel: 'canonical', href: url },
+      },
+      ...Object.entries(paths).map(([language, path]) => alternate(language, origin + path)),
+      alternate('x-default', origin + paths[DEFAULT_LOCALE]),
+    ],
+  };
+}
+
+const valueAttribute = element => (element.tagName === 'LINK' ? 'href' : 'content');
+
+/**
+ * Applies a head tag to `document`. An element `index.html` already has keeps
+ * its original value in `data-default`; a missing one is created and marked
+ * `data-page-meta="created"`. Used in the browser and by the prerender step.
+ */
+export function applyHeadTag(document, { selector, tag, attributes }) {
   let element = document.head.querySelector(selector);
 
   if (!element) {
     element = document.createElement(tag);
-    Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
-    element.dataset.pageMeta = 'created';
+    element.setAttribute('data-page-meta', 'created');
     document.head.appendChild(element);
+  } else if (!element.hasAttribute('data-default') && !element.hasAttribute('data-page-meta')) {
+    element.setAttribute('data-default', element.getAttribute(valueAttribute(element)) ?? '');
   }
+
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
 
   return element;
 }
 
 /**
- * Sets the title, description, canonical URL and Open Graph tags of a public
- * page; accepts strings, refs or getters. `path` is the page's canonical path
- * (`/privacy`). On unmount the tags it changed go back to the `index.html`
- * defaults and the ones it added are removed, unless another page has
- * claimed them since.
+ * Puts the head back to the `index.html` defaults: removes the tags a page
+ * added and restores the values it changed, title included. Used when the app
+ * renders something other than the page prerendered into the HTML.
  */
-export function usePageMeta({ title, description, path }) {
+export function resetHead(document) {
+  document.head.querySelectorAll('[data-page-meta="created"]').forEach(element => element.remove());
+  document.head.querySelectorAll('[data-default]').forEach(element => {
+    if (element.tagName === 'TITLE') {
+      element.textContent = element.getAttribute('data-default');
+    } else {
+      element.setAttribute(valueAttribute(element), element.getAttribute('data-default'));
+    }
+  });
+}
+
+/**
+ * Sets the title, description, canonical URL, `hreflang` and Open Graph tags
+ * of a public page in the current language; title and description accept
+ * strings, refs or getters, `page` is a key of `PUBLIC_PAGES`. On unmount the
+ * tags it changed go back to the `index.html` defaults and the ones it added
+ * are removed, unless another page has claimed them since. When prerendering,
+ * the head is handed to the prerender step through the SSR context instead.
+ */
+export function usePageMeta({ title, description, page }) {
+  const localeStore = useLocaleStore();
+  const head = () =>
+    pageHead({
+      title: toValue(title),
+      description: toValue(description),
+      page,
+      locale: localeStore.locale,
+    });
+
+  if (import.meta.env.SSR) {
+    const context = useSSRContext();
+    if (context) {
+      context.head = head();
+    }
+    return;
+  }
+
   const owner = Symbol('usePageMeta');
   const touched = new Set();
 
   usePageTitle(title);
 
-  const set = (tag, selector, attributes, attribute, value) => {
-    const element = headElement(tag, selector, attributes);
-
-    if (!element.hasAttribute('data-default') && element.dataset.pageMeta !== 'created') {
-      element.dataset.default = element.getAttribute(attribute) ?? '';
-    }
-
-    element.setAttribute(attribute, value);
-    element.pageMetaOwner = owner;
-    touched.add(element);
-  };
-
   watchEffect(() => {
-    const url = `${siteUrl()}${toValue(path)}`;
-    const text = toValue(description);
-
-    set('meta', 'meta[name="description"]', { name: 'description' }, 'content', text);
-    set(
-      'meta',
-      'meta[property="og:title"]',
-      { property: 'og:title' },
-      'content',
-      fullPageTitle(toValue(title))
-    );
-    set('meta', 'meta[property="og:description"]', { property: 'og:description' }, 'content', text);
-    set('meta', 'meta[property="og:url"]', { property: 'og:url' }, 'content', url);
-    set('link', 'link[rel="canonical"]', { rel: 'canonical' }, 'href', url);
+    for (const tag of head().tags) {
+      const element = applyHeadTag(document, tag);
+      element.pageMetaOwner = owner;
+      touched.add(element);
+    }
   });
 
   onUnmounted(() => {
@@ -74,13 +146,10 @@ export function usePageMeta({ title, description, path }) {
         continue;
       }
 
-      if (element.dataset.pageMeta === 'created') {
+      if (element.getAttribute('data-page-meta') === 'created') {
         element.remove();
       } else {
-        element.setAttribute(
-          element.tagName === 'LINK' ? 'href' : 'content',
-          element.dataset.default
-        );
+        element.setAttribute(valueAttribute(element), element.getAttribute('data-default'));
         delete element.pageMetaOwner;
       }
     }

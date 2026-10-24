@@ -17,10 +17,22 @@ const page = path => {
 
 /**
  * Route names mirror the former Laravel route names so links read the same.
- * Meta: `guest` (signed out only), `auth`, `verified`, `admin`.
+ * Meta: `guest` (signed out only), `auth`, `verified`, `admin`; public pages
+ * (`src/lib/crawl.js`) also carry `publicPage` and their `locale`.
  */
 export const routes = [
-  { path: '/', name: 'welcome', component: page('Welcome'), meta: { guest: true } },
+  {
+    path: '/',
+    name: 'welcome',
+    component: page('Welcome'),
+    meta: { guest: true, publicPage: 'welcome', locale: 'en' },
+  },
+  {
+    path: '/ru',
+    name: 'welcome.ru',
+    component: page('Welcome'),
+    meta: { guest: true, publicPage: 'welcome', locale: 'ru' },
+  },
 
   // Auth
   { path: '/login', name: 'login', component: page('auth/Login'), meta: { guest: true } },
@@ -135,9 +147,31 @@ export const routes = [
     ];
   }),
 
-  { path: '/privacy', name: 'privacy', component: page('Privacy') },
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: page('Privacy'),
+    meta: { publicPage: 'privacy', locale: 'en' },
+  },
+  {
+    path: '/ru/privacy',
+    name: 'privacy.ru',
+    component: page('Privacy'),
+    meta: { publicPage: 'privacy', locale: 'ru' },
+  },
 
-  { path: '/support', name: 'support', component: page('Support') },
+  {
+    path: '/support',
+    name: 'support',
+    component: page('Support'),
+    meta: { publicPage: 'support', locale: 'en' },
+  },
+  {
+    path: '/ru/support',
+    name: 'support.ru',
+    component: page('Support'),
+    meta: { publicPage: 'support', locale: 'ru' },
+  },
 
   { path: '/:pathMatch(.*)*', name: 'not-found', component: page('NotFound') },
 ];

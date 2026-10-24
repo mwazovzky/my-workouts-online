@@ -2,11 +2,15 @@
 import ApplicationLogo from '@/components/ApplicationLogo.vue';
 import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
 import LegalLinks from '@/components/LegalLinks.vue';
+import { publicPagePath } from '@/lib/crawl';
+import { useLocaleStore } from '@/stores/locale';
 
 defineProps({
   // Forms stay narrow; long-form pages such as the privacy policy use the wide variant.
   wide: { type: Boolean, default: false },
 });
+
+const localeStore = useLocaleStore();
 </script>
 
 <template>
@@ -15,7 +19,10 @@ defineProps({
       class="flex w-full items-center justify-between px-4 pt-6 sm:pt-8"
       :class="wide ? 'max-w-2xl' : 'max-w-md'"
     >
-      <RouterLink to="/" class="flex items-center gap-3">
+      <RouterLink
+        :to="publicPagePath('welcome', localeStore.locale)"
+        class="flex items-center gap-3"
+      >
         <div class="h-10 w-10 rounded-2xl bg-primary/10 p-1.5 text-primary">
           <ApplicationLogo class="h-full w-full fill-current" />
         </div>

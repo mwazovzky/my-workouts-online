@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { useLocaleStore } from '@/stores/locale';
+import { storedLocale, useLocaleStore } from '@/stores/locale';
 import { useTranslation } from '@/composables/useTranslation';
 
 describe('locale store and useTranslation', () => {
@@ -26,6 +26,16 @@ describe('locale store and useTranslation', () => {
 
     expect(t('Save')).toBe('Сохранить');
     expect(window.localStorage.getItem('locale')).toBe('ru');
+    expect(document.documentElement.lang).toBe('ru');
+  });
+
+  it('switches without recording a choice when asked not to persist', () => {
+    const store = useLocaleStore();
+
+    store.setLocale('ru', { persist: false });
+
+    expect(store.locale).toBe('ru');
+    expect(storedLocale()).toBeNull();
     expect(document.documentElement.lang).toBe('ru');
   });
 

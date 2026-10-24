@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.js --outDir .ssr && node prerender.js",
     "preview": "vite preview",
     "lint": "eslint src --ext .vue,.js",
     "lint:fix": "eslint src --ext .vue,.js --fix",

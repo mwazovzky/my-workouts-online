@@ -26,6 +26,7 @@ node_modules/
 # Web SPA (apps/web)
 /apps/web/node_modules
 /apps/web/dist
+/apps/web/.ssr
 /apps/web/coverage
 /apps/web/.env
 

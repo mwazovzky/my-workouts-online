@@ -13,7 +13,7 @@ usePageMeta({
     t(
       'Log your sets and reps, follow ready-made training programs for the gym, at home and on the bike, and always know which workout comes next.'
     ),
-  path: '/',
+  page: 'welcome',
 });
 
 const productSteps = [
@@ -86,15 +86,22 @@ const appHighlights = [
         <div class="grid w-full gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <section class="space-y-8">
             <div class="space-y-5">
-              <h1
-                class="max-w-3xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl"
-              >
-                {{ t('Know what to train next') }}
+              <h1 class="max-w-3xl">
+                <span
+                  class="block text-sm font-semibold uppercase tracking-[0.18em] text-primary sm:text-base"
+                >
+                  My Workouts Online
+                </span>
+                <span
+                  class="mt-4 block text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl"
+                >
+                  {{ t('Know what to train next') }}
+                </span>
               </h1>
               <p class="max-w-2xl text-lg leading-8 text-muted-foreground">
                 {{
                   t(
-                    'Follow your program, start the right workout, and keep your training history in one place.'
+                    'A workout tracker with ready-made training programs: follow a program, log every set, and keep your training history in one place.'
                   )
                 }}
               </p>

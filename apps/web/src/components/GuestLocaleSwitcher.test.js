@@ -8,7 +8,13 @@ import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
 import { withPinia } from '@/test/utils';
 import { useLocaleStore } from '@/stores/locale';
 
-function build(props = {}) {
+const { route, router } = vi.hoisted(() => ({ route: { value: null }, router: { value: null } }));
+vi.mock('vue-router', () => ({ useRoute: () => route.value, useRouter: () => router.value }));
+
+function build(props = {}, currentRoute = { meta: {} }, currentRouter = { push: vi.fn() }) {
+  route.value = currentRoute;
+  router.value = currentRouter;
+
   return mount(GuestLocaleSwitcher, {
     props,
     global: {
@@ -51,6 +57,20 @@ describe('GuestLocaleSwitcher', () => {
 
     expect(useLocaleStore().locale).toBe('ru');
     expect(wrapper.text()).toContain('✓');
+  });
+
+  it('moves to the same page in the chosen language on a public page', async () => {
+    const push = vi.fn();
+    const wrapper = build({}, { meta: { publicPage: 'privacy', locale: 'en' } }, { push });
+    await flushPromises();
+
+    await wrapper
+      .findAll('button')
+      .find(b => b.text().includes('Русский'))
+      .trigger('click');
+
+    expect(useLocaleStore().locale).toBe('ru');
+    expect(push).toHaveBeenCalledWith('/ru/privacy');
   });
 
   it('falls back to the upper-cased code before the list loads', async () => {
