@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\Validator;
 
 /**
@@ -10,6 +11,11 @@ use Illuminate\Validation\Validator;
  * declare, so a client typo fails loudly instead of being ignored. Mirrors
  * `additionalProperties: false` on the request schemas in the contract; for
  * GET and HEAD the declared input is the query string.
+ *
+ * It also applies each string `max:N` rule to the JSON body as sent. The
+ * TrimStrings middleware trims input before validation, so " " plus 255
+ * characters would otherwise pass `max:255`; the contract's `maxLength` and
+ * the Go API count the value as sent. Stored values stay trimmed.
  */
 abstract class ApiFormRequest extends FormRequest
 {
@@ -19,7 +25,67 @@ abstract class ApiFormRequest extends FormRequest
             foreach ($this->unknownKeys() as $path) {
                 $validator->addFailure($path, 'UnknownField');
             }
+
+            foreach ($this->untrimmedTooLong() as $path => $maximum) {
+                if (! $validator->errors()->has($path)) {
+                    $validator->addFailure($path, 'Max', [$maximum]);
+                }
+            }
         });
+    }
+
+    /**
+     * Dotted paths of JSON body strings that are longer, as sent, than their
+     * rule's `max:N`, with that maximum.
+     *
+     * @return array<string, int>
+     */
+    protected function untrimmedTooLong(): array
+    {
+        $raw = $this->isJson() ? json_decode($this->getContent(), true) : null;
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $maximums = $this->stringMaximums();
+        $tooLong = [];
+
+        foreach (Arr::dot($raw) as $path => $value) {
+            $maximum = $maximums[$this->normalise((string) $path)] ?? null;
+
+            if ($maximum !== null && is_string($value) && mb_strlen($value) > $maximum) {
+                $tooLong[(string) $path] = $maximum;
+            }
+        }
+
+        return $tooLong;
+    }
+
+    /**
+     * The `max:N` of every rule that also declares `string`, by rule key.
+     *
+     * @return array<string, int>
+     */
+    private function stringMaximums(): array
+    {
+        $maximums = [];
+
+        foreach ($this->rules() as $path => $rules) {
+            $rules = is_string($rules) ? explode('|', $rules) : (array) $rules;
+
+            if (! in_array('string', $rules, true)) {
+                continue;
+            }
+
+            foreach ($rules as $rule) {
+                if (is_string($rule) && str_starts_with($rule, 'max:')) {
+                    $maximums[(string) $path] = (int) substr($rule, 4);
+                }
+            }
+        }
+
+        return $maximums;
     }
 
     /**
