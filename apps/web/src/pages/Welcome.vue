@@ -4,7 +4,7 @@ import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
 import LegalLinks from '@/components/LegalLinks.vue';
 import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
-import { localizedPath, PROGRAM_CATALOG_PATH } from '@/lib/crawl';
+import { EXERCISE_CATALOG_PATH, localizedPath, PROGRAM_CATALOG_PATH } from '@/lib/crawl';
 import { useLocaleStore } from '@/stores/locale';
 
 const { t } = useTranslation();
@@ -129,12 +129,20 @@ const appHighlights = [
               </RouterLink>
             </div>
 
-            <RouterLink
-              :to="localizedPath(PROGRAM_CATALOG_PATH, localeStore.locale)"
-              class="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
-            >
-              {{ t('Browse the program catalog') }} →
-            </RouterLink>
+            <div class="flex flex-wrap gap-x-6 gap-y-2">
+              <RouterLink
+                :to="localizedPath(PROGRAM_CATALOG_PATH, localeStore.locale)"
+                class="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {{ t('Browse the program catalog') }} →
+              </RouterLink>
+              <RouterLink
+                :to="localizedPath(EXERCISE_CATALOG_PATH, localeStore.locale)"
+                class="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {{ t('Browse the exercise catalog') }} →
+              </RouterLink>
+            </div>
 
             <div class="grid gap-4 sm:grid-cols-3">
               <article

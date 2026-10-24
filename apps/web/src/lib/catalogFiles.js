@@ -53,6 +53,7 @@ export function loadPublicCatalog(dir = catalogPath()) {
     workoutTemplates: readRecords(dir, 'workout-templates'),
     exercises: readRecords(dir, 'exercises'),
     equipment: readRecords(dir, 'equipment'),
+    categories: readRecords(dir, 'categories'),
   };
   const retiredFile = join(dir, 'retired.yaml');
   const retired = existsSync(retiredFile) ? (readYaml(retiredFile) ?? {}) : {};

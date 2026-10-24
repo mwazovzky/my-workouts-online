@@ -5,15 +5,24 @@ import { loadPublicCatalog } from '@/lib/catalogFiles';
 import {
   buildPublicCatalog,
   CatalogError,
+  exercisesByCategory,
+  exerciseUsage,
   groupSets,
   plannedSetsLabel,
   programEquipment,
   programTemplates,
+  relatedExercises,
 } from '@/lib/publicCatalog';
 
 const text = (en, ru) => ({ en: { name: en, description: `${en}.` }, ...(ru && { ru }) });
 
 const files = () => ({
+  categories: [
+    { slug: 'legs', translations: text('Legs', { name: 'Ноги' }) },
+    { slug: 'arms', translations: text('Arms') },
+    { slug: 'cycling', translations: text('Cycling') },
+    { slug: 'unused', translations: text('Unused') },
+  ],
   equipment: [
     { slug: 'barbell', difficulty_unit: 'kilograms', translations: text('Barbell') },
     { slug: 'indoor-bike', difficulty_unit: 'heart_rate_zone', translations: text('Bike') },
@@ -23,12 +32,21 @@ const files = () => ({
       slug: 'squat',
       equipment: 'barbell',
       effort_type: 'repetitions',
+      categories: ['legs', 'arms'],
       translations: text('Squat', { name: 'Присед' }),
+    },
+    {
+      slug: 'lunge',
+      equipment: 'barbell',
+      effort_type: 'repetitions',
+      categories: ['legs'],
+      translations: text('Lunge'),
     },
     {
       slug: 'ride',
       equipment: 'indoor-bike',
       effort_type: 'duration',
+      categories: ['cycling'],
       translations: text('Ride'),
     },
   ],
@@ -100,10 +118,28 @@ describe('buildPublicCatalog', () => {
     expect(catalog.equipment['indoor-bike'].difficultyUnit).toBe('heart_rate_zone');
   });
 
-  it('leaves retired programs out', () => {
-    const catalog = buildPublicCatalog({ ...files(), retired: { programs: [{ slug: 'mixed' }] } });
+  it('leaves retired programs and exercises out', () => {
+    const catalog = buildPublicCatalog({
+      ...files(),
+      retired: { programs: [{ slug: 'mixed' }], exercises: [{ slug: 'lunge' }] },
+    });
 
     expect(catalog.programs).toEqual([]);
+    expect(Object.keys(catalog.exercises)).toEqual(['squat', 'ride']);
+  });
+
+  it('keeps every active exercise, with its description and categories, in file order', () => {
+    const catalog = buildPublicCatalog(files());
+
+    expect(Object.keys(catalog.exercises)).toEqual(['squat', 'lunge', 'ride']);
+    expect(catalog.exercises.squat).toMatchObject({
+      description: { en: 'Squat.', ru: 'Squat.' },
+      effortType: 'repetitions',
+      equipment: 'barbell',
+      categories: ['legs', 'arms'],
+    });
+    expect(Object.keys(catalog.categories)).toEqual(['legs', 'arms', 'cycling']);
+    expect(catalog.categories.legs.name).toEqual({ en: 'Legs', ru: 'Ноги' });
   });
 
   it('rejects references to records that do not exist or are retired', () => {
@@ -123,6 +159,10 @@ describe('buildPublicCatalog', () => {
       sources => (sources.retired = { exercises: [{ slug: 'ride' }] }),
       'workout template "spin" uses unknown exercise "ride"'
     );
+    fail(
+      sources => (sources.exercises[1].categories = ['nope']),
+      'exercise "lunge" uses unknown category "nope"'
+    );
   });
 
   it('rejects malformed fields it shows', () => {
@@ -134,14 +174,20 @@ describe('buildPublicCatalog', () => {
       'needs a positive effort'
     );
     fail(sources => sources.programs.push(files().programs[0]), 'listed twice');
+    fail(sources => (sources.exercises[1].categories = []), 'exercise "lunge" has no categories');
+    fail(
+      sources => delete sources.exercises[1].translations.en.description,
+      'exercise "lunge" has no English description'
+    );
   });
 });
 
 describe('the shipped catalog', () => {
-  it('builds, with a page for every program in catalog/programs.yaml', () => {
+  it('builds, with every program and exercise', () => {
     const { catalog, files: read } = loadPublicCatalog(resolve(cwd(), '../../catalog'));
 
     expect(catalog.programs.length).toBeGreaterThanOrEqual(15);
+    expect(Object.keys(catalog.exercises).length).toBeGreaterThanOrEqual(137);
     expect(read.some(file => file.endsWith('workout-templates/gym.yaml'))).toBe(true);
   });
 });
@@ -188,5 +234,28 @@ describe('program helpers', () => {
     expect(plannedSetsLabel(t, [{ effort: 30, difficulty: 20 }], 'duration', 'kilograms')).toBe(
       '30 s'
     );
+  });
+});
+
+describe('exercise helpers', () => {
+  const catalog = buildPublicCatalog(files());
+
+  it('lists the programs and workouts that use an exercise', () => {
+    expect(exerciseUsage(catalog, 'squat')).toEqual([
+      { program: catalog.programs[0], templates: ['legs'] },
+    ]);
+    expect(exerciseUsage(catalog, 'lunge')).toEqual([]);
+  });
+
+  it('finds exercises with the same main category', () => {
+    expect(relatedExercises(catalog, 'squat')).toEqual(['lunge']);
+    expect(relatedExercises(catalog, 'ride')).toEqual([]);
+  });
+
+  it('groups exercises by main category, leaving out empty groups', () => {
+    expect(exercisesByCategory(catalog)).toEqual([
+      { category: 'legs', exercises: ['squat', 'lunge'] },
+      { category: 'cycling', exercises: ['ride'] },
+    ]);
   });
 });

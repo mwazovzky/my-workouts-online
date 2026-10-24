@@ -2,7 +2,8 @@
 // src/entry-server.js (see the `build` script). Each page becomes
 // dist/<path>/index.html with its own head and markup; the untouched shell is
 // kept as dist/spa.html, which nginx serves for every other route. Fails the
-// build if a page redirects, sets no head, or the pages and the sitemap differ.
+// build if a page redirects, sets no head, two pages in one language share a
+// title or a description, or the pages and the sitemap differ.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { Window } from 'happy-dom';
@@ -68,7 +69,15 @@ for (const path of PRERENDER_PATHS) {
 
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, html);
-  pages.push({ path, url: canonical.attributes.href, file });
+  const description = page.head.tags.find(tag => tag.selector === 'meta[name="description"]');
+  pages.push({
+    path,
+    locale: page.locale,
+    url: canonical.attributes.href,
+    file,
+    title: page.head.title,
+    description: description.attributes.content,
+  });
 }
 
 await window.happyDOM.close();
@@ -86,6 +95,19 @@ if (missing.length || unlisted.length) {
       missing.join(', ') || 'none'
     }. Prerendered but not in the sitemap: ${unlisted.join(', ') || 'none'}.`
   );
+}
+
+for (const field of ['title', 'description']) {
+  const seen = new Map();
+
+  for (const page of pages) {
+    const key = `${page.locale}:${page[field]}`;
+
+    if (seen.has(key)) {
+      throw new Error(`${seen.get(key)} and ${page.path} have the same ${field}`);
+    }
+    seen.set(key, page.path);
+  }
 }
 
 console.log(`prerendered ${pages.length} pages into ${DIST}/`);

@@ -4,7 +4,12 @@ import catalog from 'virtual:public-catalog';
 import PublicPageLayout from '@/layouts/PublicPageLayout.vue';
 import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
-import { catalogProgramPath, localizedPath, PROGRAM_CATALOG_PATH } from '@/lib/crawl';
+import {
+  catalogExercisePath,
+  catalogProgramPath,
+  localizedPath,
+  PROGRAM_CATALOG_PATH,
+} from '@/lib/crawl';
 import { weekdayLabel } from '@/lib/enumLabels';
 import { plannedSetsLabel, programEquipment, programTemplates } from '@/lib/publicCatalog';
 import { useAuthStore } from '@/stores/auth';
@@ -111,9 +116,12 @@ usePageMeta({
               :key="index"
               class="flex items-baseline justify-between gap-4 px-4 py-2 text-sm"
             >
-              <span class="text-card-foreground">
+              <RouterLink
+                :to="localizedPath(catalogExercisePath(activity.exercise), localeStore.locale)"
+                class="text-primary underline-offset-4 hover:underline"
+              >
                 {{ text(catalog.exercises[activity.exercise].name) }}
-              </span>
+              </RouterLink>
               <span class="shrink-0 text-right text-muted-foreground">
                 {{ setsLabel(activity) }}
               </span>

@@ -64,14 +64,18 @@ describe('localizedPath and switchLocalePath', () => {
 });
 
 describe('catalogPaths', () => {
-  it('lists the program catalog and every program in both languages', () => {
-    const catalog = { programs: [{ slug: 'gym-strength-5x5' }] };
+  it('lists both catalogs and every program and exercise in both languages', () => {
+    const catalog = { programs: [{ slug: 'gym-strength-5x5' }], exercises: { plank: {} } };
 
     expect(catalogPaths(catalog)).toEqual([
       '/catalog/programs',
       '/ru/catalog/programs',
       '/catalog/programs/gym-strength-5x5',
       '/ru/catalog/programs/gym-strength-5x5',
+      '/catalog/exercises',
+      '/ru/catalog/exercises',
+      '/catalog/exercises/plank',
+      '/ru/catalog/exercises/plank',
     ]);
     expect(publicPaths(catalog)).toEqual([...PUBLIC_PATHS, ...catalogPaths(catalog)]);
   });

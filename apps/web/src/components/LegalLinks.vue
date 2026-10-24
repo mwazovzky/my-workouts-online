@@ -1,6 +1,11 @@
 <script setup>
 import { useTranslation } from '@/composables/useTranslation';
-import { localizedPath, PROGRAM_CATALOG_PATH, publicPagePath } from '@/lib/crawl';
+import {
+  EXERCISE_CATALOG_PATH,
+  localizedPath,
+  PROGRAM_CATALOG_PATH,
+  publicPagePath,
+} from '@/lib/crawl';
 import { useLocaleStore } from '@/stores/locale';
 
 const { t } = useTranslation();
@@ -14,6 +19,13 @@ const localeStore = useLocaleStore();
       class="underline-offset-4 hover:underline"
     >
       {{ t('Program catalog') }}
+    </RouterLink>
+    <span aria-hidden="true">·</span>
+    <RouterLink
+      :to="localizedPath(EXERCISE_CATALOG_PATH, localeStore.locale)"
+      class="underline-offset-4 hover:underline"
+    >
+      {{ t('Exercise catalog') }}
     </RouterLink>
     <span aria-hidden="true">·</span>
     <RouterLink

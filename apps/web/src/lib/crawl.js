@@ -42,9 +42,9 @@ export function switchLocalePath(path, locale) {
 
 /**
  * Public pages by route name, with their path in each language. The build
- * prerenders these and the program catalog (`catalogPaths`), the sitemap lists
- * them, and each page's `hreflang` links point at its other versions; English
- * is the default.
+ * prerenders these and the program and exercise catalogs (`catalogPaths`),
+ * the sitemap lists them, and each page's `hreflang` links point at its other
+ * versions; English is the default.
  */
 export const PUBLIC_PAGES = {
   welcome: localizedPaths('/'),
@@ -67,6 +67,7 @@ export function publicPagePath(page, locale) {
 }
 
 export const PROGRAM_CATALOG_PATH = '/catalog/programs';
+export const EXERCISE_CATALOG_PATH = '/catalog/exercises';
 
 /**
  * The English path of a program's catalog page.
@@ -74,13 +75,20 @@ export const PROGRAM_CATALOG_PATH = '/catalog/programs';
 export const catalogProgramPath = slug => `${PROGRAM_CATALOG_PATH}/${slug}`;
 
 /**
- * Every language version of the program catalog and of each program page in
- * `catalog` (`src/lib/publicCatalog.js`).
+ * The English path of an exercise's catalog page.
+ */
+export const catalogExercisePath = slug => `${EXERCISE_CATALOG_PATH}/${slug}`;
+
+/**
+ * Every language version of the program and exercise catalogs and of each
+ * program and exercise page in `catalog` (`src/lib/publicCatalog.js`).
  */
 export function catalogPaths(catalog) {
   return [
     PROGRAM_CATALOG_PATH,
     ...catalog.programs.map(program => catalogProgramPath(program.slug)),
+    EXERCISE_CATALOG_PATH,
+    ...Object.keys(catalog.exercises ?? {}).map(catalogExercisePath),
   ].flatMap(path => Object.values(localizedPaths(path)));
 }
 

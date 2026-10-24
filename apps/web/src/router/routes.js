@@ -175,7 +175,7 @@ export const routes = [
     meta: { publicPage: 'support', locale: 'ru' },
   },
 
-  // Program catalog: the shipped programs, public and prerendered
+  // Program and exercise catalogs: the shipped catalog, public and prerendered
   ...[
     { prefix: '', locale: 'en', suffix: '' },
     { prefix: '/ru', locale: 'ru', suffix: '.ru' },
@@ -192,6 +192,19 @@ export const routes = [
       component: page('Catalog/ProgramShow'),
       props: slugProp,
       meta: { publicPage: 'catalogProgram', locale },
+    },
+    {
+      path: `${prefix}/catalog/exercises`,
+      name: `catalog.exercises${suffix}`,
+      component: page('Catalog/ExerciseIndex'),
+      meta: { publicPage: 'exerciseCatalog', locale },
+    },
+    {
+      path: `${prefix}/catalog/exercises/:slug([a-z0-9-]+)`,
+      name: `catalog.exercises.show${suffix}`,
+      component: page('Catalog/ExerciseShow'),
+      props: slugProp,
+      meta: { publicPage: 'catalogExercise', locale },
     },
   ]),
 

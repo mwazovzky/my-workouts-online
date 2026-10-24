@@ -26,12 +26,14 @@ describe('route table', () => {
     }
   });
 
-  it('passes the slug to the program catalog pages in both languages', () => {
+  it('passes the slug to the program and exercise pages in both languages', () => {
     const withSlug = routes.filter(r => r.path.includes(':slug'));
 
     expect(withSlug.map(r => r.name)).toEqual([
       'catalog.programs.show',
+      'catalog.exercises.show',
       'catalog.programs.show.ru',
+      'catalog.exercises.show.ru',
     ]);
     for (const route of withSlug) {
       expect(route.props({ params: { slug: 'gym-strength-5x5' } })).toEqual({

@@ -322,5 +322,20 @@
   ":count min": ":count мин",
   ":count s": ":count с",
   "zone :zone": "зона :zone",
-  "Browse the program catalog": "Посмотреть каталог программ"
+  "Browse the program catalog": "Посмотреть каталог программ",
+  "Exercise catalog": "Каталог упражнений",
+  "How to do the exercises in the program catalog, for the gym, at home and on the bike, with the equipment and muscles each one works.": "Как выполнять упражнения из каталога программ для тренажёрного зала, дома и велосипеда: оборудование и мышцы, которые работают в каждом.",
+  "Every exercise in the program catalog, grouped by the muscles it works. Open one to see how to do it.": "Все упражнения из каталога программ, сгруппированные по мышцам. Откройте упражнение, чтобы узнать, как его выполнять.",
+  "Exercise name": "Название упражнения",
+  "All equipment": "Всё оборудование",
+  "No exercises match the filter.": "Нет упражнений, подходящих под фильтр.",
+  ":name: how to do it": ":name: техника выполнения",
+  "Measured by": "Измеряется",
+  "Time": "Время",
+  "Repetitions": "Повторения",
+  "How to do it": "Техника выполнения",
+  "Used in programs": "Входит в программы",
+  "Related exercises": "Похожие упражнения",
+  "Create an account to log this exercise in your workouts and see your history.": "Создайте аккаунт, чтобы записывать это упражнение в тренировках и видеть свою историю.",
+  "Browse the exercise catalog": "Посмотреть каталог упражнений"
 }

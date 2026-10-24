@@ -322,5 +322,20 @@
   ":count min": ":count min",
   ":count s": ":count s",
   "zone :zone": "zone :zone",
-  "Browse the program catalog": "Browse the program catalog"
+  "Browse the program catalog": "Browse the program catalog",
+  "Exercise catalog": "Exercise catalog",
+  "How to do the exercises in the program catalog, for the gym, at home and on the bike, with the equipment and muscles each one works.": "How to do the exercises in the program catalog, for the gym, at home and on the bike, with the equipment and muscles each one works.",
+  "Every exercise in the program catalog, grouped by the muscles it works. Open one to see how to do it.": "Every exercise in the program catalog, grouped by the muscles it works. Open one to see how to do it.",
+  "Exercise name": "Exercise name",
+  "All equipment": "All equipment",
+  "No exercises match the filter.": "No exercises match the filter.",
+  ":name: how to do it": ":name: how to do it",
+  "Measured by": "Measured by",
+  "Time": "Time",
+  "Repetitions": "Repetitions",
+  "How to do it": "How to do it",
+  "Used in programs": "Used in programs",
+  "Related exercises": "Related exercises",
+  "Create an account to log this exercise in your workouts and see your history.": "Create an account to log this exercise in your workouts and see your history.",
+  "Browse the exercise catalog": "Browse the exercise catalog"
 }
