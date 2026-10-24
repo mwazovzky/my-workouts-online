@@ -1,4 +1,4 @@
-import { publicPagePath } from '@/lib/crawl';
+import { switchLocalePath } from '@/lib/crawl';
 import { useAuthStore } from '@/stores/auth';
 import { storedLocale, useLocaleStore } from '@/stores/locale';
 
@@ -46,7 +46,7 @@ export function resolvePublicLocale(to, auth, localeStore, chosen = storedLocale
   const wanted = auth.isAuthenticated ? localeStore.locale : chosen;
 
   if (wanted && wanted !== locale) {
-    return { path: publicPagePath(publicPage, wanted), query: to.query, hash: to.hash };
+    return { path: switchLocalePath(to.path, wanted), query: to.query, hash: to.hash };
   }
 
   localeStore.setLocale(locale, { persist: false });

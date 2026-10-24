@@ -309,5 +309,18 @@
   "Workout Tracker & Training Programs": "Дневник тренировок и тренировочные программы",
   "Log your sets and reps, follow ready-made training programs for the gym, at home and on the bike, and always know which workout comes next.": "Записывайте подходы и повторения, занимайтесь по готовым программам в зале, дома и на велосипеде и всегда знайте, какая тренировка следующая.",
   "What My Workouts Online collects, what it is used for, who processes it, how long it is kept, and your rights.": "Какие данные собирает My Workouts Online, для чего они используются, кто их обрабатывает, сколько они хранятся и какие у вас права.",
-  "Need help with My Workouts Online? Write to support, or find out how to delete your account.": "Нужна помощь с My Workouts Online? Напишите в поддержку или узнайте, как удалить аккаунт."
+  "Need help with My Workouts Online? Write to support, or find out how to delete your account.": "Нужна помощь с My Workouts Online? Напишите в поддержку или узнайте, как удалить аккаунт.",
+  "Program catalog": "Каталог программ",
+  "Ready-made training programs for the gym, at home and on the bike, with the weekly schedule and the sets and repetitions of every workout.": "Готовые программы тренировок для тренажёрного зала, дома и велосипеда: расписание на неделю, подходы и повторения каждой тренировки.",
+  "Ready-made training programs for the gym, at home and on the bike. Open one to see its weekly schedule and every workout.": "Готовые программы тренировок для тренажёрного зала, дома и велосипеда. Откройте программу, чтобы увидеть расписание на неделю и все тренировки.",
+  "Workouts a week: :count": "Тренировок в неделю: :count",
+  "Workouts a week": "Тренировок в неделю",
+  "Find this program in Programs and enroll to see its workouts on your dashboard.": "Найдите эту программу в разделе «Программы» и запишитесь на неё, чтобы её тренировки появились на главной.",
+  "Open Programs": "Открыть «Программы»",
+  "Create an account to follow this program and log every set.": "Создайте аккаунт, чтобы заниматься по этой программе и записывать каждый подход.",
+  ":count reps": ":count повт.",
+  ":count min": ":count мин",
+  ":count s": ":count с",
+  "zone :zone": "зона :zone",
+  "Browse the program catalog": "Посмотреть каталог программ"
 }

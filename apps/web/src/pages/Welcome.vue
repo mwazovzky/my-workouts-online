@@ -4,8 +4,11 @@ import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
 import LegalLinks from '@/components/LegalLinks.vue';
 import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
+import { localizedPath, PROGRAM_CATALOG_PATH } from '@/lib/crawl';
+import { useLocaleStore } from '@/stores/locale';
 
 const { t } = useTranslation();
+const localeStore = useLocaleStore();
 
 usePageMeta({
   title: () => t('Workout Tracker & Training Programs'),
@@ -125,6 +128,13 @@ const appHighlights = [
                 {{ t('Log in') }}
               </RouterLink>
             </div>
+
+            <RouterLink
+              :to="localizedPath(PROGRAM_CATALOG_PATH, localeStore.locale)"
+              class="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              {{ t('Browse the program catalog') }} →
+            </RouterLink>
 
             <div class="grid gap-4 sm:grid-cols-3">
               <article

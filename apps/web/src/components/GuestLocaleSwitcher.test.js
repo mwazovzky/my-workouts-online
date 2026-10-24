@@ -61,7 +61,11 @@ describe('GuestLocaleSwitcher', () => {
 
   it('moves to the same page in the chosen language on a public page', async () => {
     const push = vi.fn();
-    const wrapper = build({}, { meta: { publicPage: 'privacy', locale: 'en' } }, { push });
+    const wrapper = build(
+      {},
+      { path: '/catalog/programs', meta: { publicPage: 'programCatalog', locale: 'en' } },
+      { push }
+    );
     await flushPromises();
 
     await wrapper
@@ -70,7 +74,7 @@ describe('GuestLocaleSwitcher', () => {
       .trigger('click');
 
     expect(useLocaleStore().locale).toBe('ru');
-    expect(push).toHaveBeenCalledWith('/ru/privacy');
+    expect(push).toHaveBeenCalledWith('/ru/catalog/programs');
   });
 
   it('falls back to the upper-cased code before the list loads', async () => {

@@ -1,4 +1,5 @@
 const idProp = route => ({ id: Number(route.params.id) });
+const slugProp = route => ({ slug: route.params.slug });
 
 const pages = import.meta.glob('@/pages/**/*.vue');
 
@@ -18,7 +19,8 @@ const page = path => {
 /**
  * Route names mirror the former Laravel route names so links read the same.
  * Meta: `guest` (signed out only), `auth`, `verified`, `admin`; public pages
- * (`src/lib/crawl.js`) also carry `publicPage` and their `locale`.
+ * (`src/lib/crawl.js`) also carry `publicPage` and their `locale`, and exist
+ * once per language, the Russian path prefixed with `/ru`.
  */
 export const routes = [
   {
@@ -172,6 +174,26 @@ export const routes = [
     component: page('Support'),
     meta: { publicPage: 'support', locale: 'ru' },
   },
+
+  // Program catalog: the shipped programs, public and prerendered
+  ...[
+    { prefix: '', locale: 'en', suffix: '' },
+    { prefix: '/ru', locale: 'ru', suffix: '.ru' },
+  ].flatMap(({ prefix, locale, suffix }) => [
+    {
+      path: `${prefix}/catalog/programs`,
+      name: `catalog.programs${suffix}`,
+      component: page('Catalog/ProgramIndex'),
+      meta: { publicPage: 'programCatalog', locale },
+    },
+    {
+      path: `${prefix}/catalog/programs/:slug([a-z0-9-]+)`,
+      name: `catalog.programs.show${suffix}`,
+      component: page('Catalog/ProgramShow'),
+      props: slugProp,
+      meta: { publicPage: 'catalogProgram', locale },
+    },
+  ]),
 
   { path: '/:pathMatch(.*)*', name: 'not-found', component: page('NotFound') },
 ];

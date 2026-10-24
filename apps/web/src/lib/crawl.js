@@ -1,18 +1,59 @@
-/**
- * Public pages by route name, with their path in each language. The build
- * prerenders exactly these, the sitemap lists them, and each page's
- * `hreflang` links point at its other versions; English is the default.
- */
-export const PUBLIC_PAGES = {
-  welcome: { en: '/', ru: '/ru' },
-  privacy: { en: '/privacy', ru: '/ru/privacy' },
-  support: { en: '/support', ru: '/ru/support' },
-};
-
 export const DEFAULT_LOCALE = 'en';
 
 /**
- * Paths search engines may index: every language version of every public page.
+ * Languages every public page exists in: English unprefixed, the others under
+ * `/{locale}`.
+ */
+export const LOCALES = ['en', 'ru'];
+
+/**
+ * The path of a public page in a language, from its English path:
+ * `localizedPath('/privacy', 'ru')` is `/ru/privacy`, `localizedPath('/', 'ru')`
+ * is `/ru`.
+ */
+export function localizedPath(path, locale) {
+  if (locale === DEFAULT_LOCALE || !LOCALES.includes(locale)) {
+    return path;
+  }
+
+  return `/${locale}${path === '/' ? '' : path}`;
+}
+
+/**
+ * Every language version of a public page, by locale.
+ */
+export function localizedPaths(path) {
+  return Object.fromEntries(LOCALES.map(locale => [locale, localizedPath(path, locale)]));
+}
+
+/**
+ * The same public page in another language: `/ru/privacy` to `/privacy`.
+ */
+export function switchLocalePath(path, locale) {
+  const prefix = LOCALES.find(
+    candidate =>
+      candidate !== DEFAULT_LOCALE &&
+      (path === `/${candidate}` || path.startsWith(`/${candidate}/`))
+  );
+  const english = prefix ? path.slice(prefix.length + 1) || '/' : path;
+
+  return localizedPath(english, locale);
+}
+
+/**
+ * Public pages by route name, with their path in each language. The build
+ * prerenders these and the program catalog (`catalogPaths`), the sitemap lists
+ * them, and each page's `hreflang` links point at its other versions; English
+ * is the default.
+ */
+export const PUBLIC_PAGES = {
+  welcome: localizedPaths('/'),
+  privacy: localizedPaths('/privacy'),
+  support: localizedPaths('/support'),
+};
+
+/**
+ * Paths of the fixed public pages in every language.
  */
 export const PUBLIC_PATHS = Object.values(PUBLIC_PAGES).flatMap(paths => Object.values(paths));
 
@@ -23,6 +64,31 @@ export function publicPagePath(page, locale) {
   const paths = PUBLIC_PAGES[page];
 
   return paths[locale] ?? paths[DEFAULT_LOCALE];
+}
+
+export const PROGRAM_CATALOG_PATH = '/catalog/programs';
+
+/**
+ * The English path of a program's catalog page.
+ */
+export const catalogProgramPath = slug => `${PROGRAM_CATALOG_PATH}/${slug}`;
+
+/**
+ * Every language version of the program catalog and of each program page in
+ * `catalog` (`src/lib/publicCatalog.js`).
+ */
+export function catalogPaths(catalog) {
+  return [
+    PROGRAM_CATALOG_PATH,
+    ...catalog.programs.map(program => catalogProgramPath(program.slug)),
+  ].flatMap(path => Object.values(localizedPaths(path)));
+}
+
+/**
+ * Paths search engines may index: the fixed public pages and the catalog.
+ */
+export function publicPaths(catalog) {
+  return [...PUBLIC_PATHS, ...catalogPaths(catalog)];
 }
 
 /**

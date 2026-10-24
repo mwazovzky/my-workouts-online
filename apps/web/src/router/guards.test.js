@@ -75,8 +75,9 @@ describe('installGuards', () => {
 import { resolvePublicLocale } from '@/router/guards';
 
 describe('resolvePublicLocale', () => {
-  const page = (publicPage, locale) => ({
-    meta: { publicPage, locale },
+  const page = (path, locale) => ({
+    path,
+    meta: { publicPage: 'any', locale },
     query: { a: '1' },
     hash: '#top',
   });
@@ -85,14 +86,14 @@ describe('resolvePublicLocale', () => {
   it('lets the URL set the language for a guest without a stored choice', () => {
     const localeStore = store('en');
 
-    expect(resolvePublicLocale(page('privacy', 'ru'), guest, localeStore, null)).toBeNull();
+    expect(resolvePublicLocale(page('/ru/privacy', 'ru'), guest, localeStore, null)).toBeNull();
     expect(localeStore.setLocale).toHaveBeenCalledWith('ru', { persist: false });
   });
 
   it('sends a guest to the version in the language they chose', () => {
     const localeStore = store('ru');
 
-    expect(resolvePublicLocale(page('privacy', 'en'), guest, localeStore, 'ru')).toEqual({
+    expect(resolvePublicLocale(page('/privacy', 'en'), guest, localeStore, 'ru')).toEqual({
       path: '/ru/privacy',
       query: { a: '1' },
       hash: '#top',
@@ -101,12 +102,24 @@ describe('resolvePublicLocale', () => {
   });
 
   it('keeps a signed-in user in their profile language', () => {
-    expect(resolvePublicLocale(page('support', 'ru'), member, store('en'), null)).toEqual({
+    expect(resolvePublicLocale(page('/ru/support', 'ru'), member, store('en'), null)).toEqual({
       path: '/support',
       query: { a: '1' },
       hash: '#top',
     });
-    expect(resolvePublicLocale(page('support', 'en'), member, store('en'), 'ru')).toBeNull();
+    expect(resolvePublicLocale(page('/support', 'en'), member, store('en'), 'ru')).toBeNull();
+  });
+
+  it('finds the other version of a program catalog page', () => {
+    expect(
+      resolvePublicLocale(
+        page('/catalog/programs/gym-strength-5x5', 'en'),
+        guest,
+        store('en'),
+        'ru'
+      )
+    ).toEqual({ path: '/ru/catalog/programs/gym-strength-5x5', query: { a: '1' }, hash: '#top' });
+    expect(resolvePublicLocale(page('/ru', 'ru'), member, store('en'), null).path).toBe('/');
   });
 
   it('ignores routes that are not public pages', () => {

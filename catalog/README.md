@@ -1,6 +1,6 @@
 # Catalog
 
-The shipped content of My Workouts: equipment, categories, exercises, workout templates and programs, in English and Russian. Both backends read these files and apply them to their databases on deploy and in seeding: the Go API with `workouts catalog sync`, the PHP API with `php artisan catalog:sync`. A content change is made here once.
+The shipped content of My Workouts: equipment, categories, exercises, workout templates and programs, in English and Russian. Both backends read these files and apply them to their databases on deploy and in seeding: the Go API with `workouts catalog sync`, the PHP API with `php artisan catalog:sync`. The web build reads them too, for the public program pages (`/catalog/programs/{slug}`; `apps/web/src/lib/catalogFiles.js`), and fails on a program that refers to a missing or retired template, exercise or equipment item. A content change is made here once, and reaches the public pages with the next web image.
 
 ## Files
 

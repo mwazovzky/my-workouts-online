@@ -2,7 +2,16 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { describe, expect, it } from 'vitest';
-import { buildRobots, buildSitemap, PUBLIC_PATHS, publicPagePath } from '@/lib/crawl';
+import {
+  buildRobots,
+  buildSitemap,
+  catalogPaths,
+  localizedPath,
+  PUBLIC_PATHS,
+  publicPagePath,
+  publicPaths,
+  switchLocalePath,
+} from '@/lib/crawl';
 import { routes } from '@/router/routes';
 
 describe('buildSitemap', () => {
@@ -37,6 +46,37 @@ describe('publicPagePath', () => {
   });
 });
 
+describe('localizedPath and switchLocalePath', () => {
+  it('prefixes every language but English', () => {
+    expect(localizedPath('/', 'ru')).toBe('/ru');
+    expect(localizedPath('/catalog/programs', 'ru')).toBe('/ru/catalog/programs');
+    expect(localizedPath('/privacy', 'en')).toBe('/privacy');
+    expect(localizedPath('/privacy', 'de')).toBe('/privacy');
+  });
+
+  it('finds the same page in another language', () => {
+    expect(switchLocalePath('/ru', 'en')).toBe('/');
+    expect(switchLocalePath('/ru/catalog/programs/x', 'en')).toBe('/catalog/programs/x');
+    expect(switchLocalePath('/support', 'ru')).toBe('/ru/support');
+    expect(switchLocalePath('/ru/support', 'ru')).toBe('/ru/support');
+    expect(switchLocalePath('/rules', 'ru')).toBe('/ru/rules');
+  });
+});
+
+describe('catalogPaths', () => {
+  it('lists the program catalog and every program in both languages', () => {
+    const catalog = { programs: [{ slug: 'gym-strength-5x5' }] };
+
+    expect(catalogPaths(catalog)).toEqual([
+      '/catalog/programs',
+      '/ru/catalog/programs',
+      '/catalog/programs/gym-strength-5x5',
+      '/ru/catalog/programs/gym-strength-5x5',
+    ]);
+    expect(publicPaths(catalog)).toEqual([...PUBLIC_PATHS, ...catalogPaths(catalog)]);
+  });
+});
+
 describe('buildRobots', () => {
   it('allows every crawler and names the sitemap', () => {
     expect(buildRobots('https://my-workouts.online')).toBe(
@@ -50,7 +90,7 @@ describe('nginx noindex map', () => {
   const noindex = new RegExp(config.match(/"~(.+)" "noindex";/)[1]);
 
   const privatePaths = routes
-    .filter(route => route.name !== 'not-found' && !PUBLIC_PATHS.includes(route.path))
+    .filter(route => route.name !== 'not-found' && !route.meta?.publicPage)
     .map(route => route.path.replace(/:[^/]+/g, '1'));
 
   it('covers every signed-in and auth route', () => {
@@ -66,6 +106,7 @@ describe('nginx noindex map', () => {
       '/assets/index.js',
       '/api/v1/meta',
       '/catalog/programs/gym-full-body-a-b',
+      '/ru/catalog/programs',
       '/loginx',
     ];
 

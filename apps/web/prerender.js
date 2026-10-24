@@ -11,7 +11,7 @@ const DIST = 'dist';
 const SSR_BUILD = '.ssr';
 const APP_ROOT = '<div id="app"></div>';
 
-const { render, applyHeadTag, PUBLIC_PATHS } = await import(`./${SSR_BUILD}/entry-server.js`);
+const { render, applyHeadTag, PRERENDER_PATHS } = await import(`./${SSR_BUILD}/entry-server.js`);
 
 const shell = readFileSync(join(DIST, 'index.html'), 'utf8');
 const sitemap = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
@@ -46,7 +46,7 @@ function pageShell({ head, locale }) {
 
 const pages = [];
 
-for (const path of PUBLIC_PATHS) {
+for (const path of PRERENDER_PATHS) {
   const page = await render(path);
 
   if (page.path !== path) {
@@ -88,4 +88,4 @@ if (missing.length || unlisted.length) {
   );
 }
 
-pages.forEach(page => console.log(`prerendered ${page.path} -> ${page.file}`));
+console.log(`prerendered ${pages.length} pages into ${DIST}/`);

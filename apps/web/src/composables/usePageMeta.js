@@ -1,6 +1,13 @@
 import { onUnmounted, toValue, useSSRContext, watchEffect } from 'vue';
 import { fullPageTitle, usePageTitle } from '@/composables/usePageTitle';
-import { DEFAULT_LOCALE, DEV_SITE_URL, normalizeSiteUrl, PUBLIC_PAGES } from '@/lib/crawl';
+import { APP_NAME } from '@/composables/usePageTitle';
+import {
+  DEFAULT_LOCALE,
+  DEV_SITE_URL,
+  localizedPaths,
+  normalizeSiteUrl,
+  PUBLIC_PAGES,
+} from '@/lib/crawl';
 import { useLocaleStore } from '@/stores/locale';
 
 const OG_LOCALES = { en: 'en_US', ru: 'ru_RU' };
@@ -32,16 +39,34 @@ const alternate = (hreflang, href) => ({
   attributes: { rel: 'alternate', hreflang, href },
 });
 
+// Inside a <script>, "</script>" in a value would end the element early.
+const scriptJson = data => JSON.stringify(data).replaceAll('<', '\\u003c');
+
 /**
- * The full title and head tags of a public page (`src/lib/crawl.js`) in a
- * language: description, canonical URL, Open Graph, and an `hreflang` link
- * per language plus `x-default`.
+ * The full title and head tags of a public page in a language: description,
+ * canonical URL, Open Graph, an `hreflang` link per language plus
+ * `x-default`, and optional JSON-LD. The page is `page`, a key of
+ * `PUBLIC_PAGES`, or `path`, its English path (`src/lib/crawl.js`).
+ * `structuredData` is a schema.org object; its `url`, `inLanguage` and the
+ * site it belongs to are added.
  */
-export function pageHead({ title, description, page, locale }) {
+export function pageHead({ title, description, page, path, locale, structuredData }) {
   const origin = siteUrl();
-  const paths = PUBLIC_PAGES[page];
+  const paths = page ? PUBLIC_PAGES[page] : localizedPaths(path);
   const url = origin + (paths[locale] ?? paths[DEFAULT_LOCALE]);
   const fullTitle = fullPageTitle(title);
+  const schema = structuredData && {
+    tag: 'script',
+    selector: 'script[type="application/ld+json"][data-schema="page"]',
+    attributes: { type: 'application/ld+json', 'data-schema': 'page' },
+    text: scriptJson({
+      '@context': 'https://schema.org',
+      ...structuredData,
+      url,
+      inLanguage: locale,
+      isPartOf: { '@type': 'WebSite', name: APP_NAME, url: `${origin}/` },
+    }),
+  };
 
   return {
     title: fullTitle,
@@ -58,6 +83,7 @@ export function pageHead({ title, description, page, locale }) {
       },
       ...Object.entries(paths).map(([language, path]) => alternate(language, origin + path)),
       alternate('x-default', origin + paths[DEFAULT_LOCALE]),
+      ...(schema ? [schema] : []),
     ],
   };
 }
@@ -69,7 +95,7 @@ const valueAttribute = element => (element.tagName === 'LINK' ? 'href' : 'conten
  * its original value in `data-default`; a missing one is created and marked
  * `data-page-meta="created"`. Used in the browser and by the prerender step.
  */
-export function applyHeadTag(document, { selector, tag, attributes }) {
+export function applyHeadTag(document, { selector, tag, attributes, text }) {
   let element = document.head.querySelector(selector);
 
   if (!element) {
@@ -81,6 +107,9 @@ export function applyHeadTag(document, { selector, tag, attributes }) {
   }
 
   Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+  if (text !== undefined) {
+    element.textContent = text;
+  }
 
   return element;
 }
@@ -103,20 +132,24 @@ export function resetHead(document) {
 
 /**
  * Sets the title, description, canonical URL, `hreflang` and Open Graph tags
- * of a public page in the current language; title and description accept
- * strings, refs or getters, `page` is a key of `PUBLIC_PAGES`. On unmount the
- * tags it changed go back to the `index.html` defaults and the ones it added
- * are removed, unless another page has claimed them since. When prerendering,
- * the head is handed to the prerender step through the SSR context instead.
+ * of a public page in the current language, and its JSON-LD when given;
+ * title, description and `structuredData` accept values, refs or getters. The
+ * page is `page`, a key of `PUBLIC_PAGES`, or `path`, its English path. On
+ * unmount the tags it changed go back to the `index.html` defaults and the
+ * ones it added are removed, unless another page has claimed them since. When
+ * prerendering, the head is handed to the prerender step through the SSR
+ * context instead.
  */
-export function usePageMeta({ title, description, page }) {
+export function usePageMeta({ title, description, page, path, structuredData }) {
   const localeStore = useLocaleStore();
   const head = () =>
     pageHead({
       title: toValue(title),
       description: toValue(description),
       page,
+      path: toValue(path),
       locale: localeStore.locale,
+      structuredData: toValue(structuredData),
     });
 
   if (import.meta.env.SSR) {

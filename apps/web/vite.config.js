@@ -2,7 +2,14 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import VueDevTools from 'vite-plugin-vue-devtools';
-import { buildRobots, buildSitemap, DEV_SITE_URL, normalizeSiteUrl } from './src/lib/crawl.js';
+import { loadPublicCatalog, publicCatalogPlugin } from './src/lib/catalogFiles.js';
+import {
+  buildRobots,
+  buildSitemap,
+  DEV_SITE_URL,
+  normalizeSiteUrl,
+  publicPaths,
+} from './src/lib/crawl.js';
 
 /**
  * Generates `robots.txt` and `sitemap.xml` for the site origin: emitted into
@@ -12,7 +19,10 @@ import { buildRobots, buildSitemap, DEV_SITE_URL, normalizeSiteUrl } from './src
 function siteFiles(siteUrl) {
   const files = {
     'robots.txt': { type: 'text/plain; charset=utf-8', body: () => buildRobots(siteUrl) },
-    'sitemap.xml': { type: 'application/xml; charset=utf-8', body: () => buildSitemap(siteUrl) },
+    'sitemap.xml': {
+      type: 'application/xml; charset=utf-8',
+      body: () => buildSitemap(siteUrl, publicPaths(loadPublicCatalog().catalog)),
+    },
   };
 
   return {
@@ -50,7 +60,7 @@ export default defineConfig(({ mode }) => {
   const siteUrl = env.VITE_PUBLIC_URL || DEV_SITE_URL;
 
   return {
-    plugins: [VueDevTools(), vue(), siteFiles(siteUrl)],
+    plugins: [VueDevTools(), vue(), siteFiles(siteUrl), publicCatalogPlugin()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

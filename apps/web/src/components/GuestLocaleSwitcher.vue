@@ -2,7 +2,7 @@
 import Dropdown from '@/components/Dropdown.vue';
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { publicPagePath } from '@/lib/crawl';
+import { switchLocalePath } from '@/lib/crawl';
 import { useLocaleStore } from '@/stores/locale';
 import { useMetaStore } from '@/stores/meta';
 
@@ -34,9 +34,8 @@ const currentLocaleLabel = computed(
 function updateLocale(locale) {
   localeStore.setLocale(locale);
 
-  const page = route?.meta.publicPage;
-  if (page) {
-    router.push(publicPagePath(page, locale));
+  if (route?.meta.publicPage) {
+    router.push(switchLocalePath(route.path, locale));
   }
 }
 </script>

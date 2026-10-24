@@ -1,27 +1,30 @@
 # Public Site
 
-The pages anyone can open without an account (landing, privacy, support) and how search engines crawl the site.
+The pages anyone can open without an account (landing, privacy, support, the program catalog) and how search engines crawl the site.
 
 ## Current Behavior
 
 1. **Landing** — `/` shows the product to signed-out visitors: a heading that names My Workouts Online, what it does, and sign-up and log-in entry points; signed-in visitors are redirected to the dashboard
 2. **Privacy and Support** — `/privacy` and `/support` are reachable signed in or out and are linked from the layout footers, the landing page and the iOS Profile tab
-3. **English and Russian** — each public page also exists in Russian under `/ru` (`/ru`, `/ru/privacy`, `/ru/support`). The guest locale switcher moves between the two versions, and the footer and logo links lead to the version in the current language
-4. **Complete HTML** — the six public pages are prerendered: the HTML a crawler or browser downloads already holds the page's text, title and metadata, and the app takes over in place once it has loaded
-5. **Crawling** — `/robots.txt` allows every crawler and names `/sitemap.xml`, which lists the public pages as absolute URLs
-6. **Not indexed** — signed-in and auth pages answer with `X-Robots-Tag: noindex`; the SPA's not-found page adds `<meta name="robots" content="noindex">` while it is shown
-7. **Missing files** — in production a missing path with a file extension (`/missing.xml`, `/wp-login.php`, `/assets/missing.js`) answers 404; any other unknown path renders the SPA's not-found page
-8. **Search results and link previews** — `index.html` carries a default title ("Workout Tracker & Training Programs – My Workouts Online"), description, Open Graph and Twitter card tags with a 1200 × 630 image (`public/og-image.png`), and one JSON-LD block describing the `WebSite` and its publishing `Organization` (name, logo, support email)
-9. **Per-page metadata** — the landing, privacy and support pages set their own title, description, canonical URL, `hreflang` links (`en`, `ru`, `x-default` → English) and `og:title` / `og:description` / `og:url` / `og:locale` in the page's language; leaving them restores the defaults and removes the canonical URL. Every page title ends in "– My Workouts Online"
+3. **Program catalog** — `/catalog/programs` lists every shipped program with its description and number of workouts a week; `/catalog/programs/{slug}` shows one program: description, workouts a week, the equipment it needs, the weekly schedule (each day linking to its workout below), and each workout with its exercises and planned sets ("3 × 10 reps", "45 min (zone 2)"). A guest is invited to create an account; a signed-in user is sent to Programs in the app. Linked from the landing page and the footer
+4. **English and Russian** — each public page also exists in Russian under `/ru` (`/ru`, `/ru/privacy`, `/ru/support`, `/ru/catalog/programs/…`). The guest locale switcher moves between the two versions, and the footer and logo links lead to the version in the current language
+5. **Complete HTML** — every public page is prerendered: the HTML a crawler or browser downloads already holds the page's text, title and metadata, and the app takes over in place once it has loaded
+6. **Crawling** — `/robots.txt` allows every crawler and names `/sitemap.xml`, which lists the public pages as absolute URLs
+7. **Not indexed** — signed-in and auth pages answer with `X-Robots-Tag: noindex`; the SPA's not-found page adds `<meta name="robots" content="noindex">` while it is shown
+8. **Missing files** — in production a missing path with a file extension (`/missing.xml`, `/wp-login.php`, `/assets/missing.js`) answers 404; any other unknown path renders the SPA's not-found page
+9. **Search results and link previews** — `index.html` carries a default title ("Workout Tracker & Training Programs – My Workouts Online"), description, Open Graph and Twitter card tags with a 1200 × 630 image (`public/og-image.png`), and one JSON-LD block describing the `WebSite` and its publishing `Organization` (name, logo, support email)
+10. **Per-page metadata** — every public page sets its own title, description, canonical URL, `hreflang` links (`en`, `ru`, `x-default` → English) and `og:title` / `og:description` / `og:url` / `og:locale` in the page's language; a program page adds a JSON-LD `CreativeWork` (name, description, URL, language, the site it belongs to). Leaving a page restores the defaults and removes what it added. Every page title ends in "– My Workouts Online"
 
 ## Business Rules
 
-- The public pages are one list, `PUBLIC_PAGES` in `apps/web/src/lib/crawl.js`, with a path per language. The build prerenders exactly those, the sitemap lists them, and the build fails if the two differ
+- The public pages are the fixed `PUBLIC_PAGES` in `apps/web/src/lib/crawl.js` plus the program catalog (`catalogPaths`), each in every language (`localizedPath`: English unprefixed, Russian under `/ru`). The build prerenders exactly those, the sitemap lists them, and the build fails if the two differ
+- The program catalog is built from the shipped YAML in `catalog/` (`programs.yaml`, `workout-templates/`, `exercises/`, `equipment.yaml`, `retired.yaml`) at build time, not from the API: only programs with a slug in the catalog get a page, a program listed in `retired.yaml` gets none, and admin-created programs are never published. The web build fails with the record named when a program refers to a workout template, exercise or equipment item that does not exist or is retired, or a field the page shows is missing
+- Program pages show no weight: templates plan sets and repetitions (or durations and heart-rate zones), and each user picks their own weight
 - Language of a public page: for a guest the URL decides, without recording a choice; a guest who chose a language before (switcher or a past sign-in) and a signed-in user are sent to the version in their language
 - A prerendered page is reused in place only for a guest who stays on it; a signed-in visitor, or one sent to another version, gets a fresh render with the default head
 - `robots.txt` and `sitemap.xml` are generated by the web build (and served by the Vite dev server) for the origin in `VITE_PUBLIC_URL`; the production image cannot be built without it (`PUBLIC_URL` build argument, from the `PRODUCTION_PUBLIC_URL` GitHub variable). Locally they point at `http://localhost:8080`
 - Private pages are marked `noindex` instead of disallowed in `robots.txt`: a crawler has to fetch a page to see its `noindex`
-- The `noindex` prefixes live in `docker/nginx/robots-map.conf`: `/dashboard`, `/about`, `/programs`, `/workout-templates`, `/workouts`, `/profile`, `/admin`, `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`, `/confirm-password`. A Vitest test fails if a router path outside `PUBLIC_PATHS` is not covered
+- The `noindex` prefixes live in `docker/nginx/robots-map.conf`: `/dashboard`, `/about`, `/programs`, `/workout-templates`, `/workouts`, `/profile`, `/admin`, `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`, `/confirm-password`. A Vitest test fails if a router path that is not a public page is not covered; `/catalog/…` is not under any of them
 - The security headers apply to every response, including 404s and `noindex` pages
 - Absolute URLs in `index.html` are written as `__SITE_URL__` and replaced by the build with the public origin; at runtime `usePageMeta` uses `VITE_PUBLIC_URL`, or the current origin when it is unset
 - The shell `index.html` has no canonical URL or `og:url`: as `spa.html` it is served for every other path, so a fixed value would point those pages at `/`. Each public page gets its own from `usePageMeta`, written into its prerendered HTML
@@ -29,7 +32,11 @@ The pages anyone can open without an account (landing, privacy, support) and how
 
 ## Known Limitations
 
-- Only the six public pages are prerendered; every other route is the client-rendered app shell (`spa.html`)
+- Only the public pages are prerendered; every other route is the client-rendered app shell (`spa.html`)
+- A signed-in visitor's call to action opens Programs rather than the program itself: the API does not expose catalog slugs, so the page cannot know the program's id
+- Exercise names on program pages are plain text until the exercise catalog ships
+- A program slug the catalog does not have shows the not-found page (`noindex`), with status 200 like every other unknown path
+- A catalog change reaches the public pages with the next web image build, like the backends' `catalog:sync` on deploy
 - A prerendered page is shown as static HTML until the session check finishes; links on it work as ordinary page loads in that moment
 - The Russian versions repeat the English layout and images; only the text differs
 - The dev stack does not prerender; the pages render in the browser as before
@@ -38,12 +45,14 @@ The pages anyone can open without an account (landing, privacy, support) and how
 
 ## Surface Area
 
-- Pages: `Welcome` (`welcome`, `welcome.ru`), `Privacy` (`privacy`, `privacy.ru`), `Support` (`support`, `support.ru`), `NotFound` (`not-found`)
+- Pages: `Welcome` (`welcome`, `welcome.ru`), `Privacy` (`privacy`, `privacy.ru`), `Support` (`support`, `support.ru`), `Catalog/ProgramIndex` (`catalog.programs`, `catalog.programs.ru`), `Catalog/ProgramShow` (`catalog.programs.show`, `catalog.programs.show.ru`), `NotFound` (`not-found`)
+- Build: `src/lib/catalogFiles.js` (reads `catalog/`, `CATALOG_PATH` overrides; the `virtual:public-catalog` module), `src/lib/publicCatalog.js` (the public catalog and its checks)
 - Files: `/robots.txt`, `/sitemap.xml`
 - See [Pages & Routes](../pages-and-routes.md)
 
 ## Key Decisions
 
+- Program pages carry a `CreativeWork`, not a `Course` or `ExercisePlan`: Google has no rich result for workout programs, and the `Course` result's requirements (provider, offers) do not fit
 - The structured data describes a `WebSite` and an `Organization` rather than a `SoftwareApplication`: Google's software-app result needs ratings or reviews the site does not have, while `WebSite.name` is what Google uses for the site name shown in results
 - The Open Graph image `public/og-image.png` is rendered from `apps/web/src/assets/og-image.svg` (the logo mark and the Figtree font, which the SVG names but does not embed); when the name or tagline changes, edit the SVG and render it again at 1200 × 630 with the Figtree TTF files available, for example with resvg
 

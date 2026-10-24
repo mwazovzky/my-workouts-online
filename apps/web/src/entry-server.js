@@ -2,12 +2,18 @@ import { createSSRApp } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { createMemoryHistory } from 'vue-router';
 import { createPinia } from 'pinia';
+import catalog from 'virtual:public-catalog';
 import App from '@/App.vue';
+import { publicPaths } from '@/lib/crawl';
 import { createAppRouter } from '@/router';
 import { useLocaleStore } from '@/stores/locale';
 
 export { applyHeadTag } from '@/composables/usePageMeta';
-export { PUBLIC_PATHS } from '@/lib/crawl';
+
+/**
+ * Every page to prerender: the fixed public pages and the program catalog.
+ */
+export const PRERENDER_PATHS = publicPaths(catalog);
 
 /**
  * Renders the app at `path` as a signed-out visitor, for `prerender.js`.

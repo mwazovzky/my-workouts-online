@@ -9,7 +9,8 @@ export function createAppRouter(history = createWebHistory()) {
   const router = createRouter({
     history,
     routes,
-    scrollBehavior: (to, from, saved) => saved ?? { top: 0 },
+    // Hash links such as a program page's schedule scroll to their section.
+    scrollBehavior: (to, from, saved) => saved ?? (to.hash ? { el: to.hash } : { top: 0 }),
   });
 
   installGuards(router);

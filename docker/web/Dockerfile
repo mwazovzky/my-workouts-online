@@ -6,6 +6,9 @@ WORKDIR /app
 COPY apps/web/package*.json ./
 RUN npm ci --no-audit --no-fund
 COPY apps/web ./
+# The shipped catalog, read by the build for the public program pages.
+COPY catalog /catalog
+ENV CATALOG_PATH=/catalog
 ARG APP_VERSION=dev
 # The public origin (https://my-workouts.online) for robots.txt, the sitemap
 # and other absolute URLs; an image built without it would point crawlers at
