@@ -2,7 +2,7 @@
 # Go API image: the `workouts` binary built from services/api-go. The dev stage
 # is the toolchain with the repository bind-mounted (docker-compose.yml); the
 # final stage is distroless, non-root and has no shell.
-ARG GO_VERSION=1.27.2
+ARG GO_VERSION=1.27.3
 
 # --- Stage 1: toolchain (dev container and build base) ---
 FROM golang:${GO_VERSION} AS dev
