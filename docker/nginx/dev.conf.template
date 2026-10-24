@@ -7,6 +7,8 @@ access_log off;
 # upstream (502) behind.
 resolver 127.0.0.11 valid=5s ipv6=off;
 
+include /etc/nginx/robots-map.conf;
+
 upstream php_api {
     zone php_api 64k;
     server ${PHP_FPM_UPSTREAM} resolve;
@@ -21,6 +23,8 @@ server {
     listen 80;
     server_name _;
     client_max_body_size 20M;
+
+    add_header X-Robots-Tag $robots_tag always;
 
     include /etc/nginx/api-locations.conf;
     include /etc/nginx/well-known-locations.conf;

@@ -19,6 +19,7 @@ Workout tracking application — Laravel 12 JSON API (`services/api-php`) + Vue 
 
 | Document | Scope |
 | --- | --- |
+| [Public Site](features/public-site.md) | Landing, privacy and support pages; robots.txt, sitemap and noindex |
 | [Programs](features/programs.md) | Browse programs, inspect templates, and enroll |
 | [Workout Logging](features/workout-logging.md) | Start workouts, edit activities and sets, save, complete, repeat, and delete |
 | [Auth & Profile](features/auth-and-profile.md) | Registration, authentication, password flows, profile, and locale selection |

@@ -5,6 +5,8 @@ access_log off;
 # upstream (502) behind.
 resolver 127.0.0.11 valid=5s ipv6=off;
 
+include /etc/nginx/robots-map.conf;
+
 upstream php_api {
     zone php_api 64k;
     server ${PHP_FPM_UPSTREAM} resolve;
@@ -37,6 +39,7 @@ server {
 
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     include /etc/nginx/security-headers.conf;
+    add_header X-Robots-Tag $robots_tag always;
     include /etc/nginx/api-locations.conf;
     include /etc/nginx/well-known-locations.conf;
     include /etc/nginx/spa-locations.conf;
