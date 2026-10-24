@@ -305,5 +305,9 @@
   "Too many login attempts.": "Слишком много попыток входа.",
   "The password confirmation does not match.": "Пароли не совпадают.",
   "This workout was changed elsewhere. Reload it to continue.": "Эта тренировка была изменена в другом месте. Обновите её, чтобы продолжить.",
-  "Reload": "Обновить"
+  "Reload": "Обновить",
+  "Workout Tracker & Training Programs": "Дневник тренировок и тренировочные программы",
+  "Log your sets and reps, follow ready-made training programs for the gym, at home and on the bike, and always know which workout comes next.": "Записывайте подходы и повторения, занимайтесь по готовым программам в зале, дома и на велосипеде и всегда знайте, какая тренировка следующая.",
+  "What My Workouts Online collects, what it is used for, who processes it, how long it is kept, and your rights.": "Какие данные собирает My Workouts Online, для чего они используются, кто их обрабатывает, сколько они хранятся и какие у вас права.",
+  "Need help with My Workouts Online? Write to support, or find out how to delete your account.": "Нужна помощь с My Workouts Online? Напишите в поддержку или узнайте, как удалить аккаунт."
 }

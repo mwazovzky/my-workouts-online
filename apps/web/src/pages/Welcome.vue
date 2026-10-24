@@ -2,12 +2,19 @@
 import ApplicationLogo from '@/components/ApplicationLogo.vue';
 import GuestLocaleSwitcher from '@/components/GuestLocaleSwitcher.vue';
 import LegalLinks from '@/components/LegalLinks.vue';
-import { usePageTitle } from '@/composables/usePageTitle';
+import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
 
-usePageTitle('My Workouts Online');
+usePageMeta({
+  title: () => t('Workout Tracker & Training Programs'),
+  description: () =>
+    t(
+      'Log your sets and reps, follow ready-made training programs for the gym, at home and on the bike, and always know which workout comes next.'
+    ),
+  path: '/',
+});
 
 const productSteps = [
   {

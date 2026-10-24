@@ -2,12 +2,19 @@
 import PublicPageLayout from '@/layouts/PublicPageLayout.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SUPPORT_EMAIL } from '@/lib/contact';
-import { usePageTitle } from '@/composables/usePageTitle';
+import { usePageMeta } from '@/composables/usePageMeta';
 import { useTranslation } from '@/composables/useTranslation';
 
 const { t } = useTranslation();
 
-usePageTitle(() => t('Support'));
+usePageMeta({
+  title: () => t('Support'),
+  description: () =>
+    t(
+      'Need help with My Workouts Online? Write to support, or find out how to delete your account.'
+    ),
+  path: '/support',
+});
 
 const whatToInclude = [
   'The email address of your account',

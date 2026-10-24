@@ -94,7 +94,7 @@ After modifying `contracts/openapi.yaml` or any API response shape, lint the spe
 - **Pages** in `apps/web/src/pages/`, **components** in `apps/web/src/components/`, **layouts** in `apps/web/src/layouts/`.
 - **UI primitives** (badge, button, card, skeleton, etc.) in `apps/web/src/components/ui/` — check these before creating new ones.
 - **Stores** (Pinia) in `apps/web/src/stores/` — `auth` (in-memory access token, user, login/logout/bootstrap), `locale` (client-owned UI catalogs), `meta`.
-- **Composables** in `apps/web/src/composables/` — `useApi`, `useApiForm` (422 errors flattened to `form.errors`), `useEnrollment`, `useTranslation` (`t()`), `usePageTitle`, `useActiveRoute`, `useLogout`.
+- **Composables** in `apps/web/src/composables/` — `useApi`, `useApiForm` (422 errors flattened to `form.errors`), `useEnrollment`, `useTranslation` (`t()`), `usePageTitle` (every title ends in "– My Workouts Online"), `usePageMeta` (description, canonical, Open Graph for public pages), `useActiveRoute`, `useLogout`.
 - **Routing** in `apps/web/src/router/` — named routes mirror the old Laravel route names; guards read route meta `guest` / `auth` / `verified` / `admin`.
 - **API client** `apps/web/src/lib/api.js` — bearer + `Accept-Language` headers, single-flight refresh-and-retry on 401 `token_expired`.
 

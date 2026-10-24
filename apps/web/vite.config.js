@@ -2,20 +2,21 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import VueDevTools from 'vite-plugin-vue-devtools';
-import { buildRobots, buildSitemap } from './src/lib/crawl.js';
+import { buildRobots, buildSitemap, normalizeSiteUrl } from './src/lib/crawl.js';
 
 /**
  * Generates `robots.txt` and `sitemap.xml` for the site origin: emitted into
- * `dist/` by the build and served by the dev server.
+ * `dist/` by the build and served by the dev server. Also replaces
+ * `__SITE_URL__` in `index.html`, for the absolute URLs in its head.
  */
-function crawlFiles(siteUrl) {
+function siteFiles(siteUrl) {
   const files = {
     'robots.txt': { type: 'text/plain; charset=utf-8', body: () => buildRobots(siteUrl) },
     'sitemap.xml': { type: 'application/xml; charset=utf-8', body: () => buildSitemap(siteUrl) },
   };
 
   return {
-    name: 'crawl-files',
+    name: 'site-files',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const file = files[req.url?.split('?')[0].slice(1)];
@@ -27,6 +28,12 @@ function crawlFiles(siteUrl) {
         res.setHeader('Content-Type', file.type);
         res.end(file.body());
       });
+    },
+    // Before Vite's own HTML handling, which would treat the og:image URL as
+    // a relative asset path.
+    transformIndexHtml: {
+      order: 'pre',
+      handler: html => html.replaceAll('__SITE_URL__', normalizeSiteUrl(siteUrl)),
     },
     generateBundle() {
       for (const [fileName, file] of Object.entries(files)) {
@@ -43,7 +50,7 @@ export default defineConfig(({ mode }) => {
   const siteUrl = env.VITE_PUBLIC_URL || 'http://localhost:8080';
 
   return {
-    plugins: [VueDevTools(), vue(), crawlFiles(siteUrl)],
+    plugins: [VueDevTools(), vue(), siteFiles(siteUrl)],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

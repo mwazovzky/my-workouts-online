@@ -9,6 +9,8 @@ The pages anyone can open without an account (landing, privacy, support) and how
 3. **Crawling** — `/robots.txt` allows every crawler and names `/sitemap.xml`, which lists the public pages as absolute URLs
 4. **Not indexed** — signed-in and auth pages answer with `X-Robots-Tag: noindex`; the SPA's not-found page adds `<meta name="robots" content="noindex">` while it is shown
 5. **Missing files** — in production a missing path with a file extension (`/missing.xml`, `/wp-login.php`, `/assets/missing.js`) answers 404; any other unknown path renders the SPA's not-found page
+6. **Search results and link previews** — `index.html` carries a default title ("Workout Tracker & Training Programs – My Workouts Online"), description, Open Graph and Twitter card tags with a 1200 × 630 image (`public/og-image.png`), and one JSON-LD block describing the `WebSite` and its publishing `Organization` (name, logo, support email)
+7. **Per-page metadata** — the landing, privacy and support pages set their own title, description, canonical URL and `og:title` / `og:description` / `og:url` in the visitor's language; leaving them restores the defaults and removes the canonical URL. Every page title ends in "– My Workouts Online"
 
 ## Business Rules
 
@@ -17,11 +19,14 @@ The pages anyone can open without an account (landing, privacy, support) and how
 - Private pages are marked `noindex` instead of disallowed in `robots.txt`: a crawler has to fetch a page to see its `noindex`
 - The `noindex` prefixes live in `docker/nginx/robots-map.conf`: `/dashboard`, `/about`, `/programs`, `/workout-templates`, `/workouts`, `/profile`, `/admin`, `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`, `/confirm-password`. A Vitest test fails if a router path outside `PUBLIC_PATHS` is not covered
 - The security headers apply to every response, including 404s and `noindex` pages
+- Absolute URLs in `index.html` are written as `__SITE_URL__` and replaced by the build with the public origin; at runtime `usePageMeta` uses `VITE_PUBLIC_URL`, or the current origin when it is unset
+- `index.html` has no canonical URL or `og:url`: it is served for every path, so a fixed value would point every page at `/`. Each public page sets its own through `usePageMeta`
+- The JSON-LD is a data block, not a script, so the Content-Security-Policy (`script-src 'self'`) does not apply to it
 
 ## Known Limitations
 
 - The pages are client-rendered: the HTML a crawler downloads is the SPA shell until the content is prerendered
-- No page sets its own description, canonical URL or social preview yet; every page shares the shell's title
+- Per-page metadata is set by JavaScript, so a crawler that does not run it, and every link preview, sees the `index.html` defaults on all pages
 - The dev stack serves Vite's files with extensions, so the 404 for missing files exists only in the production image
 - The domain is verified in Search Console by hand ([deployment](../deployment.md#search-console))
 
@@ -30,6 +35,11 @@ The pages anyone can open without an account (landing, privacy, support) and how
 - Pages: `Welcome` (`welcome`), `Privacy` (`privacy`), `Support` (`support`), `NotFound` (`not-found`)
 - Files: `/robots.txt`, `/sitemap.xml`
 - See [Pages & Routes](../pages-and-routes.md)
+
+## Key Decisions
+
+- The structured data describes a `WebSite` and an `Organization` rather than a `SoftwareApplication`: Google's software-app result needs ratings or reviews the site does not have, while `WebSite.name` is what Google uses for the site name shown in results
+- The Open Graph image `public/og-image.png` is rendered from `apps/web/src/assets/og-image.svg` (the logo mark and the Figtree font, which the SVG names but does not embed); when the name or tagline changes, edit the SVG and render it again at 1200 × 630 with the Figtree TTF files available, for example with resvg
 
 ## Related
 
