@@ -18,9 +18,8 @@ use App\Services\Admin\ProgramServiceInterface;
 use App\Services\Admin\WorkoutTemplateServiceInterface;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
-use LogicException;
 use Throwable;
 
 class CatalogSyncService implements CatalogSyncServiceInterface
@@ -390,13 +389,13 @@ class CatalogSyncService implements CatalogSyncServiceInterface
 
     private function delete(Model $model): void
     {
+        // @phpstan-ignore match.unhandled (retirement only reaches here with the five catalog models)
         match (true) {
             $model instanceof Equipment => $this->equipmentService->delete($model),
             $model instanceof Category => $this->categoryService->delete($model),
             $model instanceof Exercise => $this->exerciseService->delete($model),
             $model instanceof WorkoutTemplate => $this->workoutTemplateService->delete($model),
             $model instanceof Program => $this->programService->delete($model),
-            default => throw new LogicException('Unsupported catalog model '.$model::class),
         };
     }
 
@@ -406,7 +405,11 @@ class CatalogSyncService implements CatalogSyncServiceInterface
      */
     private function indexExistingRows(string $modelClass): array
     {
-        $query = $modelClass::query()->withoutGlobalScope(SoftDeletingScope::class)->orderBy('id');
+        $query = $modelClass::query()->orderBy('id');
+
+        if (in_array(SoftDeletes::class, class_uses_recursive($modelClass), true)) {
+            $query->withTrashed();
+        }
 
         $index = ['slugs' => [], 'names' => []];
 

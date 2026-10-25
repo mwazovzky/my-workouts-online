@@ -112,7 +112,7 @@ trait HasTranslations
      */
     public static function createWithTranslations(array $translations, array $attributes = []): static
     {
-        $model = static::query()->make($attributes);
+        $model = new static($attributes);
         $model->fillSourceText($translations[static::sourceLocale()] ?? []);
         $model->save();
 

@@ -26,3 +26,8 @@ parameters:
             identifier: method.notFound
             message: '#^Call to an undefined method Illuminate\\Database\\Migrations\\Migration::(up|down)\(\)\.$#'
             path: tests/Feature/Migrations/*
+        # Eloquent models keep Model's constructor signature, so `new static`
+        # in a model trait is safe.
+        -
+            identifier: new.static
+            path: app/Models/Concerns/HasTranslations.php
