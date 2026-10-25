@@ -6,6 +6,7 @@ use App\Exceptions\Api\ApiErrorResponse;
 use App\Http\RequestId;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Assertions for the RFC 9457 Problem body every non-2xx API response uses.
@@ -16,29 +17,46 @@ trait AssertsProblems
 {
     protected function setUpAssertsProblems(): void
     {
-        if (! TestResponse::hasMacro('assertProblem')) {
-            TestResponse::macro('assertProblem', function (int $status, string $code): TestResponse {
-                /** @var TestResponse $this */
-                return AssertsProblems::problem($this, $status, $code);
-            });
-            TestResponse::macro('assertFieldErrors', function (array $fields, ?string $code = null): TestResponse {
-                /** @var TestResponse $this */
-                return AssertsProblems::fieldErrors($this, $fields, $code);
-            });
-            TestResponse::macro('fieldError', function (string $field): ?array {
-                /** @var TestResponse $this */
-                return AssertsProblems::firstError($this, $field);
-            });
-        }
+        self::registerResponseMacros();
     }
 
+    /**
+     * Also called from `tests/phpstan-bootstrap.php`, so static analysis sees
+     * the macros.
+     */
+    public static function registerResponseMacros(): void
+    {
+        if (TestResponse::hasMacro('assertProblem')) {
+            return;
+        }
+
+        TestResponse::macro('assertProblem', function (int $status, string $code): TestResponse {
+            /** @var TestResponse<Response> $this */
+            return AssertsProblems::problem($this, $status, $code);
+        });
+        TestResponse::macro('assertFieldErrors', function (array $fields, ?string $code = null): TestResponse {
+            /** @var TestResponse<Response> $this */
+            return AssertsProblems::fieldErrors($this, $fields, $code);
+        });
+        TestResponse::macro('fieldError', function (string $field): ?array {
+            /** @var TestResponse<Response> $this */
+            return AssertsProblems::firstError($this, $field);
+        });
+    }
+
+    /**
+     * @param  TestResponse<Response>  $response
+     * @return TestResponse<Response>
+     */
     protected function assertProblem(TestResponse $response, int $status, string $code): TestResponse
     {
         return self::problem($response, $status, $code);
     }
 
     /**
+     * @param  TestResponse<Response>  $response
      * @param  list<string>  $fields
+     * @return TestResponse<Response>
      */
     protected function assertFieldErrors(TestResponse $response, array $fields, ?string $code = null): TestResponse
     {
@@ -46,6 +64,7 @@ trait AssertsProblems
     }
 
     /**
+     * @param  TestResponse<Response>  $response
      * @return array{pointer: string, code: string, detail: string}|null
      */
     protected function fieldError(TestResponse $response, string $field): ?array
@@ -56,6 +75,9 @@ trait AssertsProblems
     /**
      * The response is a Problem with the given status and code: right media
      * type, the six standard members, and an `X-Request-Id` matching `instance`.
+     *
+     * @param  TestResponse<Response>  $response
+     * @return TestResponse<Response>
      */
     public static function problem(TestResponse $response, int $status, string $code): TestResponse
     {
@@ -87,7 +109,9 @@ trait AssertsProblems
      * A 422 Problem whose `errors` cover every given field. Fields may be
      * dotted paths (`activities.0.sets`) or JSON Pointers (`/activities/0/sets`).
      *
+     * @param  TestResponse<Response>  $response
      * @param  list<string>  $fields
+     * @return TestResponse<Response>
      */
     public static function fieldErrors(TestResponse $response, array $fields, ?string $code = null): TestResponse
     {
@@ -117,6 +141,7 @@ trait AssertsProblems
     }
 
     /**
+     * @param  TestResponse<Response>  $response
      * @return array{pointer: string, code: string, detail: string}|null
      */
     public static function firstError(TestResponse $response, string $field): ?array

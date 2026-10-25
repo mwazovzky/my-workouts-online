@@ -4,8 +4,14 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\WorkoutTemplate
+ */
 class WorkoutTemplateResource extends JsonResource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray($request): array
     {
         $activities = $this->relationLoaded('activities') ? $this->activities : collect();

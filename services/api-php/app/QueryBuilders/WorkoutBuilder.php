@@ -3,8 +3,12 @@
 namespace App\QueryBuilders;
 
 use App\Models\User;
+use App\Models\Workout;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @extends Builder<Workout>
+ */
 class WorkoutBuilder extends Builder
 {
     public function ownedBy(User $user): self

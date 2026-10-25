@@ -5,6 +5,9 @@ namespace App\Http\Resources;
 use App\Http\WorkoutETag;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\Workout
+ */
 class WorkoutResource extends JsonResource
 {
     /**
@@ -15,6 +18,9 @@ class WorkoutResource extends JsonResource
         $response->header('ETag', WorkoutETag::for($this->resource));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray($request): array
     {
         $workoutTemplate = $this->relationLoaded('workoutTemplate') ? $this->workoutTemplate : null;

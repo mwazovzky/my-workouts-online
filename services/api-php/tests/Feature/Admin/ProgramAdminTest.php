@@ -13,6 +13,10 @@ class ProgramAdminTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
     private function validPayload(array $overrides = []): array
     {
         $template = WorkoutTemplate::factory()->create();

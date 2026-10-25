@@ -128,7 +128,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
                 $record['slug'],
                 $existing,
                 ['difficulty_unit' => $payload['difficulty_unit']] + $this->flattenTranslations($record['translations']),
-                fn (Equipment $equipment) => ['difficulty_unit' => $equipment->difficulty_unit?->value]
+                fn (Equipment $equipment) => ['difficulty_unit' => $equipment->difficulty_unit->value]
                     + $this->currentTranslations($equipment, $record['translations']),
                 fn () => $this->equipmentService->create($payload),
                 fn (Equipment $equipment) => $this->equipmentService->update($equipment, $payload),
@@ -197,7 +197,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
                 ] + $this->flattenTranslations($record['translations']),
                 fn (Exercise $exercise) => [
                     'equipment' => $exercise->equipment_id,
-                    'effort_type' => $exercise->effort_type?->value,
+                    'effort_type' => $exercise->effort_type->value,
                     'rest_time_seconds' => $exercise->rest_time_seconds,
                     'categories' => $exercise->categories()->orderBy('categories.id')->pluck('categories.id')
                         ->map(fn (mixed $id) => (int) $id)
@@ -282,10 +282,13 @@ class CatalogSyncService implements CatalogSyncServiceInterface
     /**
      * Create the record, or bring the existing row in line with the data files.
      *
+     * @template TModel of Model
+     *
+     * @param  TModel|null  $existing
      * @param  array<string, mixed>  $desired  Desired state by field
-     * @param  Closure(Model): array<string, mixed>  $currentState  Current state by field, same shape as $desired
-     * @param  Closure(): Model  $create
-     * @param  Closure(Model): Model  $update
+     * @param  Closure(TModel): array<string, mixed>  $currentState  Current state by field, same shape as $desired
+     * @param  Closure(): TModel  $create
+     * @param  Closure(TModel): TModel  $update
      */
     private function persist(
         string $type,
@@ -307,7 +310,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
 
         $changedFields = $this->changedFields($currentState($existing), $desired);
 
-        if ($this->isTrashed($existing)) {
+        if ($this->isTrashed($existing) && method_exists($existing, 'restore')) {
             $existing->restore();
             $changedFields[] = 'restored';
         }
@@ -386,6 +389,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
 
     private function delete(Model $model): void
     {
+        // @phpstan-ignore match.unhandled (retirement only reaches here with the five catalog models)
         match (true) {
             $model instanceof Equipment => $this->equipmentService->delete($model),
             $model instanceof Category => $this->categoryService->delete($model),
@@ -396,7 +400,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
     }
 
     /**
-     * @param  class-string<Model>  $modelClass
+     * @param  class-string<Category|Equipment|Exercise|Program|WorkoutTemplate>  $modelClass
      * @return array{slugs: array<string, Model>, names: array<string, array<int, Model>>}
      */
     private function indexExistingRows(string $modelClass): array
@@ -433,6 +437,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
      * one of the given English names. A row can be claimed only once.
      *
      * @param  array<int, string>  $names
+     * @return ($type is 'equipment' ? Equipment|null : ($type is 'categories' ? Category|null : ($type is 'exercises' ? Exercise|null : ($type is 'workout_templates' ? WorkoutTemplate|null : ($type is 'programs' ? Program|null : Model|null)))))
      */
     private function find(string $type, string $slug, array $names): ?Model
     {
@@ -506,7 +511,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
         $changes = [];
 
         if ($exercise->effort_type !== $record['effort_type']) {
-            $changes[] = "effort type changes from {$exercise->effort_type?->value} to {$record['effort_type']->value}";
+            $changes[] = "effort type changes from {$exercise->effort_type->value} to {$record['effort_type']->value}";
         }
 
         $currentUnit = $exercise->equipment()->first()?->difficulty_unit;
@@ -596,7 +601,7 @@ class CatalogSyncService implements CatalogSyncServiceInterface
      * @param  array<string, array<string, string>>  $translations
      * @return array<string, ?string>
      */
-    private function currentTranslations(Model $model, array $translations): array
+    private function currentTranslations(Category|Equipment|Exercise|Program|WorkoutTemplate $model, array $translations): array
     {
         $flat = [];
 

@@ -14,7 +14,8 @@ class RegisterTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @return array<string, string>
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
      */
     private function payload(array $overrides = []): array
     {

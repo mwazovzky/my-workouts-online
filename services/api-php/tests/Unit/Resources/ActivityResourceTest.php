@@ -32,7 +32,6 @@ class ActivityResourceTest extends TestCase
         $resource = new ActivityResource($activity);
         $array = $resource->toArray(request());
 
-        $this->assertIsArray($array);
         $this->assertEquals($activity->id, $array['id']);
         $this->assertEquals($exercise->id, $array['exercise_id']);
     }

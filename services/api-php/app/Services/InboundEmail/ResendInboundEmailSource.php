@@ -3,7 +3,7 @@
 namespace App\Services\InboundEmail;
 
 use Illuminate\Support\Facades\Http;
-use Resend\Contracts\Client;
+use Resend\Client;
 
 /**
  * Reads received emails from the Resend receiving API. The webhook only carries

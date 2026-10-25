@@ -4,6 +4,7 @@ namespace App\Models\Concerns;
 
 use App\Models\Translation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\App;
  * Translatable fields keep their source text in the model's own columns. The
  * translations table holds the other locales, so a record without any
  * translation still reads the same in every locale.
+ *
+ * @phpstan-require-extends Model
  */
 trait HasTranslations
 {
@@ -196,6 +199,9 @@ trait HasTranslations
 
     /**
      * Scope to filter by a translated field value.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeWhereTranslated(Builder $query, string $field, string $value, ?string $locale = null): Builder
     {
@@ -204,6 +210,10 @@ trait HasTranslations
 
     /**
      * Scope to filter by translated field with multiple values.
+     *
+     * @param  Builder<static>  $query
+     * @param  array<int, string>  $values
+     * @return Builder<static>
      */
     public function scopeWhereTranslatedIn(Builder $query, string $field, array $values, ?string $locale = null): Builder
     {

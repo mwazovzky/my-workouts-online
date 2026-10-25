@@ -15,6 +15,9 @@ class Translation extends Model
         'value',
     ];
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function translatable(): MorphTo
     {
         return $this->morphTo();

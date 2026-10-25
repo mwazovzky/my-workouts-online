@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Api\Auth;
 
+use App\Exceptions\Auth\AccessTokenException;
 use App\Models\User;
 use App\Services\Auth\TokenServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Tests\TestCase;
 
 class AccessTokenTest extends TestCase
@@ -54,7 +56,7 @@ class AccessTokenTest extends TestCase
         [$header, $payload, $signature] = explode('.', $pair->accessToken);
         $claims = json_decode(base64_decode(strtr($payload, '-_', '+/')), true);
         $claims['sub'] = (string) ($user->id + 1);
-        $forgedPayload = rtrim(strtr(base64_encode(json_encode($claims)), '+/', '-_'), '=');
+        $forgedPayload = rtrim(strtr(base64_encode(json_encode($claims, JSON_THROW_ON_ERROR)), '+/', '-_'), '=');
 
         $this->withToken("{$header}.{$forgedPayload}.{$signature}")->getJson('/api/v1/programs')
             ->assertUnauthorized()
@@ -77,5 +79,25 @@ class AccessTokenTest extends TestCase
         $user->delete();
 
         $this->withToken($pair->accessToken)->getJson('/api/v1/programs')->assertUnauthorized();
+    }
+
+    #[Test]
+    public function an_empty_token_is_invalid(): void
+    {
+        $this->expectException(AccessTokenException::class);
+
+        app(TokenServiceInterface::class)->parseAccessToken('');
+    }
+
+    #[Test]
+    public function an_empty_issuer_fails_with_a_clear_message(): void
+    {
+        config(['jwt.issuer' => '']);
+        $this->app->forgetInstance(TokenServiceInterface::class);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageMatches('/JWT_ISSUER/');
+
+        app(TokenServiceInterface::class)->issuePair(User::factory()->create());
     }
 }

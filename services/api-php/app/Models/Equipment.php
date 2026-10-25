@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property string|null $slug
+ * @property string $name
+ */
 class Equipment extends Model
 {
+    /** @use HasFactory<\Database\Factories\EquipmentFactory> */
     use HasFactory, HasTranslations;
 
     protected $fillable = [
@@ -29,6 +34,9 @@ class Equipment extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Exercise, $this>
+     */
     public function exercises(): HasMany
     {
         return $this->hasMany(Exercise::class);

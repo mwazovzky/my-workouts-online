@@ -6,12 +6,18 @@ use App\Models\WorkoutTemplate;
 use Database\Factories\Concerns\HasTranslationFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<WorkoutTemplate>
+ */
 class WorkoutTemplateFactory extends Factory
 {
     use HasTranslationFactory;
 
     protected $model = WorkoutTemplate::class;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [

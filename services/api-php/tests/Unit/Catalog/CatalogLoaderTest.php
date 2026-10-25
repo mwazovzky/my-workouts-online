@@ -18,6 +18,7 @@ class CatalogLoaderTest extends TestCase
 
     /**
      * @param  array<string, string|null>  $files  Replaced files of the valid catalog
+     * @return array<string, mixed>
      */
     private function load(array $files = []): array
     {

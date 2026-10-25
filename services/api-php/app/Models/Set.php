@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Set extends Model
 {
+    /** @use HasFactory<\Database\Factories\SetFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,6 +30,9 @@ class Set extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Activity, $this>
+     */
     public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class);

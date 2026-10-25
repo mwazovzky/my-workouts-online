@@ -8,11 +8,17 @@ use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Workout>
+ */
 class WorkoutFactory extends Factory
 {
     protected $model = Workout::class;
 
-    public function definition()
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
         return [
             'workout_template_id' => WorkoutTemplate::factory(),

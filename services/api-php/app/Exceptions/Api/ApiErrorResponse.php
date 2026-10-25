@@ -9,6 +9,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -97,20 +98,24 @@ class ApiErrorResponse
     public static function validationErrors(ValidationException $e): array
     {
         $failed = $e->validator->failed();
-        $declared = $e->validator->getRules();
+        $declared = $e->validator instanceof Validator ? $e->validator->getRules() : [];
         $errors = [];
 
-        foreach ($e->errors() as $field => $messages) {
+        /** @var array<string, array<int, string>> $messagesByField */
+        $messagesByField = $e->errors();
+
+        foreach ($messagesByField as $field => $messages) {
             $rules = array_map(
                 fn (string $rule): string => Str::snake(class_basename($rule)),
                 array_keys($failed[$field] ?? []),
             );
             $declaredRules = $declared[$field] ?? $declared[self::wildcardPath($field)] ?? [];
+            $ruleCount = count($rules);
 
             foreach (array_values($messages) as $index => $message) {
                 $rule = match (true) {
-                    count($rules) === count($messages) => $rules[$index],
-                    count($rules) === 1 => $rules[0],
+                    $ruleCount === count($messages) => $rules[$index],
+                    $ruleCount === 1 => $rules[0],
                     default => null,
                 };
 

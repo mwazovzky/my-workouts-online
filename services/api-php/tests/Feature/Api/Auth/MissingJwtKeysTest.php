@@ -17,10 +17,18 @@ class MissingJwtKeysTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * The configured key pair, for the test that puts it back.
+     *
+     * @var array<string, mixed>
+     */
+    private array $keys;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->keys = ['jwt.private_key' => config('jwt.private_key'), 'jwt.public_key' => config('jwt.public_key')];
         config(['jwt.private_key' => null, 'jwt.public_key' => null]);
     }
 
@@ -56,7 +64,7 @@ class MissingJwtKeysTest extends TestCase
     #[Test]
     public function readiness_is_ok_when_keys_are_present(): void
     {
-        config(['jwt.private_key' => env('JWT_PRIVATE_KEY'), 'jwt.public_key' => env('JWT_PUBLIC_KEY')]);
+        config($this->keys);
         $this->app->forgetInstance(TokenServiceInterface::class);
 
         $this->getJson('/health/ready')->assertOk()->assertJsonPath('components.jwt', 'up');

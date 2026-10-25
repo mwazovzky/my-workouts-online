@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateRoleUserTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('role_user', function (Blueprint $table) {
             $table->id();
@@ -16,7 +16,7 @@ class CreateRoleUserTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('role_user');
     }

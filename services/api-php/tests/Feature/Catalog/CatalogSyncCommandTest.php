@@ -19,6 +19,9 @@ class CatalogSyncCommandTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @return array<string, mixed>
+     */
     private function shippedCatalog(): array
     {
         return $this->app->make(CatalogLoader::class)->load();

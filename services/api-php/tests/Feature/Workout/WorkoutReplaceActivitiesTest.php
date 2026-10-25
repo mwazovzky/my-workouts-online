@@ -779,6 +779,9 @@ class WorkoutReplaceActivitiesTest extends TestCase
     // Heart-rate zone difficulty
     // -------------------------------------------------------
 
+    /**
+     * @return array{0: \App\Models\Workout, 1: Exercise}
+     */
     private function zoneWorkout(User $user): array
     {
         $workout = Workout::factory()->create(['user_id' => $user->id, 'status' => 'in_progress']);

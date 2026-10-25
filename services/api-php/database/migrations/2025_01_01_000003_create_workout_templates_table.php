@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateWorkoutTemplatesTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('workout_templates', function (Blueprint $table) {
             $table->id();
@@ -14,7 +14,7 @@ class CreateWorkoutTemplatesTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('workout_templates');
     }

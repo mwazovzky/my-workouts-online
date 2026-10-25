@@ -8,12 +8,18 @@ use App\Models\Exercise;
 use Database\Factories\Concerns\HasTranslationFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Exercise>
+ */
 class ExerciseFactory extends Factory
 {
     use HasTranslationFactory;
 
     protected $model = Exercise::class;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [

@@ -13,6 +13,7 @@ trait ReplacesWorkoutActivities
      * as an editor that loaded the latest version would send it.
      *
      * @param  array<string, mixed>  $payload
+     * @return TestResponse<\Symfony\Component\HttpFoundation\Response>
      */
     protected function putActivities(int $workoutId, array $payload): TestResponse
     {

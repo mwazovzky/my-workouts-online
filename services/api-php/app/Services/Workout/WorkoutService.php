@@ -135,7 +135,7 @@ class WorkoutService implements WorkoutServiceInterface
 
             foreach ($payloadActivities as $activityData) {
                 $activity = $this->upsertActivity($workout, $activityData);
-                $this->syncSets($activity, $activityData['sets'] ?? []);
+                $this->syncSets($activity, $activityData['sets']);
             }
         });
 
@@ -227,7 +227,7 @@ class WorkoutService implements WorkoutServiceInterface
     private function syncSets(Activity $activity, array $setsPayload): void
     {
         $sets = collect($setsPayload)->map(fn (array $set) => [
-            'id' => isset($set['id']) && $set['id'] !== null ? (int) $set['id'] : null,
+            'id' => isset($set['id']) ? (int) $set['id'] : null,
             'order' => (int) $set['order'],
             'effort_value' => (int) $set['effort_value'],
             'difficulty_value' => $set['difficulty_value'] ?? null,

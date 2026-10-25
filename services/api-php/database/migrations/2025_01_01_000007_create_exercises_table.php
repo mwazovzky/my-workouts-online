@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateExercisesTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
@@ -17,7 +17,7 @@ class CreateExercisesTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('exercises');
     }
