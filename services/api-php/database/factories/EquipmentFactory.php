@@ -7,12 +7,18 @@ use App\Models\Equipment;
 use Database\Factories\Concerns\HasTranslationFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Equipment>
+ */
 class EquipmentFactory extends Factory
 {
     use HasTranslationFactory;
 
     protected $model = Equipment::class;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [

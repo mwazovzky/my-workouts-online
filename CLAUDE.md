@@ -25,6 +25,7 @@ docker compose exec -T app php artisan test --compact                        # A
 docker compose exec -T app php artisan test --compact tests/Feature/Workout/  # A directory
 docker compose exec -T app php artisan test --compact --filter=testMethodName # One test
 docker compose exec -T app vendor/bin/pint --dirty                           # PHP formatting
+docker compose exec -T app vendor/bin/phpstan analyse --memory-limit=1G      # Static analysis (Larastan, level in phpstan.neon)
 docker compose exec -T app php artisan catalog:sync --dry-run                # Preview catalog data file changes
 docker compose exec -T app php artisan catalog:sync                          # Apply the shared YAML catalog/ to the database
 ```
@@ -70,7 +71,7 @@ After modifying any `.go` file, `.sql` file or `contracts/openapi.yaml`, always 
 
 After modifying any `.swift` file, always run `swift format --in-place` on it and the affected package or app tests before finalizing. Views live in the app target; anything testable without UIKit goes in `Packages/`.
 
-After modifying any `.php` file, always run `vendor/bin/pint --dirty` and `php artisan test --compact` in `services/api-php` before finalizing.
+After modifying any `.php` file, always run `vendor/bin/pint --dirty`, `vendor/bin/phpstan analyse --memory-limit=1G` and `php artisan test --compact` in `services/api-php` before finalizing.
 
 After modifying `contracts/openapi.yaml` or any API response shape, lint the spec and run `scripts/contract-test.sh` against the dev stack (then reseed). Lint: `docker run --rm -v "$PWD/contracts:/spec:ro" -w /spec redocly/cli:latest lint openapi.yaml --config redocly.yaml` and `npx --yes @stoplight/spectral-cli@latest lint contracts/openapi.yaml --ruleset contracts/.spectral.yaml --fail-severity warn`. A Spectral rule may be disabled only with a comment giving the reason or the story that re-enables it.
 
@@ -124,7 +125,7 @@ Exercise <-M:N-> Category
 
 ### CI
 
-GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `go.yml` (`make check` in `services/api-go`; skipped unless `services/api-go/**`, `docker/api-go/**`, `catalog/**` or the contract changed), `contract-go.yml` (Schemathesis against the Go API for the operations in `services/api-go/contract-scope.txt`; same kind of path filter), `deploy.yml`.
+GitHub Actions: `tests.yml` (backend + web), `code-style.yml` (Pint, PHPStan), `lint.yml` (ESLint/Prettier for `apps/web`, OpenAPI lint), `contract.yml` (Schemathesis against a live API), `ios.yml` (swift-format, package tests, `xcodebuild test`; the macOS job is skipped unless `apps/ios/**` or the contract changed, and a skipped job still passes branch protection), `go.yml` (`make check` in `services/api-go`; skipped unless `services/api-go/**`, `docker/api-go/**`, `catalog/**` or the contract changed), `contract-go.yml` (Schemathesis against the Go API for the operations in `services/api-go/contract-scope.txt`; same kind of path filter), `deploy.yml`.
 
 ### Deployment
 

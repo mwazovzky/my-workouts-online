@@ -7,11 +7,17 @@ use App\Models\Exercise;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Activity>
+ */
 class ActivityFactory extends Factory
 {
     protected $model = Activity::class;
 
-    public function definition()
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
         return [
             'workout_type' => WorkoutTemplate::class,

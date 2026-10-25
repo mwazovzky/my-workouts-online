@@ -28,6 +28,9 @@ class CatalogSyncTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @return array<string, mixed>
+     */
     private function catalog(): array
     {
         return (new CatalogLoader(config('catalog.path').'/testdata/valid'))->load();
@@ -35,6 +38,8 @@ class CatalogSyncTest extends TestCase
 
     /**
      * Sync the given catalog, or the fixture catalog when none is given.
+     *
+     * @param  array<string, mixed>|null  $catalog
      */
     private function sync(?array $catalog = null, bool $dryRun = false, bool $strict = false): CatalogSyncReport
     {
@@ -42,6 +47,9 @@ class CatalogSyncTest extends TestCase
 
         $this->app->instance(CatalogLoader::class, new class($catalog) extends CatalogLoader
         {
+            /**
+             * @param  array<string, mixed>  $catalog
+             */
             public function __construct(private readonly array $catalog) {}
 
             public function load(): array
@@ -53,6 +61,10 @@ class CatalogSyncTest extends TestCase
         return $this->app->make(CatalogSyncServiceInterface::class)->sync($dryRun, $strict);
     }
 
+    /**
+     * @param  array<string, mixed>  $catalog
+     * @return array<string, mixed>
+     */
     private function removeRecord(array $catalog, string $type, string $slug): array
     {
         $catalog[$type] = array_values(array_filter(
@@ -579,6 +591,7 @@ class CatalogSyncTest extends TestCase
     {
         $this->mock(ProgramServiceInterface::class)
             ->shouldReceive('create')
+            // @phpstan-ignore method.notFound (Mockery's ExpectationInterface does not declare andThrow())
             ->andThrow(new RuntimeException('The database went away.'));
 
         try {

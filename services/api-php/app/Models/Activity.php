@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Activity extends Model
 {
+    /** @use HasFactory<\Database\Factories\ActivityFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -28,11 +29,17 @@ class Activity extends Model
         ];
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function workout(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @return BelongsTo<Exercise, $this>
+     */
     public function exercise(): BelongsTo
     {
         // Include soft-deleted (retired) exercises so historical workouts and
@@ -40,6 +47,9 @@ class Activity extends Model
         return $this->belongsTo(Exercise::class)->withTrashed();
     }
 
+    /**
+     * @return HasMany<Set, $this>
+     */
     public function sets(): HasMany
     {
         return $this->hasMany(Set::class);

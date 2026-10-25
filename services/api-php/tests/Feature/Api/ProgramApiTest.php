@@ -30,7 +30,7 @@ class ProgramApiTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(2, 'data');
 
-        $data = collect($response->json('data'));
+        $data = $response->collect('data');
         $this->assertTrue($data->firstWhere('id', $enrolled->id)['is_enrolled']);
         $this->assertFalse($data->firstWhere('id', $notEnrolled->id)['is_enrolled']);
     }

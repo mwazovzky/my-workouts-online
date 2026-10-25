@@ -5,14 +5,30 @@ namespace Tests\Unit\Rules;
 use App\Models\Equipment;
 use App\Models\Exercise;
 use App\Rules\HeartRateZoneWithinRange;
+use Closure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Translation\PotentiallyTranslatedString;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class HeartRateZoneWithinRangeTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * A `$fail` callback that records whether the rule failed.
+     *
+     * @return Closure(string, ?string=): PotentiallyTranslatedString
+     */
+    private function failInto(bool &$failed): Closure
+    {
+        return function (string $message) use (&$failed): PotentiallyTranslatedString {
+            $failed = true;
+
+            return new PotentiallyTranslatedString($message, app('translator'));
+        };
+    }
 
     private function zoneExercise(): Exercise
     {
@@ -29,9 +45,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
 
         $rule = new HeartRateZoneWithinRange;
         $failed = false;
-        $fail = function () use (&$failed) {
-            $failed = true;
-        };
+        $fail = $this->failInto($failed);
 
         // Warm the memo with the first set.
         $rule->validate('activities.0.sets.0.difficulty_value', 2, $fail);
@@ -57,9 +71,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             120,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertFalse($failed);
@@ -75,9 +87,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             7,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertTrue($failed);
@@ -93,9 +103,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             null,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertFalse($failed);
@@ -110,9 +118,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             9,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertFalse($failed);
@@ -128,9 +134,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             0,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertTrue($failed);
@@ -146,9 +150,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             2.5,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertTrue($failed);
@@ -164,9 +166,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             'hard',
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertTrue($failed);
@@ -181,9 +181,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             9,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertFalse($failed);
@@ -200,9 +198,7 @@ class HeartRateZoneWithinRangeTest extends TestCase
         (new HeartRateZoneWithinRange)->validate(
             'activities.0.sets.0.difficulty_value',
             9,
-            function () use (&$failed) {
-                $failed = true;
-            },
+            $this->failInto($failed),
         );
 
         $this->assertTrue($failed);

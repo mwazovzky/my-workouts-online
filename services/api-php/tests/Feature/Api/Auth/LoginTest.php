@@ -94,7 +94,7 @@ class LoginTest extends TestCase
     #[Test]
     public function an_unknown_email_costs_a_password_check_like_a_wrong_password(): void
     {
-        Hash::spy();
+        $hash = Hash::spy();
 
         $this->postJson('/api/v1/auth/login', [
             'email' => 'nobody@example.com',
@@ -103,7 +103,8 @@ class LoginTest extends TestCase
         ])->assertProblem(401, 'invalid_credentials')
             ->assertJsonPath('detail', trans('auth.failed'));
 
-        Hash::shouldHaveReceived('check')->once()->with('secret123', Mockery::pattern('/^\$2y\$12\$/'));
+        // @phpstan-ignore method.notFound (Mockery types shouldHaveReceived() as returning a mock, not the expectation)
+        $hash->shouldHaveReceived('check')->once()->with('secret123', Mockery::pattern('/^\$2y\$12\$/'));
     }
 
     #[Test]

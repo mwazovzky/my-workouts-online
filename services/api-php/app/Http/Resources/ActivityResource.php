@@ -4,8 +4,14 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\Activity
+ */
 class ActivityResource extends JsonResource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray($request): array
     {
         $exercise = $this->relationLoaded('exercise') ? $this->exercise : null;

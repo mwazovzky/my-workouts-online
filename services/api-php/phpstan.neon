@@ -1,0 +1,28 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    parseModelCastsMethod: true
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    paths:
+        - app
+        - bootstrap/app.php
+        - config
+        - database
+        - routes
+        - tests
+    ignoreErrors:
+        # Seeder::$command is documented as non-null, but it is unset when a
+        # seeder is run outside Artisan (directly from a test), so the
+        # nullsafe calls are needed.
+        -
+            identifier: nullsafe.neverNull
+            path: database/seeders/*
+        # A migration's up() and down() are a convention, not declared on the
+        # base Migration class the tests load it as.
+        -
+            identifier: method.notFound
+            message: '#^Call to an undefined method Illuminate\\Database\\Migrations\\Migration::(up|down)\(\)\.$#'
+            path: tests/Feature/Migrations/*

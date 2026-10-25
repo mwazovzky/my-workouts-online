@@ -35,16 +35,26 @@ class CatalogValidatorTest extends TestCase
 
     private const FULL_BODY = 1;
 
+    /**
+     * @return array<string, mixed>
+     */
     private function catalog(): array
     {
         return (new CatalogLoader($this->validCatalogPath()))->load();
     }
 
+    /**
+     * @param  array<string, mixed>  $catalog
+     * @return array<int, string>
+     */
     private function validate(array $catalog): array
     {
         return (new CatalogValidator(['en', 'ru']))->validate($catalog);
     }
 
+    /**
+     * @param  array<string, mixed>  $catalog
+     */
     private function assertViolation(string $expected, array $catalog): void
     {
         $violations = $this->validate($catalog);

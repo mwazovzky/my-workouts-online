@@ -97,6 +97,7 @@ Examples from this repository:
 ## Code Quality
 
 - `vendor/bin/pint` **must** be run to ensure consistent code style.
+- `vendor/bin/phpstan analyse` (Larastan, configured in `services/api-php/phpstan.neon`) **must** report no errors; CI runs it in `code-style.yml`. Fix findings with accurate types (relation and factory generics, `@property` for columns Larastan cannot read from migrations, array shapes) rather than a baseline. An ignore rule **must** be narrow and carry a comment giving the reason.
 - PHPDoc blocks **should** be added to all public methods, especially in services and query builders.
 - Import (`use`) statements **should** be preferred for classes/resources.
 - All pages and components **must** be mobile-first and fully responsive.

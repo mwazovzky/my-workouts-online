@@ -9,6 +9,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class AdminCategoryResource extends JsonResource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray($request): array
     {
         return [

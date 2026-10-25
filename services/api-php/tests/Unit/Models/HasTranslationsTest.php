@@ -321,7 +321,7 @@ class HasTranslationsTest extends TestCase
     {
         $exercise = Exercise::factory()->create();
 
-        $this->assertNotNull($exercise->name);
+        $this->assertNotSame('', $exercise->name);
         $this->assertNotNull($exercise->description);
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,

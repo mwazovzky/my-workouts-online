@@ -31,3 +31,26 @@ jobs:
 
       - name: Run Laravel Pint
         run: vendor/bin/pint --test
+
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-php
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: mbstring, pdo, mysql, dom
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github

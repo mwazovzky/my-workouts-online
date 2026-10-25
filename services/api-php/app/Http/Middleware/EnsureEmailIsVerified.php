@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use App\Enums\ErrorCode;
 use App\Exceptions\Api\ApiErrorResponse;
 use Closure;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,7 +21,7 @@ class EnsureEmailIsVerified
     {
         $user = $request->user();
 
-        if (! $user || ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail())) {
+        if (! $user || ! $user->hasVerifiedEmail()) {
             return ApiErrorResponse::problem(403, ErrorCode::EmailUnverified, 'Your email address is not verified.');
         }
 

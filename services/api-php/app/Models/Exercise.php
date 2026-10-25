@@ -10,8 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string|null $slug
+ * @property string $name
+ * @property string|null $description
+ */
 class Exercise extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExerciseFactory> */
     use HasFactory, HasTranslations, SoftDeletes;
 
     protected $fillable = [
@@ -36,11 +42,17 @@ class Exercise extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Equipment, $this>
+     */
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(Equipment::class);
     }
 
+    /**
+     * @return BelongsToMany<Category, $this>
+     */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'category_exercise');

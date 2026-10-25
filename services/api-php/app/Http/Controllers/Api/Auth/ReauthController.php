@@ -23,7 +23,7 @@ class ReauthController extends Controller
     {
         $claims = JwtUserResolver::claimsFrom($request);
 
-        abort_unless($claims, 403, 'Re-authentication requires a bearer access token.');
+        abort_unless($claims !== null, 403, 'Re-authentication requires a bearer access token.');
 
         $user = $request->user();
 

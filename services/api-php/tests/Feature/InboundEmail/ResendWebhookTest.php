@@ -106,6 +106,7 @@ final class ResendWebhookTest extends TestCase
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return TestResponse<\Symfony\Component\HttpFoundation\Response>
      */
     private function postSigned(array $payload, ?int $timestamp = null): TestResponse
     {

@@ -14,6 +14,10 @@ class WorkoutTemplateAdminTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
     private function validPayload(array $overrides = []): array
     {
         $exercise = Exercise::factory()->create();

@@ -31,7 +31,6 @@ class WorkoutResourceTest extends TestCase
         $resource = new WorkoutResource($workout);
         $array = $resource->toArray(request());
 
-        $this->assertIsArray($array);
         $this->assertEquals($workout->id, $array['id']);
         $this->assertEquals($user->id, $array['user_id']);
         $this->assertEquals('in_progress', $array['status']);

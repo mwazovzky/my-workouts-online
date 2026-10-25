@@ -19,6 +19,11 @@ use Illuminate\Validation\Validator;
  */
 abstract class ApiFormRequest extends FormRequest
 {
+    /**
+     * @return array<string, mixed>
+     */
+    abstract public function rules(): array;
+
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {

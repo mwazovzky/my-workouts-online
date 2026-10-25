@@ -61,16 +61,25 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /**
+     * @return BelongsToMany<Role, $this>
+     */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
     }
 
+    /**
+     * @return BelongsToMany<Program, $this>
+     */
     public function programs(): BelongsToMany
     {
         return $this->belongsToMany(Program::class);
     }
 
+    /**
+     * @return HasMany<RefreshToken, $this>
+     */
     public function refreshTokens(): HasMany
     {
         return $this->hasMany(RefreshToken::class);

@@ -24,7 +24,6 @@ class ProgramResourceTest extends TestCase
         $resource = new ProgramResource($program);
         $array = $resource->toArray(request());
 
-        $this->assertIsArray($array);
         $this->assertEquals($program->id, $array['id']);
         $this->assertEquals('Strength Training', $array['name']);
         $this->assertEquals('Build muscle and strength', $array['description']);

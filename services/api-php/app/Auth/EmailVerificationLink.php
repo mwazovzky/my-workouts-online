@@ -2,7 +2,7 @@
 
 namespace App\Auth;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\URL;
  */
 class EmailVerificationLink
 {
-    public static function forUser(MustVerifyEmail $user): string
+    public static function forUser(User $user): string
     {
         $signed = URL::temporarySignedRoute(
             'verification.verify',

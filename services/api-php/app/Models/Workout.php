@@ -12,6 +12,7 @@ use Illuminate\Database\Query\Builder;
 
 class Workout extends Model
 {
+    /** @use HasFactory<\Database\Factories\WorkoutFactory> */
     use HasFactory;
 
     public function newEloquentBuilder($query): WorkoutBuilder
@@ -45,16 +46,25 @@ class Workout extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return MorphMany<Activity, $this>
+     */
     public function activities(): MorphMany
     {
         return $this->morphMany(Activity::class, 'workout');
     }
 
+    /**
+     * @return BelongsTo<WorkoutTemplate, $this>
+     */
     public function workoutTemplate(): BelongsTo
     {
         return $this->belongsTo(WorkoutTemplate::class);

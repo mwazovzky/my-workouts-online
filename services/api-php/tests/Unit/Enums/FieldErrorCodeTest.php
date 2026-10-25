@@ -39,6 +39,9 @@ class FieldErrorCodeTest extends TestCase
         ];
     }
 
+    /**
+     * @param  array<int, mixed>  $declared
+     */
     #[Test]
     #[DataProvider('rules')]
     public function maps_a_rule_to_a_field_error_code(string $rule, array $declared, FieldErrorCode $expected): void

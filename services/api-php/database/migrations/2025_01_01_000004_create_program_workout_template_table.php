@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateProgramWorkoutTemplateTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('program_workout_template', function (Blueprint $table) {
             $table->id();
@@ -24,7 +24,7 @@ class CreateProgramWorkoutTemplateTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('program_workout_template');
     }
