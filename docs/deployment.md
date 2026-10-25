@@ -440,7 +440,11 @@ curl -f https://your-domain.com/robots.txt                                    # 
 curl -f https://your-domain.com/sitemap.xml                                   # the public pages, absolute https URLs
 curl -sI https://your-domain.com/missing.xml | head -1                        # 404
 curl -sI https://your-domain.com/dashboard | grep -i x-robots-tag             # noindex
+curl -sI https://your-domain.com/api/v1/meta | grep -ci x-powered-by          # 0: the PHP version is not disclosed
+docker compose -f docker-compose.prod.yml exec -T api php -v | head -1        # the PHP version actually running (worker: same image)
 ```
+
+The API image follows the newest PHP 8.4 patch release (`php:8.4-fpm-alpine` in `docker/api/Dockerfile`): every deploy rebuilds it on the current base, so a PHP security release reaches production with the next deploy. Check the version with `php -v` above; the API does not send it in `X-Powered-By` (`expose_php=Off` in `docker/api/php.ini`).
 
 For iOS Universal Links the `APPLE_APP_ID` in `.env` must be `<Team ID>.online.my-workouts.app` and must match the team that signs the app; the app's Associated Domains entitlement names `applinks:your-domain.com`. Apple's CDN caches the file for up to a day, so after changing it install a fresh build and allow time, or validate with Apple's AASA validator. Verification and reset emails keep linking to the web paths; the app intercepts them only where it is installed.
 
