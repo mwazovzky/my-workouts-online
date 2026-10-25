@@ -60,13 +60,34 @@ class TokenService implements TokenServiceInterface
         return $this->publicKey ??= InMemory::base64Encoded($this->requireKey('public_key'));
     }
 
+    /**
+     * @param  'private_key'|'public_key'  $name
+     * @return non-empty-string
+     */
     private function requireKey(string $name): string
     {
-        if (! $this->hasKeys()) {
+        $key = (string) $this->config[$name];
+
+        if (! $this->hasKeys() || $key === '') {
             throw new \RuntimeException('JWT keys are not configured. Run `php artisan jwt:keys` and set JWT_PRIVATE_KEY / JWT_PUBLIC_KEY.');
         }
 
-        return (string) $this->config[$name];
+        return $key;
+    }
+
+    /**
+     * @param  'issuer'|'audience'  $name
+     * @return non-empty-string
+     */
+    private function requireClaim(string $name): string
+    {
+        $value = $this->config[$name];
+
+        if ($value === '') {
+            throw new \RuntimeException("The JWT {$name} is not configured. Set JWT_".strtoupper($name).'.');
+        }
+
+        return $value;
     }
 
     public function issuePair(User $user, ?string $deviceName = null): TokenPair
@@ -176,6 +197,10 @@ class TokenService implements TokenServiceInterface
 
     public function parseAccessToken(string $jwt): AccessTokenClaims
     {
+        if ($jwt === '') {
+            throw AccessTokenException::invalid();
+        }
+
         try {
             $token = (new Parser(new JoseEncoder))->parse($jwt);
         } catch (CannotDecodeContent|InvalidTokenStructure|UnsupportedHeaderFound) {
@@ -190,8 +215,8 @@ class TokenService implements TokenServiceInterface
             (new Validator)->assert(
                 $token,
                 new SignedWith($this->signer, $this->publicKey()),
-                new IssuedBy($this->config['issuer']),
-                new PermittedFor($this->config['audience']),
+                new IssuedBy($this->requireClaim('issuer')),
+                new PermittedFor($this->requireClaim('audience')),
             );
         } catch (RequiredConstraintsViolated) {
             throw AccessTokenException::invalid();
@@ -261,8 +286,8 @@ class TokenService implements TokenServiceInterface
     {
         $builder = (new Builder(new JoseEncoder, ChainedFormatter::default()))
             ->withHeader('kid', $this->keyId())
-            ->issuedBy($this->config['issuer'])
-            ->permittedFor($this->config['audience'])
+            ->issuedBy($this->requireClaim('issuer'))
+            ->permittedFor($this->requireClaim('audience'))
             ->relatedTo((string) $user->id)
             ->identifiedBy((string) Str::uuid())
             ->issuedAt($now)

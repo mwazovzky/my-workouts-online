@@ -49,7 +49,7 @@ final class ResendWebhookTest extends TestCase
     #[Test]
     public function it_rejects_an_invalid_signature(): void
     {
-        $body = json_encode($this->receivedPayload('email-123'));
+        $body = json_encode($this->receivedPayload('email-123'), JSON_THROW_ON_ERROR);
 
         $this->call('POST', '/api/webhooks/resend', server: $this->serverHeaders([
             'svix-id' => 'msg_1',
@@ -110,7 +110,7 @@ final class ResendWebhookTest extends TestCase
      */
     private function postSigned(array $payload, ?int $timestamp = null): TestResponse
     {
-        $body = json_encode($payload);
+        $body = json_encode($payload, JSON_THROW_ON_ERROR);
         $timestamp ??= time();
         $key = base64_decode(substr(self::SECRET, strlen('whsec_')));
         $signature = base64_encode(hash_hmac('sha256', "msg_1.{$timestamp}.{$body}", $key, true));

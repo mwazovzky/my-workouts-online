@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ChecksActivityPayload;
 use App\Models\Activity;
 use App\Models\Set;
+use App\Models\Workout;
 use App\Rules\CompletedSetRequiresEffort;
 use App\Rules\HeartRateZoneWithinRange;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ class ReplaceWorkoutActivitiesRequest extends ApiFormRequest
     public function rules(): array
     {
         $workout = $this->route('workout');
-        $workoutId = is_object($workout) ? $workout->getKey() : $workout;
+        $workoutId = $workout instanceof Workout ? $workout->getKey() : $workout;
 
         return [
             'activities' => ['required', 'array', 'min:1'],
@@ -89,7 +90,7 @@ class ReplaceWorkoutActivitiesRequest extends ApiFormRequest
         $workout = $this->route('workout');
         $activities = Activity::query()
             ->where('workout_type', 'workout')
-            ->where('workout_id', is_object($workout) ? $workout->getKey() : $workout)
+            ->where('workout_id', $workout instanceof Workout ? $workout->getKey() : $workout)
             ->pluck('exercise_id', 'id');
 
         $setIds = Set::query()->whereIn('activity_id', $activities->keys())->get(['id', 'activity_id'])
